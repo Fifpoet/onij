@@ -1,12 +1,13 @@
 <script setup lang="ts">
-// import { ref } from 'vue'
+import { ref } from 'vue'
 import { Icon } from '@iconify/vue';
 import { useAppStore, useUserStore } from '@/store';
 
 const appStore = useAppStore()
 const userStore = useUserStore()
 
-const barShow = true
+const navClass = ref('nav')
+const barShow = ref(true)
 
 const menuOptions = [
   { text: '首页', icon: 'mdi:home', path: '/' },
