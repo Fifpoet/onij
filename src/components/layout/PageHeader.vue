@@ -2,6 +2,11 @@
 import { ref } from 'vue'
 import { Icon } from '@iconify/vue';
 import { useAppStore, useUserStore } from '@/store';
+import { RouterLink } from 'vue-router';
+import {NButton} from 'naive-ui'
+import {NDropdown} from 'naive-ui'
+import { h } from 'vue'
+// import MobileSideBar from './MobileSideBar.vue';
 
 const appStore = useAppStore()
 const userStore = useUserStore()
@@ -9,67 +14,86 @@ const userStore = useUserStore()
 const navClass = ref('nav')
 const barShow = ref(true)
 
-const menuOptions = [
-  { text: '首页', icon: 'mdi:home', path: '/' },
+
+
+const renderIcon = (icon: string) => {
+  return () => {
+    return h(Icon, {
+      icon: icon,
+      class: 'text-xl'
+    }, {
+      default: () => h(icon)
+    })
+  }
+}
+
+
+const options = [
   {
-    text: '发现',
-    icon: 'mdi:apple-safari',
-    subMenu: [
-      { text: '归档', icon: 'mdi:archive', path: '/archives' },
-      { text: '分类', icon: 'mdi:menu', path: '/categories' },
-      { text: '标签', icon: 'mdi:tag', path: '/tags' },
-    ],
+    label: '用户资料',
+    key: 'profile',
+    icon: renderIcon('mdi:archive'),
+  },
+  {
+    label: '编辑用户资料',
+    key: 'editProfile',
+    icon: renderIcon('mdi:archive'),
+  },
+  {
+    label: '退出登录',
+    key: 'logout',
+    icon: renderIcon('mdi:archive'),
   }
 ]
+
+
 
 </script>
 
 
 <template>
+  <!-- 移动端顶部导航栏 -->
+  <Transition name="slide-fade" appear>
+    <div v-if="barShow" :class="navClass"
+      class="fixed inset-x-0 top-0 z-11 h-[60px] flex items-center justify-between px-4 py-2 lg:hidden">
+      <!-- 左上角标题 -->
+      <RouterLink to="/" class="text-[18px] font-bold">
+        {{ appStore.blog_config.website_author }}
+      </RouterLink>
+      <!-- 右上角图标 -->
+      <div class="flex items-center gap-2 text-2xl">
+        <button @click="appStore.setSearchFlag(true)">
+          <Icon icon="ic:round-search" />
+        </button>
+        <button @click="appStore.setCollapsed(true)">
+          <Icon icon="ic:sharp-menu" />
+        </button>
+      </div>
+    </div>
+  </Transition>
+  <!-- 侧边栏 -->
+  <!-- <MobileSideBar /> -->
+  <!-- 电脑端顶部导航栏 -->
   <Transition name="slide-fade" appear>
     <div v-if="barShow" :class="navClass" class="fixed inset-x-0 top-0 z-11 hidden h-[60px] lg:block">
       <div class="h-full flex items-center justify-between px-9">
         <!-- 左上角标题 -->
         <RouterLink to="/" class="text-xl font-bold">
-          {{ appStore.blogConfig.website_author }}
+          哭哭
         </RouterLink>
         <!-- 右上角菜单 -->
         <div class="flex items-center space-x-4">
-          <!-- 搜索 -->
-          <div class="menus-item">
-            <a class="menu-btn flex items-center" @click="appStore.setSearchFlag(true)">
-              <Icon icon="mdi:magnify" class="text-xl" />
-              <span class="ml-1"> 搜索 </span>
-            </a>
-          </div>
-          <div v-for="item of menuOptions" :key="item.text" class="menus-item">
-            <!-- 不包含子菜单 -->
-            <RouterLink v-if="!item.subMenu" :to="item.path" class="menu-btn flex items-center">
-              <Icon :icon="item.icon" class="text-xl" />
-              <span class="ml-1"> {{ item.text }} </span>
-            </RouterLink>
-            <!-- 包含子菜单 -->
-            <div v-else class="menu-btn">
-              <div class="flex items-center">
-                <Icon :icon="item.icon" class="text-xl" />
-                <span class="mx-1"> {{ item.text }} </span>
-                <Icon icon="ep:arrow-down-bold" class="text-xl" />
-              </div>
-              <ul class="menus-submenu">
-                <RouterLink v-for="sub of item.subMenu" :key="sub.text" :to="sub.path">
-                  <div class="flex items-center">
-                    <Icon :icon="sub.icon" class="text-xl" />
-                    <span class="ml-1"> {{ sub.text }} </span>
-                  </div>
-                </RouterLink>
-              </ul>
-            </div>
-          </div>
+          <n-dropdown :options="options">
+            <n-button>用户资料</n-button>
+          </n-dropdown>
+          
+          
         </div>
       </div>
     </div>
   </Transition>
 </template>
+
 
 
 <style scoped></style>

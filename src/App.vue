@@ -4,7 +4,10 @@ import PageHeader from './components/layout/PageHeader.vue'
 </script>
 
 <template>
+  <div class="h-full w-full flex flex-col">
+    <!-- 顶部导航栏 -->
   <PageHeader />
+  </div>
 
   <div>
     <a href="https://vitejs.dev" target="_blank">
@@ -15,6 +18,27 @@ import PageHeader from './components/layout/PageHeader.vue'
     </a>
   </div>
   <HelloWorld msg="Vite + Vue" />
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
 </template>
 
 <style scoped>
