@@ -1,23 +1,18 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
 import PageHeader from './components/layout/PageHeader.vue'
+
 </script>
 
+
+// TODO unplugin-auto-import
 <template>
+    <!-- 顶部导航栏 -->
   <div class="h-full w-full flex flex-col">
     <!-- 顶部导航栏 -->
-  <PageHeader />
+    <PageHeader />
+    <!-- 中间内容(包含底部信息) -->
+      <RouterView></RouterView>
   </div>
-
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
-  </div>
-  <HelloWorld msg="Vite + Vue" />
   <br>
   <br>
   <br>
