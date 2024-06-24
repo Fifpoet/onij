@@ -1,17 +1,18 @@
 <script setup lang="ts">
 import PageHeader from './components/layout/PageHeader.vue'
-
 </script>
 
-
-// TODO unplugin-auto-import
 <template>
     <!-- 顶部导航栏 -->
   <div class="h-full w-full flex flex-col">
     <!-- 顶部导航栏 -->
     <PageHeader />
     <!-- 中间内容(包含底部信息) -->
-      <RouterView></RouterView>
+    <article class="flex flex-1 flex-col">
+      <RouterView v-slot="{ Component, route }">
+        <component :is="Component" :key="route.path" />
+      </RouterView>
+    </article>
   </div>
   <br>
   <br>

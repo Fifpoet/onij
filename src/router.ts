@@ -3,16 +3,17 @@ import { createRouter, createWebHistory } from 'vue-router'
 import NProgress from 'nprogress'
 import './styles/nprogress.css'
 
-import DailyCard from "@/components/index/weekly/DailyCard.vue";
-
 
 const basicRoutes = [
+  // {
+  //   name: 'Home',
+  //   path: '/',
+  //   component: () => import('@/views/home/index.vue'),
+  // }
   {
-    path: '/',
-    components: {
-      default: DailyCard,
-
-    },
+    name: 'Weekly',
+    path: '/weekly',
+    component: () => import('@/views/weekly/index.vue'),
   }
 ]
 
