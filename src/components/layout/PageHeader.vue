@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Icon } from '@iconify/vue';
-import { useAppStore, useUserStore } from '@/store';
-import { RouterLink } from 'vue-router';
-import {NButton} from 'naive-ui'
-import {NDropdown} from 'naive-ui'
-import { h } from 'vue'
+import {h, ref} from 'vue'
+import {Icon} from '@iconify/vue';
+import {useAppStore, useUserStore} from '@/store';
+import {RouterLink} from 'vue-router';
+import {NButton, NDropdown} from 'naive-ui'
 // import MobileSideBar from './MobileSideBar.vue';
 
 const appStore = useAppStore()
@@ -13,7 +11,6 @@ const userStore = useUserStore()
 
 const navClass = ref('nav')
 const barShow = ref(true)
-
 
 
 const renderIcon = (icon: string) => {
@@ -28,24 +25,42 @@ const renderIcon = (icon: string) => {
 }
 
 
-const options = [
-  {
-    label: '用户资料',
-    key: 'profile',
-    icon: renderIcon('mdi:archive'),
-  },
-  {
-    label: '编辑用户资料',
-    key: 'editProfile',
-    icon: renderIcon('mdi:archive'),
-  },
-  {
-    label: '退出登录',
-    key: 'logout',
-    icon: renderIcon('mdi:archive'),
-  }
-]
-
+const options = {
+  "mbox": [
+    {
+      label: 'relay',
+      icon: renderIcon('mdi:archive'),
+    },
+    {
+      label: 'trending', // to replace the info stream
+      icon: renderIcon('mdi:archive'),
+    },
+  ],
+  "goroutine": [
+    {
+      label: 'weekly', // recipe; training; music
+      icon: renderIcon('mdi:archive'),
+    },
+    {
+      label: 'record', // relate some doc
+      icon: renderIcon('mdi:archive'),
+    }
+  ],
+  "recall": [
+    {
+      label: 'album',
+      icon: renderIcon('mdi:archive'),
+    },
+    {
+      label: 'poem',
+      icon: renderIcon('mdi:archive'),
+    },
+    {
+      label: 'treasure', // from network
+      icon: renderIcon('mdi:archive'),
+    }
+  ]
+}
 
 
 </script>
@@ -55,7 +70,7 @@ const options = [
   <!-- 移动端顶部导航栏 -->
   <Transition name="slide-fade" appear>
     <div v-if="barShow" :class="navClass"
-      class="fixed inset-x-0 top-0 z-11 h-[60px] flex items-center justify-between px-4 py-2 lg:hidden">
+         class="fixed inset-x-0 top-0 z-11 h-[60px] flex items-center justify-between px-4 py-2 lg:hidden">
       <!-- 左上角标题 -->
       <RouterLink to="/" class="text-[18px] font-bold">
         {{ appStore.blog_config.website_author }}
@@ -63,10 +78,10 @@ const options = [
       <!-- 右上角图标 -->
       <div class="flex items-center gap-2 text-2xl">
         <button @click="appStore.setSearchFlag(true)">
-          <Icon icon="ic:round-search" />
+          <Icon icon="ic:round-search"/>
         </button>
         <button @click="appStore.setCollapsed(true)">
-          <Icon icon="ic:sharp-menu" />
+          <Icon icon="ic:sharp-menu"/>
         </button>
       </div>
     </div>
@@ -82,18 +97,17 @@ const options = [
           哭哭
         </RouterLink>
         <!-- 右上角菜单 -->
-        <div class="flex items-center space-x-4">
-          <n-dropdown :options="options">
-            <n-button>用户资料</n-button>
-          </n-dropdown>
-          
-          
+        <div class="flex items-center justify-end space-x-4">
+          <div v-for="(item, key) in options" :key="key" class="flex items-center">
+            <n-dropdown :options="item">
+              <n-button>{{ key }}</n-button>
+            </n-dropdown>
+          </div>
         </div>
       </div>
     </div>
   </Transition>
 </template>
-
 
 
 <style scoped></style>
