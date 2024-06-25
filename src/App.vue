@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
+import { RouterView } from 'vue-router';
 import PageHeader from './components/layout/PageHeader.vue'
 </script>
 
@@ -17,7 +17,11 @@ import PageHeader from './components/layout/PageHeader.vue'
       <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
     </a>
   </div>
-  <HelloWorld msg="Vite + Vue" />
+  <article class="flex flex-1 flex-col">
+      <RouterView v-slot="{ Component, route }">
+        <component :is="Component" :key="route.path" />
+      </RouterView>
+    </article>
   <br>
   <br>
   <br>
