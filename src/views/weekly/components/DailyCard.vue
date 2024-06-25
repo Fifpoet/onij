@@ -1,12 +1,20 @@
 <script setup lang="ts">
 
 import {NCard} from "naive-ui";
+import {defineProps} from "vue";
+
+const props = defineProps({
+  weekName: String,
+  mouthDay: String,
+  isToday: Boolean,
+})
+
 </script>
 
 <template>
-  <n-card title="卡片插槽示例" class="w-60 mx-4 my-2">
+  <n-card :title="weekName" class="w-72 mx-4 my-2" :class="{ 'today-style': isToday }">
     <template #header-extra>
-      #header-extra
+      {{mouthDay}}
     </template>
     卡片内容
     <template #footer>
@@ -19,5 +27,9 @@ import {NCard} from "naive-ui";
 </template>
 
 <style scoped>
+.today-style {
+  /* 今天的样式 */
+  border: 2px solid red;
+}
 
 </style>
