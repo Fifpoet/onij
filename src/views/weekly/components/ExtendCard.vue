@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
 import {NCard} from "naive-ui";
+import {NSwitch} from "naive-ui";
 </script>
 
 <template>
@@ -8,7 +9,21 @@ import {NCard} from "naive-ui";
     <template #header-extra>
       #header-extra
     </template>
-    卡片内容
+    <n-switch :value="active" size="large">
+      <template #icon>
+        🥵
+      </template>
+    </n-switch>
+    <n-switch :value="active" size="large">
+      <template #icon>
+        🤤
+      </template>
+    </n-switch>
+        <n-switch :value="active" size="large">
+      <template #icon>
+        🥰
+      </template>
+    </n-switch>
     <template #footer>
       #footer
     </template>
