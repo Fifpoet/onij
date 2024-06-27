@@ -7,11 +7,15 @@ import { NSpace } from "naive-ui";
 import { NTag } from "naive-ui";
 import { NThing } from "naive-ui";
 import { NProgress } from "naive-ui";
+import { NRadio } from "naive-ui";
+import {calculateTodayIndex} from "@/util/day.ts";
+
+const todayIndex = calculateTodayIndex();
 
 const props = defineProps({
   weekName: String,
   mouthDay: String,
-  isToday: Boolean,
+  index: Number,
 })
 
 const dayTimePassed = (() => {
@@ -22,19 +26,54 @@ const dayTimePassed = (() => {
   return Math.floor(((currentMinutes / totalMinutes)* 10000)) / 100;
 })();
 
+const handleChange = (value: boolean) => {
+  value = !value;
+};
+
+const todoList = [
+    [],
+    [],
+    [],
+    [],
+    [
+        {
+            title: '今天要写代码',
+            content: '今天要写代码',
+            checked: false
+        },
+        {
+            title: '今天要写代码',
+            content: '今天要写代码',
+            checked: false
+        },
+    ],
+    [],
+    [],
+]
+
 </script>
 
 <template>
-  <n-card :title="weekName" class="w-72 mx-4 my-2" :class="{ 'today-style': isToday }">
+  <n-card :title="weekName" class="w-72 mx-4 my-2" :class="{ 'today-style': todayIndex == index, 'passed': todayIndex > index }">
     <template #header-extra>
       {{ mouthDay }}
     </template>
     <!-- 卡片内容 -->
     <n-list hoverable clickable>
 
-      <div v-if="isToday">
+      <div v-if="todayIndex === index">
         <n-progress style="margin: 0 2px 2px 0; width: 80px; height: 80px;" type="circle" :percentage="dayTimePassed"  :stroke-width="6"/>
         <n-list-item>
+          <div v-for="(todo, todoIndex) in todoList[index]">
+          <n-radio
+              :checked="todo['checked'] == false"
+              value="some"
+              name="basic-demo"
+              @change="handleChange(todo)"
+          >
+            {{ todo['content'] }}
+          </n-radio>
+          </div>
           <n-thing title="相见恨晚" content-style="margin-top: 10px;">
             <template #description>
               <n-space size="small" style="margin-top: 4px">
@@ -83,5 +122,9 @@ const dayTimePassed = (() => {
 .today-style {
   /* 今天的样式 */
   border: 2px solid red;
+}
+.passed {
+  /* 今天的样式 */
+  border: 2px solid blue;
 }
 </style>

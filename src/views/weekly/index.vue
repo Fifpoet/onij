@@ -18,7 +18,7 @@ const mouthDays = getMouthDay(today.value);
     <DailyCard 
       :weekName="weekName" 
       :mouthDay="mouthDays[index]" 
-      :isToday=" index === calculateTodayIndex()"
+      :index="index"
     ></DailyCard>
   </div>
   
