@@ -35,6 +35,10 @@ const options = {
       label: 'trending', // to replace the info stream
       icon: renderIcon('mdi:archive'),
     },
+    {
+      label: 'footprint',
+      icon: renderIcon('mdi:archive'),
+    },
   ],
   "goroutine": [
     {
