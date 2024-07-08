@@ -77,7 +77,7 @@ const options = {
          class="fixed inset-x-0 top-0 z-11 h-[60px] flex items-center justify-between px-4 py-2 lg:hidden">
       <!-- 左上角标题 -->
       <RouterLink to="/" class="text-[18px] font-bold">
-        {{ appStore.blog_config.website_author }}
+        ONIJ
       </RouterLink>
       <!-- 右上角图标 -->
       <div class="flex items-center gap-2 text-2xl">

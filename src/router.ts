@@ -19,10 +19,6 @@ export const router = createRouter({
   scrollBehavior: () => ({ left: 0, top: 0 }),
 })
 
-router.afterEach((to) => {
-  document.title = `${to.meta?.title ?? import.meta.env.VITE_APP_TITLE}`
-})
-
 NProgress.configure({ showSpinner: false })
 
 router.beforeEach((to, from, next) => {
