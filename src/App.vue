@@ -183,8 +183,8 @@ const musicList = [
         <component :is="Component" :key="route.path" />
       </RouterView>
     </article>
-  <lbAudio class="music-player" :musicList="musicList" :index="8" :lyrics="true">
-  </lbAudio>
+<!--  <lbAudio class="music-player" :musicList="musicList" :index="8" :lyrics="true">-->
+<!--  </lbAudio>-->
   <WeeklyModal></WeeklyModal>
 
   <br>

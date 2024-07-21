@@ -1,6 +1,6 @@
 
 <template>
-  <n-modal v-model:show="appStatus.showWeeklyModal">
+  <n-modal v-model:show="appStatus.weekly_ShowWeeklyModal">
     <n-card
         style="width: 600px"
         title="模态框"

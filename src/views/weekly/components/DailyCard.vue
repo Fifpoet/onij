@@ -3,19 +3,9 @@
 import {h} from 'vue'
 import {Icon} from '@iconify/vue';
 
-import { NCard, c } from "naive-ui";
-import { NList } from "naive-ui";
-import { NListItem } from "naive-ui";
-import { NSpace } from "naive-ui";
-import { NTag } from "naive-ui";
-import { NThing } from "naive-ui";
-import { NProgress } from "naive-ui";
-import { NRadio } from "naive-ui";
-import { NCheckbox } from "naive-ui";
-import { NButton } from "naive-ui";
-import { NIcon, NModalProvider } from "naive-ui";
-import { calculateTodayIndex } from "@/util/day.ts";
-import { useAppStore } from "@/store/app.ts";
+import {NButton, NCard, NIcon, NList, NListItem, NSpace, NTag, NThing} from "naive-ui";
+import {calculateTodayIndex} from "@/util/day.ts";
+import {useAppStore} from "@/store/app.ts";
 
 
 const todayIndex = calculateTodayIndex();
@@ -107,7 +97,7 @@ const todoList = [
 <template>
 
   <n-card :title="weekName" class="w-72 mx-4 my-2"
-    :class="{ 'today-style': todayIndex === index, 'passed': todayIndex > index }">
+          :class="{ 'today-style': todayIndex === index, 'passed': todayIndex > index }">
     <template #header-extra>
       {{ mouthDay }}
     </template>
@@ -139,12 +129,11 @@ const todoList = [
     </n-list>
     <!-- 底部按钮栏 -->
     <template #action>
-      <n-button strong secondary circle type="info" @click="appStatus.changeWeeklyModal()">
-      <template #icon>
-        <n-icon :component="renderIcon('mdi:archive')"/>
-      </template>
-    </n-button>
-        
+      <n-button strong secondary circle type="info" @click="appStatus.changeWeeklyModal(index)">
+        <template #icon>
+          <n-icon :component="renderIcon('mdi:archive')"/>
+        </template>
+      </n-button>
     </template>
   </n-card>
 </template>
@@ -161,7 +150,7 @@ const todoList = [
 }
 
 .todo-checked {
-  text-decoration: line-through; 
+  text-decoration: line-through;
   opacity: 0.5;
 }
 </style>
