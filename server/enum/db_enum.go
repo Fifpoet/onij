@@ -1,7 +1,13 @@
 package enum
 
 // Biz
-const ()
+const (
+	BizTraining = 1
+	BizRecipe   = 2
+	BizMusic    = 3
+	BizAlbum    = 4
+	BizPoem     = 5
+)
 
 // Group
 const ()

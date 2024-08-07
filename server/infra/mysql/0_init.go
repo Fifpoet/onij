@@ -8,10 +8,8 @@ import (
 	"time"
 )
 
-var Db *gorm.DB
-
-func InitMysql() {
-	dsn := "user:pass@tcp(127.0.0.1:3306)/footprint?charset=utf8mb4&parseTime=True&loc=Local"
+func NewMysqlCli() *gorm.DB {
+	dsn := "root:zc1669@tcp(127.0.0.1:3306)/footprint?charset=utf8mb4&parseTime=True&loc=Local"
 	var err error
 	Db, err := gorm.Open(mysql.New(mysql.Config{
 		DSN:                       dsn,   // DSN data source name
@@ -38,5 +36,5 @@ func InitMysql() {
 	if err != nil {
 		log.Fatalf("failed to migrate: %v", err)
 	}
-
+	return Db
 }

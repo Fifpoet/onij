@@ -1,15 +1,11 @@
 package infra
 
 import (
-	"gorm.io/gorm"
 	"onij/infra/mysql"
 )
 
+// AllInfra 定义上层需要的Dal对象
 type AllInfra struct {
-	db *gorm.DB
-}
-
-func NewAllInfra() *AllInfra {
-	mysql.InitMysql()
-	return &AllInfra{db: mysql.Db}
+	mysql.TodDal
+	mysql.TagDal
 }
