@@ -1,19 +1,22 @@
 package mysql
 
 import (
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"log"
 	"onij/util"
+	"time"
 )
 
 type TodDal interface {
 }
 
 type todDal struct {
+	db *gorm.DB
 }
 
-func NewTodDal() TodDal {
-	return &todDal{}
+func NewTodDal(db *gorm.DB) TodDal {
+	return &todDal{db: db}
 }
 
 type Tod struct {
@@ -21,16 +24,20 @@ type Tod struct {
 	Title   string `json:"title"`
 	Content string `json:"content"`
 	Score   int    `json:"score"`
+
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	DeletedAt time.Time `json:"deleted_at"`
 }
 
 // GetWeeklyTodList 本周的Tod
-func (t *Tod) GetWeeklyTodList() (res [][]Tod, err error) {
+func (t *todDal) GetWeeklyTodList() (res [][]Tod, err error) {
 	start := util.GetThisWeekDates()[0]
 	score := util.GetDayScore(start)
 	res = make([][]Tod, 7)
 
 	var ts []Tod
-	err = Db.Where("score BETWEEN ? AND ?", score, score+6).Find(&ts).Error
+	err = t.db.Where("score BETWEEN ? AND ?", score, score+6).Find(&ts).Error
 	if err != nil {
 		return nil, err
 	}
@@ -42,8 +49,8 @@ func (t *Tod) GetWeeklyTodList() (res [][]Tod, err error) {
 }
 
 // UpsertTod 插入或更新tod
-func (t *Tod) UpsertTod(tod Tod) error {
-	err := Db.Clauses(clause.OnConflict{
+func (t *todDal) UpsertTod(tod Tod) error {
+	err := t.db.Clauses(clause.OnConflict{
 		UpdateAll: true, // 更新所有列
 	}).Create(&tod).Error
 	if err != nil {
@@ -53,8 +60,8 @@ func (t *Tod) UpsertTod(tod Tod) error {
 }
 
 // DelTod 删除tod
-func (t *Tod) DelTod(id int) error {
-	err := Db.Delete(Tod{Id: id}).Error
+func (t *todDal) DelTod(id int) error {
+	err := t.db.Delete(Tod{Id: id}).Error
 	if err != nil {
 		log.Printf("DelTod, del failed: {%v}\n", err)
 	}

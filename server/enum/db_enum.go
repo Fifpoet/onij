@@ -20,3 +20,6 @@ const ()
 
 // TargetType
 const ()
+
+// RelayType
+const ()

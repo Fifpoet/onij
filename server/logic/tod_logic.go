@@ -5,6 +5,7 @@ import (
 )
 
 type TodLogic interface {
+	GetWeeklyTodList() (res [][]prm.TodPrime, err error)
 }
 
 type todLogic struct {

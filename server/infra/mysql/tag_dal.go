@@ -1,5 +1,7 @@
 package mysql
 
+import "time"
+
 // Tag设计:
 // 1. 需要联动 tod 图片 card poem, 一级业务分类
 
@@ -14,15 +16,15 @@ func NewTagDal() TagDal {
 }
 
 type Tag struct {
-	Id         int    `json:"id" gorm:"primaryKey;autoIncrement"`
-	Name       string `json:"name"`
-	Biz        int    `json:"biz"`
-	Group      int    `json:"group"`
-	TagType    int    `json:"tag_type"`
-	Target     int    `json:"target"`
-	TargetType int    `json:"target_type"`
-	Extra      string `json:"extra"`
-	CreatedAt  string `json:"created_at"`
-	UpdatedAt  string `json:"updated_at"`
-	DeletedAt  string `json:"deleted_at"`
+	Id         int       `json:"id" gorm:"primaryKey;autoIncrement"`
+	Name       string    `json:"name"`
+	TagBiz     int       `json:"tag_biz"`
+	TagGroup   int       `json:"tag_group"`
+	TagType    int       `json:"tag_type"`
+	Target     int       `json:"target"`
+	TargetType int       `json:"target_type"`
+	Extra      string    `json:"extra"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
+	DeletedAt  time.Time `json:"deleted_at"`
 }

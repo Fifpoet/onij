@@ -14,6 +14,8 @@ var infraSet = wire.NewSet(
 
 	mysql.NewTagDal,
 	mysql.NewTodDal,
+	mysql.NewRelayDal,
+
 	wire.Struct(new(infra.AllInfra), "*"),
 )
 
