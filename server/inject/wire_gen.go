@@ -8,6 +8,7 @@ package inject
 
 import (
 	"github.com/google/wire"
+	"onij/handler"
 	"onij/infra"
 	"onij/infra/mysql"
 	"onij/logic"
@@ -16,11 +17,14 @@ import (
 // Injectors from wire.go:
 
 func InitializeApp() *App {
-	todDal := mysql.NewTodDal()
+	db := mysql.NewMysqlCli()
+	todDal := mysql.NewTodDal(db)
 	tagDal := mysql.NewTagDal()
+	relayDal := mysql.NewRelayDal(db)
 	allInfra := &infra.AllInfra{
-		TodDal: todDal,
-		TagDal: tagDal,
+		TodDal:   todDal,
+		TagDal:   tagDal,
+		RelayDal: relayDal,
 	}
 	app := &App{
 		AllInfra: allInfra,
@@ -30,13 +34,16 @@ func InitializeApp() *App {
 
 // wire.go:
 
-var infraSet = wire.NewSet(mysql.NewMysqlCli, mysql.NewTagDal, mysql.NewTodDal, wire.Struct(new(infra.AllInfra), "*"))
+var infraSet = wire.NewSet(mysql.NewMysqlCli, mysql.NewTagDal, mysql.NewTodDal, mysql.NewRelayDal, wire.Struct(new(infra.AllInfra), "*"))
 
-var logicSet = wire.NewSet(logic.NewTodLogic, wire.Struct(new(logic.AllLogic), "*"))
+var logicSet = wire.NewSet(logic.NewTodLogic, logic.NewRelayLogic, wire.Struct(new(logic.AllLogic), "*"))
+
+var handlerSet = wire.NewSet(handler.NewRelayHandler, wire.Struct(new(handler.AllHandler), "*"))
 
 var allSet = wire.NewSet(
 	infraSet,
-	logicSet, wire.Struct(new(App), "*"),
+	logicSet,
+	handlerSet, wire.Struct(new(App), "*"),
 )
 
 type App struct {

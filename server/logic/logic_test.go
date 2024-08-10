@@ -11,5 +11,4 @@ func TestMain(m *testing.M) {
 }
 
 func TestGetWeeklyTodList(t *testing.T) {
-
 }
