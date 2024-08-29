@@ -1,7 +1,6 @@
 package logic
 
 import (
-	"onij/infra"
 	"onij/infra/mysql"
 )
 
@@ -12,22 +11,21 @@ type RelayLogic interface {
 }
 
 type relayLogic struct {
-	infra *infra.AllInfra
 }
 
-func NewRelayLogic(i *infra.AllInfra) RelayLogic {
-	return &relayLogic{infra: i}
+func NewRelayLogic() RelayLogic {
+	return &relayLogic{}
 }
 
 func (r *relayLogic) GetRelayByType(relayType int) (res []*mysql.Relay, err error) {
-	rs, err := r.infra.GetRelayByType(relayType)
+	rs, err := app.GetRelayByType(relayType)
 	return rs, err
 }
 
 func (r *relayLogic) DelById(id int) error {
-	return r.infra.DelById(id)
+	return app.DelById(id)
 }
 
 func (r *relayLogic) Save(relay *mysql.Relay) (int, error) {
-	return r.infra.Save(relay)
+	return app.Save(relay)
 }

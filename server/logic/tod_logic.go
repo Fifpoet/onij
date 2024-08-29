@@ -1,7 +1,6 @@
 package logic
 
 import (
-	"onij/infra"
 	"onij/logic/prm"
 )
 
@@ -10,11 +9,10 @@ type TodLogic interface {
 }
 
 type todLogic struct {
-	infra *infra.AllInfra
 }
 
-func NewTodLogic(i *infra.AllInfra) TodLogic {
-	return &todLogic{infra: i}
+func NewTodLogic() TodLogic {
+	return &todLogic{}
 }
 
 func (t *todLogic) GetWeeklyTodList() (res [][]prm.TodPrime, err error) {

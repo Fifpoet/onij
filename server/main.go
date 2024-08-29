@@ -2,18 +2,18 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"onij/inject"
+	"onij/logic"
 )
 
 func main() {
-	app := inject.InitializeApp()
+	logic.Init()
 
-	router := SetupRouter(app)
+	router := SetupRouter()
 
 	_ = router.Run(":8080")
 }
 
-func SetupRouter(app *inject.App) *gin.Engine {
+func SetupRouter() *gin.Engine {
 
 	router := gin.Default()
 

@@ -4,10 +4,8 @@ package inject
 
 import (
 	"github.com/google/wire"
-	"onij/handler"
 	"onij/infra"
 	"onij/infra/mysql"
-	"onij/logic"
 )
 
 var infraSet = wire.NewSet(
@@ -20,23 +18,8 @@ var infraSet = wire.NewSet(
 	wire.Struct(new(infra.AllInfra), "*"),
 )
 
-var logicSet = wire.NewSet(
-	logic.NewTodLogic,
-	logic.NewRelayLogic,
-
-	wire.Struct(new(logic.AllLogic), "*"),
-)
-
-var handlerSet = wire.NewSet(
-	handler.NewRelayHandler,
-
-	wire.Struct(new(handler.AllHandler), "*"),
-)
-
 var allSet = wire.NewSet(
 	infraSet,
-	logicSet,
-	handlerSet,
 	wire.Struct(new(App), "*"),
 )
 
