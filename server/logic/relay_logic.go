@@ -9,6 +9,7 @@ type RelayLogic interface {
 	DelById(id int) (int, error)
 	Save(relay *mysql.Relay) (int, error)
 	PinRelay(id int) (int, error)
+	GetRelayByPwd(pwd int) (res *mysql.Relay, err error)
 }
 
 type relayLogic struct {
@@ -41,4 +42,8 @@ func (r *relayLogic) PinRelay(id int) (int, error) {
 	}
 	ori[0].Pin = !ori[0].Pin
 	return app.Save(ori[0])
+}
+
+func (r *relayLogic) GetRelayByPwd(pwd int) (res *mysql.Relay, err error) {
+	return app.GetRelayByPwd(pwd)
 }

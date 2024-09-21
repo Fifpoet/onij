@@ -8,6 +8,7 @@ import (
 type RelayDal interface {
 	GetByIds(id []int) ([]*Relay, error)
 	GetRelayByType(relayType int) ([]*Relay, error)
+	GetRelayByPwd(password int) (*Relay, error)
 
 	Save(relay *Relay) (int, error)
 	DelById(id int) error
@@ -71,4 +72,13 @@ func (r *relayDal) GetByIds(id []int) ([]*Relay, error) {
 
 func (r *relayDal) DelByType(relayType int) error {
 	return r.db.Where("relay_type = ?", relayType).Delete(&Relay{}).Error
+}
+
+func (r *relayDal) GetRelayByPwd(password int) (*Relay, error) {
+	res := &Relay{}
+	err := r.db.Where("password = ?", password).Find(res).Error
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }

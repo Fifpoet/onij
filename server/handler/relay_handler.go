@@ -55,3 +55,13 @@ func UpsertRelayHandler(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"data": res})
 }
+
+// GetRelayByPasswordHandler 根据password获取relay
+func GetRelayByPasswordHandler(c *gin.Context) {
+	pwd := util.GetInt(c, "pwd")
+	res, err := logic.NewRelayLogic().GetRelayByPwd(pwd)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get relay"})
+	}
+	c.JSON(http.StatusOK, gin.H{"data": res})
+}
