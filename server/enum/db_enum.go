@@ -22,4 +22,7 @@ const ()
 const ()
 
 // RelayType
-const ()
+const (
+	RelayTypeText = 1
+	RelayTypeFile = 2
+)
