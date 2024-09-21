@@ -7,7 +7,6 @@ import (
 type RelayLogic interface {
 	GetRelayByType(relayType int) (res []*mysql.Relay, err error)
 	DelById(id int) (int, error)
-	DelByType(relayType int) error
 	Save(relay *mysql.Relay) (int, error)
 	PinRelay(id int) (int, error)
 }
@@ -21,7 +20,10 @@ func NewRelayLogic() RelayLogic {
 
 func (r *relayLogic) GetRelayByType(relayType int) (res []*mysql.Relay, err error) {
 	rs, err := app.GetRelayByType(relayType)
-	return rs, err
+	if err != nil {
+		return nil, err
+	}
+	return rs, nil
 }
 
 func (r *relayLogic) DelById(id int) (int, error) {
@@ -33,14 +35,10 @@ func (r *relayLogic) Save(relay *mysql.Relay) (int, error) {
 }
 
 func (r *relayLogic) PinRelay(id int) (int, error) {
-	ori, err := app.GetById([]int{id})
-	if err != nil {
+	ori, err := app.GetByIds([]int{id})
+	if err != nil || len(ori) == 0 {
 		return 0, err
 	}
 	ori[0].Pin = !ori[0].Pin
 	return app.Save(ori[0])
-}
-
-func (r *relayLogic) DelByType(relayType int) error {
-	return app.DelByType(relayType)
 }

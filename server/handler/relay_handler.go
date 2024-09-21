@@ -30,17 +30,6 @@ func PinRelayHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": res})
 }
 
-// DelRelayByTypeHandler 根据relayType删除relay
-func DelRelayByTypeHandler(c *gin.Context) {
-	typ := util.GetInt(c, "type")
-	err := logic.NewRelayLogic().DelByType(typ)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get relay"})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{})
-}
-
 // DelRelayByIdHandler 根据id删除relay
 func DelRelayByIdHandler(c *gin.Context) {
 	id := util.GetInt(c, "id")

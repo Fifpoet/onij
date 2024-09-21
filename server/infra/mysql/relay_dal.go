@@ -6,7 +6,7 @@ import (
 )
 
 type RelayDal interface {
-	GetById(id []int) ([]*Relay, error)
+	GetByIds(id []int) ([]*Relay, error)
 	GetRelayByType(relayType int) ([]*Relay, error)
 
 	Save(relay *Relay) (int, error)
@@ -37,8 +37,9 @@ type Relay struct {
 }
 
 func (r *relayDal) GetRelayByType(relayType int) ([]*Relay, error) {
+	now := time.Now().Unix()
 	var rs []*Relay
-	err := r.db.Where("relay_type = ?", relayType).Find(&rs).Error
+	err := r.db.Where("relay_type = ?", relayType).Where("expire_at > ?", now).Find(&rs).Error
 	if err != nil {
 		return nil, err
 	}
@@ -58,9 +59,10 @@ func (r *relayDal) DelById(id int) error {
 	return err
 }
 
-func (r *relayDal) GetById(id []int) ([]*Relay, error) {
+func (r *relayDal) GetByIds(id []int) ([]*Relay, error) {
+	now := time.Now().Unix()
 	var res []*Relay
-	err := r.db.Where("id in ?", id).Find(&res).Error
+	err := r.db.Where("id in ?", id).Where("expire_at > ?", now).Find(&res).Error
 	if err != nil {
 		return nil, err
 	}
