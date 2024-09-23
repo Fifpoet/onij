@@ -1,10 +1,10 @@
 package enum
 
 const (
-	ExpireTimeNever      = 1
-	ExpireTimeFiveMinute = 2
-	ExpireTimeOneHour    = 3
-	ExpireTimeOneDay     = 4
-	ExpireTimeOneWeek    = 5
-	ExpireTimeOneMonth   = 6
+	ExpireTypeNever      = 1
+	ExpireTypeFiveMinute = 2
+	ExpireTypeOneHour    = 3
+	ExpireTypeOneDay     = 4
+	ExpireTypeOneWeek    = 5
+	ExpireTypeOneMonth   = 6
 )

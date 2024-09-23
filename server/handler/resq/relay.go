@@ -12,24 +12,24 @@ type UpsertRelayReq struct {
 	RelayType  int                   `form:"relay_type" binding:"required"`
 	Content    string                `form:"content" binding:"required"`
 	Password   int                   `form:"password" binding:"required"`
-	ExpireTime int                   `form:"expire_time" binding:"required"`
+	ExpireType int                   `form:"expire_time" binding:"required"`
 	File       *multipart.FileHeader `form:"file"` // 用于接收文件
 }
 
 func (u *UpsertRelayReq) ToModel() (*mysql.Relay, *multipart.FileHeader) {
 	expire := time.Now()
-	switch u.ExpireTime {
-	case enum.ExpireTimeNever:
+	switch u.ExpireType {
+	case enum.ExpireTypeNever:
 		expire = time.Time{}
-	case enum.ExpireTimeFiveMinute:
+	case enum.ExpireTypeFiveMinute:
 		expire = time.Now().Add(5 * time.Minute)
-	case enum.ExpireTimeOneHour:
+	case enum.ExpireTypeOneHour:
 		expire = time.Now().Add(1 * time.Hour)
-	case enum.ExpireTimeOneDay:
+	case enum.ExpireTypeOneDay:
 		expire = time.Now().Add(24 * time.Hour)
-	case enum.ExpireTimeOneWeek:
+	case enum.ExpireTypeOneWeek:
 		expire = time.Now().Add(7 * 24 * time.Hour)
-	case enum.ExpireTimeOneMonth:
+	case enum.ExpireTypeOneMonth:
 		expire = time.Now().Add(30 * 24 * time.Hour)
 	}
 
