@@ -1,6 +1,7 @@
 package resq
 
 import (
+	"database/sql"
 	"mime/multipart"
 	"onij/enum"
 	"onij/infra/mysql"
@@ -20,7 +21,7 @@ func (u *UpsertRelayReq) ToModel() (*mysql.Relay, *multipart.FileHeader) {
 	expire := time.Now()
 	switch u.ExpireType {
 	case enum.ExpireTypeNever:
-		expire = time.Time{}
+		expire = sql.NullTime{}.Time
 	case enum.ExpireTypeFiveMinute:
 		expire = time.Now().Add(5 * time.Minute)
 	case enum.ExpireTypeOneHour:
