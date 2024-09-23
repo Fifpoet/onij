@@ -9,6 +9,15 @@ import (
 )
 
 // GetRelayHandler 根据relayType获取relay列表
+// @Summary 根据relayType获取relay列表
+// @Description 获取用户详细信息
+// @Tags 用户
+// @Accept  json
+// @Produce  json
+// @Param   type     path    int     true        "用户ID"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Router /type/{type} [get]
 func GetRelayHandler(c *gin.Context) {
 	typ := util.GetInt(c, "type")
 	res, err := logic.NewRelayLogic().GetRelayByType(typ)
@@ -20,6 +29,15 @@ func GetRelayHandler(c *gin.Context) {
 }
 
 // PinRelayHandler 固定某个relay
+// @Summary 固定某个relay
+// @Description 获取用户详细信息
+// @Tags 用户
+// @Accept  json
+// @Produce  json
+// @Param   id     path    int     true        "用户ID"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Router /pin/{id} [get]
 func PinRelayHandler(c *gin.Context) {
 	id := util.GetInt(c, "id")
 	res, err := logic.NewRelayLogic().PinRelay(id)
@@ -31,6 +49,15 @@ func PinRelayHandler(c *gin.Context) {
 }
 
 // DelRelayByIdHandler 根据id删除relay
+// @Summary 根据id删除relay
+// @Description 获取用户详细信息
+// @Tags 用户
+// @Accept  json
+// @Produce  json
+// @Param   id     path    int     true        "用户ID"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Router /{id} [delete]
 func DelRelayByIdHandler(c *gin.Context) {
 	id := util.GetInt(c, "id")
 	res, err := logic.NewRelayLogic().DelById(id)
@@ -41,6 +68,14 @@ func DelRelayByIdHandler(c *gin.Context) {
 }
 
 // UpsertRelayHandler 插入或更新relay
+// @Summary 插入或更新relay
+// @Description 获取用户详细信息
+// @Tags 用户
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Router /upsert [post]
 func UpsertRelayHandler(c *gin.Context) {
 	req := new(resq.UpsertRelayReq)
 	err := c.BindJSON(req)
@@ -57,6 +92,15 @@ func UpsertRelayHandler(c *gin.Context) {
 }
 
 // GetRelayByPasswordHandler 根据password获取relay
+// @Summary 根据password获取relay
+// @Description 获取用户详细信息
+// @Tags 用户
+// @Accept  json
+// @Produce  json
+// @Param   pwd     path    int     true        "用户ID"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Router /password/{pwd} [get]
 func GetRelayByPasswordHandler(c *gin.Context) {
 	pwd := util.GetInt(c, "pwd")
 	res, err := logic.NewRelayLogic().GetRelayByPwd(pwd)
