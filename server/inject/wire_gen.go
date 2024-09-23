@@ -32,7 +32,7 @@ func InitializeApp() *App {
 
 // wire.go:
 
-var infraSet = wire.NewSet(mysql.NewMysqlCli, mysql.NewTagDal, mysql.NewTodDal, mysql.NewRelayDal, wire.Struct(new(infra.AllInfra), "*"))
+var infraSet = wire.NewSet(mysql.NewMysqlCli, mysql.NewTagDal, mysql.NewTodDal, mysql.NewRelayDal, mysql.NewFileDal, wire.Struct(new(infra.AllInfra), "*"))
 
 var allSet = wire.NewSet(
 	infraSet, wire.Struct(new(App), "*"),

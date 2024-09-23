@@ -20,7 +20,6 @@ func SetupRouter() *gin.Engine {
 	// 创建 relay 分组路由
 	relayGroup := router.Group("/relay")
 	{
-		// 定义每个路由及其对应的处理函数
 		relayGroup.GET("/type/:type", handler.GetRelayHandler)              // 根据 relayType 获取 relay 列表
 		relayGroup.POST("/pin", handler.PinRelayHandler)                    // 固定某个 relay
 		relayGroup.DELETE("/:id", handler.DelRelayByIdHandler)              // 根据 id 删除 relay

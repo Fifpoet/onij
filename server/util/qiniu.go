@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/qiniu/go-sdk/v7/auth/qbox"
 	"github.com/qiniu/go-sdk/v7/storage"
+	"mime/multipart"
 	"os"
 	"time"
 )
@@ -12,7 +13,7 @@ import (
 const (
 	ak = "lKrcOB9iUaKvKhspGh1hgo4-Dy0yFlH0mgRSgPRY"
 	bk = "onij"
-	dm = "http://onij.s3.cn-east-1.qiniucs.com"
+	dm = "https://onij.s3.cn-east-1.qiniucs.com"
 )
 
 func getQiniuMac() *qbox.Mac {
@@ -45,7 +46,7 @@ func UploadFile(localFilePath, key string) error {
 func DownloadFile(key string) string {
 	deadline := time.Now().Add(time.Hour).Unix()
 
-	privateAccessURL := storage.MakePrivateURL(getQiniuMac(), dm, key, deadline)
+	privateAccessURL := storage.MakePrivateURLv2(getQiniuMac(), dm, key, deadline)
 	fmt.Printf("Download URL: %s\n", privateAccessURL)
 	return privateAccessURL
 }
@@ -53,7 +54,7 @@ func DownloadFile(key string) string {
 func DeleteFile(key string) error {
 	mac := getQiniuMac()
 	cfg := storage.Config{
-		Zone:          &storage.ZoneHuanan,
+		Zone:          &storage.ZoneHuadong,
 		UseHTTPS:      false,
 		UseCdnDomains: false,
 	}
@@ -64,5 +65,27 @@ func DeleteFile(key string) error {
 		return fmt.Errorf("file deletion failed: %v", err)
 	}
 	fmt.Println("File deleted successfully.")
+	return nil
+}
+
+func UploadFromReader(file multipart.File, size int64, key string) error {
+	putPolicy := storage.PutPolicy{Scope: bk}
+	upToken := putPolicy.UploadToken(getQiniuMac())
+
+	cfg := storage.Config{
+		Zone:          &storage.ZoneHuadong,
+		UseHTTPS:      false,
+		UseCdnDomains: false,
+	}
+
+	formUploader := storage.NewFormUploader(&cfg)
+	ret := storage.PutRet{}
+	putExtra := storage.PutExtra{}
+
+	err := formUploader.Put(context.Background(), &ret, upToken, key, file, size, &putExtra)
+	if err != nil {
+		return fmt.Errorf("file upload failed: %v", err)
+	}
+	fmt.Printf("File uploaded successfully, key: %s\n", ret.Key)
 	return nil
 }

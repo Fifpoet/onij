@@ -14,6 +14,7 @@ var infraSet = wire.NewSet(
 	mysql.NewTagDal,
 	mysql.NewTodDal,
 	mysql.NewRelayDal,
+	mysql.NewFileDal,
 
 	wire.Struct(new(infra.AllInfra), "*"),
 )
