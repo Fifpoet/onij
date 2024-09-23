@@ -86,12 +86,8 @@ func UpsertRelayHandler(c *gin.Context) {
 		return
 	}
 
-	// 处理文件上传
-	req.File, err = c.FormFile("file")
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "File upload error: " + err.Error()})
-		return
-	}
+	// 处理文件上传, 没有则忽略
+	req.File, _ = c.FormFile("file")
 
 	res, err := logic.NewRelayLogic().Save(req.ToModel())
 	if err != nil {

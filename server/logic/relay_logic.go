@@ -36,11 +36,13 @@ func (r *relayLogic) DelById(id int) (int, error) {
 
 func (r *relayLogic) Save(relay *mysql.Relay, file *multipart.FileHeader) (int, error) {
 	// upload
-	oss, err := app.FileDal.CreateFileFromForm(file, enum.BizRelay)
-	if err != nil {
-		return 0, err
+	if file != nil {
+		oss, err := app.FileDal.CreateFileFromForm(file, enum.BizRelay)
+		if err != nil {
+			return 0, err
+		}
+		relay.OssKey = oss
 	}
-	relay.OssKey = oss
 
 	return app.Save(relay)
 }
