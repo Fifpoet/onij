@@ -11,7 +11,8 @@ type RelayLogic interface {
 	DelById(id int) (int, error)
 	Save(relay *mysql.Relay, file *multipart.FileHeader) (int, error)
 	PinRelay(id int) (int, error)
-	GetRelayByPwd(pwd int) (res *mysql.Relay, err error)
+	GetRelayByPwd(pwd int) (res []*mysql.Relay, err error)
+	GetRelayByPwdAndId(pwd, id int) (res *mysql.Relay, err error)
 }
 
 type relayLogic struct {
@@ -53,6 +54,10 @@ func (r *relayLogic) PinRelay(id int) (int, error) {
 	return app.Save(ori[0])
 }
 
-func (r *relayLogic) GetRelayByPwd(pwd int) (res *mysql.Relay, err error) {
+func (r *relayLogic) GetRelayByPwd(pwd int) (res []*mysql.Relay, err error) {
 	return app.GetRelayByPwd(pwd)
+}
+
+func (r *relayLogic) GetRelayByPwdAndId(pwd, id int) (res *mysql.Relay, err error) {
+	return app.GetRelayByPwdAndId(pwd, id)
 }
