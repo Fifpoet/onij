@@ -12,7 +12,7 @@ type UpsertRelayReq struct {
 	RelayType  int                   `form:"relay_type" binding:"required"`
 	Content    string                `form:"content" binding:"required"`
 	Password   int                   `form:"password" binding:"required"`
-	ExpireType int                   `form:"expire_time" binding:"required"`
+	ExpireType int                   `form:"expire_type" binding:"required"`
 	File       *multipart.FileHeader `form:"file"` // 用于接收文件
 }
 
