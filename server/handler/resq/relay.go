@@ -1,6 +1,7 @@
 package resq
 
 import (
+	"mime/multipart"
 	"onij/enum"
 	"onij/infra/mysql"
 	"strconv"
@@ -8,14 +9,14 @@ import (
 )
 
 type UpsertRelayReq struct {
-	RelayType  int    `json:"relay_type"`
-	Content    string `json:"content"`
-	Password   int    `json:"password"`
-	ExpireTime int    `json:"expire_time"`
-	OssKey     string `json:"oss_key"`
+	RelayType  int                   `form:"relay_type" binding:"required"`
+	Content    string                `form:"content" binding:"required"`
+	Password   int                   `form:"password" binding:"required"`
+	ExpireTime int                   `form:"expire_time" binding:"required"`
+	File       *multipart.FileHeader `form:"file"` // 用于接收文件
 }
 
-func (u *UpsertRelayReq) ToModel() *mysql.Relay {
+func (u *UpsertRelayReq) ToModel() (*mysql.Relay, *multipart.FileHeader) {
 	expire := time.Now()
 	switch u.ExpireTime {
 	case enum.ExpireTimeNever:
@@ -25,7 +26,7 @@ func (u *UpsertRelayReq) ToModel() *mysql.Relay {
 	case enum.ExpireTimeOneHour:
 		expire = time.Now().Add(1 * time.Hour)
 	case enum.ExpireTimeOneDay:
-		expire = time.Now().Add(1 * time.Hour)
+		expire = time.Now().Add(24 * time.Hour)
 	case enum.ExpireTimeOneWeek:
 		expire = time.Now().Add(7 * 24 * time.Hour)
 	case enum.ExpireTimeOneMonth:
@@ -37,9 +38,9 @@ func (u *UpsertRelayReq) ToModel() *mysql.Relay {
 		Password:  u.Password,
 		ExpireAt:  strconv.FormatInt(expire.Unix(), 10),
 		Content:   u.Content,
-		OssKey:    u.OssKey,
+		OssKey:    "",
 		Pin:       false,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-	}
+	}, u.File
 }

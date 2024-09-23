@@ -9,4 +9,5 @@ type AllInfra struct {
 	mysql.TodDal
 	mysql.TagDal
 	mysql.RelayDal
+	mysql.FileDal
 }

@@ -1,13 +1,15 @@
 package logic
 
 import (
+	"mime/multipart"
+	"onij/enum"
 	"onij/infra/mysql"
 )
 
 type RelayLogic interface {
 	GetRelayByType(relayType int) (res []*mysql.Relay, err error)
 	DelById(id int) (int, error)
-	Save(relay *mysql.Relay) (int, error)
+	Save(relay *mysql.Relay, file *multipart.FileHeader) (int, error)
 	PinRelay(id int) (int, error)
 	GetRelayByPwd(pwd int) (res *mysql.Relay, err error)
 }
@@ -31,7 +33,14 @@ func (r *relayLogic) DelById(id int) (int, error) {
 	return 1, app.DelById(id)
 }
 
-func (r *relayLogic) Save(relay *mysql.Relay) (int, error) {
+func (r *relayLogic) Save(relay *mysql.Relay, file *multipart.FileHeader) (int, error) {
+	// upload
+	oss, err := app.FileDal.CreateFileFromForm(file, enum.BizRelay)
+	if err != nil {
+		return 0, err
+	}
+	relay.OssKey = oss
+
 	return app.Save(relay)
 }
 

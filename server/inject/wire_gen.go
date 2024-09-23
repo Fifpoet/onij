@@ -19,10 +19,12 @@ func InitializeApp() *App {
 	todDal := mysql.NewTodDal(db)
 	tagDal := mysql.NewTagDal()
 	relayDal := mysql.NewRelayDal(db)
+	fileDal := mysql.NewFileDal(db)
 	allInfra := &infra.AllInfra{
 		TodDal:   todDal,
 		TagDal:   tagDal,
 		RelayDal: relayDal,
+		FileDal:  fileDal,
 	}
 	app := &App{
 		AllInfra: allInfra,

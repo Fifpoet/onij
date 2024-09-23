@@ -77,12 +77,22 @@ func DelRelayByIdHandler(c *gin.Context) {
 // @Failure 400 {object} map[string]interface{}
 // @Router /upsert [post]
 func UpsertRelayHandler(c *gin.Context) {
-	req := new(resq.UpsertRelayReq)
-	err := c.BindJSON(req)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+	var req resq.UpsertRelayReq
+	var err error
+
+	// 绑定普通表单字段
+	if err = c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	// 处理文件上传
+	req.File, err = c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "File upload error: " + err.Error()})
+		return
+	}
+
 	res, err := logic.NewRelayLogic().Save(req.ToModel())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upsert relay"})
