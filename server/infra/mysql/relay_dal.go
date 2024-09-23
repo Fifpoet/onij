@@ -32,9 +32,9 @@ type Relay struct {
 	OssKey    string `json:"oss_key"`
 	Pin       bool   `json:"pin"`
 
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	DeletedAt time.Time `json:"deleted_at"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `json:"deleted_at"`
 }
 
 func (r *relayDal) GetRelayByType(relayType int) ([]*Relay, error) {
