@@ -23,7 +23,7 @@ func NewRelayLogic() RelayLogic {
 }
 
 func (r *relayLogic) GetRelayByType(relayType int) (res []*mysql.Relay, err error) {
-	rs, err := app.GetRelayByType(relayType)
+	rs, err := app.RelayDal.GetRelayByType(relayType)
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +31,7 @@ func (r *relayLogic) GetRelayByType(relayType int) (res []*mysql.Relay, err erro
 }
 
 func (r *relayLogic) DelById(id int) (int, error) {
-	return 1, app.DelById(id)
+	return 1, app.RelayDal.DelById(id)
 }
 
 func (r *relayLogic) Save(relay *mysql.Relay, file *multipart.FileHeader) (int, error) {
@@ -44,22 +44,22 @@ func (r *relayLogic) Save(relay *mysql.Relay, file *multipart.FileHeader) (int, 
 		relay.OssKey = oss
 	}
 
-	return app.Save(relay)
+	return app.RelayDal.Save(relay)
 }
 
 func (r *relayLogic) PinRelay(id int) (int, error) {
-	ori, err := app.GetByIds([]int{id})
+	ori, err := app.RelayDal.GetByIds([]int{id})
 	if err != nil || len(ori) == 0 {
 		return 0, err
 	}
 	ori[0].Pin = !ori[0].Pin
-	return app.Save(ori[0])
+	return app.RelayDal.Save(ori[0])
 }
 
 func (r *relayLogic) GetRelayByPwd(pwd int) (res []*mysql.Relay, err error) {
-	return app.GetRelayByPwd(pwd)
+	return app.RelayDal.GetRelayByPwd(pwd)
 }
 
 func (r *relayLogic) GetRelayByPwdAndId(pwd, id int) (res *mysql.Relay, err error) {
-	return app.GetRelayByPwdAndId(pwd, id)
+	return app.RelayDal.GetRelayByPwdAndId(pwd, id)
 }

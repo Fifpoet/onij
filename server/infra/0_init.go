@@ -10,4 +10,5 @@ type AllInfra struct {
 	mysql.TagDal
 	mysql.RelayDal
 	mysql.FileDal
+	mysql.MusicDal
 }

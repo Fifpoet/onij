@@ -15,6 +15,7 @@ var infraSet = wire.NewSet(
 	mysql.NewTodDal,
 	mysql.NewRelayDal,
 	mysql.NewFileDal,
+	mysql.NewMusicDal,
 
 	wire.Struct(new(infra.AllInfra), "*"),
 )
