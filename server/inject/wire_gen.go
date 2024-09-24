@@ -20,11 +20,13 @@ func InitializeApp() *App {
 	tagDal := mysql.NewTagDal()
 	relayDal := mysql.NewRelayDal(db)
 	fileDal := mysql.NewFileDal(db)
+	musicDal := mysql.NewMusicDal(db)
 	allInfra := &infra.AllInfra{
 		TodDal:   todDal,
 		TagDal:   tagDal,
 		RelayDal: relayDal,
 		FileDal:  fileDal,
+		MusicDal: musicDal,
 	}
 	app := &App{
 		AllInfra: allInfra,
@@ -34,7 +36,7 @@ func InitializeApp() *App {
 
 // wire.go:
 
-var infraSet = wire.NewSet(mysql.NewMysqlCli, mysql.NewTagDal, mysql.NewTodDal, mysql.NewRelayDal, mysql.NewFileDal, wire.Struct(new(infra.AllInfra), "*"))
+var infraSet = wire.NewSet(mysql.NewMysqlCli, mysql.NewTagDal, mysql.NewTodDal, mysql.NewRelayDal, mysql.NewFileDal, mysql.NewMusicDal, wire.Struct(new(infra.AllInfra), "*"))
 
 var allSet = wire.NewSet(
 	infraSet, wire.Struct(new(App), "*"),
