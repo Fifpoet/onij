@@ -1,6 +1,7 @@
 package mysql
 
 import (
+	"database/sql"
 	"gorm.io/gorm"
 	"time"
 )
@@ -30,13 +31,13 @@ func NewRelayDal(db *gorm.DB) RelayDal {
 // ExpireAt 为0则永不过期, 否则为过期时间戳
 // Pin 排序时Pin 为true的优先, 删除时跳过
 type Relay struct {
-	Id        int    `json:"id" gorm:"primaryKey;autoIncrement"`
-	RelayType int    `json:"relay_type"`
-	Password  int    `json:"password"`
-	ExpireAt  string `json:"expire_at"`
-	Content   string `json:"content"`
-	OssKey    string `json:"oss_key"`
-	Pin       bool   `json:"pin"`
+	Id        int          `json:"id" gorm:"primaryKey;autoIncrement"`
+	RelayType int          `json:"relay_type"`
+	Password  int          `json:"password"`
+	ExpireAt  sql.NullTime `json:"expire_at"`
+	Content   string       `json:"content"`
+	OssKey    string       `json:"oss_key"`
+	Pin       bool         `json:"pin"`
 
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
