@@ -13,7 +13,7 @@ import (
 const (
 	ak = "lKrcOB9iUaKvKhspGh1hgo4-Dy0yFlH0mgRSgPRY"
 	bk = "onij"
-	dm = "https://onij.s3.cn-east-1.qiniucs.com"
+	dm = "http://cloud.onij.fun"
 )
 
 func getQiniuMac() *qbox.Mac {
@@ -46,7 +46,7 @@ func UploadFile(localFilePath, key string) error {
 func DownloadFile(key string) string {
 	deadline := time.Now().Add(time.Hour).Unix()
 
-	privateAccessURL := storage.MakePrivateURLv2(getQiniuMac(), dm, key, deadline)
+	privateAccessURL := storage.MakePrivateURL(getQiniuMac(), dm, key, deadline)
 	fmt.Printf("Download URL: %s\n", privateAccessURL)
 	return privateAccessURL
 }
