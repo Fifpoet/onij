@@ -72,11 +72,13 @@ func (m *musicLogic) SaveFromDir(music []*mysql.Music, mps, lyrics []string) err
 			return err
 		}
 		music[i].MpOss = fid
-		fid, err = app.FileDal.CreateFileFormLocal(lyrics[i], enum.BizMusic)
-		if err != nil {
-			return err
+		if lyrics[i] != "" {
+			fid, err = app.FileDal.CreateFileFormLocal(lyrics[i], enum.BizMusic)
+			if err != nil {
+				return err
+			}
+			music[i].LyricOss = fid
 		}
-		music[i].LyricOss = fid
 
 		_, err = app.MusicDal.Save(music[i])
 		if err != nil {

@@ -16,6 +16,8 @@ const fileSuffix = ".mp3"
 const lyricsSuffix = ".lrc"
 
 func main() {
+	logic.Init()
+
 	mp3Files, err := findMP3Files(targetDir)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -49,7 +51,7 @@ func main() {
 		models = append(models, &mysql.Music{
 			RootId:      0,
 			Title:       songName,
-			ArtistIds:   "",
+			ArtistIds:   singer,
 			Composer:    0,
 			Writer:      0,
 			IssueYear:   0,
@@ -66,7 +68,7 @@ func main() {
 
 	err = logic.NewMusicLogic().SaveFromDir(models, mp3Files, lyricsFiles)
 	if err != nil {
-		return
+		fmt.Println("Error:", err)
 	}
 }
 
