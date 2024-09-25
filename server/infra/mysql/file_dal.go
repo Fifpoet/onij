@@ -5,6 +5,7 @@ import (
 	"gorm.io/gorm"
 	"mime/multipart"
 	"onij/util"
+	"os"
 	"path/filepath"
 	"time"
 )
@@ -15,6 +16,7 @@ type FileDal interface {
 	DelByKey(key string) error
 
 	GetByKey(key string) (*File, error)
+	GetById(id int) (*File, error)
 }
 
 type fileDal struct {
@@ -30,6 +32,8 @@ type File struct {
 	Name string `json:"name"`
 	Key  string `json:"key" gorm:"unique"`
 	Biz  int    `json:"biz"`
+	Size int    `json:"size"`
+	Path string `json:"path"`
 
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
@@ -43,12 +47,18 @@ func (f *fileDal) CreateFileFormLocal(localFilePath string, biz int) (string, er
 	if err != nil {
 		return "", err
 	}
+	stat, err := os.Stat(localFilePath)
+	if err != nil {
+		return "", err
+	}
 
 	// save db
 	fil := &File{
 		Name: filepath.Base(localFilePath),
 		Key:  uid.String(),
 		Biz:  biz,
+		Size: int(stat.Size()),
+		Path: localFilePath,
 	}
 	err = f.db.Save(fil).Error
 	if err != nil {
@@ -78,6 +88,8 @@ func (f *fileDal) CreateFileFromForm(fileHeader *multipart.FileHeader, biz int) 
 		Name: fileHeader.Filename,
 		Key:  uid.String(),
 		Biz:  biz,
+		Size: int(fileHeader.Size),
+		Path: "",
 	}
 	err = f.db.Save(fil).Error
 	if err != nil {
@@ -98,6 +110,15 @@ func (f *fileDal) DelByKey(key string) error {
 func (f *fileDal) GetByKey(key string) (*File, error) {
 	res := &File{}
 	err := f.db.Where("key = ?", key).First(res).Error
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (f *fileDal) GetById(id int) (*File, error) {
+	res := &File{}
+	err := f.db.Where("id = ?", id).First(res).Error
 	if err != nil {
 		return nil, err
 	}

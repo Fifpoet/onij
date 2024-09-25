@@ -109,28 +109,7 @@ func UpsertRelayHandler(c *gin.Context) {
 // @Router /password/{pwd} [get]
 func GetRelayByPasswordHandler(c *gin.Context) {
 	pwd := util.GetInt(c, "pwd")
-	res, err := logic.NewRelayLogic().GetRelayByPwd(pwd)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get relay"})
-	}
-	c.JSON(http.StatusOK, gin.H{"data": res})
-}
-
-// GetRelayByPasswordAndIdHandler 根据password和id获取relay
-// @Summary 根据password和id获取relay
-// @Description 获取用户详细信息
-// @Tags 用户
-// @Accept  json
-// @Produce  json
-// @Param   id     path    int     true        "用户ID"
-// @Param   pwd     path    int     true        "用户ID"
-// @Success 200 {object} map[string]interface{}
-// @Failure 400 {object} map[string]interface{}
-// @Router /password/{pwd}/id/{id} [get]
-func GetRelayByPasswordAndIdHandler(c *gin.Context) {
-	pwd := util.GetInt(c, "pwd")
-	id := util.GetInt(c, "id")
-	res, err := logic.NewRelayLogic().GetRelayByPwdAndId(pwd, id)
+	res, err := logic.NewRelayLogic().GetAndDelRelayByPwd(pwd)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get relay"})
 	}
