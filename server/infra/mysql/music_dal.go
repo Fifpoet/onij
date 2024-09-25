@@ -24,6 +24,7 @@ type Music struct {
 	ArtistIds   string `json:"artist_ids" gorm:"not null"`
 	Composer    int    `json:"composer"`
 	Writer      int    `json:"writer"`
+	Length      int    `json:"length"`
 	IssueYear   int    `json:"issue_year"`
 	Language    string `json:"language"`
 	PerformType int    `json:"perform_type"`

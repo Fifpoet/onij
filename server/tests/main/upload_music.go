@@ -54,6 +54,7 @@ func main() {
 			ArtistIds:   singer,
 			Composer:    0,
 			Writer:      0,
+			Length:      getMp3Meta(f),
 			IssueYear:   0,
 			Language:    "",
 			PerformType: 0,
