@@ -19,9 +19,9 @@ type UpsertRelayReq struct {
 func (u *UpsertRelayReq) ToModel() (*mysql.Relay, *multipart.FileHeader) {
 	rl := &mysql.Relay{
 		RelayType: u.RelayType,
-		Password:  u.Password,
+		Password:  &u.Password,
 		Content:   u.Content,
-		OssKey:    "",
+		FileOss:   0,
 		Pin:       false,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),

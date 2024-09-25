@@ -40,7 +40,7 @@ func (r *relayLogic) Save(relay *mysql.Relay, file *multipart.FileHeader) (int, 
 		if err != nil {
 			return 0, err
 		}
-		relay.OssKey = oss
+		relay.FileOss = oss
 	}
 
 	return app.RelayDal.Save(relay)

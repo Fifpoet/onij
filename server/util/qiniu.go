@@ -21,7 +21,7 @@ func getQiniuMac() *qbox.Mac {
 	return qbox.NewMac(ak, sk)
 }
 
-func UploadFile(localFilePath, key string) error {
+func UploadFile(localFilePath, key string) (string, error) {
 	putPolicy := storage.PutPolicy{Scope: bk}
 	upToken := putPolicy.UploadToken(getQiniuMac())
 
@@ -34,13 +34,14 @@ func UploadFile(localFilePath, key string) error {
 	formUploader := storage.NewFormUploader(&cfg)
 	ret := storage.PutRet{}
 	putExtra := storage.PutExtra{}
-
 	err := formUploader.PutFile(context.Background(), &ret, upToken, key, localFilePath, &putExtra)
 	if err != nil {
-		return fmt.Errorf("file upload failed: %v", err)
+		return "", fmt.Errorf("file upload failed: %v", err)
 	}
 	fmt.Printf("File uploaded successfully, key: %s\n", ret.Key)
-	return nil
+
+	url := DownloadFile(key)
+	return url, nil
 }
 
 func DownloadFile(key string) string {

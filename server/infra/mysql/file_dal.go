@@ -11,8 +11,8 @@ import (
 )
 
 type FileDal interface {
-	CreateFileFormLocal(localFilePath string, biz int) (string, error)
-	CreateFileFromForm(fileHeader *multipart.FileHeader, biz int) (string, error)
+	CreateFileFormLocal(localFilePath string, biz int) (int, error)
+	CreateFileFromForm(fileHeader *multipart.FileHeader, biz int) (int, error)
 	DelByKey(key string) error
 
 	GetByKey(key string) (*File, error)
@@ -40,16 +40,16 @@ type File struct {
 	DeletedAt gorm.DeletedAt `json:"deleted_at"`
 }
 
-func (f *fileDal) CreateFileFormLocal(localFilePath string, biz int) (string, error) {
+func (f *fileDal) CreateFileFormLocal(localFilePath string, biz int) (int, error) {
 	uid := uuid.New()
 	// upload oss
-	err := util.UploadFile(localFilePath, uid.String())
+	_, err := util.UploadFile(localFilePath, uid.String())
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 	stat, err := os.Stat(localFilePath)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 
 	// save db
@@ -62,25 +62,25 @@ func (f *fileDal) CreateFileFormLocal(localFilePath string, biz int) (string, er
 	}
 	err = f.db.Save(fil).Error
 	if err != nil {
-		return "", err
+		return 0, err
 	}
-	return uid.String(), nil
+	return fil.Id, nil
 }
 
 // CreateFileFromForm 从表单文件中上传并写入 OSS
-func (f *fileDal) CreateFileFromForm(fileHeader *multipart.FileHeader, biz int) (string, error) {
+func (f *fileDal) CreateFileFromForm(fileHeader *multipart.FileHeader, biz int) (int, error) {
 	uid := uuid.New()
 
 	file, err := fileHeader.Open()
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 	defer file.Close()
 
 	// upload oss
 	err = util.UploadFromReader(file, fileHeader.Size, uid.String())
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 
 	// save db
@@ -93,10 +93,10 @@ func (f *fileDal) CreateFileFromForm(fileHeader *multipart.FileHeader, biz int) 
 	}
 	err = f.db.Save(fil).Error
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 
-	return uid.String(), nil
+	return fil.Id, nil
 }
 
 func (f *fileDal) DelByKey(key string) error {

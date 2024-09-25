@@ -31,10 +31,10 @@ type Music struct {
 	ConcertYear int    `json:"concert_year"`
 	Sequence    int    `json:"sequence"`
 	MvUrl       string `json:"mv_url"`
-	CoverOss    string `json:"cover_oss"`
-	MpOss       string `json:"mp_oss"`
-	LyricOss    string `json:"lyric_oss"`
-	SheetOss    string `json:"sheet_oss"`
+	CoverOss    int    `json:"cover_oss"`
+	MpOss       int    `json:"mp_oss"`
+	LyricOss    int    `json:"lyric_oss"`
+	SheetOss    int    `json:"sheet_oss"`
 
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
