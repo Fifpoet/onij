@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"database/sql"
+	"fmt"
 	"gorm.io/gorm"
 	"time"
 )
@@ -26,7 +27,7 @@ func NewRelayDal(db *gorm.DB) RelayDal {
 
 // Relay .
 // RelayType 为文本, Oss则为其附件. 为文件则Content为标题
-// Password 默认为0, 非0则返回时隐藏内容 只显示内容提示, 由id+pwd获取内容
+// Password 默认为null, 非0则正常不返回
 // ExpireAt 为0则永不过期, 否则为过期时间戳
 // Pin 排序时Pin 为true的优先, 删除时跳过
 type Relay struct {
@@ -45,7 +46,9 @@ type Relay struct {
 
 func (r *relayDal) GetRelayByType(relayType int) ([]*Relay, error) {
 	var rs []*Relay
-	err := r.db.Where("relay_type = ?", relayType).Where("expire_at > ? or expire_at = 0 or expire_at IS NULL", time.Now()).
+	err := r.db.Where("relay_type = ?", relayType).
+		Where("expire_at > ? or expire_at = 0 or expire_at IS NULL", time.Now()).
+		Where("password IS NULL").
 		Order("pin desc").Order("created_at desc").
 		Find(&rs).Error
 	if err != nil {
@@ -69,7 +72,9 @@ func (r *relayDal) DelById(id int) error {
 
 func (r *relayDal) GetByIds(id []int) ([]*Relay, error) {
 	var res []*Relay
-	err := r.db.Where("id in ?", id).Where("expire_at > ? or expire_at = 0 or expire_at IS NULL", time.Now()).
+	err := r.db.Where("id in ?", id).
+		Where("expire_at > ? or expire_at = 0 or expire_at IS NULL", time.Now()).
+		Where("password IS NULL").
 		Order("pin desc").Order("created_at desc").
 		Find(&res).Error
 	if err != nil {
@@ -84,20 +89,21 @@ func (r *relayDal) DelByType(relayType int) error {
 
 func (r *relayDal) GetAndDelRelayByPwd(password int) (*Relay, error) {
 	var res *Relay
-	err := r.db.Where("password = ?", password).Where("expire_at > ? or expire_at = 0 or expire_at IS NULL", time.Now()).
-		Order("pin desc").Order("created_at desc").
-		First(res).Error
+	err := r.db.Where("password = ?", password).First(res).Error
 	if err != nil {
+		fmt.Println("pwd relay not found", err)
 		return nil, err
 	}
 	// update pwd
 	res.Password = nil
 	id, err := r.Save(res)
 	if err != nil {
+		fmt.Println("pwd relay update err", err)
 		return nil, err
 	}
 	err = r.DelById(id)
 	if err != nil {
+		fmt.Println("pwd relay del err", err)
 		return nil, err
 	}
 

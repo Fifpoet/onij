@@ -112,6 +112,7 @@ func GetRelayByPasswordHandler(c *gin.Context) {
 	res, err := logic.NewRelayLogic().GetAndDelRelayByPwd(pwd)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get relay"})
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{"data": res})
 }
