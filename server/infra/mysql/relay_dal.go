@@ -44,9 +44,8 @@ type Relay struct {
 }
 
 func (r *relayDal) GetRelayByType(relayType int) ([]*Relay, error) {
-	now := time.Now().Unix()
 	var rs []*Relay
-	err := r.db.Where("relay_type = ?", relayType).Where("expire_at > ? or expire_at = 0 or expire_at IS NULL", now).
+	err := r.db.Where("relay_type = ?", relayType).Where("expire_at > ? or expire_at = 0 or expire_at IS NULL", time.Now()).
 		Order("pin desc").Order("created_at desc").
 		Find(&rs).Error
 	if err != nil {
@@ -69,9 +68,8 @@ func (r *relayDal) DelById(id int) error {
 }
 
 func (r *relayDal) GetByIds(id []int) ([]*Relay, error) {
-	now := time.Now().Unix()
 	var res []*Relay
-	err := r.db.Where("id in ?", id).Where("expire_at > ? or expire_at = 0 or expire_at IS NULL", now).
+	err := r.db.Where("id in ?", id).Where("expire_at > ? or expire_at = 0 or expire_at IS NULL", time.Now()).
 		Order("pin desc").Order("created_at desc").
 		Find(&res).Error
 	if err != nil {
@@ -86,8 +84,7 @@ func (r *relayDal) DelByType(relayType int) error {
 
 func (r *relayDal) GetAndDelRelayByPwd(password int) (*Relay, error) {
 	var res *Relay
-	now := time.Now().Unix()
-	err := r.db.Where("password = ?", password).Where("expire_at > ? or expire_at = 0 or expire_at IS NULL", now).
+	err := r.db.Where("password = ?", password).Where("expire_at > ? or expire_at = 0 or expire_at IS NULL", time.Now()).
 		Order("pin desc").Order("created_at desc").
 		First(res).Error
 	if err != nil {

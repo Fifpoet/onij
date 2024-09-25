@@ -17,9 +17,15 @@ type UpsertRelayReq struct {
 }
 
 func (u *UpsertRelayReq) ToModel() (*mysql.Relay, *multipart.FileHeader) {
+	var pwd *int
+	if u.Password == 0 {
+		pwd = nil
+	} else {
+		pwd = &u.Password
+	}
 	rl := &mysql.Relay{
 		RelayType: u.RelayType,
-		Password:  &u.Password,
+		Password:  pwd,
 		Content:   u.Content,
 		FileOss:   0,
 		Pin:       false,
