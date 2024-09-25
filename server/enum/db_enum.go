@@ -23,3 +23,9 @@ const (
 	RelayTypeText = 1
 	RelayTypeFile = 2
 )
+
+// MetaCategory
+const (
+	MetaCategory1 = 1
+	MetaCategory2 = 2
+)
