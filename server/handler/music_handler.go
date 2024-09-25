@@ -27,7 +27,10 @@ func UpsertMusicHandler(c *gin.Context) {
 	}
 
 	// 处理文件上传, 没有则忽略
-	req.File, _ = c.FormFile("file")
+	req.Cover, _ = c.FormFile("cover")
+	req.Mp, _ = c.FormFile("mp")
+	req.Lyric, _ = c.FormFile("lyric")
+	req.Sheet, _ = c.FormFile("sheet")
 
 	res, err := logic.NewMusicLogic().Save(req.ToModel())
 	if err != nil {

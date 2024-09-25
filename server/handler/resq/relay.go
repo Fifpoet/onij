@@ -9,6 +9,7 @@ import (
 )
 
 type UpsertRelayReq struct {
+	Id         int                   `form:"id"`
 	RelayType  int                   `form:"relay_type" binding:"required"`
 	Content    string                `form:"content" binding:"required"`
 	Password   int                   `form:"password"`
@@ -24,6 +25,7 @@ func (u *UpsertRelayReq) ToModel() (*mysql.Relay, *multipart.FileHeader) {
 		pwd = &u.Password
 	}
 	rl := &mysql.Relay{
+		Id:        u.Id,
 		RelayType: u.RelayType,
 		Password:  pwd,
 		Content:   u.Content,

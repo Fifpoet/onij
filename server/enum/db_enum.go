@@ -3,7 +3,7 @@ package enum
 // Biz
 const (
 	BizRelay = 1
-	BizMusic
+	BizMusic = 2
 )
 
 // Group

@@ -19,11 +19,11 @@ func TestGetFirstDayScore(t *testing.T) {
 // 同一个key, 如果已存在默认不覆盖
 func TestUploadFile(t *testing.T) {
 	local := "/Users/asen/Documents/swagger在线文档.png"
-	err := util.UploadFile(local, "wy2.jpeg")
+	str, err := util.UploadFile(local, "wy2.jpeg")
 	if err != nil {
 		t.Fatalf("upload file failed %v", err)
 	}
-	t.Log("upload file success")
+	t.Log(str)
 }
 
 func TestDownload(t *testing.T) {

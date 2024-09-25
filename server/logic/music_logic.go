@@ -1,6 +1,7 @@
 package logic
 
 import (
+	"errors"
 	"mime/multipart"
 	"onij/enum"
 	"onij/infra/mysql"
@@ -8,6 +9,8 @@ import (
 
 type MusicLogic interface {
 	Save(music *mysql.Music, cover, mp, lyric, sheet *multipart.FileHeader) (int, error)
+
+	SaveFromDir(music []*mysql.Music, mp, lyric []string) error
 }
 
 type musicLogic struct {
@@ -18,6 +21,7 @@ func NewMusicLogic() MusicLogic {
 }
 
 func (m *musicLogic) Save(music *mysql.Music, cover, mp, lyric, sheet *multipart.FileHeader) (int, error) {
+	// 如果已有文件，删除
 	if cover != nil {
 		if music.CoverOss != 0 {
 			err := app.FileDal.DelById(music.CoverOss)
@@ -56,4 +60,29 @@ func (m *musicLogic) Save(music *mysql.Music, cover, mp, lyric, sheet *multipart
 	}
 
 	return app.MusicDal.Save(music)
+}
+
+func (m *musicLogic) SaveFromDir(music []*mysql.Music, mps, lyrics []string) error {
+	if len(music) != len(mps) || len(music) != len(lyrics) {
+		return errors.New("music, mp, lyric length not match")
+	}
+	for i := 0; i < len(music); i++ {
+		fid, err := app.FileDal.CreateFileFormLocal(mps[i], enum.BizMusic)
+		if err != nil {
+			return err
+		}
+		music[i].MpOss = fid
+		fid, err = app.FileDal.CreateFileFormLocal(lyrics[i], enum.BizMusic)
+		if err != nil {
+			return err
+		}
+		music[i].LyricOss = fid
+
+		_, err = app.MusicDal.Save(music[i])
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

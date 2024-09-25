@@ -26,7 +26,7 @@ type Music struct {
 	Writer      int    `json:"writer"`
 	IssueYear   int    `json:"issue_year"`
 	Language    string `json:"language"`
-	PerformType string `json:"perform_type"`
+	PerformType int    `json:"perform_type"`
 	Instrument  string `json:"instrument"`
 	Concert     string `json:"concert"`
 	ConcertYear int    `json:"concert_year"`
