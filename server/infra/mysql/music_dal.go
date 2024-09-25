@@ -6,6 +6,7 @@ import (
 )
 
 type MusicDal interface {
+	Save(music *Music) (int, error)
 }
 
 type musicDal struct {
@@ -19,8 +20,8 @@ func NewMusicDal(db *gorm.DB) MusicDal {
 type Music struct {
 	Id          int    `json:"id" gorm:"primaryKey;autoIncrement"`
 	RootId      int    `json:"root_id"`
-	Title       string `json:"title"`
-	ArtistIds   string `json:"artist_ids"`
+	Title       string `json:"title" gorm:"not null"`
+	ArtistIds   string `json:"artist_ids" gorm:"not null"`
 	Composer    int    `json:"composer"`
 	Writer      int    `json:"writer"`
 	IssueYear   int    `json:"issue_year"`
@@ -32,11 +33,19 @@ type Music struct {
 	Sequence    int    `json:"sequence"`
 	MvUrl       string `json:"mv_url"`
 	CoverOss    int    `json:"cover_oss"`
-	MpOss       int    `json:"mp_oss"`
-	LyricOss    int    `json:"lyric_oss"`
+	MpOss       int    `json:"mp_oss" gorm:"not null"`
+	LyricOss    int    `json:"lyric_oss" gorm:"not null"`
 	SheetOss    int    `json:"sheet_oss"`
 
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `json:"deleted_at"`
+}
+
+func (m *musicDal) Save(music *Music) (int, error) {
+	err := m.db.Save(music).Error
+	if err != nil {
+		return 0, err
+	}
+	return music.Id, nil
 }

@@ -14,6 +14,7 @@ type FileDal interface {
 	CreateFileFormLocal(localFilePath string, biz int) (int, error)
 	CreateFileFromForm(fileHeader *multipart.FileHeader, biz int) (int, error)
 	DelByKey(key string) error
+	DelById(id int) error
 
 	GetByKey(key string) (*File, error)
 	GetById(id int) (*File, error)
@@ -105,6 +106,17 @@ func (f *fileDal) DelByKey(key string) error {
 		return err
 	}
 	return util.DeleteFile(key)
+}
+func (f *fileDal) DelById(id int) error {
+	fil, err := f.GetById(id)
+	if err != nil {
+		return err
+	}
+	err = f.db.Delete(&File{}, "id = ?", id).Error
+	if err != nil {
+		return err
+	}
+	return util.DeleteFile(fil.Key)
 }
 
 func (f *fileDal) GetByKey(key string) (*File, error) {
