@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-const targetDir = "/Users/asen/Documents/gopath/src/owner/onij/server/static/kuwo"
+const targetDir = "C:\\KwDownload"
 const fileSuffix = ".mp3"
 const lyricsSuffix = ".lrc"
 
