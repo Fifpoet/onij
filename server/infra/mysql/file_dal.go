@@ -3,6 +3,7 @@ package mysql
 import (
 	"errors"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"log"
 	"mime/multipart"
 	"onij/util"
@@ -82,7 +83,7 @@ func (f *fileDal) CreateFileFormLocal(localFilePath string, biz int) (int, error
 		Path: localFilePath,
 		Hash: hash,
 	}
-	err = f.db.Save(newFil).Error
+	err = f.db.Clauses(clause.OnConflict{}).Create(newFil).Error
 	if err != nil {
 		log.Printf("CreateFileFormLocal, save file failed: err = %v \n", err)
 		return 0, err
@@ -130,7 +131,7 @@ func (f *fileDal) CreateFileFromForm(fileHeader *multipart.FileHeader, biz int) 
 		Path: "",
 		Hash: hash,
 	}
-	err = f.db.Save(newFil).Error
+	err = f.db.Clauses(clause.OnConflict{}).Create(newFil).Error
 	if err != nil {
 		log.Printf("CreateFileFromForm, save file failed: err = %v \n", err)
 		return 0, err

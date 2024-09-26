@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"time"
 )
 
@@ -58,7 +59,7 @@ func (r *relayDal) GetRelayByType(relayType int) ([]*Relay, error) {
 }
 
 func (r *relayDal) Save(relay *Relay) (int, error) {
-	err := r.db.Save(relay).Error
+	err := r.db.Clauses(clause.OnConflict{}).Create(relay).Error
 	if err != nil {
 		return 0, err
 	}

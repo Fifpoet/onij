@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"time"
 )
 
@@ -56,7 +57,7 @@ func (m *musicDal) GetById(id int) (*Music, error) {
 }
 
 func (m *musicDal) Save(music *Music) (int, error) {
-	err := m.db.Save(music).Error
+	err := m.db.Clauses(clause.OnConflict{}).Create(music).Error
 	if err != nil {
 		return 0, err
 	}
