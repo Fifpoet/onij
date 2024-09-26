@@ -23,8 +23,8 @@ func NewMusicDal(db *gorm.DB) MusicDal {
 type Music struct {
 	Id          int    `json:"id" gorm:"primaryKey;autoIncrement"`
 	RootId      int    `json:"root_id"`
-	Title       string `json:"title" gorm:"not null"`
-	ArtistIds   string `json:"artist_ids" gorm:"not null"`
+	Title       string `json:"title" gorm:"not null" gorm:"uniqueIndex:uni_idx_music"`
+	ArtistIds   string `json:"artist_ids" gorm:"not null" gorm:"uniqueIndex:uni_idx_music"`
 	Composer    int    `json:"composer"`
 	Writer      int    `json:"writer"`
 	Length      int    `json:"length"`
@@ -32,13 +32,13 @@ type Music struct {
 	Language    string `json:"language"`
 	PerformType int    `json:"perform_type"`
 	Instrument  string `json:"instrument"`
-	Concert     string `json:"concert"`
+	Concert     string `json:"concert" gorm:"uniqueIndex:uni_idx_music"`
 	ConcertYear int    `json:"concert_year"`
 	Sequence    int    `json:"sequence"`
 	MvUrl       string `json:"mv_url"`
 	CoverOss    int    `json:"cover_oss"`
 	MpOss       int    `json:"mp_oss" gorm:"not null"`
-	LyricOss    int    `json:"lyric_oss" gorm:"not null"`
+	LyricOss    int    `json:"lyric_oss"`
 	SheetOss    int    `json:"sheet_oss"`
 
 	CreatedAt time.Time      `json:"created_at"`
