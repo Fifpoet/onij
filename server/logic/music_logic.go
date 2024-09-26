@@ -9,8 +9,9 @@ import (
 
 type MusicLogic interface {
 	Save(music *mysql.Music, cover, mp, lyric, sheet *multipart.FileHeader) (int, error)
-
 	SaveFromDir(music []*mysql.Music, mp, lyric []string) error
+
+	DelById(id int) error
 }
 
 type musicLogic struct {
@@ -87,4 +88,18 @@ func (m *musicLogic) SaveFromDir(music []*mysql.Music, mps, lyrics []string) err
 	}
 
 	return nil
+}
+
+func (m *musicLogic) DelById(id int) error {
+	mus, err := app.MusicDal.DelById(id)
+	if err != nil {
+		return err
+	}
+
+	// del file
+	err = app.FileDal.DelByIds([]int{mus.CoverOss, mus.MpOss, mus.LyricOss, mus.SheetOss})
+	if err != nil {
+		return err
+	}
+
 }

@@ -3,6 +3,7 @@ package util
 import (
 	"context"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/qiniu/go-sdk/v7/auth/qbox"
 	"github.com/qiniu/go-sdk/v7/storage"
 	"mime/multipart"
@@ -21,7 +22,7 @@ func getQiniuMac() *qbox.Mac {
 	return qbox.NewMac(ak, sk)
 }
 
-func UploadFile(localFilePath, key string) (string, error) {
+func UploadFile(localFilePath string) (string, string, error) {
 	putPolicy := storage.PutPolicy{Scope: bk}
 	upToken := putPolicy.UploadToken(getQiniuMac())
 
@@ -34,14 +35,13 @@ func UploadFile(localFilePath, key string) (string, error) {
 	formUploader := storage.NewFormUploader(&cfg)
 	ret := storage.PutRet{}
 	putExtra := storage.PutExtra{}
-	err := formUploader.PutFile(context.Background(), &ret, upToken, key, localFilePath, &putExtra)
+	err := formUploader.PutFile(context.Background(), &ret, upToken, uuid.New().String(), localFilePath, &putExtra)
 	if err != nil {
-		return "", fmt.Errorf("file upload failed: %v", err)
+		return "", "", fmt.Errorf("file upload failed: %v", err)
 	}
 	fmt.Printf("File uploaded successfully, key: %s\n", ret.Key)
 
-	url := DownloadFile(key)
-	return url, nil
+	return ret.Key, ret.Hash, nil
 }
 
 func DownloadFile(key string) string {
@@ -69,7 +69,7 @@ func DeleteFile(key string) error {
 	return nil
 }
 
-func UploadFromReader(file multipart.File, size int64, key string) error {
+func UploadFromReader(file multipart.File, size int64) (string, string, error) {
 	putPolicy := storage.PutPolicy{Scope: bk}
 	upToken := putPolicy.UploadToken(getQiniuMac())
 
@@ -83,10 +83,10 @@ func UploadFromReader(file multipart.File, size int64, key string) error {
 	ret := storage.PutRet{}
 	putExtra := storage.PutExtra{}
 
-	err := formUploader.Put(context.Background(), &ret, upToken, key, file, size, &putExtra)
+	err := formUploader.Put(context.Background(), &ret, upToken, uuid.New().String(), file, size, &putExtra)
 	if err != nil {
-		return fmt.Errorf("file upload failed: %v", err)
+		return "", "", fmt.Errorf("file upload failed: %v", err)
 	}
 	fmt.Printf("File uploaded successfully, key: %s\n", ret.Key)
-	return nil
+	return ret.Key, ret.Hash, nil
 }

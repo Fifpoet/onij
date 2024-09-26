@@ -1,8 +1,8 @@
 package mysql
 
 import (
-	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"log"
 	"mime/multipart"
 	"onij/util"
 	"os"
@@ -14,10 +14,10 @@ type FileDal interface {
 	CreateFileFormLocal(localFilePath string, biz int) (int, error)
 	CreateFileFromForm(fileHeader *multipart.FileHeader, biz int) (int, error)
 	DelByKey(key string) error
-	DelById(id int) error
+	DelByIds(id []int) error
 
 	GetByKey(key string) (*File, error)
-	GetById(id int) (*File, error)
+	GetByIds(ids []int) ([]*File, error)
 }
 
 type fileDal struct {
@@ -28,6 +28,10 @@ func NewFileDal(db *gorm.DB) FileDal {
 	return &fileDal{db: db}
 }
 
+// File .
+// Key 为uuid, Hash为文件哈希值. upload接口返回
+// 插入时有Hash相同的文件则 直接返回对应信息
+// Path 不为空则代表本地文件路径
 type File struct {
 	Id   int    `json:"id" gorm:"primaryKey;autoIncrement"`
 	Name string `json:"name"`
@@ -35,6 +39,7 @@ type File struct {
 	Biz  int    `json:"biz"`
 	Size int    `json:"size"`
 	Path string `json:"path"`
+	Hash string `json:"hash"`
 
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
@@ -42,27 +47,30 @@ type File struct {
 }
 
 func (f *fileDal) CreateFileFormLocal(localFilePath string, biz int) (int, error) {
-	uid := uuid.New()
 	// upload oss
-	_, err := util.UploadFile(localFilePath, uid.String())
+	key, hash, err := util.UploadFile(localFilePath)
 	if err != nil {
+		log.Printf("upload file failed: err = %v \n", err)
 		return 0, err
 	}
 	stat, err := os.Stat(localFilePath)
 	if err != nil {
+		log.Printf("get stat file failed: err = %v \n", err)
 		return 0, err
 	}
 
 	// save db
 	fil := &File{
 		Name: filepath.Base(localFilePath),
-		Key:  uid.String(),
+		Key:  key,
 		Biz:  biz,
 		Size: int(stat.Size()),
 		Path: localFilePath,
+		Hash: hash,
 	}
 	err = f.db.Save(fil).Error
 	if err != nil {
+		log.Printf("save file failed: err = %v \n", err)
 		return 0, err
 	}
 	return fil.Id, nil
@@ -70,8 +78,6 @@ func (f *fileDal) CreateFileFormLocal(localFilePath string, biz int) (int, error
 
 // CreateFileFromForm 从表单文件中上传并写入 OSS
 func (f *fileDal) CreateFileFromForm(fileHeader *multipart.FileHeader, biz int) (int, error) {
-	uid := uuid.New()
-
 	file, err := fileHeader.Open()
 	if err != nil {
 		return 0, err
@@ -79,7 +85,7 @@ func (f *fileDal) CreateFileFromForm(fileHeader *multipart.FileHeader, biz int) 
 	defer file.Close()
 
 	// upload oss
-	err = util.UploadFromReader(file, fileHeader.Size, uid.String())
+	key, hash, err := util.UploadFromReader(file, fileHeader.Size)
 	if err != nil {
 		return 0, err
 	}
@@ -87,10 +93,11 @@ func (f *fileDal) CreateFileFromForm(fileHeader *multipart.FileHeader, biz int) 
 	// save db
 	fil := &File{
 		Name: fileHeader.Filename,
-		Key:  uid.String(),
+		Key:  key,
 		Biz:  biz,
 		Size: int(fileHeader.Size),
 		Path: "",
+		Hash: hash,
 	}
 	err = f.db.Save(fil).Error
 	if err != nil {
@@ -107,16 +114,22 @@ func (f *fileDal) DelByKey(key string) error {
 	}
 	return util.DeleteFile(key)
 }
-func (f *fileDal) DelById(id int) error {
-	fil, err := f.GetById(id)
+func (f *fileDal) DelByIds(ids []int) error {
+	fs, err := f.GetByIds(ids)
 	if err != nil {
 		return err
 	}
-	err = f.db.Delete(&File{}, "id = ?", id).Error
+	err = f.db.Delete(&File{}, "id = ?", ids).Error
 	if err != nil {
 		return err
 	}
-	return util.DeleteFile(fil.Key)
+	for _, fil := range fs {
+		err = util.DeleteFile(fil.Key)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (f *fileDal) GetByKey(key string) (*File, error) {
@@ -128,9 +141,9 @@ func (f *fileDal) GetByKey(key string) (*File, error) {
 	return res, nil
 }
 
-func (f *fileDal) GetById(id int) (*File, error) {
-	res := &File{}
-	err := f.db.Where("id = ?", id).First(res).Error
+func (f *fileDal) GetByIds(ids []int) ([]*File, error) {
+	var res []*File
+	err := f.db.Where("id = ?", ids).First(res).Error
 	if err != nil {
 		return nil, err
 	}

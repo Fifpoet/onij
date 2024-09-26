@@ -6,7 +6,10 @@ import (
 )
 
 type MusicDal interface {
+	GetById(id int) (*Music, error)
+
 	Save(music *Music) (int, error)
+	DelById(id int) (*Music, error)
 }
 
 type musicDal struct {
@@ -43,10 +46,32 @@ type Music struct {
 	DeletedAt gorm.DeletedAt `json:"deleted_at"`
 }
 
+func (m *musicDal) GetById(id int) (*Music, error) {
+	var music Music
+	err := m.db.First(&music, "id = ?", id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &music, nil
+}
+
 func (m *musicDal) Save(music *Music) (int, error) {
 	err := m.db.Save(music).Error
 	if err != nil {
 		return 0, err
 	}
 	return music.Id, nil
+}
+
+func (m *musicDal) DelById(id int) (*Music, error) {
+	mus, err := m.GetById(id)
+	if err != nil {
+		return nil, err
+	}
+
+	err = m.db.Delete(&Music{}, "id = ?", id).Error
+	if err != nil {
+		return nil, err
+	}
+	return mus, nil
 }
