@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-const targetDir = "C:\\KwDownload\\song\\tmp"
+const targetDir = "C:\\KwDownload\\song"
 const fileSuffix = ".mp3"
 const lyricsSuffix = ".lrc"
 
@@ -38,9 +38,7 @@ func main() {
 
 		fileName := filepath.Base(mp3File)
 		tmp := strings.Split(fileName, ".")
-		split := strings.Split(tmp[0], "-")
-		singer := split[0]
-		songName := split[1]
+		singer, songName, _ := strings.Cut(tmp[0], "-")
 
 		// 构建歌词文件路径
 		lyricsFile := strings.Replace(mp3File, ".mp3", ".lrc", -1)
@@ -79,7 +77,7 @@ func findMP3Files(root string) ([]string, error) {
 	var mp3Files []string
 
 	// 定义正则表达式，用于匹配 "singer-name" 的文件名结构
-	re := regexp.MustCompile(`^[\p{Han}a-zA-Z]+-[\p{Han}a-zA-Z]+\.mp3$`)
+	re := regexp.MustCompile(`^.+-.+\.mp3$`)
 
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
