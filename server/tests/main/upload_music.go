@@ -37,7 +37,8 @@ func main() {
 		}
 
 		fileName := filepath.Base(mp3File)
-		split := strings.Split(fileName, "-")
+		tmp := strings.Split(fileName, ".")
+		split := strings.Split(tmp[0], "-")
 		singer := split[0]
 		songName := split[1]
 
