@@ -1,6 +1,7 @@
 package mysql
 
 import (
+	"errors"
 	"gorm.io/gorm"
 	"log"
 	"mime/multipart"
@@ -175,6 +176,9 @@ func (f *fileDal) GetByKey(key string) (*File, error) {
 func (f *fileDal) GetByHash(hash string) (*File, error) {
 	res := &File{}
 	err := f.db.Where("hash = ?", hash).First(res).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	if err != nil {
 		log.Printf("GetByHash, get file failed: err = %v \n", err)
 		return nil, err
