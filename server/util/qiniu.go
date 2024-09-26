@@ -2,10 +2,12 @@ package util
 
 import (
 	"context"
+	"crypto/md5"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/qiniu/go-sdk/v7/auth/qbox"
 	"github.com/qiniu/go-sdk/v7/storage"
+	"io"
 	"log"
 	"mime/multipart"
 	"os"
@@ -23,7 +25,7 @@ func getQiniuMac() *qbox.Mac {
 	return qbox.NewMac(ak, sk)
 }
 
-func UploadFile(localFilePath string) (string, string, error) {
+func UploadFile(localFilePath string) (string, error) {
 	putPolicy := storage.PutPolicy{Scope: bk}
 	upToken := putPolicy.UploadToken(getQiniuMac())
 
@@ -39,11 +41,10 @@ func UploadFile(localFilePath string) (string, string, error) {
 	err := formUploader.PutFile(context.Background(), &ret, upToken, uuid.New().String(), localFilePath, &putExtra)
 	if err != nil {
 		log.Printf("UploadFile, upload file failed: err = %v \n", err)
-		return "", "", fmt.Errorf("file upload failed: %v", err)
+		return "", fmt.Errorf("file upload failed: %v", err)
 	}
 	fmt.Printf("File uploaded successfully, key: %s; hash: %s \n", ret.Key, ret.Hash)
-
-	return ret.Key, ret.Hash, nil
+	return ret.Key, nil
 }
 
 func DownloadFile(key string) string {
@@ -72,7 +73,8 @@ func DeleteFile(key string) error {
 	return nil
 }
 
-func UploadFromReader(file multipart.File, size int64) (string, string, error) {
+func UploadFromReader(file multipart.File, size int64) (string, error) {
+
 	putPolicy := storage.PutPolicy{Scope: bk}
 	upToken := putPolicy.UploadToken(getQiniuMac())
 
@@ -89,8 +91,33 @@ func UploadFromReader(file multipart.File, size int64) (string, string, error) {
 	err := formUploader.Put(context.Background(), &ret, upToken, uuid.New().String(), file, size, &putExtra)
 	if err != nil {
 		log.Printf("UploadFromReader, upload file failed: err = %v \n", err)
-		return "", "", fmt.Errorf("file upload failed: %v", err)
+		return "", fmt.Errorf("file upload failed: %v", err)
 	}
 	fmt.Printf("File uploaded successfully, key: %s\n", ret.Key)
-	return ret.Key, ret.Hash, nil
+	return ret.Key, nil
+}
+
+func GetLocalFileHash(localFilePath string) (string, error) {
+	file, err := os.Open(localFilePath)
+	if err != nil {
+		log.Printf("GetLocalFileHash, open file failed: err = %v \n", err)
+		return "", err
+	}
+	defer file.Close()
+
+	hash := md5.New()
+	if _, err := io.Copy(hash, file); err != nil {
+		log.Printf("GetLocalFileHash, copy file failed: err = %v \n", err)
+		return "", err
+	}
+	return fmt.Sprintf("%x", hash.Sum(nil)), nil
+}
+
+func GetFileHash(file multipart.File) (string, error) {
+	hash := md5.New()
+	if _, err := io.Copy(hash, file); err != nil {
+		log.Printf("GetFileHash, copy file failed: err = %v \n", err)
+		return "", err
+	}
+	return fmt.Sprintf("%x", hash.Sum(nil)), nil
 }

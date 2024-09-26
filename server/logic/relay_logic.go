@@ -30,11 +30,8 @@ func (r *relayLogic) GetRelayByType(relayType int) (res []*mysql.Relay, err erro
 }
 
 func (r *relayLogic) DelById(id int) (int, error) {
-	err := app.FileDal.DelById(id)
-	if err != nil {
-		return 0, err
-	}
-	return 1, app.RelayDal.DelById(id)
+	// TODO
+	return 0, nil
 }
 
 func (r *relayLogic) Save(relay *mysql.Relay, file *multipart.FileHeader) (int, error) {

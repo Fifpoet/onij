@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-const targetDir = "C:\\KwDownload"
+const targetDir = "/Users/asen/Downloads"
 const fileSuffix = ".mp3"
 const lyricsSuffix = ".lrc"
 
