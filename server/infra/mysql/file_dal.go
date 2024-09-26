@@ -87,7 +87,7 @@ func (f *fileDal) CreateFileFormLocal(localFilePath string, biz int) (int, error
 		log.Printf("CreateFileFormLocal, save file failed: err = %v \n", err)
 		return 0, err
 	}
-	return fil.Id, nil
+	return newFil.Id, nil
 }
 
 // CreateFileFromForm 从表单文件中上传并写入 OSS
@@ -136,7 +136,7 @@ func (f *fileDal) CreateFileFromForm(fileHeader *multipart.FileHeader, biz int) 
 		return 0, err
 	}
 
-	return fil.Id, nil
+	return newFil.Id, nil
 }
 
 func (f *fileDal) DelByKey(key string) (*File, error) {
