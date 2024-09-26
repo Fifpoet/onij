@@ -13,8 +13,8 @@ import (
 type FileDal interface {
 	CreateFileFormLocal(localFilePath string, biz int) (int, error)
 	CreateFileFromForm(fileHeader *multipart.FileHeader, biz int) (int, error)
-	DelByKey(key string) error
-	DelByIds(id []int) error
+	DelByKey(key string) (*File, error)
+	DelByIds(id []int) ([]*File, error)
 
 	GetByKey(key string) (*File, error)
 	GetByIds(ids []int) ([]*File, error)
@@ -39,7 +39,7 @@ type File struct {
 	Biz  int    `json:"biz"`
 	Size int    `json:"size"`
 	Path string `json:"path"`
-	Hash string `json:"hash"`
+	Hash string `json:"hash"  gorm:"unique"`
 
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
@@ -50,12 +50,11 @@ func (f *fileDal) CreateFileFormLocal(localFilePath string, biz int) (int, error
 	// upload oss
 	key, hash, err := util.UploadFile(localFilePath)
 	if err != nil {
-		log.Printf("upload file failed: err = %v \n", err)
 		return 0, err
 	}
 	stat, err := os.Stat(localFilePath)
 	if err != nil {
-		log.Printf("get stat file failed: err = %v \n", err)
+		log.Printf("CreateFileFormLocal, get stat file failed: err = %v \n", err)
 		return 0, err
 	}
 
@@ -70,7 +69,7 @@ func (f *fileDal) CreateFileFormLocal(localFilePath string, biz int) (int, error
 	}
 	err = f.db.Save(fil).Error
 	if err != nil {
-		log.Printf("save file failed: err = %v \n", err)
+		log.Printf("CreateFileFormLocal, save file failed: err = %v \n", err)
 		return 0, err
 	}
 	return fil.Id, nil
@@ -80,6 +79,7 @@ func (f *fileDal) CreateFileFormLocal(localFilePath string, biz int) (int, error
 func (f *fileDal) CreateFileFromForm(fileHeader *multipart.FileHeader, biz int) (int, error) {
 	file, err := fileHeader.Open()
 	if err != nil {
+		log.Printf("CreateFileFromForm, open file failed: err = %v \n", err)
 		return 0, err
 	}
 	defer file.Close()
@@ -101,41 +101,43 @@ func (f *fileDal) CreateFileFromForm(fileHeader *multipart.FileHeader, biz int) 
 	}
 	err = f.db.Save(fil).Error
 	if err != nil {
+		log.Printf("CreateFileFromForm, save file failed: err = %v \n", err)
 		return 0, err
 	}
 
 	return fil.Id, nil
 }
 
-func (f *fileDal) DelByKey(key string) error {
-	err := f.db.Delete(&File{}, "key = ?", key).Error
+func (f *fileDal) DelByKey(key string) (*File, error) {
+	res, err := f.GetByKey(key)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return util.DeleteFile(key)
-}
-func (f *fileDal) DelByIds(ids []int) error {
-	fs, err := f.GetByIds(ids)
+	err = f.db.Delete(&File{}, "key = ?", key).Error
 	if err != nil {
-		return err
+		log.Printf("DelByKey, delete file failed: err = %v \n", err)
+		return res, err
+	}
+	return res, nil
+}
+func (f *fileDal) DelByIds(ids []int) ([]*File, error) {
+	res, err := f.GetByIds(ids)
+	if err != nil {
+		return nil, err
 	}
 	err = f.db.Delete(&File{}, "id = ?", ids).Error
 	if err != nil {
-		return err
+		log.Printf("DelByIds, delete file failed: err = %v \n", err)
+		return res, err
 	}
-	for _, fil := range fs {
-		err = util.DeleteFile(fil.Key)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	return res, nil
 }
 
 func (f *fileDal) GetByKey(key string) (*File, error) {
 	res := &File{}
 	err := f.db.Where("key = ?", key).First(res).Error
 	if err != nil {
+		log.Printf("GetByKey, get file failed: err = %v \n", err)
 		return nil, err
 	}
 	return res, nil
@@ -145,6 +147,7 @@ func (f *fileDal) GetByIds(ids []int) ([]*File, error) {
 	var res []*File
 	err := f.db.Where("id = ?", ids).First(res).Error
 	if err != nil {
+		log.Printf("GetByIds, get file failed: err = %v \n", err)
 		return nil, err
 	}
 	return res, nil

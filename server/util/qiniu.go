@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/qiniu/go-sdk/v7/auth/qbox"
 	"github.com/qiniu/go-sdk/v7/storage"
+	"log"
 	"mime/multipart"
 	"os"
 	"time"
@@ -37,9 +38,10 @@ func UploadFile(localFilePath string) (string, string, error) {
 	putExtra := storage.PutExtra{}
 	err := formUploader.PutFile(context.Background(), &ret, upToken, uuid.New().String(), localFilePath, &putExtra)
 	if err != nil {
+		log.Printf("UploadFile, upload file failed: err = %v \n", err)
 		return "", "", fmt.Errorf("file upload failed: %v", err)
 	}
-	fmt.Printf("File uploaded successfully, key: %s\n", ret.Key)
+	fmt.Printf("File uploaded successfully, key: %s; hash: %s \n", ret.Key, ret.Hash)
 
 	return ret.Key, ret.Hash, nil
 }
@@ -63,6 +65,7 @@ func DeleteFile(key string) error {
 
 	err := bucketManager.Delete(bk, key)
 	if err != nil {
+		log.Printf("DeleteFile, delete file failed: err = %v \n", err)
 		return fmt.Errorf("file deletion failed: %v", err)
 	}
 	fmt.Println("File deleted successfully.")
@@ -85,6 +88,7 @@ func UploadFromReader(file multipart.File, size int64) (string, string, error) {
 
 	err := formUploader.Put(context.Background(), &ret, upToken, uuid.New().String(), file, size, &putExtra)
 	if err != nil {
+		log.Printf("UploadFromReader, upload file failed: err = %v \n", err)
 		return "", "", fmt.Errorf("file upload failed: %v", err)
 	}
 	fmt.Printf("File uploaded successfully, key: %s\n", ret.Key)
