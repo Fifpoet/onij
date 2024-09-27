@@ -24,37 +24,47 @@ func uploadMeta() {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
-		parts := strings.Fields(line) // 按空格拆分行数据
-		if len(parts) < 2 {
+		line = strings.TrimSpace(line)
+		if len(line) == 0 {
+			continue
+		}
+
+		// 将行拆分为 MetaEnumCode 和剩余的部分
+		parts := strings.SplitN(line, " ", 2)
+		if len(parts) != 2 {
 			fmt.Println("Invalid line format:", line)
 			continue
 		}
 
-		// 解析MetaEnumCode
-		metaEnumCode, err := strconv.Atoi(parts[0])
+		metaEnumCodeStr := parts[0]
+		valueNameStr := parts[1]
+
+		// 解析 MetaEnumCode
+		metaEnumCode, err := strconv.Atoi(metaEnumCodeStr)
 		if err != nil {
-			fmt.Println("Failed to parse MetaEnumCode:", parts[0])
+			fmt.Println("Failed to parse MetaEnumCode:", metaEnumCodeStr)
 			continue
 		}
 
-		// 解析后续的Value和Name
+		// 将剩余的部分按逗号分隔
+		valueNameList := strings.Split(valueNameStr, ",")
+		if len(valueNameList)%2 != 0 {
+			fmt.Println("Invalid value,name pairs in line:", line)
+			continue
+		}
+
 		var metas []*mysql.Meta
-		for i := 1; i < len(parts); i++ {
-			valueNamePairs := strings.Split(parts[i], ",")
-			if len(valueNamePairs) != 2 {
-				fmt.Println("Invalid value,name format:", parts[i])
-				continue
-			}
+		for i := 0; i < len(valueNameList); i += 2 {
+			valueStr := valueNameList[i]
+			name := valueNameList[i+1]
 
-			value, err := strconv.Atoi(valueNamePairs[0])
+			value, err := strconv.Atoi(valueStr)
 			if err != nil {
-				fmt.Println("Failed to parse Value:", valueNamePairs[0])
+				fmt.Println("Failed to parse Value:", valueStr)
 				continue
 			}
-			// Name直接取
-			name := valueNamePairs[1]
 
-			// 构建Meta对象
+			// 构建 Meta 对象
 			meta := mysql.Meta{
 				MetaEnumCode: metaEnumCode,
 				Value:        value,
@@ -64,6 +74,7 @@ func uploadMeta() {
 			}
 			metas = append(metas, &meta)
 		}
+
 		err = logic.NewLocalLogic().SaveMeta(metas)
 		if err != nil {
 			fmt.Println("Failed to save meta:", err)
