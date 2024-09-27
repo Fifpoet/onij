@@ -41,7 +41,9 @@ func (m *metaDal) GetByMetaEnumCode(metaEnumCode int) ([]*Meta, error) {
 }
 
 func (m *metaDal) Save(metas []*Meta) error {
-	err := m.db.Clauses(clause.OnConflict{}).Create(metas).Error
+	err := m.db.Clauses(clause.OnConflict{
+		UpdateAll: true,
+	}).Create(metas).Error
 	if err != nil {
 		log.Printf("Save, save meta err: %v", err)
 		return err

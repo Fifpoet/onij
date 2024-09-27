@@ -21,6 +21,10 @@ type UpsertMusicReq struct {
 	ConcertYear int                   `json:"concert_year"`
 	Sequence    int                   `json:"sequence"`
 	MvUrl       string                `json:"mv_url"`
+	CoverOss    int                   `json:"cover_oss"`
+	MpOss       int                   `json:"mp_oss" gorm:"not null"`
+	LyricOss    int                   `json:"lyric_oss"`
+	SheetOss    int                   `json:"sheet_oss"`
 	Cover       *multipart.FileHeader `json:"cover"`
 	Mp          *multipart.FileHeader `json:"mp"`
 	Lyric       *multipart.FileHeader `json:"lyric"`
@@ -43,5 +47,9 @@ func (u *UpsertMusicReq) ToModel() (m *mysql.Music, cover, mp, lyric, sheet *mul
 		ConcertYear: u.ConcertYear,
 		Sequence:    u.Sequence,
 		MvUrl:       u.MvUrl,
+		CoverOss:    u.CoverOss,
+		MpOss:       u.MpOss,
+		LyricOss:    u.LyricOss,
+		SheetOss:    u.SheetOss,
 	}, u.Cover, u.Mp, u.Lyric, u.Sheet
 }

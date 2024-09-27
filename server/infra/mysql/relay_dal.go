@@ -59,7 +59,9 @@ func (r *relayDal) GetRelayByType(relayType int) ([]*Relay, error) {
 }
 
 func (r *relayDal) Save(relay *Relay) (int, error) {
-	err := r.db.Clauses(clause.OnConflict{}).Create(relay).Error
+	err := r.db.Clauses(clause.OnConflict{
+		UpdateAll: true,
+	}).Create(relay).Error
 	if err != nil {
 		return 0, err
 	}

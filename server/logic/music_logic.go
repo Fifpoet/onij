@@ -21,28 +21,36 @@ func NewMusicLogic() MusicLogic {
 // Save .
 // 这里如果原始文件已存在, 则fileDal校验hash后返回原id
 func (m *musicLogic) Save(music *mysql.Music, cover, mp, lyric, sheet *multipart.FileHeader) (int, error) {
-	// 处理文件
+	// 如果上传文件成功, 则为覆盖场景, 更新model
 	var err error
 	cov, err := app.FileDal.CreateFileFromForm(cover, enum.BizMusic)
 	if err != nil {
 		return 0, err
 	}
-	music.CoverOss = cov
+	if cov != 0 {
+		music.CoverOss = cov
+	}
 	mpo, err := app.FileDal.CreateFileFromForm(mp, enum.BizMusic)
 	if err != nil {
 		return 0, err
 	}
-	music.MpOss = mpo
+	if mpo != 0 {
+		music.MpOss = mpo
+	}
 	lrc, err := app.FileDal.CreateFileFromForm(lyric, enum.BizMusic)
 	if err != nil {
 		return 0, err
 	}
-	music.LyricOss = lrc
+	if lrc != 0 {
+		music.LyricOss = lrc
+	}
 	sht, err := app.FileDal.CreateFileFromForm(sheet, enum.BizMusic)
 	if err != nil {
 		return 0, err
 	}
-	music.SheetOss = sht
+	if sht != 0 {
+		music.SheetOss = sht
+	}
 
 	return app.MusicDal.Save(music)
 }

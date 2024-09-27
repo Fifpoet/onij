@@ -57,7 +57,9 @@ func (m *musicDal) GetById(id int) (*Music, error) {
 }
 
 func (m *musicDal) Save(music *Music) (int, error) {
-	err := m.db.Clauses(clause.OnConflict{}).Create(music).Error
+	err := m.db.Clauses(clause.OnConflict{
+		UpdateAll: true,
+	}).Create(music).Error
 	if err != nil {
 		return 0, err
 	}

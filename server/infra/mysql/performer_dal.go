@@ -49,7 +49,9 @@ func (s *performerDal) GetByName(name string) ([]*Performer, error) {
 }
 
 func (s *performerDal) Save(performer *Performer) (int, error) {
-	err := s.db.Clauses(clause.OnConflict{}).Create(performer).Error
+	err := s.db.Clauses(clause.OnConflict{
+		UpdateAll: true,
+	}).Create(performer).Error
 	if err != nil {
 		return 0, err
 	}
