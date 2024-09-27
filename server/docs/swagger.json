@@ -4,7 +4,38 @@
         "contact": {}
     },
     "paths": {
-        "/password/{pwd}": {
+        "/music/upsert": {
+            "post": {
+                "description": "获取用户详细信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户"
+                ],
+                "summary": "插入或更新music",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/relay/password/{pwd}": {
             "get": {
                 "description": "获取用户详细信息",
                 "consumes": [
@@ -44,7 +75,7 @@
                 }
             }
         },
-        "/pin/{id}": {
+        "/relay/pin/{id}": {
             "get": {
                 "description": "获取用户详细信息",
                 "consumes": [
@@ -84,7 +115,7 @@
                 }
             }
         },
-        "/type/{type}": {
+        "/relay/type/{type}": {
             "get": {
                 "description": "获取用户详细信息",
                 "consumes": [
@@ -124,7 +155,7 @@
                 }
             }
         },
-        "/upsert": {
+        "/relay/upsert": {
             "post": {
                 "description": "获取用户详细信息",
                 "consumes": [
@@ -155,7 +186,7 @@
                 }
             }
         },
-        "/{id}": {
+        "/relay/{id}": {
             "delete": {
                 "description": "获取用户详细信息",
                 "consumes": [

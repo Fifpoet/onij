@@ -15,7 +15,38 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/password/{pwd}": {
+        "/music/upsert": {
+            "post": {
+                "description": "获取用户详细信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户"
+                ],
+                "summary": "插入或更新music",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/relay/password/{pwd}": {
             "get": {
                 "description": "获取用户详细信息",
                 "consumes": [
@@ -55,7 +86,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/pin/{id}": {
+        "/relay/pin/{id}": {
             "get": {
                 "description": "获取用户详细信息",
                 "consumes": [
@@ -95,7 +126,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/type/{type}": {
+        "/relay/type/{type}": {
             "get": {
                 "description": "获取用户详细信息",
                 "consumes": [
@@ -135,7 +166,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/upsert": {
+        "/relay/upsert": {
             "post": {
                 "description": "获取用户详细信息",
                 "consumes": [
@@ -166,7 +197,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/{id}": {
+        "/relay/{id}": {
             "delete": {
                 "description": "获取用户详细信息",
                 "consumes": [

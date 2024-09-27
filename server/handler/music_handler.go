@@ -15,7 +15,7 @@ import (
 // @Produce  json
 // @Success 200 {object} map[string]interface{}
 // @Failure 400 {object} map[string]interface{}
-// @Router /upsert [post]
+// @Router /music/upsert [post]
 func UpsertMusicHandler(c *gin.Context) {
 	var req resq.UpsertMusicReq
 	var err error

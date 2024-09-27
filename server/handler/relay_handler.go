@@ -17,7 +17,7 @@ import (
 // @Param   type     path    int     true        "用户ID"
 // @Success 200 {object} map[string]interface{}
 // @Failure 400 {object} map[string]interface{}
-// @Router /type/{type} [get]
+// @Router /relay/type/{type} [get]
 func GetRelayHandler(c *gin.Context) {
 	typ := util.GetInt(c, "type")
 	res, err := logic.NewRelayLogic().GetRelayByType(typ)
@@ -37,7 +37,7 @@ func GetRelayHandler(c *gin.Context) {
 // @Param   id     path    int     true        "用户ID"
 // @Success 200 {object} map[string]interface{}
 // @Failure 400 {object} map[string]interface{}
-// @Router /pin/{id} [get]
+// @Router /relay/pin/{id} [get]
 func PinRelayHandler(c *gin.Context) {
 	id := util.GetInt(c, "id")
 	res, err := logic.NewRelayLogic().PinRelay(id)
@@ -57,7 +57,7 @@ func PinRelayHandler(c *gin.Context) {
 // @Param   id     path    int     true        "用户ID"
 // @Success 200 {object} map[string]interface{}
 // @Failure 400 {object} map[string]interface{}
-// @Router /{id} [delete]
+// @Router /relay/{id} [delete]
 func DelRelayByIdHandler(c *gin.Context) {
 	id := util.GetInt(c, "id")
 	res, err := logic.NewRelayLogic().DelById(id)
@@ -75,7 +75,7 @@ func DelRelayByIdHandler(c *gin.Context) {
 // @Produce  json
 // @Success 200 {object} map[string]interface{}
 // @Failure 400 {object} map[string]interface{}
-// @Router /upsert [post]
+// @Router /relay/upsert [post]
 func UpsertRelayHandler(c *gin.Context) {
 	var req resq.UpsertRelayReq
 	var err error
@@ -106,7 +106,7 @@ func UpsertRelayHandler(c *gin.Context) {
 // @Param   pwd     path    int     true        "用户ID"
 // @Success 200 {object} map[string]interface{}
 // @Failure 400 {object} map[string]interface{}
-// @Router /password/{pwd} [get]
+// @Router /relay/password/{pwd} [get]
 func GetRelayByPasswordHandler(c *gin.Context) {
 	pwd := util.GetInt(c, "pwd")
 	res, err := logic.NewRelayLogic().GetAndDelRelayByPwd(pwd)

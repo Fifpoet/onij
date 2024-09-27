@@ -1,7 +1,28 @@
 info:
   contact: {}
 paths:
-  /{id}:
+  /music/upsert:
+    post:
+      consumes:
+      - application/json
+      description: 获取用户详细信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 插入或更新music
+      tags:
+      - 用户
+  /relay/{id}:
     delete:
       consumes:
       - application/json
@@ -28,7 +49,7 @@ paths:
       summary: 根据id删除relay
       tags:
       - 用户
-  /password/{pwd}:
+  /relay/password/{pwd}:
     get:
       consumes:
       - application/json
@@ -55,7 +76,7 @@ paths:
       summary: 根据password获取relay
       tags:
       - 用户
-  /pin/{id}:
+  /relay/pin/{id}:
     get:
       consumes:
       - application/json
@@ -82,7 +103,7 @@ paths:
       summary: 固定某个relay
       tags:
       - 用户
-  /type/{type}:
+  /relay/type/{type}:
     get:
       consumes:
       - application/json
@@ -109,7 +130,7 @@ paths:
       summary: 根据relayType获取relay列表
       tags:
       - 用户
-  /upsert:
+  /relay/upsert:
     post:
       consumes:
       - application/json
