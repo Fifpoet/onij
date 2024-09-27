@@ -8,7 +8,7 @@ import (
 
 type UpsertMusicReq struct {
 	Id          int                   `json:"id"`
-	RootId      int                   `json:"music_id"`
+	RootId      int                   `json:"root_id"`
 	Title       string                `json:"title"`
 	ArtistIds   []int                 `json:"artist_ids"`
 	Composer    int                   `json:"composer"`
