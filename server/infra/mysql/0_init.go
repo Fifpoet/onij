@@ -12,7 +12,7 @@ import (
 
 func NewMysqlCli() *gorm.DB {
 	ip := os.Getenv("ip")
-	mysqlPwd := os.Getenv("m-pwd")
+	mysqlPwd := os.Getenv("mypwd")
 	dsn := "root:%s@tcp(%s:3306)/footprint?charset=utf8mb4&parseTime=True&loc=Local"
 	var err error
 	Db, err := gorm.Open(mysql.New(mysql.Config{
