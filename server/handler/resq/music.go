@@ -14,9 +14,9 @@ type UpsertMusicReq struct {
 	Composer    int                   `json:"composer"`
 	Writer      int                   `json:"writer"`
 	IssueYear   int                   `json:"issue_year"`
-	Language    string                `json:"language"`
+	Language    int                   `json:"language"`
 	PerformType int                   `json:"perform_type"`
-	Instrument  string                `json:"instrument"`
+	Instrument  int                   `json:"instrument"`
 	Concert     string                `json:"concert"`
 	ConcertYear int                   `json:"concert_year"`
 	Sequence    int                   `json:"sequence"`

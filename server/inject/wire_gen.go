@@ -15,18 +15,18 @@ import (
 // Injectors from wire.go:
 
 func InitializeApp() *App {
-	db := mysql.NewMysqlCli()
-	todDal := mysql.NewTodDal(db)
 	tagDal := mysql.NewTagDal()
+	db := mysql.NewMysqlCli()
 	relayDal := mysql.NewRelayDal(db)
 	fileDal := mysql.NewFileDal(db)
 	musicDal := mysql.NewMusicDal(db)
+	metaDal := mysql.NewMetaDal(db)
 	allInfra := &infra.AllInfra{
-		TodDal:   todDal,
 		TagDal:   tagDal,
 		RelayDal: relayDal,
 		FileDal:  fileDal,
 		MusicDal: musicDal,
+		MetaDal:  metaDal,
 	}
 	app := &App{
 		AllInfra: allInfra,
@@ -36,7 +36,7 @@ func InitializeApp() *App {
 
 // wire.go:
 
-var infraSet = wire.NewSet(mysql.NewMysqlCli, mysql.NewTagDal, mysql.NewTodDal, mysql.NewRelayDal, mysql.NewFileDal, mysql.NewMusicDal, wire.Struct(new(infra.AllInfra), "*"))
+var infraSet = wire.NewSet(mysql.NewMysqlCli, mysql.NewTagDal, mysql.NewRelayDal, mysql.NewFileDal, mysql.NewMusicDal, mysql.NewMetaDal, wire.Struct(new(infra.AllInfra), "*"))
 
 var allSet = wire.NewSet(
 	infraSet, wire.Struct(new(App), "*"),

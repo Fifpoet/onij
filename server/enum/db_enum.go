@@ -18,14 +18,11 @@ const ()
 // TargetType
 const ()
 
-// RelayType
+// MetaEnumCode
 const (
-	RelayTypeText = 1
-	RelayTypeFile = 2
-)
-
-// MetaCategory
-const (
-	MetaCategory1 = 1
-	MetaCategory2 = 2
+	EnumCodeRelayType        = 1
+	EnumCodeMusicPerformType = 2
+	EnumCodeMusicInstrument  = 3
+	EnumCodeMusicLanguage    = 4
+	EnumCodePerformerType    = 5
 )

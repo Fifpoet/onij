@@ -30,9 +30,9 @@ type Music struct {
 	Writer      int    `json:"writer"`
 	Length      int    `json:"length"`
 	IssueYear   int    `json:"issue_year"`
-	Language    string `json:"language"`
+	Language    int    `json:"language"`
 	PerformType int    `json:"perform_type"`
-	Instrument  string `json:"instrument"`
+	Instrument  int    `json:"instrument"`
 	Concert     string `json:"concert" gorm:"uniqueIndex:uni_idx_music"`
 	ConcertYear int    `json:"concert_year"`
 	Sequence    int    `json:"sequence"`

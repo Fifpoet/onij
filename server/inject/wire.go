@@ -12,10 +12,10 @@ var infraSet = wire.NewSet(
 	mysql.NewMysqlCli,
 
 	mysql.NewTagDal,
-	mysql.NewTodDal,
 	mysql.NewRelayDal,
 	mysql.NewFileDal,
 	mysql.NewMusicDal,
+	mysql.NewMetaDal,
 
 	wire.Struct(new(infra.AllInfra), "*"),
 )

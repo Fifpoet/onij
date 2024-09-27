@@ -36,7 +36,7 @@ func NewMysqlCli() *gorm.DB {
 	}
 
 	// 库表自动迁移
-	err = Db.AutoMigrate(&Tag{}, &Tod{}, &Relay{}, &File{}, &Music{})
+	err = Db.AutoMigrate(&Tag{}, &Relay{}, &File{}, &Music{})
 	if err != nil {
 		log.Fatalf("failed to migrate: %v", err)
 	}

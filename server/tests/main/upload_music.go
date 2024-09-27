@@ -15,8 +15,7 @@ const targetDir = "C:\\KwDownload\\song"
 const fileSuffix = ".mp3"
 const lyricsSuffix = ".lrc"
 
-func main() {
-	logic.Init()
+func uploadMusic() {
 
 	mp3Files, err := findMP3Files(targetDir)
 	if err != nil {
@@ -55,9 +54,9 @@ func main() {
 			Writer:      0,
 			Length:      getMp3Meta(f),
 			IssueYear:   0,
-			Language:    "",
+			Language:    0,
 			PerformType: 0,
-			Instrument:  "",
+			Instrument:  0,
 			Concert:     "",
 			ConcertYear: 0,
 			Sequence:    0,
@@ -66,7 +65,7 @@ func main() {
 	}
 	defer f.Close()
 
-	err = logic.NewMusicLogic().SaveFromDir(models, mp3Files, lyricsFiles)
+	err = logic.NewLocalLogic().SaveMusicFromDir(models, mp3Files, lyricsFiles)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
