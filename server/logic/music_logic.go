@@ -18,21 +18,31 @@ func NewMusicLogic() MusicLogic {
 	return &musicLogic{}
 }
 
+// Save .
+// 这里如果原始文件已存在, 则fileDal校验hash后返回原id
 func (m *musicLogic) Save(music *mysql.Music, cover, mp, lyric, sheet *multipart.FileHeader) (int, error) {
-	// 如果已有文件，删除
-	if cover != nil {
-		if music.CoverOss != 0 {
-			_, err := app.FileDal.DelByIds([]int{music.CoverOss, music.MpOss, music.LyricOss, music.SheetOss})
-			if err != nil {
-				return 0, err
-			}
-		}
-		music.CoverOss, _ = app.FileDal.CreateFileFromForm(cover, enum.BizMusic)
-		music.MpOss, _ = app.FileDal.CreateFileFromForm(mp, enum.BizMusic)
-		music.LyricOss, _ = app.FileDal.CreateFileFromForm(lyric, enum.BizMusic)
-		music.SheetOss, _ = app.FileDal.CreateFileFromForm(sheet, enum.BizMusic)
-
+	// 处理文件
+	var err error
+	cov, err := app.FileDal.CreateFileFromForm(cover, enum.BizMusic)
+	if err != nil {
+		return 0, err
 	}
+	music.CoverOss = cov
+	mpo, err := app.FileDal.CreateFileFromForm(mp, enum.BizMusic)
+	if err != nil {
+		return 0, err
+	}
+	music.MpOss = mpo
+	lrc, err := app.FileDal.CreateFileFromForm(lyric, enum.BizMusic)
+	if err != nil {
+		return 0, err
+	}
+	music.LyricOss = lrc
+	sht, err := app.FileDal.CreateFileFromForm(sheet, enum.BizMusic)
+	if err != nil {
+		return 0, err
+	}
+	music.SheetOss = sht
 
 	return app.MusicDal.Save(music)
 }

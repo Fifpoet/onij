@@ -159,7 +159,7 @@ func (f *fileDal) DelByIds(ids []int) ([]*File, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = f.db.Delete(&File{}, "id = ?", ids).Error
+	err = f.db.Delete(&File{}, "id IN ?", ids).Error
 	if err != nil {
 		log.Printf("DelByIds, delete file failed: err = %v \n", err)
 		return res, err
@@ -191,7 +191,7 @@ func (f *fileDal) GetByHash(hash string) (*File, error) {
 
 func (f *fileDal) GetByIds(ids []int) ([]*File, error) {
 	var res []*File
-	err := f.db.Where("id = ?", ids).First(res).Error
+	err := f.db.Where("id IN ?", ids).Find(res).Error
 	if err != nil {
 		log.Printf("GetByIds, get file failed: err = %v \n", err)
 		return nil, err
