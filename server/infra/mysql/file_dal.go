@@ -61,6 +61,7 @@ func (f *fileDal) CreateFileFormLocal(localFilePath string, biz int) (int, error
 	}
 	if fil != nil {
 		// 文件已存在
+		log.Printf("CreateFileFormLocal, file already exist: file: %v \n", fil)
 		return fil.Id, nil
 	}
 
@@ -113,6 +114,7 @@ func (f *fileDal) CreateFileFromForm(fileHeader *multipart.FileHeader, biz int) 
 	}
 	if fil != nil {
 		// 文件已存在
+		log.Printf("CreateFileFromForm, file already exist: file: %v \n", fil)
 		return fil.Id, nil
 	}
 
