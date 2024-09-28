@@ -3,6 +3,7 @@ package mysql
 import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"log"
 	"time"
 )
 
@@ -57,6 +58,7 @@ func (t *tagDal) GetByBizGroupTypeOriginTarget(biz, group, tagType, origin, targ
 
 	err := query.Find(&tags).Error
 	if err != nil {
+		log.Printf("GetByBizGroupTypeOriginTarget, query failed: err = %v \n", err)
 		return nil, err
 	}
 	return tags, nil
@@ -67,6 +69,7 @@ func (t *tagDal) Save(tag *Tag) (int, error) {
 		UpdateAll: true,
 	}).Create(tag).Error
 	if err != nil {
+		log.Printf("Save, save tag failed: err = %v \n", err)
 		return 0, err
 	}
 	return tag.Id, nil
@@ -74,5 +77,9 @@ func (t *tagDal) Save(tag *Tag) (int, error) {
 
 func (t *tagDal) DelById(id int) error {
 	err := t.db.Where("id = ?", id).Delete(&Tag{}).Error
-	return err
+	if err != nil {
+		log.Printf("DelById, delete tag failed: err = %v \n", err)
+		return err
+	}
+	return nil
 }
