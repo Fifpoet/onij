@@ -97,7 +97,7 @@ func (f *fileDal) CreateFileFormLocal(localFilePath string, biz int) (int, error
 // CreateFileFromForm 从表单文件中上传并写入 OSS
 func (f *fileDal) CreateFileFromForm(fileHeader *multipart.FileHeader, biz int) (int, error) {
 	// check hash, upload oss
-	if fileHeader == nil {
+	if fileHeader.Size == 0 {
 		return 0, nil
 	}
 	file, err := fileHeader.Open()
@@ -159,6 +159,9 @@ func (f *fileDal) DelByKey(key string) (*File, error) {
 	return res, nil
 }
 func (f *fileDal) DelByIds(ids []int) ([]*File, error) {
+	if len(ids) == 0 {
+		return nil, nil
+	}
 	res, err := f.GetByIds(ids)
 	if err != nil {
 		return nil, err
@@ -194,8 +197,11 @@ func (f *fileDal) GetByHash(hash string) (*File, error) {
 }
 
 func (f *fileDal) GetByIds(ids []int) ([]*File, error) {
+	if len(ids) == 0 {
+		return nil, nil
+	}
 	var res []*File
-	err := f.db.Where("id IN ?", ids).Find(res).Error
+	err := f.db.Where("id IN ?", ids).Find(&res).Error
 	if err != nil {
 		log.Printf("GetByIds, get file failed: err = %v \n", err)
 		return nil, err
