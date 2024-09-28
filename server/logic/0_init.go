@@ -16,6 +16,8 @@ func Init() {
 type LocalLogic interface {
 	SaveMusicFromDir(music []*mysql.Music, mps, lyrics []string) error
 	SaveMeta(metas []*mysql.Meta) error
+
+	GetMeta(metaEnumCode int) ([]*mysql.Meta, error)
 }
 
 type localLogic struct {
@@ -56,4 +58,8 @@ func (m *localLogic) SaveMusicFromDir(music []*mysql.Music, mps, lyrics []string
 func (m *localLogic) SaveMeta(metas []*mysql.Meta) error {
 	err := app.MetaDal.Save(metas)
 	return err
+}
+
+func (m *localLogic) GetMeta(metaEnumCode int) ([]*mysql.Meta, error) {
+	return app.MetaDal.GetByMetaEnumCode(metaEnumCode)
 }

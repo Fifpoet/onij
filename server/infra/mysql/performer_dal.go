@@ -9,6 +9,7 @@ import (
 type PerformerDal interface {
 	GetByIds(id []int) ([]*Performer, error)
 	GetByName(name string) ([]*Performer, error)
+	GetByNameAndType(name string, performType int) ([]*Performer, error)
 	Save(performer *Performer) (int, error)
 	DelById(id int) error
 }
@@ -30,26 +31,35 @@ type Performer struct {
 	DeletedAt     gorm.DeletedAt `json:"deleted_at"`
 }
 
-func (s *performerDal) GetByIds(id []int) ([]*Performer, error) {
+func (p *performerDal) GetByIds(id []int) ([]*Performer, error) {
 	var res []*Performer
-	err := s.db.Where("id IN ?", id).Order("created_at desc").Find(&res).Error
+	err := p.db.Where("id IN ?", id).Order("created_at desc").Find(&res).Error
 	if err != nil {
 		return nil, err
 	}
 	return res, nil
 }
 
-func (s *performerDal) GetByName(name string) ([]*Performer, error) {
+func (p *performerDal) GetByName(name string) ([]*Performer, error) {
 	var res []*Performer
-	err := s.db.Where("name LIKE ?", "%"+name+"%").Order("created_at desc").Find(&res).Error
+	err := p.db.Where("name LIKE ?", "%"+name+"%").Order("created_at desc").Find(&res).Error
 	if err != nil {
 		return nil, err
 	}
 	return res, nil
 }
 
-func (s *performerDal) Save(performer *Performer) (int, error) {
-	err := s.db.Clauses(clause.OnConflict{
+func (p *performerDal) GetByNameAndType(name string, performType int) ([]*Performer, error) {
+	var performers []*Performer
+	err := p.db.Where("name LIKE ? AND performer_type = ?", "%"+name+"%", performType).Find(&performers).Error
+	if err != nil {
+		return nil, err
+	}
+	return performers, nil
+}
+
+func (p *performerDal) Save(performer *Performer) (int, error) {
+	err := p.db.Clauses(clause.OnConflict{
 		UpdateAll: true,
 	}).Create(performer).Error
 	if err != nil {
@@ -58,7 +68,7 @@ func (s *performerDal) Save(performer *Performer) (int, error) {
 	return performer.Id, nil
 }
 
-func (s *performerDal) DelById(id int) error {
-	err := s.db.Where("id = ?", id).Delete(&Performer{}).Error
+func (p *performerDal) DelById(id int) error {
+	err := p.db.Where("id = ?", id).Delete(&Performer{}).Error
 	return err
 }

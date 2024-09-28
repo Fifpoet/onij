@@ -53,3 +53,6 @@ func (u *UpsertMusicReq) ToModel() (m *mysql.Music, cover, mp, lyric, sheet *mul
 		SheetOss:    u.SheetOss,
 	}, u.Cover, u.Mp, u.Lyric, u.Sheet
 }
+
+type GetMusicResp struct {
+}

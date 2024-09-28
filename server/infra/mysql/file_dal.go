@@ -208,3 +208,15 @@ func (f *fileDal) GetByIds(ids []int) ([]*File, error) {
 	}
 	return res, nil
 }
+
+func (f *fileDal) GetUrlByIds(ids []int) ([]string, error) {
+	fs, err := f.GetByIds(ids)
+	if err != nil {
+		return nil, err
+	}
+	var res []string
+	for _, fil := range fs {
+		res = append(res, util.DownloadFile(fil.Key))
+	}
+	return res, nil
+}

@@ -3,6 +3,7 @@ package logic
 import (
 	"mime/multipart"
 	"onij/enum"
+	"onij/handler/resq"
 	"onij/infra/mysql"
 )
 
@@ -13,6 +14,8 @@ type MusicLogic interface {
 	GetByTitle(title string) ([]*mysql.Music, error)
 	// GetByArtist artistId模糊匹配
 	GetByArtist(artist int) ([]*mysql.Music, error)
+
+	GetMusic(id int) (*resq.GetMusicResp, error)
 }
 
 type musicLogic struct {
@@ -71,4 +74,16 @@ func (m *musicLogic) DelById(id int) error {
 		return err
 	}
 	return nil
+}
+
+func (m *musicLogic) GetByTitle(title string) ([]*mysql.Music, error) {
+	return app.MusicDal.GetByTitle(title)
+}
+
+func (m *musicLogic) GetByArtist(artist int) ([]*mysql.Music, error) {
+	return app.MusicDal.GetByArtist(artist)
+}
+
+func (m *musicLogic) GetMusic(id int) (*resq.GetMusicResp, error) {
+
 }
