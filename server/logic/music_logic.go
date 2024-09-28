@@ -28,9 +28,6 @@ func (m *musicLogic) Save(music *mysql.Music, cover, mp, lyric, sheet *multipart
 		return 0, err
 	}
 	if cov != 0 {
-		if cov != music.CoverOss {
-			app.FileDal.DelByIds([]int{music.CoverOss})
-		}
 		music.CoverOss = cov
 	}
 	mpo, err := app.FileDal.CreateFileFromForm(mp, enum.BizMusic)
@@ -38,9 +35,6 @@ func (m *musicLogic) Save(music *mysql.Music, cover, mp, lyric, sheet *multipart
 		return 0, err
 	}
 	if mpo != 0 {
-		if cov != music.MpOss {
-			app.FileDal.DelByIds([]int{music.MpOss})
-		}
 		music.MpOss = mpo
 	}
 	lrc, err := app.FileDal.CreateFileFromForm(lyric, enum.BizMusic)
@@ -48,9 +42,6 @@ func (m *musicLogic) Save(music *mysql.Music, cover, mp, lyric, sheet *multipart
 		return 0, err
 	}
 	if lrc != 0 {
-		if cov != music.LyricOss {
-			app.FileDal.DelByIds([]int{music.LyricOss})
-		}
 		music.LyricOss = lrc
 	}
 	sht, err := app.FileDal.CreateFileFromForm(sheet, enum.BizMusic)
@@ -58,9 +49,6 @@ func (m *musicLogic) Save(music *mysql.Music, cover, mp, lyric, sheet *multipart
 		return 0, err
 	}
 	if sht != 0 {
-		if cov != music.SheetOss {
-			app.FileDal.DelByIds([]int{music.SheetOss})
-		}
 		music.SheetOss = sht
 	}
 
