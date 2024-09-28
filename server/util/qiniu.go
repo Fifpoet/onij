@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/qiniu/go-sdk/v7/auth/qbox"
 	"github.com/qiniu/go-sdk/v7/storage"
+	"image"
 	"io"
 	"log"
 	"mime/multipart"
@@ -97,27 +98,41 @@ func UploadFromReader(file multipart.File, size int64) (string, error) {
 	return ret.Key, nil
 }
 
-func GetLocalFileHash(localFilePath string) (string, error) {
+func GetLocalFileHash(localFilePath string) (string, int, int, error) {
 	file, err := os.Open(localFilePath)
 	if err != nil {
 		log.Printf("GetLocalFileHash, open file failed: err = %v \n", err)
-		return "", err
+		return "", 0, 0, err
 	}
 	defer file.Close()
+	img, _, err := image.DecodeConfig(file)
+	if err != nil {
+		log.Printf("GetLocalFileHash, unable to decode image: %v \n", err)
+		return "", 0, 0, err
+	}
 
 	hash := md5.New()
 	if _, err := io.Copy(hash, file); err != nil {
 		log.Printf("GetLocalFileHash, copy file failed: err = %v \n", err)
-		return "", err
+		return "", 0, 0, err
 	}
-	return fmt.Sprintf("%x", hash.Sum(nil)), nil
+	return fmt.Sprintf("%x", hash.Sum(nil)), img.Width, img.Height, nil
 }
 
-func GetFileHash(file multipart.File) (string, error) {
+func GetFileHash(file multipart.File) (string, int, int, error) {
 	hash := md5.New()
 	if _, err := io.Copy(hash, file); err != nil {
 		log.Printf("GetFileHash, copy file failed: err = %v \n", err)
-		return "", err
+		return "", 0, 0, err
+
 	}
-	return fmt.Sprintf("%x", hash.Sum(nil)), nil
+
+	f, _, err := image.DecodeConfig(file)
+	if err != nil {
+		log.Printf("getFormXY, unable to decode image: %v \n", err)
+		return "", 0, 0, err
+
+	}
+
+	return fmt.Sprintf("%x", hash.Sum(nil)), f.Width, f.Height, nil
 }

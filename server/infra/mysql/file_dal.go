@@ -13,8 +13,8 @@ import (
 )
 
 type FileDal interface {
-	CreateFileFormLocal(localFilePath string, biz int) (int, error)
-	CreateFileFromForm(fileHeader *multipart.FileHeader, biz int) (int, error)
+	CreateLocalFile(localFilePath string, biz int) (int, error)
+	CreateFormFile(fileHeader *multipart.FileHeader, biz int) (int, error)
 	DelByKey(key string) (*File, error)
 	DelByIds(id []int) ([]*File, error)
 
@@ -43,15 +43,17 @@ type File struct {
 	Size int    `json:"size"`
 	Path string `json:"path"`
 	Hash string `json:"hash"  gorm:"unique"`
+	X    int    `json:"x"`
+	Y    int    `json:"y"`
 
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `json:"deleted_at"`
 }
 
-func (f *fileDal) CreateFileFormLocal(localFilePath string, biz int) (int, error) {
+func (f *fileDal) CreateLocalFile(localFilePath string, biz int) (int, error) {
 	// check hash, upload oss
-	hash, err := util.GetLocalFileHash(localFilePath)
+	hash, x, y, err := util.GetLocalFileHash(localFilePath)
 	if err != nil {
 		return 0, err
 	}
@@ -61,7 +63,7 @@ func (f *fileDal) CreateFileFormLocal(localFilePath string, biz int) (int, error
 	}
 	if fil != nil {
 		// 文件已存在
-		log.Printf("CreateFileFormLocal, file already exist: file: %v \n", fil)
+		log.Printf("CreateLocalFile, file already exist: file: %v \n", fil)
 		return fil.Id, nil
 	}
 
@@ -71,7 +73,7 @@ func (f *fileDal) CreateFileFormLocal(localFilePath string, biz int) (int, error
 	}
 	stat, err := os.Stat(localFilePath)
 	if err != nil {
-		log.Printf("CreateFileFormLocal, get stat file failed: err = %v \n", err)
+		log.Printf("CreateLocalFile, get stat file failed: err = %v \n", err)
 		return 0, err
 	}
 
@@ -83,19 +85,21 @@ func (f *fileDal) CreateFileFormLocal(localFilePath string, biz int) (int, error
 		Size: int(stat.Size()),
 		Path: localFilePath,
 		Hash: hash,
+		X:    x,
+		Y:    y,
 	}
 	err = f.db.Clauses(clause.OnConflict{
 		UpdateAll: true,
 	}).Create(newFil).Error
 	if err != nil {
-		log.Printf("CreateFileFormLocal, save file failed: err = %v \n", err)
+		log.Printf("CreateLocalFile, save file failed: err = %v \n", err)
 		return 0, err
 	}
 	return newFil.Id, nil
 }
 
-// CreateFileFromForm 从表单文件中上传并写入 OSS
-func (f *fileDal) CreateFileFromForm(fileHeader *multipart.FileHeader, biz int) (int, error) {
+// CreateFormFile 从表单文件中上传并写入 OSS
+func (f *fileDal) CreateFormFile(fileHeader *multipart.FileHeader, biz int) (int, error) {
 	// check hash, upload oss
 	if fileHeader.Size == 0 {
 		return 0, nil
@@ -103,10 +107,10 @@ func (f *fileDal) CreateFileFromForm(fileHeader *multipart.FileHeader, biz int) 
 	file, err := fileHeader.Open()
 	defer file.Close()
 	if err != nil {
-		log.Printf("CreateFileFromForm, open file failed: err = %v \n", err)
+		log.Printf("CreateFormFile, open file failed: err = %v \n", err)
 		return 0, err
 	}
-	hash, err := util.GetFileHash(file)
+	hash, x, y, err := util.GetFileHash(file)
 	if err != nil {
 		return 0, err
 	}
@@ -116,7 +120,7 @@ func (f *fileDal) CreateFileFromForm(fileHeader *multipart.FileHeader, biz int) 
 	}
 	if fil != nil {
 		// 文件已存在
-		log.Printf("CreateFileFromForm, file already exist: file: %v \n", fil)
+		log.Printf("CreateFormFile, file already exist: file: %v \n", fil)
 		return fil.Id, nil
 	}
 
@@ -134,12 +138,14 @@ func (f *fileDal) CreateFileFromForm(fileHeader *multipart.FileHeader, biz int) 
 		Size: int(fileHeader.Size),
 		Path: "",
 		Hash: hash,
+		X:    x,
+		Y:    y,
 	}
 	err = f.db.Clauses(clause.OnConflict{
 		UpdateAll: true,
 	}).Create(newFil).Error
 	if err != nil {
-		log.Printf("CreateFileFromForm, save file failed: err = %v \n", err)
+		log.Printf("CreateFormFile, save file failed: err = %v \n", err)
 		return 0, err
 	}
 

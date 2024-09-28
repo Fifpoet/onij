@@ -33,13 +33,13 @@ func (m *localLogic) SaveMusicFromDir(music []*mysql.Music, mps, lyrics []string
 		return errors.New("music, mp, lyric length not match")
 	}
 	for i := 0; i < len(music); i++ {
-		fid, err := app.FileDal.CreateFileFormLocal(mps[i], enum.BizMusic)
+		fid, err := app.FileDal.CreateLocalFile(mps[i], enum.BizMusic)
 		if err != nil {
 			return err
 		}
 		music[i].MpOss = fid
 		if lyrics[i] != "" {
-			fid, err = app.FileDal.CreateFileFormLocal(lyrics[i], enum.BizMusic)
+			fid, err = app.FileDal.CreateLocalFile(lyrics[i], enum.BizMusic)
 			if err != nil {
 				return err
 			}

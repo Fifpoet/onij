@@ -30,28 +30,28 @@ func NewMusicLogic() MusicLogic {
 func (m *musicLogic) Save(music *mysql.Music, cover, mp, lyric, sheet *multipart.FileHeader) (int, error) {
 	// 如果上传文件成功, 则为覆盖场景, 更新model
 	var err error
-	cov, err := app.FileDal.CreateFileFromForm(cover, enum.BizMusic)
+	cov, err := app.FileDal.CreateFormFile(cover, enum.BizMusic)
 	if err != nil {
 		return 0, err
 	}
 	if cov != 0 {
 		music.CoverOss = cov
 	}
-	mpo, err := app.FileDal.CreateFileFromForm(mp, enum.BizMusic)
+	mpo, err := app.FileDal.CreateFormFile(mp, enum.BizMusic)
 	if err != nil {
 		return 0, err
 	}
 	if mpo != 0 {
 		music.MpOss = mpo
 	}
-	lrc, err := app.FileDal.CreateFileFromForm(lyric, enum.BizMusic)
+	lrc, err := app.FileDal.CreateFormFile(lyric, enum.BizMusic)
 	if err != nil {
 		return 0, err
 	}
 	if lrc != 0 {
 		music.LyricOss = lrc
 	}
-	sht, err := app.FileDal.CreateFileFromForm(sheet, enum.BizMusic)
+	sht, err := app.FileDal.CreateFormFile(sheet, enum.BizMusic)
 	if err != nil {
 		return 0, err
 	}
@@ -85,5 +85,5 @@ func (m *musicLogic) GetByArtist(artist int) ([]*mysql.Music, error) {
 }
 
 func (m *musicLogic) GetMusic(id int) (*resq.GetMusicResp, error) {
-
+	return nil, nil
 }

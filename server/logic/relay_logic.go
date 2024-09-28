@@ -37,7 +37,7 @@ func (r *relayLogic) DelById(id int) (int, error) {
 func (r *relayLogic) Save(relay *mysql.Relay, file *multipart.FileHeader) (int, error) {
 	// upload
 	if file != nil {
-		oss, err := app.FileDal.CreateFileFromForm(file, enum.BizRelay)
+		oss, err := app.FileDal.CreateFormFile(file, enum.BizRelay)
 		if err != nil {
 			return 0, err
 		}
