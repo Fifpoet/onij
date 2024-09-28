@@ -9,6 +9,10 @@ import (
 type MusicLogic interface {
 	Save(music *mysql.Music, cover, mp, lyric, sheet *multipart.FileHeader) (int, error)
 	DelById(id int) error
+	// GetByTitle title模糊匹配
+	GetByTitle(title string) ([]*mysql.Music, error)
+	// GetByArtist artistId模糊匹配
+	GetByArtist(artist int) ([]*mysql.Music, error)
 }
 
 type musicLogic struct {

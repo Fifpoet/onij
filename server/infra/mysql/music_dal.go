@@ -1,6 +1,7 @@
 package mysql
 
 import (
+	"fmt"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"time"
@@ -11,6 +12,8 @@ type MusicDal interface {
 
 	Save(music *Music) (int, error)
 	DelById(id int) (*Music, error)
+	GetByTitle(title string) ([]*Music, error)
+	GetByArtist(artistId int) ([]*Music, error)
 }
 
 type musicDal struct {
@@ -77,4 +80,24 @@ func (m *musicDal) DelById(id int) (*Music, error) {
 		return nil, err
 	}
 	return mus, nil
+}
+
+func (m *musicDal) GetByTitle(title string) ([]*Music, error) {
+	var musics []*Music
+	err := m.db.Where("title LIKE ?", "%"+title+"%").Find(&musics).Error
+	if err != nil {
+		return nil, err
+	}
+	return musics, nil
+}
+
+// GetByArtist 通过 artist_id 模糊匹配查询
+func (m *musicDal) GetByArtist(artistId int) ([]*Music, error) {
+	var musics []*Music
+	artistIdStr := fmt.Sprintf(",%d,", artistId)
+	err := m.db.Where("artist_ids LIKE ?", "%"+artistIdStr+"%").Find(&musics).Error
+	if err != nil {
+		return nil, err
+	}
+	return musics, nil
 }
