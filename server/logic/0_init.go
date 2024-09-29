@@ -19,7 +19,7 @@ type LocalLogic interface {
 	SaveMusicFromDir(music []*mysql.Music, mps, lyrics []string) error
 	SaveMeta(metas []*mysql.Meta) error
 
-	GetMeta() (*resq.GetMetaResp, error)
+	GetMeta() ([]*resq.GetMetaResp, error)
 }
 
 type localLogic struct {
@@ -62,24 +62,27 @@ func (m *localLogic) SaveMeta(metas []*mysql.Meta) error {
 	return err
 }
 
-func (m *localLogic) GetMeta() (*resq.GetMetaResp, error) {
+func (m *localLogic) GetMeta() ([]*resq.GetMetaResp, error) {
 	metaCodes, err := app.MetaDal.GetByMetaEnumCode([]int{1})
 	if err != nil {
 		return nil, err
 	}
+	metaCodes = metaCodes[1:]
 	cods := collext.Pick(metaCodes, func(meta *mysql.Meta) int { return meta.Value })
-	if cods[0] == 1 {
-		cods = cods[1:]
-	}
 
 	metas, err := app.MetaDal.GetByMetaEnumCode(cods)
-	return &resq.GetMetaResp{
-		MetaEnumCode: 1,
-		MetaList: collext.Pick(metas, func(meta *mysql.Meta) resq.MetaModel {
-			return resq.MetaModel{
-				Value: meta.Value,
-				Name:  meta.Name,
-			}
-		}),
-	}, err
+	metaGroup := collext.Group(metas, func(meta *mysql.Meta) int { return meta.MetaEnumCode })
+	return collext.Pick(metaCodes, func(base *mysql.Meta) *resq.GetMetaResp {
+		return &resq.GetMetaResp{
+			MetaEnumCode: base.Value,
+			MetaName:     base.Name,
+			MetaList: collext.Pick(metaGroup[base.Value], func(meta *mysql.Meta) resq.MetaModel {
+				return resq.MetaModel{
+					Value: meta.Value,
+					Name:  meta.Name,
+				}
+			}),
+		}
+	}), nil
+
 }
