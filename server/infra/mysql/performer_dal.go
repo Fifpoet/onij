@@ -7,7 +7,7 @@ import (
 )
 
 type PerformerDal interface {
-	GetByIds(id []int) ([]*Performer, error)
+	GetByIds(id ...int) ([]*Performer, error)
 	GetByName(name string) ([]*Performer, error)
 	GetByNameAndType(name string, performType int) ([]*Performer, error)
 	Save(performer *Performer) (int, error)
@@ -31,7 +31,7 @@ type Performer struct {
 	DeletedAt     gorm.DeletedAt `json:"deleted_at"`
 }
 
-func (p *performerDal) GetByIds(id []int) ([]*Performer, error) {
+func (p *performerDal) GetByIds(id ...int) ([]*Performer, error) {
 	var res []*Performer
 	err := p.db.Where("id IN ?", id).Order("created_at desc").Find(&res).Error
 	if err != nil {

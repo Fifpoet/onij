@@ -2,19 +2,19 @@ package logic
 
 import (
 	"mime/multipart"
+	"onij/boost/collection/collext"
 	"onij/enum"
 	"onij/handler/resq"
 	"onij/infra/mysql"
+	"onij/util"
+	"strings"
 )
 
 type MusicLogic interface {
 	Save(music *mysql.Music, cover, mp, lyric, sheet *multipart.FileHeader) (int, error)
 	DelById(id int) error
-	// GetByTitle title模糊匹配
-	GetByTitle(title string) ([]*mysql.Music, error)
-	// GetByArtist artistId模糊匹配
-	GetByArtist(artist int) ([]*mysql.Music, error)
 
+	ListByCond(title string, artist int, performType int) ([]*resq.ListMusic, error)
 	GetMusic(id int) (*resq.GetMusicResp, error)
 }
 
@@ -85,5 +85,74 @@ func (m *musicLogic) GetByArtist(artist int) ([]*mysql.Music, error) {
 }
 
 func (m *musicLogic) GetMusic(id int) (*resq.GetMusicResp, error) {
-	return nil, nil
+	mu, err := app.MusicDal.GetById(id)
+	if err != nil {
+		return nil, err
+	}
+
+	singerNames, composer, writer, err := getNameFormMusic(mu)
+	if err != nil {
+		return nil, err
+	}
+
+	urls, err := app.FileDal.GetUrlByIds(mu.CoverOss, mu.MpOss, mu.LyricOss, mu.SheetOss)
+	if err != nil {
+		return nil, err
+	}
+
+	return &resq.GetMusicResp{
+		Title:    mu.Title,
+		Artist:   singerNames,
+		Composer: composer,
+		Writer:   writer,
+		Concert:  mu.Concert,
+		MvUrl:    mu.MvUrl,
+		CoverUrl: urls[0],
+		MpUrl:    urls[1],
+		LyricUrl: urls[2],
+		SheetUrl: urls[3],
+	}, nil
+}
+
+func (m *musicLogic) ListByCond(title string, artist int, performType int) ([]*resq.ListMusic, error) {
+	mus, err := app.MusicDal.GetByTileArtistPerType(title, artist, performType)
+	if err != nil {
+		return nil, err
+	}
+
+	res := collext.Select(mus, func(mu *mysql.Music) (*resq.ListMusic, bool) {
+		singerNames, composer, writer, err := getNameFormMusic(mu)
+		if err != nil {
+			return nil, false
+		}
+		return &resq.ListMusic{
+			Id:       mu.Id,
+			Title:    mu.Title,
+			Artist:   singerNames,
+			Composer: composer,
+			Writer:   writer,
+			Concert:  mu.Concert,
+			Sequence: mu.Sequence,
+			MvUrl:    mu.MvUrl,
+		}, true
+	})
+	return res, nil
+}
+
+func getNameFormMusic(mu *mysql.Music) (string, string, string, error) {
+	per, err := app.PerformerDal.GetByIds(append(util.DbToList(mu.ArtistIds), mu.Composer, mu.Writer)...)
+	if err != nil {
+		return "", "", "", err
+	}
+	singerNames := collext.Select(per, func(p *mysql.Performer) (string, bool) {
+		return p.Name, p.PerformerType == 1 //TODO
+	})
+	singer := strings.Join(singerNames, "&")
+	composer := collext.SelectOne(per, func(p *mysql.Performer) (string, bool) {
+		return p.Name, p.PerformerType == 2
+	})
+	writer := collext.SelectOne(per, func(p *mysql.Performer) (string, bool) {
+		return p.Name, p.PerformerType == 3
+	})
+	return singer, composer, writer, nil
 }

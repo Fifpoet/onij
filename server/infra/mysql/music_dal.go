@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"log"
 	"time"
 )
 
@@ -14,6 +15,7 @@ type MusicDal interface {
 	DelById(id int) (*Music, error)
 	GetByTitle(title string) ([]*Music, error)
 	GetByArtist(artistId int) ([]*Music, error)
+	GetByTileArtistPerType(title string, artistId int, performType int) ([]*Music, error)
 }
 
 type musicDal struct {
@@ -35,7 +37,6 @@ type Music struct {
 	IssueYear   int    `json:"issue_year"`
 	Language    int    `json:"language"`
 	PerformType int    `json:"perform_type"`
-	Instrument  int    `json:"instrument"`
 	Concert     string `json:"concert" gorm:"uniqueIndex:uni_idx_music"`
 	ConcertYear int    `json:"concert_year"`
 	Sequence    int    `json:"sequence"`
@@ -54,6 +55,7 @@ func (m *musicDal) GetById(id int) (*Music, error) {
 	var music Music
 	err := m.db.First(&music, "id = ?", id).Error
 	if err != nil {
+		log.Printf("GetById, get music error: %v \n", err)
 		return nil, err
 	}
 	return &music, nil
@@ -64,6 +66,7 @@ func (m *musicDal) Save(music *Music) (int, error) {
 		UpdateAll: true,
 	}).Create(music).Error
 	if err != nil {
+		log.Printf("Save, save music err: %v", err)
 		return 0, err
 	}
 	return music.Id, nil
@@ -77,6 +80,7 @@ func (m *musicDal) DelById(id int) (*Music, error) {
 
 	err = m.db.Delete(&Music{}, "id = ?", id).Error
 	if err != nil {
+		log.Printf("DelById, del music error: %v \n", err)
 		return nil, err
 	}
 	return mus, nil
@@ -86,6 +90,7 @@ func (m *musicDal) GetByTitle(title string) ([]*Music, error) {
 	var musics []*Music
 	err := m.db.Where("title LIKE ?", "%"+title+"%").Find(&musics).Error
 	if err != nil {
+		log.Printf("GetByTitle, get music error: %v \n", err)
 		return nil, err
 	}
 	return musics, nil
@@ -97,6 +102,22 @@ func (m *musicDal) GetByArtist(artistId int) ([]*Music, error) {
 	artistIdStr := fmt.Sprintf(",%d,", artistId)
 	err := m.db.Where("artist_ids LIKE ?", "%"+artistIdStr+"%").Find(&musics).Error
 	if err != nil {
+		log.Printf("GetByArtist, get music error: %v \n", err)
+		return nil, err
+	}
+	return musics, nil
+}
+
+func (m *musicDal) GetByTileArtistPerType(title string, artistId int, performType int) ([]*Music, error) {
+	var musics []*Music
+	artistIdStr := fmt.Sprintf(",%d,", artistId)
+	err := m.db.
+		Where("title LIKE ?", "%"+title+"%").
+		Where("artist_ids LIKE ?", "%"+artistIdStr+"%").
+		Where("perform_type = ?", performType).
+		Find(&musics).Error
+	if err != nil {
+		log.Printf("GetByTileArtistPerType, get music error: %v \n", err)
 		return nil, err
 	}
 	return musics, nil

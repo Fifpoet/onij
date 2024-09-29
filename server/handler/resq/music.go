@@ -16,7 +16,6 @@ type UpsertMusicReq struct {
 	IssueYear   int                   `json:"issue_year" form:"issue_year"`
 	Language    int                   `json:"language" form:"language"`
 	PerformType int                   `json:"perform_type" form:"perform_type"`
-	Instrument  int                   `json:"instrument" form:"instrument"`
 	Concert     string                `json:"concert" form:"concert"`
 	ConcertYear int                   `json:"concert_year" form:"concert_year"`
 	Sequence    int                   `json:"sequence" form:"sequence"`
@@ -42,7 +41,6 @@ func (u *UpsertMusicReq) ToModel() (m *mysql.Music, cover, mp, lyric, sheet *mul
 		IssueYear:   u.IssueYear,
 		Language:    u.Language,
 		PerformType: u.PerformType,
-		Instrument:  u.Instrument,
 		Concert:     u.Concert,
 		ConcertYear: u.ConcertYear,
 		Sequence:    u.Sequence,
@@ -55,4 +53,25 @@ func (u *UpsertMusicReq) ToModel() (m *mysql.Music, cover, mp, lyric, sheet *mul
 }
 
 type GetMusicResp struct {
+	Title    string `json:"title"`
+	Artist   string `json:"artist"`
+	Composer string `json:"composer"`
+	Writer   string `json:"writer"`
+	Concert  string `json:"concert"`
+	MvUrl    string `json:"mv_url"`
+	CoverUrl string `json:"cover_url"`
+	MpUrl    string `json:"mp_url"`
+	LyricUrl string `json:"lyric_url"`
+	SheetUrl string `json:"sheet_url"`
+}
+
+type ListMusic struct {
+	Id       int    `json:"id"`
+	Title    string `json:"title"`
+	Artist   string `json:"artist"`
+	Composer string `json:"composer"`
+	Writer   string `json:"writer"`
+	Concert  string `json:"concert"`
+	Sequence int    `json:"sequence"`
+	MvUrl    string `json:"mv_url"`
 }

@@ -21,6 +21,7 @@ type FileDal interface {
 	GetByKey(key string) (*File, error)
 	GetByHash(hash string) (*File, error)
 	GetByIds(ids []int) ([]*File, error)
+	GetUrlByIds(ids ...int) ([]string, error)
 }
 
 type fileDal struct {
@@ -215,7 +216,7 @@ func (f *fileDal) GetByIds(ids []int) ([]*File, error) {
 	return res, nil
 }
 
-func (f *fileDal) GetUrlByIds(ids []int) ([]string, error) {
+func (f *fileDal) GetUrlByIds(ids ...int) ([]string, error) {
 	fs, err := f.GetByIds(ids)
 	if err != nil {
 		return nil, err
