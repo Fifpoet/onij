@@ -37,7 +37,7 @@ func SetupRouter() *gin.Engine {
 	{
 		musicGroup.POST("/upsert", handler.UpsertMusicHandler) // 插入或更新 music
 		musicGroup.GET("/get/:id", handler.GetMusicHandler)
-		musicGroup.GET("/list", handler.ListMusicHandler)
+		musicGroup.POST("/list", handler.ListMusicHandler)
 	}
 
 	// meta
