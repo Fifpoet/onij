@@ -46,5 +46,11 @@ func SetupRouter() *gin.Engine {
 		metaGroup.GET("/get", handler.GetMetaHandler)
 	}
 
+	// performer
+	performerGroup := router.Group("/performer")
+	{
+		performerGroup.POST("/upsert", handler.UpsertPerformerHandler)
+	}
+
 	return router
 }
