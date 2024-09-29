@@ -225,7 +225,11 @@ func (f *fileDal) GetUrlByIds(ids ...int) ([]string, error) {
 	}
 	var res []string
 	for _, id := range ids {
-		res = append(res, util.DownloadFile(fsIdx[id].Key))
+		if fsIdx[id] != nil && fsIdx[id].Key != "" {
+			res = append(res, util.DownloadFile(fsIdx[id].Key))
+		} else {
+			res = append(res, "")
+		}
 	}
 	return res, nil
 }
