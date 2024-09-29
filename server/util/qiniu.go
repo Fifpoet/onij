@@ -3,6 +3,7 @@ package util
 import (
 	"context"
 	"crypto/md5"
+	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/qiniu/go-sdk/v7/auth/qbox"
@@ -103,7 +104,7 @@ func UploadFromReader(file multipart.File, size int64) (string, error) {
 
 func GetLocalFileHash(localFilePath string) (string, int, int, error) {
 	file, err := os.Open(localFilePath)
-	if err != nil {
+	if err != nil && !errors.Is(err, image.ErrFormat) {
 		log.Printf("GetLocalFileHash, open file failed: err = %v \n", err)
 		return "", 0, 0, err
 	}
@@ -125,10 +126,9 @@ func GetLocalFileHash(localFilePath string) (string, int, int, error) {
 func GetFileHash(file multipart.File) (string, int, int, error) {
 	hash := md5.New()
 	f, _, err := image.DecodeConfig(file)
-	if err != nil {
+	if err != nil && !errors.Is(err, image.ErrFormat) {
 		log.Printf("getFormXY, unable to decode image: %v \n", err)
 		return "", 0, 0, err
-
 	}
 
 	if _, err := io.Copy(hash, file); err != nil {
