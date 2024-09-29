@@ -1,6 +1,48 @@
 info:
   contact: {}
 paths:
+  /music/get:
+    post:
+      consumes:
+      - application/json
+      description: 获取用户详细信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 获取music
+      tags:
+      - 用户
+  /music/list:
+    post:
+      consumes:
+      - application/json
+      description: 获取用户详细信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 列出music
+      tags:
+      - 用户
   /music/upsert:
     post:
       consumes:
