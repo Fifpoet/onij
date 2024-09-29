@@ -38,3 +38,11 @@ func TestDelFile(t *testing.T) {
 	}
 	t.Log("delete file success")
 }
+
+func TestHashFromLocalAndForm(t *testing.T) {
+	hash, x, y, err := util.GetLocalFileHash("/Users/asen/Documents/后端API启动日志.png")
+	if err != nil {
+		return
+	}
+	t.Log(hash, x, y)
+}

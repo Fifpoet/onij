@@ -124,15 +124,15 @@ func GetLocalFileHash(localFilePath string) (string, int, int, error) {
 
 func GetFileHash(file multipart.File) (string, int, int, error) {
 	hash := md5.New()
-	if _, err := io.Copy(hash, file); err != nil {
-		log.Printf("GetFileHash, copy file failed: err = %v \n", err)
+	f, _, err := image.DecodeConfig(file)
+	if err != nil {
+		log.Printf("getFormXY, unable to decode image: %v \n", err)
 		return "", 0, 0, err
 
 	}
 
-	f, _, err := image.DecodeConfig(file)
-	if err != nil {
-		log.Printf("getFormXY, unable to decode image: %v \n", err)
+	if _, err := io.Copy(hash, file); err != nil {
+		log.Printf("GetFileHash, copy file failed: err = %v \n", err)
 		return "", 0, 0, err
 
 	}
