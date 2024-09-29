@@ -8,6 +8,9 @@ import (
 	"github.com/qiniu/go-sdk/v7/auth/qbox"
 	"github.com/qiniu/go-sdk/v7/storage"
 	"image"
+	_ "image/gif"  // 必须导入
+	_ "image/jpeg" // 必须导入
+	_ "image/png"  // 必须导入
 	"io"
 	"log"
 	"mime/multipart"
