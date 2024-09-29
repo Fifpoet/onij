@@ -56,7 +56,6 @@ func uploadMusic() {
 			IssueYear:   0,
 			Language:    0,
 			PerformType: 0,
-			Instrument:  0,
 			Concert:     "",
 			ConcertYear: 0,
 			Sequence:    0,

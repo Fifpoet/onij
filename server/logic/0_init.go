@@ -68,6 +68,9 @@ func (m *localLogic) GetMeta() (*resq.GetMetaResp, error) {
 		return nil, err
 	}
 	cods := collext.Pick(metaCodes, func(meta *mysql.Meta) int { return meta.Value })
+	if cods[0] == 1 {
+		cods = cods[1:]
+	}
 
 	metas, err := app.MetaDal.GetByMetaEnumCode(cods)
 	return &resq.GetMetaResp{

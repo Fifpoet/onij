@@ -17,12 +17,3 @@ const ()
 
 // TargetType
 const ()
-
-// MetaEnumCode
-const (
-	EnumCodeRelayType        = 1
-	EnumCodeMusicPerformType = 2
-	EnumCodeMusicInstrument  = 3
-	EnumCodeMusicLanguage    = 4
-	EnumCodePerformerType    = 5
-)
