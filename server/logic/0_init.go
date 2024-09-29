@@ -2,7 +2,9 @@ package logic
 
 import (
 	"errors"
+	"onij/boost/collection/collext"
 	"onij/enum"
+	"onij/handler/resq"
 	"onij/infra/mysql"
 	"onij/inject"
 )
@@ -17,7 +19,7 @@ type LocalLogic interface {
 	SaveMusicFromDir(music []*mysql.Music, mps, lyrics []string) error
 	SaveMeta(metas []*mysql.Meta) error
 
-	GetMeta(metaEnumCode int) ([]*mysql.Meta, error)
+	GetMeta() (*resq.GetMetaResp, error)
 }
 
 type localLogic struct {
@@ -60,6 +62,21 @@ func (m *localLogic) SaveMeta(metas []*mysql.Meta) error {
 	return err
 }
 
-func (m *localLogic) GetMeta(metaEnumCode int) ([]*mysql.Meta, error) {
-	return app.MetaDal.GetByMetaEnumCode(metaEnumCode)
+func (m *localLogic) GetMeta() (*resq.GetMetaResp, error) {
+	metaCodes, err := app.MetaDal.GetByMetaEnumCode([]int{1})
+	if err != nil {
+		return nil, err
+	}
+	cods := collext.Pick(metaCodes, func(meta *mysql.Meta) int { return meta.Value })
+
+	metas, err := app.MetaDal.GetByMetaEnumCode(cods)
+	return &resq.GetMetaResp{
+		MetaEnumCode: 1,
+		MetaList: collext.Pick(metas, func(meta *mysql.Meta) resq.MetaModel {
+			return resq.MetaModel{
+				Value: meta.Value,
+				Name:  meta.Name,
+			}
+		}),
+	}, err
 }

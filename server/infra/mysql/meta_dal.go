@@ -8,7 +8,7 @@ import (
 )
 
 type MetaDal interface {
-	GetByMetaEnumCode(metaEnumCode int) ([]*Meta, error)
+	GetByMetaEnumCode(metaEnumCode []int) ([]*Meta, error)
 	Save(metas []*Meta) error
 }
 
@@ -31,9 +31,9 @@ type Meta struct {
 }
 
 // GetByMetaEnumCode retrieves all Meta records that match the given MetaEnumCode
-func (m *metaDal) GetByMetaEnumCode(metaEnumCode int) ([]*Meta, error) {
+func (m *metaDal) GetByMetaEnumCode(metaEnumCode []int) ([]*Meta, error) {
 	var metas []*Meta
-	err := m.db.Where("meta_enum_code = ?", metaEnumCode).Order("created_at desc").Find(&metas).Error
+	err := m.db.Where("meta_enum_code IN ?", metaEnumCode).Order("created_at desc").Find(&metas).Error
 	if err != nil {
 		return nil, err
 	}
