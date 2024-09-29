@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm/clause"
 	"log"
 	"mime/multipart"
+	"onij/boost/collection/collext"
 	"onij/util"
 	"os"
 	"path/filepath"
@@ -218,12 +219,13 @@ func (f *fileDal) GetByIds(ids []int) ([]*File, error) {
 
 func (f *fileDal) GetUrlByIds(ids ...int) ([]string, error) {
 	fs, err := f.GetByIds(ids)
+	fsIdx := collext.Map(fs, func(fil *File) int { return fil.Id })
 	if err != nil {
 		return nil, err
 	}
 	var res []string
-	for _, fil := range fs {
-		res = append(res, util.DownloadFile(fil.Key))
+	for _, id := range ids {
+		res = append(res, util.DownloadFile(fsIdx[id].Key))
 	}
 	return res, nil
 }
