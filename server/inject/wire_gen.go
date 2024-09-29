@@ -15,18 +15,20 @@ import (
 // Injectors from wire.go:
 
 func InitializeApp() *App {
-	tagDal := mysql.NewTagDal()
 	db := mysql.NewMysqlCli()
+	tagDal := mysql.NewTagDal(db)
 	relayDal := mysql.NewRelayDal(db)
 	fileDal := mysql.NewFileDal(db)
 	musicDal := mysql.NewMusicDal(db)
 	metaDal := mysql.NewMetaDal(db)
+	performerDal := mysql.NewPerformerDal(db)
 	allInfra := &infra.AllInfra{
-		TagDal:   tagDal,
-		RelayDal: relayDal,
-		FileDal:  fileDal,
-		MusicDal: musicDal,
-		MetaDal:  metaDal,
+		TagDal:       tagDal,
+		RelayDal:     relayDal,
+		FileDal:      fileDal,
+		MusicDal:     musicDal,
+		MetaDal:      metaDal,
+		PerformerDal: performerDal,
 	}
 	app := &App{
 		AllInfra: allInfra,
