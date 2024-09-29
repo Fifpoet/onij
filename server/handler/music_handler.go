@@ -43,7 +43,7 @@ func UpsertMusicHandler(c *gin.Context) {
 // @Produce  json
 // @Success 200 {object} map[string]interface{}
 // @Failure 400 {object} map[string]interface{}
-// @Router /music/upsert [post]
+// @Router /music/get [post]
 func GetMusicHandler(c *gin.Context) {
 	id := util.GetInt(c, "id")
 
@@ -63,7 +63,7 @@ func GetMusicHandler(c *gin.Context) {
 // @Produce  json
 // @Success 200 {object} map[string]interface{}
 // @Failure 400 {object} map[string]interface{}
-// @Router /music/upsert [post]
+// @Router /music/list [post]
 func ListMusicHandler(c *gin.Context) {
 	name := c.Param("title")
 	at := util.GetInt(c, "artist")
