@@ -69,6 +69,8 @@ type ListMusicReq struct {
 	Title       string `json:"title"`
 	Artist      int    `json:"artist"`
 	PerformType int    `json:"perform_type"`
+	Page        int    `json:"page"`
+	Size        int    `json:"size"`
 }
 
 type ListMusicResp struct {

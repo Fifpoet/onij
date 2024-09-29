@@ -16,7 +16,7 @@ type MusicDal interface {
 	DelById(id int) (*Music, error)
 	GetByTitle(title string) ([]*Music, error)
 	GetByArtist(artistId int) ([]*Music, error)
-	GetByTileArtistPerType(title string, artistId int, performType int) ([]*Music, error)
+	GetByTitleArtistPerType(title string, artistId, performType, page, size int) ([]*Music, error)
 }
 
 type musicDal struct {
@@ -111,16 +111,23 @@ func (m *musicDal) GetByArtist(artistId int) ([]*Music, error) {
 	return musics, nil
 }
 
-func (m *musicDal) GetByTileArtistPerType(title string, artistId int, performType int) ([]*Music, error) {
+func (m *musicDal) GetByTitleArtistPerType(title string, artistId, performType, page, size int) ([]*Music, error) {
 	var musics []*Music
-	artistIdStr := fmt.Sprintf(",%d,", artistId)
-	err := m.db.
-		Where("title LIKE ?", "%"+title+"%").
-		Where("artist_ids LIKE ?", "%"+artistIdStr+"%").
-		Where("perform_type = ?", performType).
-		Find(&musics).Error
+	query := m.db
+
+	if title != "" {
+		query = query.Where("title LIKE ?", "%"+title+"%")
+	}
+	if artistId != 0 {
+		artistIdStr := fmt.Sprintf(",%d,", artistId)
+		query = query.Where("artist_ids LIKE ?", "%"+artistIdStr+"%")
+	}
+	if performType != 0 {
+		query = query.Where("perform_type = ?", performType)
+	}
+	err := query.Limit(size).Offset((page - 1) * size).Limit(size).Find(&musics).Error
 	if err != nil {
-		log.Printf("GetByTileArtistPerType, get music error: %v \n", err)
+		log.Printf("GetByTitleArtistPerType, get music error: %v \n", err)
 		return nil, err
 	}
 	return musics, nil

@@ -115,7 +115,7 @@ func (m *musicLogic) GetMusic(id int) (*resq.GetMusicResp, error) {
 }
 
 func (m *musicLogic) ListByCond(req *resq.ListMusicReq) ([]*resq.ListMusicResp, error) {
-	mus, err := app.MusicDal.GetByTileArtistPerType(req.Title, req.Artist, req.PerformType)
+	mus, err := app.MusicDal.GetByTitleArtistPerType(req.Title, req.Artist, req.PerformType, req.Page, req.Size)
 	if err != nil {
 		return nil, err
 	}
