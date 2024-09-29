@@ -40,5 +40,11 @@ func SetupRouter() *gin.Engine {
 		musicGroup.GET("/list", handler.ListMusicHandler)
 	}
 
+	// meta
+	metaGroup := router.Group("/meta")
+	{
+		metaGroup.GET("/get", handler.GetMetaHandler)
+	}
+
 	return router
 }
