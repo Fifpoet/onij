@@ -15,7 +15,7 @@ import (
 // @Param   type     path    int     true        "用户ID"
 // @Success 200 {object} map[string]interface{}
 // @Failure 400 {object} map[string]interface{}
-// @Router /relay/type/{type} [get]
+// @Router /meta/get [get]
 func GetMetaHandler(c *gin.Context) {
 	res, err := logic.NewLocalLogic().GetMeta()
 	if err != nil {

@@ -1,6 +1,33 @@
 info:
   contact: {}
 paths:
+  /meta/get:
+    get:
+      consumes:
+      - application/json
+      description: 获取用户详细信息
+      parameters:
+      - description: 用户ID
+        in: path
+        name: type
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 获取枚举
+      tags:
+      - 用户
   /music/get:
     post:
       consumes:
