@@ -43,13 +43,13 @@ func UpsertMusicHandler(c *gin.Context) {
 // @Produce  json
 // @Success 200 {object} map[string]interface{}
 // @Failure 400 {object} map[string]interface{}
-// @Router /music/get [post]
+// @Router /music/get [get]
 func GetMusicHandler(c *gin.Context) {
 	id := util.GetInt(c, "id")
 
 	res, err := logic.NewMusicLogic().GetMusic(id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upsert music"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get music"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"data": res})
@@ -65,13 +65,15 @@ func GetMusicHandler(c *gin.Context) {
 // @Failure 400 {object} map[string]interface{}
 // @Router /music/list [post]
 func ListMusicHandler(c *gin.Context) {
-	name := c.Param("title")
-	at := util.GetInt(c, "artist")
-	tp := util.GetInt(c, "type")
+	req := resq.ListMusicReq{}
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-	res, err := logic.NewMusicLogic().ListByCond(name, at, tp)
+	res, err := logic.NewMusicLogic().ListByCond(&req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upsert music"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to list music"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"data": res})

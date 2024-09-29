@@ -65,7 +65,13 @@ type GetMusicResp struct {
 	SheetUrl string `json:"sheet_url"`
 }
 
-type ListMusic struct {
+type ListMusicReq struct {
+	Title       string `json:"title"`
+	Artist      int    `json:"artist"`
+	PerformType int    `json:"perform_type"`
+}
+
+type ListMusicResp struct {
 	Id       int    `json:"id"`
 	Title    string `json:"title"`
 	Artist   string `json:"artist"`

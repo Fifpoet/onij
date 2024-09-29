@@ -14,7 +14,7 @@ type MusicLogic interface {
 	Save(music *mysql.Music, cover, mp, lyric, sheet *multipart.FileHeader) (int, error)
 	DelById(id int) error
 
-	ListByCond(title string, artist int, performType int) ([]*resq.ListMusic, error)
+	ListByCond(req *resq.ListMusicReq) ([]*resq.ListMusicResp, error)
 	GetMusic(id int) (*resq.GetMusicResp, error)
 }
 
@@ -114,18 +114,18 @@ func (m *musicLogic) GetMusic(id int) (*resq.GetMusicResp, error) {
 	}, nil
 }
 
-func (m *musicLogic) ListByCond(title string, artist int, performType int) ([]*resq.ListMusic, error) {
-	mus, err := app.MusicDal.GetByTileArtistPerType(title, artist, performType)
+func (m *musicLogic) ListByCond(req *resq.ListMusicReq) ([]*resq.ListMusicResp, error) {
+	mus, err := app.MusicDal.GetByTileArtistPerType(req.Title, req.Artist, req.PerformType)
 	if err != nil {
 		return nil, err
 	}
 
-	res := collext.Select(mus, func(mu *mysql.Music) (*resq.ListMusic, bool) {
+	res := collext.Select(mus, func(mu *mysql.Music) (*resq.ListMusicResp, bool) {
 		singerNames, composer, writer, err := getNameFormMusic(mu)
 		if err != nil {
 			return nil, false
 		}
-		return &resq.ListMusic{
+		return &resq.ListMusicResp{
 			Id:       mu.Id,
 			Title:    mu.Title,
 			Artist:   singerNames,

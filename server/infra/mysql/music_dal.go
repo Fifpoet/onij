@@ -1,6 +1,7 @@
 package mysql
 
 import (
+	"errors"
 	"fmt"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -54,7 +55,9 @@ type Music struct {
 func (m *musicDal) GetById(id int) (*Music, error) {
 	var music Music
 	err := m.db.First(&music, "id = ?", id).Error
-	if err != nil {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	} else if err != nil {
 		log.Printf("GetById, get music error: %v \n", err)
 		return nil, err
 	}
