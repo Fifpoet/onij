@@ -3,6 +3,11 @@
       ref="audioContainer"
       class="audio-container fixed bg-[rgb(245,245,245)] rounded-lg shadow-lg flex items-center bottom-5 left-5 w-[400px] h-[60px]"
   >
+    <!-- 左侧歌曲详情图标 -->
+    <div class="song-detail-toggle p-2 cursor-pointer" @click="toggleSongDetail">
+      📝 <!-- 可以替换为你想要的图标 -->
+    </div>
+
     <!-- 左侧两竖排小点 -->
     <div
         class="drag-handle flex justify-between p-2 cursor-grab"
@@ -34,7 +39,7 @@
     </div>
 
     <!-- 音乐列表展示 -->
-    <div v-if="showMusicList" class="music-list absolute bg-white shadow-lg rounded-lg p-4 w-[400px] bottom-[70px] left-0">
+    <div v-if="showMusicList && !showSongDetail" class="music-list absolute bg-white shadow-lg rounded-lg p-4 w-[400px] bottom-[70px] left-0">
       <ul>
         <li
             v-for="music in musicStore.MusicList"
@@ -46,6 +51,23 @@
         </li>
       </ul>
     </div>
+
+    <!-- 歌曲详情展示 -->
+    <div v-if="showSongDetail && !showMusicList" class="song-detail absolute bg-white shadow-lg rounded-lg p-4 w-[400px] bottom-[70px] left-0">
+      <div v-if="currentMusicDetail">
+        <h3>{{ currentMusicDetail.title }}</h3>
+        <p><strong>Artist:</strong> {{ currentMusicDetail.artist }}</p>
+        <p><strong>Composer:</strong> {{ currentMusicDetail.composer }}</p>
+        <p><strong>Writer:</strong> {{ currentMusicDetail.writer }}</p>
+        <p><strong>Concert:</strong> {{ currentMusicDetail.concert }}</p>
+        <p><strong>MV:</strong> <a :href="currentMusicDetail.mv_url" target="_blank">{{ currentMusicDetail.mv_url }}</a></p>
+        <p><strong>Lyrics:</strong> <a :href="currentMusicDetail.lyric_url" target="_blank">{{ currentMusicDetail.lyric_url }}</a></p>
+        <p><strong>Sheet:</strong> <a :href="currentMusicDetail.sheet_url" target="_blank">{{ currentMusicDetail.sheet_url }}</a></p>
+      </div>
+      <div v-else>
+        <p>没有歌曲详情可显示。</p>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -55,9 +77,11 @@
 import {onMounted, ref} from 'vue';
 import apiClient from '@/util/http.ts'; // 引入 axios 实例
 import {useMusicStore} from "@/store/music.ts";
+import type {MusicDetail} from "@/store/music.ts";
 // *************** 音乐列表展示逻辑 *************** //
 const showMusicList = ref(false);
-const currentMusicDetail = ref(null); // 用于保存当前音乐详情
+const showSongDetail = ref(false);
+const currentMusicDetail = ref<MusicDetail | null>(null); // 用于保存当前音乐详情
 const musicStore = useMusicStore(); // 获取 Pinia store
 
 
@@ -95,8 +119,14 @@ let offset = { x: 0, y: 0 };
 // 切换音乐列表展示
 const toggleMusicList = () => {
   showMusicList.value = !showMusicList.value;
+  showSongDetail.value = false; // 隐藏歌曲详情窗口
 };
 
+// 切换歌曲详情展示
+const toggleSongDetail = () => {
+  showSongDetail.value = !showSongDetail.value;
+  showMusicList.value = false; // 隐藏音乐列表
+};
 // 获取音乐列表
 onMounted(() => {
   fetchMusicList();
