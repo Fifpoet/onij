@@ -61,9 +61,8 @@ const listMusicReq = {
 
 const fetchMusicList = async () => {
   const response = await apiClient.post('/music/list', listMusicReq);
-  const musicList = response.data;
+  const musicList = response.data.data;
   musicStore.setMusicList(musicList);
-  console.log(musicStore.MusicList);
 };
 
 // *************** 拖动操作 *************** //
