@@ -22,35 +22,61 @@
     <div class="audio-content flex-grow pl-5">
       <!-- 播放器内容区域 -->
     </div>
+
+    <!-- 右侧展示音乐列表的图标 -->
+    <div class="music-list-toggle p-2 cursor-pointer" @click="toggleMusicList">
+      🎵 <!-- 可以替换为你想要的图标 -->
+    </div>
+
+    <!-- 音乐列表展示 -->
+    <div v-if="showMusicList" class="music-list absolute bg-white shadow-lg rounded-lg p-4 w-[400px] bottom-[70px] left-0">
+      <ul>
+        <li v-for="music in musicStore.MusicList" :key="music.id" class="mb-2">
+          <strong>{{ music.title }}</strong> - {{ music.artist || 'Unknown Artist' }}
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 
-<script lang="ts" setup>
-import { ref, onMounted } from 'vue';
+
+<script lang="ts" setup>import { ref, onMounted } from 'vue';
 import apiClient from '@/util/http.ts'; // 引入 axios 实例
 import { useMusicStore } from "@/store/music.ts";
 
 // *************** API操作 *************** //
-const listMusicReq= {
+const listMusicReq = {
   "title": "",
   "artist": 1,
   "perform_type": 1,
-  "page":1,
-  "size":5
-}
+  "page": 1,
+  "size": 5
+};
 
 const fetchMusicList = async () => {
-  const musicList = await apiClient.post('/music/list', listMusicReq);
+  const response = await apiClient.post('/music/list', listMusicReq);
+  const musicList = response.data;
   useMusicStore().setMusicList(musicList);
 };
 
+// *************** 拖动操作 *************** //
 const audioContainer = ref<HTMLDivElement | null>(null);
 let isDragging = false;
 let offset = { x: 0, y: 0 };
 
-onMounted(()=> {
+// *************** 音乐列表展示逻辑 *************** //
+const showMusicList = ref(false);
+const musicStore = useMusicStore(); // 获取 Pinia store
+
+// 切换音乐列表展示
+const toggleMusicList = () => {
+  showMusicList.value = !showMusicList.value;
+};
+
+// 获取音乐列表
+onMounted(() => {
   fetchMusicList();
-})
+});
 
 const startDragging = (e: MouseEvent) => {
   if (!audioContainer.value) return;
@@ -75,7 +101,6 @@ const stopDragging = () => {
   document.removeEventListener('mousemove', drag);
   document.removeEventListener('mouseup', stopDragging);
 };
-
 
 const drag = (e: MouseEvent) => {
   if (!isDragging || !audioContainer.value) return;
