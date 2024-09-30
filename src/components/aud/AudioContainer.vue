@@ -18,9 +18,14 @@
       </div>
     </div>
 
-    <!-- 音乐播放器主体（后续实现） -->
+    <!-- 音乐播放器主体，显示当前播放的音乐 -->
     <div class="audio-content flex-grow pl-5">
-      <!-- 播放器内容区域 -->
+      <div v-if="currentMusicDetail">
+        <strong>{{ currentMusicDetail.title }}</strong> - {{ currentMusicDetail.artist }}
+      </div>
+      <div v-else>
+        <p>请选择一首音乐播放</p>
+      </div>
     </div>
 
     <!-- 右侧展示音乐列表的图标 -->
@@ -31,7 +36,12 @@
     <!-- 音乐列表展示 -->
     <div v-if="showMusicList" class="music-list absolute bg-white shadow-lg rounded-lg p-4 w-[400px] bottom-[70px] left-0">
       <ul>
-        <li v-for="music in musicStore.MusicList" class="mb-2">
+        <li
+            v-for="music in musicStore.MusicList"
+            :key="music.id"
+            class="mb-2 cursor-pointer"
+            @dblclick="playMusic(music.id)"
+        >
           <strong>{{ music.title }}</strong> - {{ music.artist }}
         </li>
       </ul>
@@ -42,11 +52,12 @@
 
 <script lang="ts" setup>
 
-import { ref, onMounted } from 'vue';
+import {onMounted, ref} from 'vue';
 import apiClient from '@/util/http.ts'; // 引入 axios 实例
-import { useMusicStore } from "@/store/music.ts";
+import {useMusicStore} from "@/store/music.ts";
 // *************** 音乐列表展示逻辑 *************** //
 const showMusicList = ref(false);
+const currentMusicDetail = ref(null); // 用于保存当前音乐详情
 const musicStore = useMusicStore(); // 获取 Pinia store
 
 
@@ -65,6 +76,17 @@ const fetchMusicList = async () => {
   musicStore.setMusicList(musicList);
 };
 
+// 播放音乐，获取音乐详情
+const playMusic = async (id: number) => {
+  try {
+    const response = await apiClient.get(`/music/detail/${id}`); // 获取音乐详情的 API
+    currentMusicDetail.value = response.data; // 更新当前音乐详情
+    musicStore.setCurrentMusic(id); // 更新 Pinia store 中的当前播放的音乐 id
+  } catch (error) {
+    console.error('获取音乐详情失败', error);
+  }
+};
+
 // *************** 拖动操作 *************** //
 const audioContainer = ref<HTMLDivElement | null>(null);
 let isDragging = false;
@@ -79,6 +101,8 @@ const toggleMusicList = () => {
 onMounted(() => {
   fetchMusicList();
 });
+
+
 
 const startDragging = (e: MouseEvent) => {
   if (!audioContainer.value) return;
