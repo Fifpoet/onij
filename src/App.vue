@@ -1,11 +1,8 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router';
 import PageHeader from './components/layout/PageHeader.vue'
-import lbAudio from './components/audio/index.vue';
-
-import { NModalProvider } from 'naive-ui'
-// 引入组件样式
-import WeeklyModal from "@/views/weekly/components/WeeklyModal.vue";
+// import lbAudio from './components/audio/index.vue';
+import AudioContainer from "@/components/aud/AudioContainer.vue";
 
 const musicList = [
   {
@@ -183,9 +180,10 @@ const musicList = [
         <component :is="Component" :key="route.path" />
       </RouterView>
     </article>
+  <AudioContainer></AudioContainer>
 <!--  <lbAudio class="music-player" :musicList="musicList" :index="8" :lyrics="true">-->
 <!--  </lbAudio>-->
-  <WeeklyModal></WeeklyModal>
+<!--  <WeeklyModal></WeeklyModal>-->
 
   <br>
   <br>
