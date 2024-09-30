@@ -4,8 +4,11 @@ export interface Music {
     id: string;
     title: string;
     artist: string;
-    url: string;
-    // 添加更多字段根据实际的音乐数据结构
+    composer: string;
+    writer: string;
+    concert: string;
+    sequence: string;
+    mv_url: string;
 }
 
 export const useMusicStore = defineStore('music', {
@@ -20,6 +23,9 @@ export const useMusicStore = defineStore('music', {
         currentMusic(state) {
             return state.MusicList.find((music) => music.id === state.CurrentMusicId);
         },
+        getMusicList(state) {
+            return state.MusicList;
+        }
     },
 
     // 定义 actions，用于修改状态

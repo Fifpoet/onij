@@ -30,19 +30,23 @@ import { ref, onMounted } from 'vue';
 import apiClient from '@/util/http.ts'; // 引入 axios 实例
 import { useMusicStore } from "@/store/music.ts";
 
-const audioContainer = ref<HTMLDivElement | null>(null);
-let isDragging = false;
-let offset = { x: 0, y: 0 };
-
+// *************** API操作 *************** //
 const listMusicReq= {
-  "name": "",
+  "title": "",
+  "artist": 1,
+  "perform_type": 1,
+  "page":1,
+  "size":5
 }
 
 const fetchMusicList = async () => {
-  console.log(listMusicReq)
   const musicList = await apiClient.post('/music/list', listMusicReq);
   useMusicStore().setMusicList(musicList);
 };
+
+const audioContainer = ref<HTMLDivElement | null>(null);
+let isDragging = false;
+let offset = { x: 0, y: 0 };
 
 onMounted(()=> {
   fetchMusicList();
