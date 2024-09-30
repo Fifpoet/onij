@@ -19,14 +19,6 @@ export const useMusicStore = defineStore('music', {
     }),
 
     // 定义 getters，如果需要从 state 中派生数据，可以使用 getters
-    getters: {
-        currentMusic(state) {
-            return state.MusicList.find((music) => music.id === state.CurrentMusicId);
-        },
-        getMusicList(state) {
-            return state.MusicList;
-        }
-    },
 
     // 定义 actions，用于修改状态
     actions: {

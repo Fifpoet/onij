@@ -31,8 +31,8 @@
     <!-- 音乐列表展示 -->
     <div v-if="showMusicList" class="music-list absolute bg-white shadow-lg rounded-lg p-4 w-[400px] bottom-[70px] left-0">
       <ul>
-        <li v-for="music in musicStore.MusicList" :key="music.id" class="mb-2">
-          <strong>{{ music.title }}</strong> - {{ music.artist || 'Unknown Artist' }}
+        <li v-for="music in musicStore.MusicList" class="mb-2">
+          <strong>{{ music.title }}</strong> - {{ music.artist }}
         </li>
       </ul>
     </div>
@@ -40,9 +40,15 @@
 </template>
 
 
-<script lang="ts" setup>import { ref, onMounted } from 'vue';
+<script lang="ts" setup>
+
+import { ref, onMounted } from 'vue';
 import apiClient from '@/util/http.ts'; // 引入 axios 实例
 import { useMusicStore } from "@/store/music.ts";
+// *************** 音乐列表展示逻辑 *************** //
+const showMusicList = ref(false);
+const musicStore = useMusicStore(); // 获取 Pinia store
+
 
 // *************** API操作 *************** //
 const listMusicReq = {
@@ -56,17 +62,14 @@ const listMusicReq = {
 const fetchMusicList = async () => {
   const response = await apiClient.post('/music/list', listMusicReq);
   const musicList = response.data;
-  useMusicStore().setMusicList(musicList);
+  musicStore.setMusicList(musicList);
+  console.log(musicStore.MusicList);
 };
 
 // *************** 拖动操作 *************** //
 const audioContainer = ref<HTMLDivElement | null>(null);
 let isDragging = false;
 let offset = { x: 0, y: 0 };
-
-// *************** 音乐列表展示逻辑 *************** //
-const showMusicList = ref(false);
-const musicStore = useMusicStore(); // 获取 Pinia store
 
 // 切换音乐列表展示
 const toggleMusicList = () => {
