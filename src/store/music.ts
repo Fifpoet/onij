@@ -10,12 +10,24 @@ export interface Music {
     sequence: string;
     mv_url: string;
 }
+export interface MusicDetail {
+    title: string;
+    artist: string;
+    composer: string;
+    writer: string;
+    concert: string;
+    mv_url: string;
+    cover_url: string;
+    mp_url: string;
+    lyric_url: string;
+    sheet_url: string;
+}
 
 export const useMusicStore = defineStore('music', {
     // 定义状态
     state: () => ({
         MusicList: [] as Music[], // 保存音乐列表
-        CurrentMusicId: null as string | null, // 当前播放的音乐 ID
+        CurrentMusic: null as MusicDetail | null, // 当前播放的音乐 ID
     }),
 
     // 定义 getters，如果需要从 state 中派生数据，可以使用 getters
@@ -28,8 +40,8 @@ export const useMusicStore = defineStore('music', {
         },
 
         // 设置当前播放的音乐 ID
-        setCurrentMusic(id: string) {
-            this.CurrentMusicId = id;
+        setCurrentMusic(detail: MusicDetail) {
+            this.CurrentMusic = detail;
         },
     },
 });

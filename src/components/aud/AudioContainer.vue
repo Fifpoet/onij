@@ -79,8 +79,8 @@ const fetchMusicList = async () => {
 // 播放音乐，获取音乐详情
 const playMusic = async (id: number) => {
   try {
-    const response = await apiClient.get(`/music/detail/${id}`); // 获取音乐详情的 API
-    currentMusicDetail.value = response.data; // 更新当前音乐详情
+    const response = await apiClient.get(`/music/get/${id}`); // 获取音乐详情的 API
+    currentMusicDetail.value = response.data.data; // 更新当前音乐详情
     musicStore.setCurrentMusic(id); // 更新 Pinia store 中的当前播放的音乐 id
   } catch (error) {
     console.error('获取音乐详情失败', error);
