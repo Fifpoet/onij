@@ -3,10 +3,7 @@
       ref="audioContainer"
       class="audio-container fixed bg-[rgb(245,245,245)] rounded-lg shadow-lg flex items-center bottom-5 left-5 w-[400px] h-[60px]"
   >
-    <!-- 左侧歌曲详情图标 -->
-    <div class="song-detail-toggle p-2 cursor-pointer" @click="toggleSongDetail">
-      📝 <!-- 可以替换为你想要的图标 -->
-    </div>
+
 
     <!-- 左侧两竖排小点 -->
     <div
@@ -33,6 +30,10 @@
       </div>
     </div>
 
+    <!-- 左侧歌曲详情图标 -->
+    <div class="song-detail-toggle p-2 cursor-pointer" @click="toggleSongDetail">
+      📝 <!-- 可以替换为你想要的图标 -->
+    </div>
     <!-- 右侧展示音乐列表的图标 -->
     <div class="music-list-toggle p-2 cursor-pointer" @click="toggleMusicList">
       🎵 <!-- 可以替换为你想要的图标 -->
