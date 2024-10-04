@@ -103,7 +103,7 @@ func (f *fileDal) CreateLocalFile(localFilePath string, biz int) (int, error) {
 // CreateFormFile 从表单文件中上传并写入 OSS
 func (f *fileDal) CreateFormFile(fileHeader *multipart.FileHeader, biz int) (int, error) {
 	// check hash, upload oss
-	if fileHeader.Size == 0 {
+	if fileHeader == nil || fileHeader.Size == 0 {
 		return 0, nil
 	}
 	file, err := fileHeader.Open()

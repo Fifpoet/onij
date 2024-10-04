@@ -164,7 +164,7 @@ const saveMusicDetails = async () => {
       const upsertMusicReq = convertToUpsertMusicReq(currentMusicDetail.value);
       console.log(upsertMusicReq);
       // 发送更新音乐详情的请求
-      const response = await apiClient.post(`/music/upsert/`, upsertMusicReq, {
+      const response = await apiClient.post(`/music/upsert`, upsertMusicReq, {
         headers: {
           'Content-Type': 'multipart/form-data', // 指定请求类型为 multipart/form-data
         },
