@@ -27,7 +27,7 @@
           <button @click="togglePlay" class="w-[30px] h-[30px] rounded-full bg-gray-300 mx-2">▶️</button>
           <button @click="playNext" class="w-[30px] h-[30px] rounded-full bg-gray-300 ml-2">➡️</button>
         </div>
-        <strong class="transition-all duration-300 group-hover:hidden">{{ currentMusicDetail.title }}</strong>  <span class="group-hover:hidden">{{ currentMusicDetail.artist }}</span>
+        <strong class="transition-all duration-300 group-hover:hidden">{{ currentMusicDetail.title }}</strong>  <span class="group-hover:hidden">{{ currentMusicDetail.artist_name }}</span>
       </div>
       <div v-else>
         <p>请选择一首音乐播放</p>
@@ -62,17 +62,32 @@
     <div v-if="showSongDetail && currentMusicDetail" class="song-detail fixed bg-[#00000000] rounded-lg p-4 w-[400px]">
       <form @submit.prevent="saveMusicDetails">
         <input type="hidden" v-model="currentMusicDetail.id">
-        <h3>{{ currentMusicDetail?.title }}</h3>
-        <p><strong>Artist:</strong> <input type="text" v-model="currentMusicDetail.artist"></p>
-        <p><strong>Composer:</strong> <input type="text" v-model="currentMusicDetail.composer"></p>
-        <p><strong>Writer:</strong> <input type="text" v-model="currentMusicDetail.writer"></p>
+        <input type="hidden" v-model="currentMusicDetail.root_id">
+
+        <h3>{{ currentMusicDetail.title }}</h3>
+
+        <p><strong>Artist IDs:</strong> <input type="text" v-model="currentMusicDetail.artist_ids"></p>
+        <p><strong>Composer:</strong> <input type="number" v-model="currentMusicDetail.composer"></p>
+        <p><strong>Writer:</strong> <input type="number" v-model="currentMusicDetail.writer"></p>
+        <p><strong>Issue Year:</strong> <input type="number" v-model="currentMusicDetail.issue_year"></p>
+        <p><strong>Language:</strong> <input type="number" v-model="currentMusicDetail.language"></p>
+        <p><strong>Perform Type:</strong> <input type="number" v-model="currentMusicDetail.perform_type"></p>
         <p><strong>Concert:</strong> <input type="text" v-model="currentMusicDetail.concert"></p>
-        <p><strong>MV:</strong> <input type="text" v-model="currentMusicDetail.mv_url"></p>
-        <p><strong>Lyrics:</strong> <input type="text" v-model="currentMusicDetail.lyric_url"></p>
-        <p><strong>Sheet:</strong> <input type="text" v-model="currentMusicDetail.sheet_url"></p>
+        <p><strong>Concert Year:</strong> <input type="number" v-model="currentMusicDetail.concert_year"></p>
+        <p><strong>MV URL:</strong> <input type="text" v-model="currentMusicDetail.mv_url"></p>
+        <p><strong>Lyrics URL:</strong> <input type="text" v-model="currentMusicDetail.lyric_url"></p>
+        <p><strong>Sheet URL:</strong> <input type="text" v-model="currentMusicDetail.sheet_url"></p>
+
+        <!-- 文件上传字段 -->
+        <p><strong>Cover:</strong> <input type="file" @change="handleFileUpload('cover', $event)"></p>
+        <p><strong>MP:</strong> <input type="file" @change="handleFileUpload('mp', $event)"></p>
+        <p><strong>Lyric:</strong> <input type="file" @change="handleFileUpload('lyric', $event)"></p>
+
         <button type="submit">保存</button>
       </form>
     </div>
+
+
 
   </div>
 </template>
@@ -82,7 +97,7 @@
 
 import {onMounted, ref} from 'vue';
 import apiClient from '@/util/http.ts'; // 引入 axios 实例
-import {useMusicStore} from "@/store/music.ts";
+import {convertToUpsertMusicReq, useMusicStore} from "@/store/music.ts";
 import type {MusicDetail} from "@/store/music.ts";
 // *************** 音乐列表展示逻辑 *************** //
 const showMusicList = ref(false);
@@ -98,6 +113,14 @@ const listMusicReq = {
   "perform_type": 0,
   "page": 1,
   "size": 5
+};
+
+// 处理文件上传
+const handleFileUpload = (field, event) => {
+  const file = event.target.files[0];
+  if (file && currentMusicDetail.value) {
+    currentMusicDetail.value[field] = file;
+  }
 };
 
 const fetchMusicList = async () => {
@@ -134,12 +157,14 @@ const toggleSongDetail = () => {
   showMusicList.value = false; // 隐藏音乐列表
 };
 
-// 保存音乐详情
+// 使用转换函数保存音乐详情
 const saveMusicDetails = async () => {
   try {
     if (currentMusicDetail.value) {
-      // 发送更新音乐详情的请求，这里假设使用 apiClient.put 或 apiClient.post 方法
-      const response = await apiClient.put(`/music/upsert/`, currentMusicDetail.value);
+      const upsertMusicReq = convertToUpsertMusicReq(currentMusicDetail.value);
+      console.log(upsertMusicReq);
+      // 发送更新音乐详情的请求
+      const response = await apiClient.post(`/music/upsert/`, upsertMusicReq);
       console.log('音乐详情已更新', response.data);
       // 可以选择刷新音乐列表或其他操作
     }

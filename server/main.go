@@ -21,9 +21,9 @@ func main() {
 func SetupRouter() *gin.Engine {
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:18968", "http://127.0.0.1:18968"}, // 允许的前端地址
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},                     // 允许的 HTTP 方法
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},          // 允许的请求头
+		AllowOrigins:     []string{"http://localhost:18968", "http://127.0.0.1:18968"},                                             // 允许的前端地址
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},                                                                 // 允许的 HTTP 方法
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept", "X-Requested-With", "multipart/form-data"}, // 允许的请求头
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,           // 允许携带 Cookie
 		MaxAge:           12 * time.Hour, // 预检请求的缓存时间

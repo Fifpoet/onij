@@ -101,16 +101,31 @@ func (m *musicLogic) GetMusic(id int) (*resq.GetMusicResp, error) {
 	}
 
 	return &resq.GetMusicResp{
-		Title:    mu.Title,
-		Artist:   singerNames,
-		Composer: composer,
-		Writer:   writer,
-		Concert:  mu.Concert,
-		MvUrl:    mu.MvUrl,
-		CoverUrl: urls[0],
-		MpUrl:    urls[1],
-		LyricUrl: urls[2],
-		SheetUrl: urls[3],
+		Id:          mu.Id,
+		RootId:      mu.RootId,
+		Title:       mu.Title,
+		ArtistIds:   mu.ArtistIds,
+		Composer:    mu.Composer,
+		Writer:      mu.Writer,
+		IssueYear:   mu.IssueYear,
+		Language:    mu.Language,
+		PerformType: mu.PerformType,
+		Concert:     mu.Concert,
+		ConcertYear: mu.ConcertYear,
+		Sequence:    mu.Sequence,
+		MvUrl:       mu.MvUrl,
+		CoverOss:    mu.CoverOss,
+		MpOss:       mu.MpOss,
+		LyricOss:    mu.LyricOss,
+		SheetOss:    mu.SheetOss,
+
+		ArtistName:   singerNames,
+		ComposerName: composer,
+		WriterName:   writer,
+		CoverUrl:     urls[0],
+		MpUrl:        urls[1],
+		LyricUrl:     urls[2],
+		SheetUrl:     urls[3],
 	}, nil
 }
 
