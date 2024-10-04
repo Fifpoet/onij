@@ -4,7 +4,6 @@
       class="audio-container fixed bg-[rgb(245,245,245)] rounded-lg shadow-lg flex items-center bottom-5 left-5 w-[400px] h-[60px]"
   >
 
-
     <!-- 左侧两竖排小点 -->
     <div
         class="drag-handle flex justify-between p-2 cursor-grab"
@@ -12,23 +11,29 @@
     >
       <!-- 第一排小点 -->
       <div class="flex flex-col">
-        <div class="dot w-[4px] h-[4px] bg-gray-500 rounded-full mb-1" v-for="n in 3" :key="'left'+n"></div>
+        <div class="dot w-[4px] h-[4px] bg-gray-500 rounded-full mb-1" v-for="n in 3" :key="'left' + n"></div>
       </div>
       <!-- 第二排小点 -->
       <div class="flex flex-col ml-1">
-        <div class="dot w-[4px] h-[4px] bg-gray-500 rounded-full mb-1" v-for="n in 3" :key="'right'+n"></div>
+        <div class="dot w-[4px] h-[4px] bg-gray-500 rounded-full mb-1" v-for="n in 3" :key="'right' + n"></div>
       </div>
     </div>
 
     <!-- 音乐播放器主体，显示当前播放的音乐 -->
-    <div class="audio-content flex-grow pl-5">
-      <div v-if="currentMusicDetail">
-        <strong>{{ currentMusicDetail.title }}</strong> - {{ currentMusicDetail.artist }}
+    <div class="audio-content flex-grow pl-5 group relative">
+      <div v-if="currentMusicDetail" class="flex items-center">
+        <div class="hidden group-hover:flex justify-center items-center">
+          <button @click="playPrevious" class="w-[30px] h-[30px] rounded-full bg-gray-300 mr-2">⬅️</button>
+          <button @click="togglePlay" class="w-[30px] h-[30px] rounded-full bg-gray-300 mx-2">▶️</button>
+          <button @click="playNext" class="w-[30px] h-[30px] rounded-full bg-gray-300 ml-2">➡️</button>
+        </div>
+        <strong class="transition-all duration-300 group-hover:hidden">{{ currentMusicDetail.title }}</strong>  <span class="group-hover:hidden">{{ currentMusicDetail.artist }}</span>
       </div>
       <div v-else>
         <p>请选择一首音乐播放</p>
       </div>
     </div>
+
 
     <!-- 左侧歌曲详情图标 -->
     <div class="song-detail-toggle p-2 cursor-pointer" @click="toggleSongDetail">
@@ -54,21 +59,21 @@
     </div>
 
     <!-- 歌曲详情展示 -->
-    <div v-if="showSongDetail && !showMusicList" class="song-detail absolute bg-white shadow-lg rounded-lg p-4 w-[400px] bottom-[70px] left-0">
-      <div v-if="currentMusicDetail">
-        <h3>{{ currentMusicDetail.title }}</h3>
-        <p><strong>Artist:</strong> {{ currentMusicDetail.artist }}</p>
-        <p><strong>Composer:</strong> {{ currentMusicDetail.composer }}</p>
-        <p><strong>Writer:</strong> {{ currentMusicDetail.writer }}</p>
-        <p><strong>Concert:</strong> {{ currentMusicDetail.concert }}</p>
-        <p><strong>MV:</strong> <a :href="currentMusicDetail.mv_url" target="_blank">{{ currentMusicDetail.mv_url }}</a></p>
-        <p><strong>Lyrics:</strong> <a :href="currentMusicDetail.lyric_url" target="_blank">{{ currentMusicDetail.lyric_url }}</a></p>
-        <p><strong>Sheet:</strong> <a :href="currentMusicDetail.sheet_url" target="_blank">{{ currentMusicDetail.sheet_url }}</a></p>
-      </div>
-      <div v-else>
-        <p>没有歌曲详情可显示。</p>
-      </div>
+    <div v-if="showSongDetail && currentMusicDetail" class="song-detail fixed bg-[#00000000] rounded-lg p-4 w-[400px]">
+      <form @submit.prevent="saveMusicDetails">
+        <input type="hidden" v-model="currentMusicDetail.id">
+        <h3>{{ currentMusicDetail?.title }}</h3>
+        <p><strong>Artist:</strong> <input type="text" v-model="currentMusicDetail.artist"></p>
+        <p><strong>Composer:</strong> <input type="text" v-model="currentMusicDetail.composer"></p>
+        <p><strong>Writer:</strong> <input type="text" v-model="currentMusicDetail.writer"></p>
+        <p><strong>Concert:</strong> <input type="text" v-model="currentMusicDetail.concert"></p>
+        <p><strong>MV:</strong> <input type="text" v-model="currentMusicDetail.mv_url"></p>
+        <p><strong>Lyrics:</strong> <input type="text" v-model="currentMusicDetail.lyric_url"></p>
+        <p><strong>Sheet:</strong> <input type="text" v-model="currentMusicDetail.sheet_url"></p>
+        <button type="submit">保存</button>
+      </form>
     </div>
+
   </div>
 </template>
 
@@ -82,15 +87,15 @@ import type {MusicDetail} from "@/store/music.ts";
 // *************** 音乐列表展示逻辑 *************** //
 const showMusicList = ref(false);
 const showSongDetail = ref(false);
-const currentMusicDetail = ref<MusicDetail | null>(null); // 用于保存当前音乐详情
+const currentMusicDetail = ref<MusicDetail>(); // 用于保存当前音乐详情
 const musicStore = useMusicStore(); // 获取 Pinia store
 
 
 // *************** API操作 *************** //
 const listMusicReq = {
   "title": "",
-  "artist": 1,
-  "perform_type": 1,
+  "artist": 0,
+  "perform_type": 0,
   "page": 1,
   "size": 5
 };
@@ -128,6 +133,36 @@ const toggleSongDetail = () => {
   showSongDetail.value = !showSongDetail.value;
   showMusicList.value = false; // 隐藏音乐列表
 };
+
+// 保存音乐详情
+const saveMusicDetails = async () => {
+  try {
+    if (currentMusicDetail.value) {
+      // 发送更新音乐详情的请求，这里假设使用 apiClient.put 或 apiClient.post 方法
+      const response = await apiClient.put(`/music/upsert/`, currentMusicDetail.value);
+      console.log('音乐详情已更新', response.data);
+      // 可以选择刷新音乐列表或其他操作
+    }
+  } catch (error) {
+    console.error('保存音乐详情失败', error);
+  }
+};
+
+// 播放上一曲
+const playPrevious = () => {
+  // 实现上一曲的逻辑
+};
+
+// 暂停或播放音乐
+const togglePlay = () => {
+  // 实现暂停/播放的逻辑
+};
+
+// 播放下一曲
+const playNext = () => {
+  // 实现下一曲的逻辑
+};
+
 // 获取音乐列表
 onMounted(() => {
   fetchMusicList();
@@ -188,4 +223,15 @@ const drag = (e: MouseEvent) => {
 
 </script>
 
-<!-- Unocss classes used -->
+
+<style scoped>
+.song-detail {
+  /* 设置为fixed，使其相对于屏幕定位 */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000; /* 确保位于最前面 */
+  width: 400px;
+}
+</style>

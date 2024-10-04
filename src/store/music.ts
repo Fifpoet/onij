@@ -11,6 +11,7 @@ export interface Music {
     mv_url: string;
 }
 export interface MusicDetail {
+    id: number;
     title: string;
     artist: string;
     composer: string;
