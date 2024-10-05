@@ -27,7 +27,8 @@
           <button @click="togglePlay" class="w-[30px] h-[30px] rounded-full bg-gray-300 mx-2">▶️</button>
           <button @click="playNext" class="w-[30px] h-[30px] rounded-full bg-gray-300 ml-2">➡️</button>
         </div>
-        <strong class="transition-all duration-300 group-hover:hidden">{{ currentMusicDetail.title }}</strong>  <span class="group-hover:hidden">{{ currentMusicDetail.artist_name }}</span>
+        <strong class="transition-all duration-300 group-hover:hidden">{{ currentMusicDetail.title }}</strong> <span
+          class="group-hover:hidden">{{ currentMusicDetail.artist_name }}</span>
       </div>
       <div v-else>
         <p>请选择一首音乐播放</p>
@@ -45,21 +46,57 @@
     </div>
 
     <!-- 音乐列表展示 -->
-    <div v-if="showMusicList && !showSongDetail" class="music-list absolute bg-white shadow-lg rounded-lg p-4 w-[400px] bottom-[70px] left-0">
-      <ul>
-        <li
+    <div v-if="showMusicList && !showSongDetail"
+         class="music-list absolute bg-white shadow-lg rounded-lg p-4 w-[400px] bottom-[70px] left-0">
+      <n-list hoverable clickable>
+        <div
             v-for="music in musicStore.MusicList"
             :key="music.id"
             class="mb-2 cursor-pointer"
-            @dblclick="playMusic(music.id)"
-        >
-          <strong>{{ music.title }}</strong> - {{ music.artist }}
-        </li>
-      </ul>
+            @dblclick="playMusic(music.id)">
+          <n-list-item>
+            <n-thing :title="music.title" content-style="margin-top: 10px;">
+              <template #description>
+                <n-space size="small" style="margin-top: 4px">
+                  <n-tag :bordered="false" type="info" size="small">
+                    暑夜
+                  </n-tag>
+                  <n-tag :bordered="false" type="info" size="small">
+                    晚春
+                  </n-tag>
+                </n-space>
+              </template>
+            </n-thing>
+          </n-list-item>
+        </div>
+      </n-list>
     </div>
 
     <!-- 歌曲详情展示 -->
+
+
+
     <div v-if="showSongDetail && currentMusicDetail" class="song-detail fixed bg-[#00000000] rounded-lg p-4 w-[400px]">
+      <n-space vertical>
+        <n-form>
+          <n-form-item label="歌手"  :show-label="true">
+            <n-select
+                v-model:value="selectedValues"
+                multiple
+                filterable
+                placeholder="搜索歌手"
+                :options="singerOptions"
+                :loading="loadingSinger"
+                clearable
+                remote
+                :clear-filter-after-select="false"
+                @search="handleSearchSinger"
+            />
+          </n-form-item>
+        </n-form>
+      </n-space>
+
+
       <form @submit.prevent="saveMusicDetails">
         <input type="hidden" v-model="currentMusicDetail.id">
         <input type="hidden" v-model="currentMusicDetail.root_id">
@@ -88,7 +125,6 @@
     </div>
 
 
-
   </div>
 </template>
 
@@ -97,8 +133,10 @@
 
 import {onMounted, ref} from 'vue';
 import apiClient from '@/util/http.ts'; // 引入 axios 实例
-import {convertToUpsertMusicReq, useMusicStore} from "@/store/music.ts";
 import type {MusicDetail} from "@/store/music.ts";
+import {convertToUpsertMusicReq, useMusicStore} from "@/store/music.ts";
+import {NList, NListItem, NSpace, NTag, NThing, NForm, NFormItem, NSelect} from "naive-ui"
+import type { SelectOption } from 'naive-ui'
 // *************** 音乐列表展示逻辑 *************** //
 const showMusicList = ref(false);
 const showSongDetail = ref(false);
@@ -113,6 +151,41 @@ const listMusicReq = {
   "perform_type": 0,
   "page": 1,
   "size": 5
+};
+
+// *************** singer搜索和添加控件 *************** //
+const selectedValues = ref(null)
+const loadingSinger = ref(false)
+const singerPool = [
+  {
+    label: 'Drive My Car',
+    value: 'song1'
+  },
+  {
+    label: 'Norwegian Wood',
+    value: 'song2'
+  },
+    ]
+const singerOptions = ref<SelectOption[]>([])
+const handleSearchSinger = async (query: string) => {
+  if (!query.length) {
+    singerOptions.value = []
+    return
+  }
+  loadingSinger.value = true
+  // 搜索singer
+  singerOptions.value = singerPool
+  loadingSinger.value = false
+  // try {
+  //   const response = await apiClient.get('/music/list', {params: {title: query}});
+  //   const musicList = response.data.data;
+  //   singerOptions.value = musicList.map((music: Music) => ({
+  //     label: music.title,
+  //     value: music.id
+  //   }));
+  // } catch (error) {
+  //   console.error('搜索歌手失败', error);
+  // }
 };
 
 // 处理文件上传
@@ -143,7 +216,7 @@ const playMusic = async (id: number) => {
 // *************** 拖动操作 *************** //
 const audioContainer = ref<HTMLDivElement | null>(null);
 let isDragging = false;
-let offset = { x: 0, y: 0 };
+let offset = {x: 0, y: 0};
 
 // 切换音乐列表展示
 const toggleMusicList = () => {
@@ -196,7 +269,6 @@ const playNext = () => {
 onMounted(() => {
   fetchMusicList();
 });
-
 
 
 const startDragging = (e: MouseEvent) => {
