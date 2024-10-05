@@ -11,3 +11,8 @@ type UpsertPerformerReq struct {
 func (u *UpsertPerformerReq) ToModel() *mysql.Performer {
 	return &mysql.Performer{Id: u.Id, Name: u.Name, PerformerType: u.PerformerType}
 }
+
+type GetPerformerModel struct {
+	Id   int    `json:"id" form:"id"`
+	Name string `json:"name" form:"name"`
+}

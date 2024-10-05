@@ -60,6 +60,7 @@ func SetupRouter() *gin.Engine {
 	performerGroup := router.Group("/performer")
 	{
 		performerGroup.POST("/upsert", handler.UpsertPerformerHandler)
+		performerGroup.GET("/get", handler.GetPerformerHandler)
 	}
 
 	return router

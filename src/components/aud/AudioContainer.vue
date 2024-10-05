@@ -144,7 +144,6 @@ const currentMusicDetail = ref<MusicDetail>(); // 用于保存当前音乐详情
 const musicStore = useMusicStore(); // 获取 Pinia store
 
 
-// *************** API操作 *************** //
 const listMusicReq = {
   "title": "",
   "artist": 0,
@@ -153,7 +152,7 @@ const listMusicReq = {
   "size": 5
 };
 
-// *************** singer搜索和添加控件 *************** //
+// *************** music表单相关控件 *************** //
 const selectedValues = ref(null)
 const loadingSinger = ref(false)
 const singerPool = [
@@ -167,6 +166,12 @@ const singerPool = [
   },
     ]
 const singerOptions = ref<SelectOption[]>([])
+
+interface SingerModel {
+  id: number;
+  name: string;
+}
+
 const handleSearchSinger = async (query: string) => {
   if (!query.length) {
     singerOptions.value = []
@@ -174,18 +179,22 @@ const handleSearchSinger = async (query: string) => {
   }
   loadingSinger.value = true
   // 搜索singer
-  singerOptions.value = singerPool
-  loadingSinger.value = false
-  // try {
-  //   const response = await apiClient.get('/music/list', {params: {title: query}});
-  //   const musicList = response.data.data;
-  //   singerOptions.value = musicList.map((music: Music) => ({
-  //     label: music.title,
-  //     value: music.id
-  //   }));
-  // } catch (error) {
-  //   console.error('搜索歌手失败', error);
-  // }
+  try {
+    const response = await apiClient.get('/performer/get', {
+      params: {
+        type: 1, //TODO singer
+        name: query,
+      }
+    });
+    const singerList = response.data.data;
+    singerOptions.value = singerList.map((s: SingerModel) => ({
+      label: s.name,
+      value: s.id
+    }));
+    loadingSinger.value = false
+  } catch (error) {
+    console.error('搜索歌手失败', error);
+  }
 };
 
 // 处理文件上传
