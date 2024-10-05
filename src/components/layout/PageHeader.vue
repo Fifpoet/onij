@@ -1,28 +1,19 @@
 <script setup lang="ts">
-import {h, ref} from 'vue'
+import {ref} from 'vue'
 import {Icon} from '@iconify/vue';
-import {useAppStore, useUserStore} from '@/store';
+import {useAppStore} from '@/store';
 import {RouterLink} from 'vue-router';
 import {NButton, NDropdown} from 'naive-ui'
+import {renderIcon} from "@/util/icon.ts";
 // import MobileSideBar from './MobileSideBar.vue';
 
 const appStore = useAppStore()
-const userStore = useUserStore()
 
 const navClass = ref('nav')
 const barShow = ref(true)
 
 
-const renderIcon = (icon: string) => {
-  return () => {
-    return h(Icon, {
-      icon: icon,
-      class: 'text-xl'
-    }, {
-      default: () => h(icon)
-    })
-  }
-}
+
 
 
 const options = {

@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@vicons/ionicons5':
+    specifier: ^0.12.0
+    version: 0.12.0
   axios:
     specifier: ^1.7.7
     version: 1.7.7
@@ -1082,6 +1085,10 @@ packages:
     transitivePeerDependencies:
       - rollup
     dev: true
+
+  /@vicons/ionicons5@0.12.0:
+    resolution: {integrity: sha512-Iy1EUVRpX0WWxeu1VIReR1zsZLMc4fqpt223czR+Rpnrwu7pt46nbnC2ycO7ItI/uqDLJxnbcMC7FujKs9IfFA==}
+    dev: false
 
   /@vitejs/plugin-vue@5.0.5(vite@5.3.3)(vue@3.4.31):
     resolution: {integrity: sha512-LOjm7XeIimLBZyzinBQ6OSm3UBCNVCpLkxGC0oWmm2YPzVZoxMsdvNVimLTBzpAnR9hl/yn1SHGuRfe6/Td9rQ==}
