@@ -75,13 +75,14 @@
     <!-- 歌曲详情展示 -->
 
 
-
     <div v-if="showSongDetail && currentMusicDetail" class="song-detail fixed bg-[#00000000] rounded-lg p-4 w-[400px]">
+      <input type="hidden" v-model="currentMusicDetail.id">
+      <input type="hidden" v-model="currentMusicDetail.root_id">
       <n-space vertical>
         <n-form>
-          <n-form-item label="歌手"  :show-label="true">
+          <n-form-item label="歌手" :show-label="true">
             <n-select
-                v-model:value="selectedValues"
+                v-model:value="selectedSingerValues"
                 multiple
                 filterable
                 placeholder="搜索歌手"
@@ -93,20 +94,69 @@
                 @search="handleSearchSinger"
             />
           </n-form-item>
+
+
+          <n-form-item label="作曲" :show-label="true">
+            <n-select
+                v-model:value="selectedComposerValues"
+                filterable
+                placeholder="搜索作曲"
+                :options="composerOptions"
+                :loading="loadingComposer"
+                clearable
+                remote
+                @search="handleSearchComposer"
+            />
+          </n-form-item>
+
+          <n-form-item label="作词" :show-label="true">
+            <n-select
+                v-model:value="selectedWriterValues"
+                filterable
+                placeholder="搜索作词"
+                :options="writerOptions"
+                :loading="loadingWriter"
+                clearable
+                remote
+                @search="handleSearchWriter"
+            />
+          </n-form-item>
+
+          <n-form-item label="发布年份" path="issue_year">
+            <n-input v-model:value="musicForm.issue_year" placeholder="Input Name"/>
+          </n-form-item>
+
+          <n-form-item label="地区" path="language">
+            <n-input v-model:value="musicForm.language" placeholder="Input Name"/>
+          </n-form-item>
+
+          <n-form-item label="表演形式" path="perform_type">
+            <n-select v-model:value="musicForm.perform_type" :options="performTypeOptions" />
+          </n-form-item>
+
+          <n-form-item label="演唱会" path="concert">
+            <n-input v-model:value="musicForm.concert" placeholder="Input Name"/>
+          </n-form-item>
+
+          <n-form-item label="表演时间" path="concert_year">
+            <n-input v-model:value="musicForm.concert_year" placeholder="Input Name"/>
+          </n-form-item>
+
+          <n-upload
+              action="https://naive-upload.free.beeceptor.com/"
+              :custom-request="uploadMp3"
+          >
+            <n-button>上传MP3</n-button>
+          </n-upload>
+
         </n-form>
       </n-space>
 
 
       <form @submit.prevent="saveMusicDetails">
-        <input type="hidden" v-model="currentMusicDetail.id">
-        <input type="hidden" v-model="currentMusicDetail.root_id">
 
         <h3>{{ currentMusicDetail.title }}</h3>
 
-        <p><strong>Artist IDs:</strong> <input type="text" v-model="currentMusicDetail.artist_ids"></p>
-        <p><strong>Composer:</strong> <input type="number" v-model="currentMusicDetail.composer"></p>
-        <p><strong>Writer:</strong> <input type="number" v-model="currentMusicDetail.writer"></p>
-        <p><strong>Issue Year:</strong> <input type="number" v-model="currentMusicDetail.issue_year"></p>
         <p><strong>Language:</strong> <input type="number" v-model="currentMusicDetail.language"></p>
         <p><strong>Perform Type:</strong> <input type="number" v-model="currentMusicDetail.perform_type"></p>
         <p><strong>Concert:</strong> <input type="text" v-model="currentMusicDetail.concert"></p>
@@ -131,12 +181,13 @@
 
 <script lang="ts" setup>
 
-import {onMounted, ref} from 'vue';
+import {onMounted, Ref, ref} from 'vue';
 import apiClient from '@/util/http.ts'; // 引入 axios 实例
 import type {MusicDetail} from "@/store/music.ts";
 import {convertToUpsertMusicReq, useMusicStore} from "@/store/music.ts";
-import {NList, NListItem, NSpace, NTag, NThing, NForm, NFormItem, NSelect} from "naive-ui"
-import type { SelectOption } from 'naive-ui'
+import type {SelectOption} from 'naive-ui'
+import {NForm, NFormItem, NInput, NList, NListItem, NSelect, NSpace, NTag, NThing} from "naive-ui"
+import {performTypeOptions} from "@/util/enum.ts";
 // *************** 音乐列表展示逻辑 *************** //
 const showMusicList = ref(false);
 const showSongDetail = ref(false);
@@ -153,19 +204,26 @@ const listMusicReq = {
 };
 
 // *************** music表单相关控件 *************** //
-const selectedValues = ref(null)
+const selectedSingerValues = ref(null)
 const loadingSinger = ref(false)
-const singerPool = [
-  {
-    label: 'Drive My Car',
-    value: 'song1'
-  },
-  {
-    label: 'Norwegian Wood',
-    value: 'song2'
-  },
-    ]
 const singerOptions = ref<SelectOption[]>([])
+const selectedComposerValues = ref(null)
+const loadingComposer = ref(false)
+const composerOptions = ref<SelectOption[]>([])
+const selectedWriterValues = ref(null)
+const loadingWriter = ref(false)
+const writerOptions = ref<SelectOption[]>([])
+
+const musicForm = ref({
+  issue_year: "",
+  language: "",
+  perform_type: "",
+  concert: "",
+  concert_year: "",
+  mv_url: "",
+  lyric_url: "",
+  sheet_url: "",
+})
 
 interface SingerModel {
   id: number;
@@ -173,27 +231,40 @@ interface SingerModel {
 }
 
 const handleSearchSinger = async (query: string) => {
+  await handleSearch(query, 1, singerOptions, loadingSinger); // 传入typ为1
+};
+
+const handleSearchComposer = async (query: string) => {
+  await handleSearch(query, 2, composerOptions, loadingComposer); // 传入typ为2
+};
+
+const handleSearchWriter = async (query: string) => {
+  await handleSearch(query, 3, writerOptions, loadingWriter); // 传入typ为2
+};
+
+const handleSearch = async (query: string, typ: number, options: Ref<SelectOption[]>, loading: Ref<boolean>) => {
   if (!query.length) {
-    singerOptions.value = []
     return
   }
-  loadingSinger.value = true
+  loading.value = true
   // 搜索singer
   try {
     const response = await apiClient.get('/performer/get', {
       params: {
-        type: 1, //TODO singer
+        type: typ,
         name: query,
       }
     });
     const singerList = response.data.data;
-    singerOptions.value = singerList.map((s: SingerModel) => ({
+    options.value = singerList.map((s: SingerModel) => ({
       label: s.name,
       value: s.id
     }));
-    loadingSinger.value = false
+    loading.value = false
   } catch (error) {
-    console.error('搜索歌手失败', error);
+    console.error('搜索失败', error);
+  } finally {
+    loading.value = false; // 无论成功与否，都需要结束加载状态
   }
 };
 
