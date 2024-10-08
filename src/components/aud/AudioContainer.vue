@@ -143,7 +143,7 @@
           </n-form-item>
 
           <n-upload
-              action="https://naive-upload.free.beeceptor.com/"
+              action="/music/upsert"
               :custom-request="uploadMp3"
           >
             <n-button>上传MP3</n-button>
@@ -185,9 +185,10 @@ import {onMounted, Ref, ref} from 'vue';
 import apiClient from '@/util/http.ts'; // 引入 axios 实例
 import type {MusicDetail} from "@/store/music.ts";
 import {convertToUpsertMusicReq, useMusicStore} from "@/store/music.ts";
-import type {SelectOption} from 'naive-ui'
-import {NForm, NFormItem, NInput, NList, NListItem, NSelect, NSpace, NTag, NThing} from "naive-ui"
+import type {SelectOption, UploadCustomRequestOptions} from 'naive-ui'
+import {useMessage, NForm, NFormItem, NInput, NList, NListItem, NSelect, NSpace, NTag, NThing} from "naive-ui"
 import {performTypeOptions} from "@/util/enum.ts";
+const message = useMessage()
 // *************** 音乐列表展示逻辑 *************** //
 const showMusicList = ref(false);
 const showSongDetail = ref(false);
@@ -241,6 +242,44 @@ const handleSearchComposer = async (query: string) => {
 const handleSearchWriter = async (query: string) => {
   await handleSearch(query, 3, writerOptions, loadingWriter); // 传入typ为2
 };
+
+const uploadMp3 = ({
+                         file,
+                         data,
+                         headers,
+                         withCredentials,
+                         action,
+                         onFinish,
+                         onError,
+                         onProgress
+                       }: UploadCustomRequestOptions) => {
+  const formData = new FormData()
+  if (data) {
+    Object.keys(data).forEach((key) => {
+      formData.append(
+          key,
+          data[key as keyof UploadCustomRequestOptions['data']]
+      )
+    })
+  }
+  formData.append(file.name, file.file as File)
+  apiClient.post(action as string, {
+        withCredentials,
+        headers: headers as Record<string, string>,
+        body: formData,
+        onUploadProgress: ({ percent }) => {
+          onProgress({ percent: Math.ceil(percent) })
+        }
+      })
+      .then(({ json }) => {
+        message.success(JSON.stringify(json))
+        onFinish()
+      })
+      .catch((error) => {
+        message.success(error.message)
+        onError()
+      })
+}
 
 const handleSearch = async (query: string, typ: number, options: Ref<SelectOption[]>, loading: Ref<boolean>) => {
   if (!query.length) {
