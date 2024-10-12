@@ -152,26 +152,6 @@
         </n-form>
       </n-space>
 
-
-      <form @submit.prevent="saveMusicDetails">
-
-        <h3>{{ currentMusicDetail.title }}</h3>
-
-        <p><strong>Language:</strong> <input type="number" v-model="currentMusicDetail.language"></p>
-        <p><strong>Perform Type:</strong> <input type="number" v-model="currentMusicDetail.perform_type"></p>
-        <p><strong>Concert:</strong> <input type="text" v-model="currentMusicDetail.concert"></p>
-        <p><strong>Concert Year:</strong> <input type="number" v-model="currentMusicDetail.concert_year"></p>
-        <p><strong>MV URL:</strong> <input type="text" v-model="currentMusicDetail.mv_url"></p>
-        <p><strong>Lyrics URL:</strong> <input type="text" v-model="currentMusicDetail.lyric_url"></p>
-        <p><strong>Sheet URL:</strong> <input type="text" v-model="currentMusicDetail.sheet_url"></p>
-
-        <!-- 文件上传字段 -->
-        <p><strong>Cover:</strong> <input type="file" @change="handleFileUpload('cover', $event)"></p>
-        <p><strong>MP:</strong> <input type="file" @change="handleFileUpload('mp', $event)"></p>
-        <p><strong>Lyric:</strong> <input type="file" @change="handleFileUpload('lyric', $event)"></p>
-
-        <button type="submit">保存</button>
-      </form>
     </div>
 
 
@@ -222,8 +202,10 @@ const musicForm = ref({
   concert: "",
   concert_year: "",
   mv_url: "",
-  lyric_url: "",
-  sheet_url: "",
+  mp3: null,
+  lyric: File,
+  sheet: File,
+  cover: File,
 })
 
 interface SingerModel {
@@ -245,40 +227,24 @@ const handleSearchWriter = async (query: string) => {
 
 const uploadMp3 = ({
                          file,
-                         data,
-                         headers,
-                         withCredentials,
-                         action,
-                         onFinish,
-                         onError,
-                         onProgress
                        }: UploadCustomRequestOptions) => {
-  const formData = new FormData()
-  if (data) {
-    Object.keys(data).forEach((key) => {
-      formData.append(
-          key,
-          data[key as keyof UploadCustomRequestOptions['data']]
-      )
-    })
-  }
-  formData.append(file.name, file.file as File)
-  apiClient.post(action as string, {
-        withCredentials,
-        headers: headers as Record<string, string>,
-        body: formData,
-        onUploadProgress: ({ percent }) => {
-          onProgress({ percent: Math.ceil(percent) })
-        }
-      })
-      .then(({ json }) => {
-        message.success(JSON.stringify(json))
-        onFinish()
-      })
-      .catch((error) => {
-        message.success(error.message)
-        onError()
-      })
+  musicForm.value.mp3 = file.file
+  // apiClient.post(action as string, {
+  //       withCredentials,
+  //       headers: headers as Record<string, string>,
+  //       body: formData,
+  //       onUploadProgress: ({ percent }) => {
+  //         onProgress({ percent: Math.ceil(percent) })
+  //       }
+  //     })
+  //     .then(({ json }) => {
+  //       message.success(JSON.stringify(json))
+  //       onFinish()
+  //     })
+  //     .catch((error) => {
+  //       message.success(error.message)
+  //       onError()
+  //     })
 }
 
 const handleSearch = async (query: string, typ: number, options: Ref<SelectOption[]>, loading: Ref<boolean>) => {
