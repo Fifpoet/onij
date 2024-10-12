@@ -3,6 +3,7 @@ import { RouterView } from 'vue-router';
 import PageHeader from './components/layout/PageHeader.vue'
 // import lbAudio from './components/audio/index.vue';
 import AudioContainer from "@/components/aud/AudioContainer.vue";
+import {NMessageProvider} from "naive-ui"
 
 const musicList = [
   {
@@ -160,7 +161,6 @@ const musicList = [
 </script>
 
 <template>
-
   <div class="h-full w-full flex flex-col">
 
     <!-- 顶部导航栏 -->
@@ -180,11 +180,14 @@ const musicList = [
         <component :is="Component" :key="route.path" />
       </RouterView>
     </article>
+
+  <n-message-provider>
   <AudioContainer></AudioContainer>
 <!--  <lbAudio class="music-player" :musicList="musicList" :index="8" :lyrics="true">-->
 <!--  </lbAudio>-->
 <!--  <WeeklyModal></WeeklyModal>-->
 
+  </n-message-provider>
   <br>
   <br>
   <br>

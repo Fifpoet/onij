@@ -12,14 +12,22 @@ const apiClient = axios.create({
 });
 
 
-// 添加请求拦截器（可选）
 apiClient.interceptors.request.use(
     (config) => {
+        // 打印请求的 URL 和 body
+        if (config.baseURL && config.url) {
+            console.log('Request URL:', config.baseURL + config.url);
+        }
+        if (config.method === 'post' || config.method === 'put') {
+            console.log('Request Body:', config.data);
+        }
+
         // 在发送请求之前做点什么，比如添加 token
-        const token = localStorage.getItem('token'); // 假设你从 localStorage 取 token
+        const token = localStorage.getItem('token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
+
         return config;
     },
     (error) => {
@@ -27,6 +35,7 @@ apiClient.interceptors.request.use(
         return Promise.reject(error);
     }
 );
+
 
 // 添加响应拦截器（可选）
 apiClient.interceptors.response.use(

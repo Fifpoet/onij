@@ -131,7 +131,7 @@
           </n-form-item>
 
           <n-form-item label="表演形式" path="perform_type">
-            <n-select v-model:value="musicForm.perform_type" :options="performTypeOptions" />
+            <n-select v-model:value="musicForm.perform_type" :options="performTypeOptions"/>
           </n-form-item>
 
           <n-form-item label="演唱会" path="concert">
@@ -142,14 +142,27 @@
             <n-input v-model:value="musicForm.concert_year" placeholder="Input Name"/>
           </n-form-item>
 
-          <n-upload
-              action="/music/upsert"
-              :custom-request="uploadMp3"
-          >
+          <n-form-item label="MV链接" path="concert_year">
+            <n-input v-model:value="musicForm.mv_url" placeholder="Input Name"/>
+          </n-form-item>
+
+          <n-upload :custom-request="uploadMp3">
             <n-button>上传MP3</n-button>
           </n-upload>
+          <n-upload :custom-request="uploadLyric">
+            <n-button>上传歌词</n-button>
+          </n-upload>
+          <n-upload :custom-request="uploadCover">
+            <n-button>上传封面</n-button>
+          </n-upload>
+          <n-upload :custom-request="uploadSheet">
+            <n-button>上传曲谱</n-button>
+          </n-upload>
+
 
         </n-form>
+        <n-button @click="submitMusicForm">确定</n-button>
+
       </n-space>
 
     </div>
@@ -166,10 +179,24 @@ import apiClient from '@/util/http.ts'; // 引入 axios 实例
 import type {MusicDetail} from "@/store/music.ts";
 import {convertToUpsertMusicReq, useMusicStore} from "@/store/music.ts";
 import type {SelectOption, UploadCustomRequestOptions} from 'naive-ui'
-import {useMessage, NForm, NFormItem, NInput, NList, NListItem, NSelect, NSpace, NTag, NThing} from "naive-ui"
+import {
+  NButton,
+  NForm,
+  NFormItem,
+  NInput,
+  NList,
+  NListItem,
+  NSelect,
+  NSpace,
+  NTag,
+  NThing,
+  NUpload,
+  useMessage
+} from "naive-ui"
 import {performTypeOptions} from "@/util/enum.ts";
+
 const message = useMessage()
-// *************** 音乐列表展示逻辑 *************** //
+// *************************************************** 音乐列表展示逻辑 *************************************************** //
 const showMusicList = ref(false);
 const showSongDetail = ref(false);
 const currentMusicDetail = ref<MusicDetail>(); // 用于保存当前音乐详情
@@ -195,7 +222,7 @@ const selectedWriterValues = ref(null)
 const loadingWriter = ref(false)
 const writerOptions = ref<SelectOption[]>([])
 
-const musicForm = ref({
+const musicForm = ref<MusicForm | null>({
   issue_year: "",
   language: "",
   perform_type: "",
@@ -203,10 +230,23 @@ const musicForm = ref({
   concert_year: "",
   mv_url: "",
   mp3: null,
-  lyric: File,
-  sheet: File,
-  cover: File,
+  lyric: null,
+  sheet: null,
+  cover: null,
 })
+
+interface MusicForm {
+  issue_year: string,
+  language: string,
+  perform_type: string,
+  concert: string,
+  concert_year: string,
+  mv_url: string,
+  mp3: File | null,
+  lyric: File | null,
+  sheet: File | null,
+  cover: File | null,
+}
 
 interface SingerModel {
   id: number;
@@ -225,27 +265,73 @@ const handleSearchWriter = async (query: string) => {
   await handleSearch(query, 3, writerOptions, loadingWriter); // 传入typ为2
 };
 
-const uploadMp3 = ({
-                         file,
-                       }: UploadCustomRequestOptions) => {
-  musicForm.value.mp3 = file.file
-  // apiClient.post(action as string, {
-  //       withCredentials,
-  //       headers: headers as Record<string, string>,
-  //       body: formData,
-  //       onUploadProgress: ({ percent }) => {
-  //         onProgress({ percent: Math.ceil(percent) })
-  //       }
-  //     })
-  //     .then(({ json }) => {
-  //       message.success(JSON.stringify(json))
-  //       onFinish()
-  //     })
-  //     .catch((error) => {
-  //       message.success(error.message)
-  //       onError()
-  //     })
+const uploadMp3 = ({file}: UploadCustomRequestOptions) => {
+  if (musicForm.value) {
+    if (file.file) {
+      musicForm.value.mp3 = file.file; // 确保 file.file 不是 null
+      console.log("上传mp3文件暂存: ", file.name)
+    } else {
+      message.error("文件无效");
+      return;
+    }
+  } else {
+    message.error("请先选择歌曲");
+    return;
+  }
+  message.info("上传mp3成功");
 }
+const uploadLyric = ({file}: UploadCustomRequestOptions) => {
+  if (musicForm.value) {
+    if (file.file) {
+      musicForm.value.lyric = file.file; // 确保 file.file 不是 null
+      console.log("上传歌词文件暂存: ", file.name)
+    } else {
+      message.error("文件无效");
+      return;
+    }
+  } else {
+    message.error("请先选择歌曲");
+    return;
+  }
+  message.info("上传歌词成功");
+}
+const uploadCover = ({file}: UploadCustomRequestOptions) => {
+  if (musicForm.value) {
+    if (file.file) {
+      musicForm.value.cover = file.file; // 确保 file.file 不是 null
+      console.log("上传封面文件暂存: ", file.name)
+    } else {
+      message.error("文件无效");
+      return;
+    }
+  } else {
+    message.error("请先选择歌曲");
+    return;
+  }
+}
+const uploadSheet = ({file}: UploadCustomRequestOptions) => {
+  if (musicForm.value) {
+    if (file.file) {
+      musicForm.value.sheet = file.file; // 确保 file.file 不是 null
+      console.log("上传曲谱文件暂存: ", file.name)
+    } else {
+      message.error("文件无效");
+      return;
+    }
+  } else {
+    message.error("请先选择歌曲");
+    return;
+  }
+}
+
+const submitMusicForm = async () => {
+  const response = await apiClient.post('/music/upsert', musicForm.value);
+  if (response.status === 200) {
+    message.success("上传成功");
+  } else {
+    message.error("上传失败");
+  }
+};
 
 const handleSearch = async (query: string, typ: number, options: Ref<SelectOption[]>, loading: Ref<boolean>) => {
   if (!query.length) {
@@ -298,7 +384,7 @@ const playMusic = async (id: number) => {
   }
 };
 
-// *************** 拖动操作 *************** //
+// *************************************************** 拖动操作 *************************************************** //
 const audioContainer = ref<HTMLDivElement | null>(null);
 let isDragging = false;
 let offset = {x: 0, y: 0};
