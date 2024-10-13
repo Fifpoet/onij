@@ -14,14 +14,14 @@ export interface MusicDetail {
     id: number;
     root_id: number;
     title: string;
-    artist_ids: string;
+    artist_ids: number[];
     composer: number;
     writer: number;
-    issue_year: number;
-    language: number;
+    issue_year: string;
+    language: string;
     perform_type: number;
     concert: string;
-    concert_year: number;
+    concert_year: string;
     sequence: number;
     mv_url: string;
     cover_oss: number;
@@ -49,11 +49,11 @@ export interface UpsertMusicReq {
     artist_ids: number[];
     composer: number;
     writer: number;
-    issue_year: number;
-    language: number;
+    issue_year: string;
+    language: string;
     perform_type: number;
     concert: string;
-    concert_year: number;
+    concert_year: string;
     sequence: number;
     mv_url: string;
     cover_oss: number;
@@ -72,7 +72,7 @@ export const convertToUpsertMusicReq = (musicDetail: MusicDetail): UpsertMusicRe
         id: musicDetail.id,
         root_id: musicDetail.root_id,
         title: musicDetail.title,
-        artist_ids: musicDetail.artist_ids.split(',').map(Number),  // 转换为数组
+        artist_ids: musicDetail.artist_ids,  // 转换为数组
         composer: musicDetail.composer,
         writer: musicDetail.writer,
         issue_year: musicDetail.issue_year,
