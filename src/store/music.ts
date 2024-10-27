@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import {numberArrayToString} from "@/util/common.ts";
 
 export interface Music {
     id: string;
@@ -46,7 +47,7 @@ export interface UpsertMusicReq {
     id: number;
     root_id: number;
     title: string;
-    artist_ids: number[];
+    artist_ids: string;
     composer: number;
     writer: number;
     issue_year: string;
@@ -72,7 +73,7 @@ export const convertToUpsertMusicReq = (musicDetail: MusicDetail): UpsertMusicRe
         id: musicDetail.id,
         root_id: musicDetail.root_id,
         title: musicDetail.title,
-        artist_ids: musicDetail.artist_ids,  // 转换为数组
+        artist_ids: numberArrayToString(musicDetail.artist_ids),
         composer: musicDetail.composer,
         writer: musicDetail.writer,
         issue_year: musicDetail.issue_year,

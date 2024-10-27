@@ -175,11 +175,11 @@ const musicList = [
       <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
     </a>
   </div>
-  <article class="flex flex-1 flex-col">
-      <RouterView v-slot="{ Component, route }">
-        <component :is="Component" :key="route.path" />
-      </RouterView>
-    </article>
+<!--  <article class="flex flex-1 flex-col">-->
+<!--      <RouterView v-slot="{ Component, route }">-->
+<!--        <component :is="Component" :key="route.path" />-->
+<!--      </RouterView>-->
+<!--    </article>-->
 
   <n-message-provider>
   <AudioContainer></AudioContainer>

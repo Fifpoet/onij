@@ -3,14 +3,13 @@ package resq
 import (
 	"mime/multipart"
 	"onij/infra/mysql"
-	"onij/util"
 )
 
 type UpsertMusicReq struct {
 	Id          int                   `json:"id" form:"id"`
 	RootId      int                   `json:"root_id" form:"root_id"`
 	Title       string                `json:"title" form:"title"`
-	ArtistIds   []int                 `json:"artist_ids" form:"artist_ids"`
+	ArtistIds   string                `json:"artist_ids" form:"artist_ids"`
 	Composer    int                   `json:"composer" form:"composer"`
 	Writer      int                   `json:"writer" form:"writer"`
 	IssueYear   int                   `json:"issue_year" form:"issue_year"`
@@ -35,7 +34,7 @@ func (u *UpsertMusicReq) ToModel() (m *mysql.Music, cover, mp, lyric, sheet *mul
 		Id:          u.Id,
 		RootId:      u.RootId,
 		Title:       u.Title,
-		ArtistIds:   util.ListToDb(u.ArtistIds),
+		ArtistIds:   u.ArtistIds,
 		Composer:    u.Composer,
 		Writer:      u.Writer,
 		IssueYear:   u.IssueYear,

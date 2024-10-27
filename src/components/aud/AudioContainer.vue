@@ -212,13 +212,13 @@ const listMusicReq = {
 };
 
 // *************** music表单相关控件 *************** //
-const selectedSingerValues = ref(null)
+const selectedSingerValues = ref<number[]>([]);
 const loadingSinger = ref(false)
 const singerOptions = ref<SelectOption[]>([])
-const selectedComposerValues = ref(null)
+const selectedComposerValues = ref<number[]>([]);
 const loadingComposer = ref(false)
 const composerOptions = ref<SelectOption[]>([])
-const selectedWriterValues = ref(null)
+const selectedWriterValues = ref<number[]>([]);
 const loadingWriter = ref(false)
 const writerOptions = ref<SelectOption[]>([])
 
@@ -301,9 +301,10 @@ const uploadSheet = ({file}: UploadCustomRequestOptions) => {
 
 const submitMusicForm = async () => {
   if (currentMusicDetail.value) {
-    // console.log(selectedSingerValues.value);
     if (selectedSingerValues.value) {
       currentMusicDetail.value.artist_ids = selectedSingerValues.value;
+    } else {
+      currentMusicDetail.value.artist_ids = [];
     }
 
 
@@ -363,7 +364,6 @@ const fetchMusicList = async () => {
 const playMusic = async (id: number) => {
   try {
     const response = await apiClient.get(`/music/get/${id}`); // 获取音乐详情的 API
-    //TODO trans
     currentMusicDetail.value = response.data.data; // 更新当前音乐详情
     musicStore.setCurrentMusic(id); // 更新 Pinia store 中的当前播放的音乐 id
   } catch (error) {
