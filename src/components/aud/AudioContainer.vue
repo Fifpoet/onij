@@ -366,13 +366,20 @@ const playMusic = async (id: number) => {
     const response = await apiClient.get(`/music/get/${id}`); // 获取音乐详情的 API
     currentMusicDetail.value = response.data.data; // 更新当前音乐详情
     musicStore.setCurrentMusic(id); // 更新 Pinia store 中的当前播放的音乐 id
+    if (audio.value && currentMusicDetail.value) {
+      audio.value.pause(); // 停止当前音频
+      audio.value.src = currentMusicDetail.value.mp_url; // 更新音频链接
+      isPlaying.value = false; // 重置播放状态
+    }
   } catch (error) {
     console.error('获取音乐详情失败', error);
   }
 };
 
-// *************************************************** 拖动操作 *************************************************** //
+// *************************************************** 音乐播放逻辑 *************************************************** //
 const audioContainer = ref<HTMLDivElement | null>(null);
+const audio = ref<HTMLAudioElement | null>(null); // 用于音频控制的全局 Audio 实例
+const isPlaying = ref(false); // 控制播放状态
 let isDragging = false;
 let offset = {x: 0, y: 0};
 
@@ -390,19 +397,68 @@ const toggleSongDetail = () => {
 
 // 使用转换函数保存音乐详情
 
-// 播放上一曲
-const playPrevious = () => {
-  // 实现上一曲的逻辑
-};
-
 // 暂停或播放音乐
 const togglePlay = () => {
-  // 实现暂停/播放的逻辑
+  // 确保有音乐链接
+  if (!currentMusicDetail.value?.mp_url) {
+    message.error("没有找到音频文件");
+    return;
+  }
+
+  // 初始化 Audio 对象
+  if (!audio.value) {
+    audio.value = new Audio(currentMusicDetail.value.mp_url);
+  }
+
+  // 切换播放和暂停状态
+  if (isPlaying.value) {
+    audio.value.pause();
+  } else {
+    audio.value.play();
+  }
+
+  // 切换播放状态
+  isPlaying.value = !isPlaying.value;
 };
 
-// 播放下一曲
+const playPrevious = () => {
+  if (!musicStore.CurrentMusic || !musicStore.MusicList.length) {
+    message.error("没有可播放的音乐");
+    return;
+  }
+
+  // 获取当前音乐在列表中的索引
+  const currentIndex = musicStore.MusicList.findIndex(
+      (music) => music.id === musicStore.CurrentMusic?.id
+  );
+
+  if (currentIndex > 0) {
+    // 如果有上一曲，播放上一曲
+    const previousMusic = musicStore.MusicList[currentIndex - 1];
+    playMusic(previousMusic.id);
+  } else {
+    message.info("已经是第一首了");
+  }
+};
+
 const playNext = () => {
-  // 实现下一曲的逻辑
+  if (!musicStore.CurrentMusic || !musicStore.MusicList.length) {
+    message.error("没有可播放的音乐");
+    return;
+  }
+
+  // 获取当前音乐在列表中的索引
+  const currentIndex = musicStore.MusicList.findIndex(
+      (music) => music.id === musicStore.CurrentMusic?.id
+  );
+
+  if (currentIndex < musicStore.MusicList.length - 1) {
+    // 如果有下一曲，播放下一曲
+    const nextMusic = musicStore.MusicList[currentIndex + 1];
+    playMusic(nextMusic.id);
+  } else {
+    message.info("已经是最后一首了");
+  }
 };
 
 // 获取音乐列表
