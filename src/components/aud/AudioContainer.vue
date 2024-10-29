@@ -62,8 +62,9 @@
     </div>
 
     <!-- 音乐列表展示 -->
-    <div v-if="showMusicList && !showSongDetail"
-         class="music-list absolute bg-white shadow-lg rounded-lg p-4 w-[400px] bottom-[70px] left-0">
+    <div
+        v-if="showMusicList && !showSongDetail"
+        class="music-list absolute bg-white shadow-lg rounded-lg p-4 w-[400px] bottom-[70px] left-0 max-h-[300px] overflow-y-auto">
       <n-list hoverable clickable>
         <div
             v-for="music in musicStore.MusicList"
@@ -224,7 +225,7 @@ const listMusicReq = {
   "artist": 0,
   "perform_type": 0,
   "page": 1,
-  "size": 5
+  "size": 30
 };
 
 // *************** music表单相关控件 *************** //
@@ -382,11 +383,7 @@ const playMusic = async (id: number) => {
     const response = await apiClient.get(`/music/get/${id}`); // 获取音乐详情的 API
     currentMusicDetail.value = response.data.data; // 更新当前音乐详情
     musicStore.setCurrentMusic(id); // 更新 Pinia store 中的当前播放的音乐 id
-    if (audio.value && currentMusicDetail.value) {
-      audio.value.pause(); // 停止当前音频
-      audio.value.src = currentMusicDetail.value.mp_url; // 更新音频链接
-      isPlaying.value = false; // 重置播放状态
-    }
+    togglePlay()
   } catch (error) {
     console.error('获取音乐详情失败', error);
   }
