@@ -46,10 +46,14 @@
     </div>
 
     <!-- 进度条 -->
-    <div class="absolute bottom-0 left-0 w-full p-0 m-0">
+    <div class="absolute bottom-[-1px] left-0 w-full p-0 m-0 flex items-center">
+      <!-- 已播放时间显示 -->
+      <span class="text-xs text-gray-500 ml-2">{{ formattedCurrentTime }}</span>
+
+      <!-- 进度条 -->
       <input
           type="range"
-          class="w-full h-[2px] bg-gray-300 outline-none appearance-none p-0 m-0"
+          class="flex-grow h-[2px] bg-gray-300 outline-none appearance-none p-0 m-0 ml-2"
           min="0"
           max="100"
           v-model="currentProgress"
@@ -186,7 +190,7 @@
 
 <script lang="ts" setup>
 
-import {onMounted, Ref, ref} from 'vue';
+import {computed, onMounted, Ref, ref} from 'vue';
 import apiClient from '@/util/http.ts'; // 引入 axios 实例
 import type {MusicDetail} from "@/store/music.ts";
 import {convertToUpsertMusicReq, useMusicStore} from "@/store/music.ts";
@@ -392,10 +396,21 @@ const playMusic = async (id: number) => {
 const audioContainer = ref<HTMLDivElement | null>(null);
 const audio = ref<HTMLAudioElement | null>(null); // 用于音频控制的全局 Audio 实例
 const isPlaying = ref(false); // 控制播放状态
+const currentTime = ref(0);
 const currentProgress = ref(0); // 当前进度百分比
 const duration = ref(0); // 音频总时长
 let isDragging = false;
 let offset = {x: 0, y: 0};
+
+const formattedCurrentTime = computed(() => {
+  const minutes = Math.floor(currentTime.value / 60)
+      .toString()
+      .padStart(2, "0");
+  const seconds = Math.floor(currentTime.value % 60)
+      .toString()
+      .padStart(2, "0");
+  return `${minutes}:${seconds}`;
+});
 
 // 切换音乐列表展示
 const toggleMusicList = () => {
@@ -438,6 +453,7 @@ const togglePlay = () => {
 
 
   audio.value.ontimeupdate = () => {
+    currentTime.value = audio.value!.currentTime;
     currentProgress.value = (audio.value!.currentTime / audio.value!.duration) * 100;
   };
   audio.value.onloadedmetadata = () => {
