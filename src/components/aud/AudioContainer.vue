@@ -46,10 +46,10 @@
     </div>
 
     <!-- 进度条 -->
-    <div class="w-full px-2">
+    <div class="absolute bottom-0 left-0 w-full p-0 m-0">
       <input
           type="range"
-          class="w-full h-[4px] bg-gray-300 rounded-full"
+          class="w-full h-[2px] bg-gray-300 outline-none appearance-none p-0 m-0"
           min="0"
           max="100"
           v-model="currentProgress"
@@ -420,9 +420,23 @@ const togglePlay = () => {
   }
 
   // 初始化 Audio 对象
-  if (!audio.value) {
-    audio.value = new Audio(currentMusicDetail.value.mp_url);
+  for (let i = 0; i < 5; i++) {
+    if (!audio.value) {
+      audio.value = new Audio(currentMusicDetail.value.mp_url);
+      // 处理音频加载错误
+      audio.value.onerror = () => {
+        message.error("音频文件加载失败，请检查链接");
+        // 清理音频对象
+        audio.value = null;
+        isPlaying.value = false;
+      };
+    }
   }
+  if (!audio.value) {
+    return;
+  }
+
+
   audio.value.ontimeupdate = () => {
     currentProgress.value = (audio.value!.currentTime / audio.value!.duration) * 100;
   };
@@ -558,5 +572,22 @@ const drag = (e: MouseEvent) => {
   transform: translate(-50%, -50%);
   z-index: 1000; /* 确保位于最前面 */
   width: 400px;
+}
+/* 调整进度条滑块圆圈的大小 */
+input[type="range"]::-webkit-slider-thumb {
+  width: 8px; /* 圆圈宽度 */
+  height: 8px; /* 圆圈高度 */
+  background-color: #333; /* 圆圈颜色 */
+  border-radius: 50%;
+  cursor: pointer;
+  -webkit-appearance: none; /* 移除默认样式 */
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 8px;
+  height: 8px;
+  background-color: #333;
+  border-radius: 50%;
+  cursor: pointer;
 }
 </style>
