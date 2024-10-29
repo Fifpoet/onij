@@ -1,7 +1,7 @@
 <template>
   <div
       ref="audioContainer"
-      class="audio-container fixed bg-[rgb(245,245,245)] rounded-lg shadow-lg flex items-center bottom-5 left-5 w-[400px] h-[60px]"
+      class="audio-container fixed bg-[rgb(245,245,245)] flex items-center bottom-5 left-5 w-[400px] h-[60px]"
   >
 
     <!-- 左侧两竖排小点 -->
@@ -43,6 +43,18 @@
     <!-- 右侧展示音乐列表的图标 -->
     <div class="music-list-toggle p-2 cursor-pointer" @click="toggleMusicList">
       🎵 <!-- 可以替换为你想要的图标 -->
+    </div>
+
+    <!-- 进度条 -->
+    <div class="w-full px-2">
+      <input
+          type="range"
+          class="w-full h-[4px] bg-gray-300 rounded-full"
+          min="0"
+          max="100"
+          v-model="currentProgress"
+          @input="onSeek"
+      />
     </div>
 
     <!-- 音乐列表展示 -->
@@ -380,6 +392,8 @@ const playMusic = async (id: number) => {
 const audioContainer = ref<HTMLDivElement | null>(null);
 const audio = ref<HTMLAudioElement | null>(null); // 用于音频控制的全局 Audio 实例
 const isPlaying = ref(false); // 控制播放状态
+const currentProgress = ref(0); // 当前进度百分比
+const duration = ref(0); // 音频总时长
 let isDragging = false;
 let offset = {x: 0, y: 0};
 
@@ -409,6 +423,12 @@ const togglePlay = () => {
   if (!audio.value) {
     audio.value = new Audio(currentMusicDetail.value.mp_url);
   }
+  audio.value.ontimeupdate = () => {
+    currentProgress.value = (audio.value!.currentTime / audio.value!.duration) * 100;
+  };
+  audio.value.onloadedmetadata = () => {
+    duration.value = audio.value!.duration;
+  };
 
   // 切换播放和暂停状态
   if (isPlaying.value) {
@@ -419,6 +439,14 @@ const togglePlay = () => {
 
   // 切换播放状态
   isPlaying.value = !isPlaying.value;
+};
+
+const onSeek = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const value = parseFloat(target.value);
+  if (audio.value) {
+    audio.value.currentTime = (value / 100) * duration.value;
+  }
 };
 
 const playPrevious = () => {
