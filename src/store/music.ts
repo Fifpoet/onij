@@ -104,13 +104,14 @@ export const useMusicStore = defineStore('music', {
         CurrentMusic: null as MusicDetail | null, // 当前播放的音乐 ID
     }),
 
-    // 定义 getters，如果需要从 state 中派生数据，可以使用 getters
-
-    // 定义 actions，用于修改状态
     actions: {
         // 更新音乐列表
         setMusicList(musicList: Music[]) {
             this.MusicList = musicList;
+        },
+        
+        appendMusicList(musicList: Music[]) {
+            this.MusicList.push(...musicList);
         },
 
         // 设置当前播放的音乐 ID
