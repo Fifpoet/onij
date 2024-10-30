@@ -224,8 +224,8 @@ const listMusicReq = {
   "title": "",
   "artist": 0,
   "perform_type": 0,
-  "page": 1,
-  "size": 30
+  "page": 10,
+  "size": 10
 };
 
 // *************** music表单相关控件 *************** //

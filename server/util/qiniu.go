@@ -5,9 +5,6 @@ import (
 	"crypto/md5"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/qiniu/go-sdk/v7/auth/qbox"
-	"github.com/qiniu/go-sdk/v7/storage"
 	"image"
 	_ "image/gif"  // 必须导入
 	_ "image/jpeg" // 必须导入
@@ -17,6 +14,10 @@ import (
 	"mime/multipart"
 	"os"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/qiniu/go-sdk/v7/auth/qbox"
+	"github.com/qiniu/go-sdk/v7/storage"
 )
 
 const (
@@ -27,6 +28,9 @@ const (
 
 func getQiniuMac() *qbox.Mac {
 	sk := os.Getenv("sk")
+	if sk == "" {
+		panic("sk is empty")
+	}
 	return qbox.NewMac(ak, sk)
 }
 
