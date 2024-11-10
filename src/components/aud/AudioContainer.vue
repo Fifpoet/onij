@@ -22,8 +22,7 @@
           <button @click="startOrPause" class="w-[30px] h-[30px] rounded-full bg-gray-300 mx-2">▶️</button>
           <button @click="playNext" class="w-[30px] h-[30px] rounded-full bg-gray-300 ml-2">➡️</button>
         </div>
-        <strong class="transition-all duration-300 group-hover:hidden">{{ currentMusicDetail.title }}</strong> <span
-          class="group-hover:hidden">{{ currentMusicDetail.artist_name }}</span>
+        <span class="transition-all duration-300 group-hover:hidden">{{ currentMusicDetail.title }} - {{ currentMusicDetail.artist_name }}</span>
       </div>
       <div v-else>
         <p>请选择一首音乐播放</p>
@@ -57,7 +56,7 @@
         <div v-for="music in musicStore.MusicList" :key="music.id" class="mb-2 cursor-pointer"
              @dblclick="playMusic(music.id)">
           <n-list-item>
-            <n-thing :title="music.title" :title-extra="music.artist" content-style="margin-top: 10px;">
+            <n-thing :title="music.title" content-style="margin-top: 10px;">
               <template #description>
                 <n-space size="small" style="margin-top: 4px">
                   <n-tag :bordered="false" type="info" size="small">
@@ -67,6 +66,9 @@
                     晚春
                   </n-tag>
                 </n-space>
+              </template>
+              <template #header-extra>
+                {{music.artist}}
               </template>
             </n-thing>
           </n-list-item>
@@ -188,7 +190,7 @@ const listMusicReq = {
   "artist": 0,
   "perform_type": 0,
   "page": 1,
-  "size": 10
+  "size": 100
 };
 
 // *************** music表单相关控件 *************** //
@@ -201,7 +203,6 @@ const composerOptions = ref<SelectOption[]>([])
 const selectedWriterValues = ref<number[]>([]);
 const loadingWriter = ref(false)
 const writerOptions = ref<SelectOption[]>([])
-const page = ref(1); // 当前页面
 const fetching = ref(false); // 防止重复请求
 
 const handleScroll = (event: Event) => {
@@ -210,7 +211,7 @@ const handleScroll = (event: Event) => {
   if (target.scrollHeight - target.scrollTop <= target.clientHeight + 10) {
     if (!fetching.value) {
       fetching.value = true; // 设置为正在加载状态
-      page.value++; // 增加页面数
+      musicStore.incrPage() // 增加页面数
       fetchMusicList().finally(() => {
         fetching.value = false; // 重置加载状态
       });
@@ -348,7 +349,7 @@ const handleSearch = async (query: string, typ: number, options: Ref<SelectOptio
 
 
 const fetchMusicList = async () => {
-  listMusicReq.page = page.value;
+  listMusicReq.page = musicStore.Page;
   const response = await apiClient.post('/music/list', listMusicReq);
   const musicList = response.data.data;
   musicStore.appendMusicList(musicList);

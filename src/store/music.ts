@@ -102,6 +102,7 @@ export const useMusicStore = defineStore('music', {
     state: () => ({
         MusicList: [] as Music[], // 保存音乐列表
         CurrentMusic: null as MusicDetail | null, // 当前播放的音乐 ID
+        Page : 1,
     }),
 
     actions: {
@@ -118,6 +119,14 @@ export const useMusicStore = defineStore('music', {
         setCurrentMusic(detail: MusicDetail) {
             this.CurrentMusic = detail;
         },
+
+        incrPage() {
+            this.Page += 1;
+        }
+    },
+
+    persist: {
+        enabled: true,
     },
 });
 
