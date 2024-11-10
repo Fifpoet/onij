@@ -1,6 +1,6 @@
 <template>
   <div ref="audioContainer"
-    class="audio-container fixed bg-[rgb(245,245,245)] flex items-center bottom-5 left-5 w-[400px] h-[60px]">
+       class="audio-container fixed bg-[rgb(245,245,245)] flex items-center bottom-5 left-5 w-[400px] h-[60px]">
 
     <!-- 左侧两竖排小点 -->
     <div class="drag-handle flex justify-between p-2 cursor-grab" @mousedown="startDragging">
@@ -19,7 +19,7 @@
       <div v-if="currentMusicDetail" class="flex items-center">
         <div class="hidden group-hover:flex justify-center items-center">
           <button @click="playPrevious" class="w-[30px] h-[30px] rounded-full bg-gray-300 mr-2">⬅️</button>
-          <button @click="togglePlay(true)" class="w-[30px] h-[30px] rounded-full bg-gray-300 mx-2">▶️</button>
+          <button @click="startOrPause" class="w-[30px] h-[30px] rounded-full bg-gray-300 mx-2">▶️</button>
           <button @click="playNext" class="w-[30px] h-[30px] rounded-full bg-gray-300 ml-2">➡️</button>
         </div>
         <strong class="transition-all duration-300 group-hover:hidden">{{ currentMusicDetail.title }}</strong> <span
@@ -47,17 +47,17 @@
 
       <!-- 进度条 -->
       <input type="range" class="flex-grow h-[2px] bg-gray-300 outline-none appearance-none p-0 m-0 ml-2" min="0"
-        max="100" v-model="currentProgress" @input="onSeek" />
+             max="100" v-model="currentProgress" @input="onSeek"/>
     </div>
 
-    <!-- 音乐列表展示 -->
+    <!-- music-列表 -->
     <div v-if="showMusicList && !showSongDetail" @scroll="handleScroll"
-      class="music-list absolute bg-white shadow-lg rounded-lg p-4 w-[400px] bottom-[70px] left-0 max-h-[300px] overflow-y-auto">
+         class="music-list absolute bg-white shadow-lg rounded-lg p-4 w-[400px] bottom-[70px] left-0 max-h-[300px] overflow-y-auto">
       <n-list hoverable clickable>
         <div v-for="music in musicStore.MusicList" :key="music.id" class="mb-2 cursor-pointer"
-          @dblclick="playMusic(music.id)">
+             @dblclick="playMusic(music.id)">
           <n-list-item>
-            <n-thing :title="music.title" content-style="margin-top: 10px;">
+            <n-thing :title="music.title" :title-extra="music.artist" content-style="margin-top: 10px;">
               <template #description>
                 <n-space size="small" style="margin-top: 4px">
                   <n-tag :bordered="false" type="info" size="small">
@@ -84,43 +84,46 @@
       <n-space vertical>
         <n-form>
           <n-form-item label="歌手" :show-label="true">
-            <n-select v-model:value="selectedSingerValues" multiple filterable placeholder="搜索歌手" :options="singerOptions"
-              :loading="loadingSinger" clearable remote :clear-filter-after-select="false" @search="handleSearchSinger" />
+            <n-select v-model:value="selectedSingerValues" multiple filterable placeholder="搜索歌手"
+                      :options="singerOptions"
+                      :loading="loadingSinger" clearable remote :clear-filter-after-select="false"
+                      @search="handleSearchSinger"/>
           </n-form-item>
 
 
           <n-form-item label="作曲" :show-label="true">
-            <n-select v-model:value="selectedComposerValues" filterable placeholder="搜索作曲" :options="composerOptions"
-              :loading="loadingComposer" clearable remote @search="handleSearchComposer" />
+            <n-select v-model:value="selectedComposerValues" filterable placeholder="搜索作曲"
+                      :options="composerOptions"
+                      :loading="loadingComposer" clearable remote @search="handleSearchComposer"/>
           </n-form-item>
 
           <n-form-item label="作词" :show-label="true">
             <n-select v-model:value="selectedWriterValues" filterable placeholder="搜索作词" :options="writerOptions"
-              :loading="loadingWriter" clearable remote @search="handleSearchWriter" />
+                      :loading="loadingWriter" clearable remote @search="handleSearchWriter"/>
           </n-form-item>
 
           <n-form-item label="发布年份" path="issue_year">
-            <n-input v-model:value="currentMusicDetail.issue_year" placeholder="Input Name" />
+            <n-input v-model:value="currentMusicDetail.issue_year" placeholder="Input Name"/>
           </n-form-item>
 
           <n-form-item label="地区" path="language">
-            <n-select v-model:value="currentMusicDetail.language" :options="languageOptions" />
+            <n-select v-model:value="currentMusicDetail.language" :options="languageOptions"/>
           </n-form-item>
 
           <n-form-item label="表演形式" path="perform_type">
-            <n-select v-model:value="currentMusicDetail.perform_type" :options="performTypeOptions" />
+            <n-select v-model:value="currentMusicDetail.perform_type" :options="performTypeOptions"/>
           </n-form-item>
 
           <n-form-item label="演唱会" path="concert">
-            <n-input v-model:value="currentMusicDetail.concert" placeholder="Input Name" />
+            <n-input v-model:value="currentMusicDetail.concert" placeholder="Input Name"/>
           </n-form-item>
 
           <n-form-item label="表演时间" path="concert_year">
-            <n-input v-model:value="currentMusicDetail.concert_year" placeholder="Input Name" />
+            <n-input v-model:value="currentMusicDetail.concert_year" placeholder="Input Name"/>
           </n-form-item>
 
           <n-form-item label="MV链接" path="concert_year">
-            <n-input v-model:value="currentMusicDetail.mv_url" placeholder="Input Name" />
+            <n-input v-model:value="currentMusicDetail.mv_url" placeholder="Input Name"/>
           </n-form-item>
 
           <n-upload :custom-request="uploadMp3">
@@ -151,11 +154,11 @@
 
 <script lang="ts" setup>
 
-import { computed, onMounted, Ref, ref } from 'vue';
+import {computed, onMounted, Ref, ref} from 'vue';
 import apiClient from '@/util/http.ts'; // 引入 axios 实例
-import type { MusicDetail } from "@/store/music.ts";
-import { convertToUpsertMusicReq, useMusicStore } from "@/store/music.ts";
-import type { SelectOption, UploadCustomRequestOptions } from 'naive-ui'
+import type {MusicDetail} from "@/store/music.ts";
+import {convertToUpsertMusicReq, useMusicStore} from "@/store/music.ts";
+import type {SelectOption, UploadCustomRequestOptions} from 'naive-ui'
 import {
   NButton,
   NForm,
@@ -170,7 +173,7 @@ import {
   NUpload,
   useMessage
 } from "naive-ui"
-import { languageOptions, performTypeOptions } from "@/util/enum.ts";
+import {languageOptions, performTypeOptions} from "@/util/enum.ts";
 
 const message = useMessage()
 // *************************************************** 音乐列表展示逻辑 *************************************************** //
@@ -215,11 +218,6 @@ const handleScroll = (event: Event) => {
   }
 };
 
-interface SingerModel {
-  id: number;
-  name: string;
-}
-
 const handleSearchSinger = async (query: string) => {
   await handleSearch(query, 1, singerOptions, loadingSinger); // 传入typ为1
 };
@@ -232,7 +230,7 @@ const handleSearchWriter = async (query: string) => {
   await handleSearch(query, 3, writerOptions, loadingWriter); // 传入typ为2
 };
 
-const uploadMp3 = ({ file }: UploadCustomRequestOptions) => {
+const uploadMp3 = ({file}: UploadCustomRequestOptions) => {
   if (currentMusicDetail.value) {
     if (file.file) {
       currentMusicDetail.value.mp = file.file; // 确保 file.file 不是 null
@@ -247,7 +245,7 @@ const uploadMp3 = ({ file }: UploadCustomRequestOptions) => {
   }
   message.info("上传mp3成功");
 }
-const uploadLyric = ({ file }: UploadCustomRequestOptions) => {
+const uploadLyric = ({file}: UploadCustomRequestOptions) => {
   if (currentMusicDetail.value) {
     if (file.file) {
       currentMusicDetail.value.lyric = file.file; // 确保 file.file 不是 null
@@ -262,7 +260,7 @@ const uploadLyric = ({ file }: UploadCustomRequestOptions) => {
   }
   message.info("上传歌词成功");
 }
-const uploadCover = ({ file }: UploadCustomRequestOptions) => {
+const uploadCover = ({file}: UploadCustomRequestOptions) => {
   if (currentMusicDetail.value) {
     if (file.file) {
       currentMusicDetail.value.cover = file.file; // 确保 file.file 不是 null
@@ -276,7 +274,7 @@ const uploadCover = ({ file }: UploadCustomRequestOptions) => {
     return;
   }
 }
-const uploadSheet = ({ file }: UploadCustomRequestOptions) => {
+const uploadSheet = ({file}: UploadCustomRequestOptions) => {
   if (currentMusicDetail.value) {
     if (file.file) {
       currentMusicDetail.value.sheet = file.file; // 确保 file.file 不是 null
@@ -333,7 +331,10 @@ const handleSearch = async (query: string, typ: number, options: Ref<SelectOptio
       }
     });
     const singerList = response.data.data;
-    options.value = singerList.map((s: SingerModel) => ({
+    options.value = singerList.map((s: {
+      id: number;
+      name: string;
+    }) => ({
       label: s.name,
       value: s.id
     }));
@@ -365,15 +366,15 @@ const playMod = ref(2); // 播放模式
 
 
 let isDragging = false;
-let offset = { x: 0, y: 0 };
+let offset = {x: 0, y: 0};
 
 const formattedCurrentTime = computed(() => {
   const minutes = Math.floor(currentTime.value / 60)
-    .toString()
-    .padStart(2, "0");
+      .toString()
+      .padStart(2, "0");
   const seconds = Math.floor(currentTime.value % 60)
-    .toString()
-    .padStart(2, "0");
+      .toString()
+      .padStart(2, "0");
   return `${minutes}:${seconds}`;
 });
 
@@ -382,8 +383,8 @@ const playMusic = async (id: number) => {
   try {
     const response = await apiClient.get(`/music/get/${id}`); // 获取音乐详情的 API
     currentMusicDetail.value = response.data.data; // 更新当前音乐详情
-    musicStore.setCurrentMusic(id); // 更新 Pinia store 中的当前播放的音乐 id
-    togglePlay(false)
+    musicStore.setCurrentMusic(currentMusicDetail); // 更新 Pinia store 中的当前播放的音乐 id
+    handleMp3()
 
   } catch (error) {
     console.error('获取音乐详情失败', error);
@@ -404,17 +405,21 @@ const toggleSongDetail = () => {
 
 // 使用转换函数保存音乐详情
 
-// 暂停或播放音乐
-const togglePlay = (pause: boolean ) => {
+// 处理音频文件
+const handleMp3 = () => {
   // 确保有音乐链接
-  console.log("开始播放下一首歌曲了: ", currentMusicDetail.value?.title)
-  if (!currentMusicDetail.value?.mp_url) {
+  console.log("开始处理mp3并开始播放: ", currentMusicDetail.value?.title)
+  if (!currentMusicDetail.value || !currentMusicDetail.value?.mp_url) {
     message.error("没有找到音频文件");
     return;
   }
 
-  // 初始化 Audio 对象
-  audio.value = null;
+  // 先干掉之前的Audio对象, 初始化新Audio对象
+  if (audio.value) {
+    audio.value.pause();
+    audio.value = null;
+  }
+  isPlaying.value = false;
   for (let i = 0; i < 5; i++) {
     if (!audio.value) {
       audio.value = new Audio(currentMusicDetail.value.mp_url);
@@ -447,6 +452,9 @@ const togglePlay = (pause: boolean ) => {
         });
         break;
       default:
+        audio.value.addEventListener('ended', () => {
+          playNext(); // 播放下一首
+        });
         break;
     }
   }
@@ -459,8 +467,13 @@ const togglePlay = (pause: boolean ) => {
     duration.value = audio.value!.duration;
   };
 
-  // 切换播放和暂停状态
-  if (pause) {
+  audio.value.play();
+  isPlaying.value = true;
+};
+
+// 开始播放或暂停
+const startOrPause = () => {
+  if (audio.value) {
     if (isPlaying.value) {
       audio.value.pause();
       isPlaying.value = false;
@@ -468,11 +481,8 @@ const togglePlay = (pause: boolean ) => {
       audio.value.play();
       isPlaying.value = true;
     }
-  } else {
-    audio.value.play();
-    isPlaying.value = true;
   }
-};
+}
 
 const onSeek = (event: Event) => {
   const target = event.target as HTMLInputElement;
@@ -490,16 +500,16 @@ const playPrevious = () => {
 
   // 获取当前音乐在列表中的索引
   const currentIndex = musicStore.MusicList.findIndex(
-    (music) => music.id === musicStore.CurrentMusic?.id
+      (music: MusicDetail) => music.id === musicStore.CurrentMusic?.id
   );
 
+  let previousMusic = musicStore.MusicList[currentIndex]
   if (currentIndex > 0) {
-    // 如果有上一曲，播放上一曲
-    const previousMusic = musicStore.MusicList[currentIndex - 1];
-    playMusic(previousMusic.id);
+    previousMusic = musicStore.MusicList[currentIndex - 1];
   } else {
-    message.info("已经是第一首了");
+    previousMusic = musicStore.MusicList[musicStore.MusicList.length - 1];
   }
+  playMusic(previousMusic.id);
 };
 
 const playNext = () => {
@@ -510,16 +520,17 @@ const playNext = () => {
 
   // 获取当前音乐在列表中的索引
   const currentIndex = musicStore.MusicList.findIndex(
-    (music) => music.id === musicStore.CurrentMusic?.id
+      (music: MusicDetail) => music.id === musicStore.CurrentMusic?.id
   );
 
+  let nextMusic = musicStore.MusicList[currentIndex];
   if (currentIndex < musicStore.MusicList.length - 1) {
     // 如果有下一曲，播放下一曲
-    const nextMusic = musicStore.MusicList[currentIndex + 1];
-    playMusic(nextMusic.id);
+     nextMusic = musicStore.MusicList[currentIndex + 1];
   } else {
-    message.info("已经是最后一首了");
+    nextMusic = musicStore.MusicList[0];
   }
+  playMusic(nextMusic.id);
 };
 
 const playRandom = () => {
@@ -528,16 +539,8 @@ const playRandom = () => {
     return;
   }
 
-  // 获取当前音乐在列表中的索引
-  const currentIndex = musicStore.MusicList.findIndex(
-    (music) => music.id === musicStore.CurrentMusic?.id
-  );
-
   // 随机选择下一首音乐
-  let nextIndex;
-  do {
-    nextIndex = Math.floor(Math.random() * musicStore.MusicList.length);
-  } while (nextIndex === currentIndex); // 确保不播放当前音乐
+   const nextIndex = Math.floor(Math.random() * musicStore.MusicList.length);
 
   const nextMusic = musicStore.MusicList[nextIndex];
   playMusic(nextMusic.id);
