@@ -23,3 +23,4 @@ COPY . .
 EXPOSE 18968
 
 # Run the application
+CMD ["npm", "run", "dev"]
