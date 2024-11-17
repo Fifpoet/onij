@@ -10,8 +10,6 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: "zc1669" # 设置MySQL root用户密码
       MYSQL_DATABASE: "footprint"         # 创建默认数据库
-    volumes:
-      - ~/vol/mysql:/var/lib/mysql # 持久化数据
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     networks:
       - app-network
