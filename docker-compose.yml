@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  # Go 服务
+  go-backend:
+    build:
+      context: ./server/
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network  # 定义一个网络，用于容器间通信
+    depends_on:
+      - node-service  # 确保 Node.js 服务在 Go 服务之前启动
+    environment:
+      - sk=8QkUop7Wx7pZ95quVkSYo1MdHCZudCdhO0NC5Mlq
+      - mypwd=)726*&18297yeuig&Hj=gh7232jdi1*4hjkbdhf-eq^672&_a=(co
+      - ip=app-network
+
+  node-service:
+    build:
+      context: ./
+    ports:
+      - "18968:18968"
+    networks:
+      - app-network  # 使用同一网络
+    environment:
+      - API_URL=http://go-backend:8080  # Vue 应用访问 Go 服务的 URL，使用服务名称作为主机名
+
+networks:
+  app-network:
+    driver: bridge  # 使用桥接网络进行容器间通信

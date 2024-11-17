@@ -1,5 +1,7 @@
 # Base image for Go
-FROM golang:1.22
+FROM m.daocloud.io/docker.io/library/golang:1.22
+
+ENV GOPROXY=https://goproxy.cn,direct
 
 # Set the working directory
 WORKDIR /app
