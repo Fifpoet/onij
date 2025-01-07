@@ -2,18 +2,19 @@ package mysql
 
 import (
 	"fmt"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-	"gorm.io/gorm/schema"
 	"log"
 	"os"
 	"time"
+
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 )
 
 func NewMysqlCli() *gorm.DB {
 	ip := os.Getenv("ip")
 	mysqlPwd := os.Getenv("mypwd")
-	dsn := "root:%s@tcp(%s:3306)/footprint?charset=utf8mb4&charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "myuser:%s@tcp(%s:3306)/footprint?charset=utf8mb4&charset=utf8mb4&parseTime=True&loc=Local"
 	var err error
 	Db, err := gorm.Open(mysql.New(mysql.Config{
 		DSN:                       fmt.Sprintf(dsn, mysqlPwd, ip), // DSN data source name
