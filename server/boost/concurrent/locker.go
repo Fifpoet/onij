@@ -17,29 +17,37 @@ var (
 
 type LockOptions struct {
 	lease         time.Duration
-	renewInterval time.Duration
 	maxLease      time.Duration
+	renewInterval time.Duration
+
+	renewFailedHook func(error)
+}
+
+func (r *LockOptions) normalize() {
+	if r.lease <= 0 {
+		r.lease = 5 * time.Second
+	}
+	if r.renewInterval <= 0 {
+		r.renewInterval = time.Second
+	}
 }
 
 type LockOption func(*LockOptions)
 
-func newLockOptions() *LockOptions {
-	return &LockOptions{
-		lease:         5 * time.Second,
-		renewInterval: time.Second,
-	}
-}
-
 func LockWithLease(lease time.Duration) LockOption {
 	return func(o *LockOptions) { o.lease = lease }
+}
+
+func LockWithMaxLease(max time.Duration) LockOption {
+	return func(o *LockOptions) { o.maxLease = max }
 }
 
 func LockWithRenewInterval(interval time.Duration) LockOption {
 	return func(o *LockOptions) { o.renewInterval = interval }
 }
 
-func LockWithMaxLease(max time.Duration) LockOption {
-	return func(o *LockOptions) { o.maxLease = max }
+func LockWithRenewFailedHook(hook func(error)) LockOption {
+	return func(o *LockOptions) { o.renewFailedHook = hook }
 }
 
 type LeaseMutex interface {
@@ -73,11 +81,12 @@ func NewLocker(ctx context.Context, mutex LeaseMutex, scope string, opts ...Lock
 		return nil, ErrLockerInvalidScope
 	}
 
-	options := newLockOptions()
+	options := new(LockOptions)
 	for _, opt := range opts {
 		opt(options)
 	}
 
+	options.normalize()
 	context, cancel := context.WithCancel(ctx)
 
 	r := &locker{
@@ -145,7 +154,19 @@ func (r *locker) monitor() {
 			if r.options.maxLease != 0 && time.Since(start) >= r.options.maxLease {
 				return
 			}
-			if err := r.mutex.Renew(r.context, r.scope, r.token, r.options.lease); err != nil {
+			var err error
+			for i := 0; i < 2; i++ {
+				if i != 0 {
+					time.Sleep(time.Millisecond * 100)
+				}
+				if err = r.mutex.Renew(r.context, r.scope, r.token, r.options.lease); err == nil {
+					break
+				}
+			}
+			if err != nil {
+				if r.options.renewFailedHook != nil {
+					r.options.renewFailedHook(err)
+				}
 				return
 			}
 		case <-r.context.Done():

@@ -1,6 +1,10 @@
 package numbers
 
-import "golang.org/x/exp/constraints"
+import (
+	"code.chenji.com/pkg/boost/ccmp"
+	"code.chenji.com/pkg/boost/collection/collext"
+	"golang.org/x/exp/constraints"
+)
 
 const (
 	comma = ","
@@ -20,3 +24,11 @@ func Which[T Number](number T) (signed, float bool) {
 	}
 	return false, false
 }
+
+type Numbers[T Number] []T
+
+func (r Numbers[T]) Equals(t Numbers[T]) bool { return ccmp.ArraysEqual(r, t) }
+
+func (r Numbers[T]) Copy() Numbers[T] { return collext.Copy(r) }
+
+func (r Numbers[T]) Base() []T { return r }

@@ -34,7 +34,7 @@ func getQiniuMac() *qbox.Mac {
 	return qbox.NewMac(ak, sk)
 }
 
-func UploadFile(localFilePath string) (string, error) {
+func UploadFile(localFilePath string, ossFolder string) (string, error) {
 	putPolicy := storage.PutPolicy{Scope: bk}
 	upToken := putPolicy.UploadToken(getQiniuMac())
 
@@ -47,7 +47,7 @@ func UploadFile(localFilePath string) (string, error) {
 	formUploader := storage.NewFormUploader(&cfg)
 	ret := storage.PutRet{}
 	putExtra := storage.PutExtra{}
-	err := formUploader.PutFile(context.Background(), &ret, upToken, uuid.New().String(), localFilePath, &putExtra)
+	err := formUploader.PutFile(context.Background(), &ret, upToken, ossFolder+uuid.New().String()[:8], localFilePath, &putExtra)
 	if err != nil {
 		log.Printf("UploadFile, upload file failed: err = %v \n", err)
 		return "", fmt.Errorf("file upload failed: %v", err)
@@ -82,7 +82,7 @@ func DeleteFile(key string) error {
 	return nil
 }
 
-func UploadFromReader(file multipart.File, size int64) (string, error) {
+func UploadFromReader(file multipart.File, size int64, ossFolder, prefix string) (string, error) {
 
 	putPolicy := storage.PutPolicy{Scope: bk}
 	upToken := putPolicy.UploadToken(getQiniuMac())
@@ -97,7 +97,7 @@ func UploadFromReader(file multipart.File, size int64) (string, error) {
 	ret := storage.PutRet{}
 	putExtra := storage.PutExtra{}
 
-	err := formUploader.Put(context.Background(), &ret, upToken, uuid.New().String(), file, size, &putExtra)
+	err := formUploader.Put(context.Background(), &ret, upToken, ossFolder+prefix+uuid.New().String()[:8], file, size, &putExtra)
 	if err != nil {
 		log.Printf("UploadFromReader, upload file failed: err = %v \n", err)
 		return "", fmt.Errorf("file upload failed: %v", err)

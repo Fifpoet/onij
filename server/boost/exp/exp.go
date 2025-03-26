@@ -29,3 +29,10 @@ func PtrValues[T any](t *T, zero bool) []T {
 	}
 	return []T{*t}
 }
+
+func PtrValueOrZero[T comparable](t T) *T {
+	if t == Zero[T]() {
+		return nil
+	}
+	return Ptr(t)
+}

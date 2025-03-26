@@ -7,6 +7,10 @@ import (
 	"onij/boost/conv"
 	"onij/boost/exp"
 	"slices"
+	"strings"
+
+	"golang.org/x/exp/constraints"
+	"golang.org/x/net/html"
 )
 
 func ArraysEqual[T cmp.Ordered](a, b []T) bool {
@@ -63,4 +67,76 @@ func PtrValueOrZeroEqual[T comparable](o, a *T) bool {
 	default:
 		return exp.ValueOrZero(o) == exp.ValueOrZero(a)
 	}
+}
+
+func Min[T constraints.Integer | constraints.Float](o, a T) T {
+	if o < a {
+		return o
+	}
+	return a
+}
+
+func Max[T constraints.Integer | constraints.Float](o, a T) T {
+	if o > a {
+		return o
+	}
+	return a
+}
+
+func RichTextBasicEqual(o, a string) bool {
+	if len(o) == 0 && len(o) == len(a) {
+		return true
+	}
+
+	basicO := basicRichText(o)
+	basicA := basicRichText(a)
+	return StringEqual(basicO, basicA)
+}
+
+func basicRichText(s string) string {
+	doc, err := html.Parse(strings.NewReader(s))
+	if err != nil {
+		return s
+	}
+
+	const separator = "\u200C"
+
+	var extract func(*html.Node)
+	var builder strings.Builder
+
+	extract = func(node *html.Node) {
+		switch node.Type {
+		case html.TextNode:
+			if text := strings.TrimSpace(node.Data); len(text) != 0 {
+				builder.WriteString(text)
+				builder.WriteString(separator)
+			}
+		case html.ElementNode:
+			if node.Data != "img" {
+				break
+			}
+			var src, width, height string
+			for _, attr := range node.Attr {
+				switch attr.Key {
+				case "src":
+					src = attr.Val
+				case "width":
+					width = attr.Val
+				case "height":
+					height = attr.Val
+				}
+			}
+			builder.WriteString(src)
+			builder.WriteString(separator)
+			builder.WriteString(width)
+			builder.WriteString(separator)
+			builder.WriteString(height)
+			builder.WriteString(separator)
+		}
+		for child := node.FirstChild; child != nil; child = child.NextSibling {
+			extract(child)
+		}
+	}
+	extract(doc)
+	return builder.String()
 }

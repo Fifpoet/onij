@@ -1,11 +1,15 @@
 package collext
 
 import (
+	"math"
+	"onij/boost/collection"
+	"onij/boost/exp"
+
 	"golang.org/x/exp/constraints"
 	"golang.org/x/exp/maps"
-	"onij/boost/exp"
 )
 
+// Deprecated: use DistinctSelect instead
 func SelectKeys[T any, K comparable](source []T, selector func(T) (K, bool)) []K {
 	set := make(map[K]struct{})
 	for _, v := range source {
@@ -86,7 +90,11 @@ func PickCombine[T, K any](source []T, f func(T) []K) []K {
 
 	items := make([]K, 0)
 	for _, v := range source {
-		items = append(items, f(v)...)
+		ks := f(v)
+		if len(ks) == 0 {
+			continue
+		}
+		items = append(items, ks...)
 	}
 	return items
 }
@@ -103,6 +111,9 @@ func Combine[T any](sources ...[]T) []T {
 
 	items := make([]T, 0, count)
 	for _, v := range sources {
+		if len(v) == 0 {
+			continue
+		}
 		items = append(items, v...)
 	}
 	return items
@@ -121,14 +132,7 @@ func Distinct[T comparable](source []T, exclude ...T) []T {
 }
 
 func Paging[T any](source []T, offset, limit int) []T {
-	total := len(source)
-	if offset > total {
-		return nil
-	}
-	if offset+limit > total {
-		limit = total - offset
-	}
-	return source[offset : offset+limit]
+	return collection.New(source).Paging(offset, limit)
 }
 
 func CombineDistinct[T any, K comparable](selector func(T) K, sources [][]T, excludes ...T) []T {
@@ -161,10 +165,7 @@ func CombineDistinct[T any, K comparable](selector func(T) K, sources [][]T, exc
 }
 
 func Index[T any](source []T, i int) (T, bool) {
-	if i < 0 || i >= len(source) {
-		return exp.Zero[T](), false
-	}
-	return source[i], true
+	return collection.New(source).Index(i)
 }
 
 func Sum[T constraints.Integer | constraints.Float](source []T) T {
@@ -181,4 +182,112 @@ func PickSum[T any, K constraints.Integer | constraints.Float](source []T, selec
 		sum += selector(v)
 	}
 	return sum
+}
+
+func Batch[T any](items []T, size int) [][]T {
+	if len(items) == 0 {
+		return nil
+	}
+	if size <= 0 {
+		return [][]T{items}
+	}
+	return BatchPick(items, size, func(t T) T { return t })
+}
+
+func BatchPick[T, K any](items []T, size int, selector func(T) K) [][]K {
+	if len(items) == 0 {
+		return nil
+	}
+	if size <= 0 {
+		return [][]K{Pick(items, selector)}
+	}
+
+	total := len(items)
+	batches := make([][]K, 0, int(math.Ceil(float64(total)/float64(size))))
+	for start := 0; start < total; start += size {
+		end := min(start+size, total)
+		batches = append(batches, Pick(items[start:end], selector))
+	}
+	return batches
+}
+
+func DistinctSelect[T any, K comparable](source []T, selector func(T) (K, bool)) []K {
+	if selector == nil {
+		return nil
+	}
+
+	ks := make([]K, 0, len(source))
+	sets := make(map[K]struct{}, len(source))
+	for _, v := range source {
+		k, ok := selector(v)
+		if !ok {
+			continue
+		}
+		if _, ok = sets[k]; ok {
+			continue
+		}
+		sets[k] = struct{}{}
+		ks = append(ks, k)
+	}
+	return ks
+}
+
+func DistinctPick[T any, K comparable](source []T, selector func(T) K) []K {
+	if selector == nil || source == nil {
+		return nil
+	}
+
+	ks := make([]K, 0, len(source))
+	sets := make(map[K]struct{}, len(source))
+	for _, v := range source {
+		k := selector(v)
+		if _, ok := sets[k]; ok {
+			continue
+		}
+		sets[k] = struct{}{}
+		ks = append(ks, k)
+	}
+	return ks
+}
+
+func Copy[T any](source []T) []T { return collection.New(source).Copy() }
+
+func Max[T constraints.Integer | constraints.Float](source []T) T {
+	var max T
+	for _, v := range source {
+		if v > max {
+			max = v
+		}
+	}
+	return max
+}
+
+func Min[T constraints.Integer | constraints.Float](source []T) T {
+	var min T
+	for _, v := range source {
+		if v < min {
+			min = v
+		}
+	}
+	return min
+}
+
+func PickMax[T any, K constraints.Integer | constraints.Float](source []T, selector func(T) K) K {
+	var max K
+	for _, s := range source {
+		if v := selector(s); v > max {
+			max = v
+		}
+	}
+	return max
+}
+
+func PickMin[T any, K constraints.Integer | constraints.Float](source []T, selector func(T) K) K {
+	var min K
+	for _, s := range source {
+		if v := selector(s); v < min {
+			min = v
+		}
+	}
+	return min
 }

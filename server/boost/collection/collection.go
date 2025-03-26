@@ -1,7 +1,6 @@
 package collection
 
 import (
-	"onij/boost/collection/collext"
 	"onij/boost/exp"
 	"slices"
 )
@@ -71,7 +70,32 @@ func (r Collection[T]) Where(f func(T) bool) Collection[T] {
 }
 
 func (r Collection[T]) Paging(offset, limit int) Collection[T] {
-	return collext.Paging(r, offset, limit)
+	if offset < 0 {
+		offset = 0
+	}
+	if limit < 0 {
+		limit = 0
+	}
+	if limit == 0 {
+		return nil
+	}
+
+	total := len(r)
+	if offset > total {
+		return nil
+	}
+
+	if offset+limit > total {
+		limit = total - offset
+	}
+	return r[offset : offset+limit]
+}
+
+func (r Collection[T]) Index(i int) (t T, ok bool) {
+	if i < 0 || i >= len(r) {
+		return
+	}
+	return r[i], true
 }
 
 func (r Collection[T]) Each(f func(T)) {
@@ -140,6 +164,18 @@ func (r Collection[T]) Sort(cmp func(a, b T) int) Collection[T] {
 	return r
 }
 
+func (r Collection[T]) Copy() Collection[T] { return slices.Clone(r) }
+
+func (r Collection[T]) Take(count int) Collection[T] {
+	if count <= 0 {
+		return nil
+	}
+	if count >= r.Count() {
+		return r.Copy()
+	}
+	return New(r[:count]).Copy()
+}
+
 func travel[T any](parent, root T, depth int, sub SubCollection[T], visit CollectionVisit[T], items ...T) error {
 	for i, item := range items {
 		ctx := &VisitContext[T]{
@@ -173,10 +209,10 @@ func travel[T any](parent, root T, depth int, sub SubCollection[T], visit Collec
 	return nil
 }
 
-func dualTravel[T any](itemsC, itemsT []T, sub SubCollection[T], visit DualCollectionVisit[T]) error {
-	for i := 0; i < max(len(itemsC), len(itemsT)); i++ {
-		c, cok := collext.Index(itemsC, i)
-		t, tok := collext.Index(itemsT, i)
+func dualTravel[T any](itemsC, itemsT Collection[T], sub SubCollection[T], visit DualCollectionVisit[T]) error {
+	for i := range max(len(itemsC), len(itemsT)) {
+		c, cok := itemsC.Index(i)
+		t, tok := itemsT.Index(i)
 		ctx := &DualVisitContext[T]{
 			Current:   c,
 			CurrentIn: cok,
