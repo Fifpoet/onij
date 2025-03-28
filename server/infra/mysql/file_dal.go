@@ -55,7 +55,7 @@ type File struct {
 
 func (f *fileDal) CreateLocalFile(localFilePath string, biz int) (int, error) {
 	// check hash, upload oss
-	hash, x, y, err := util.GetLocalFileHash(localFilePath)
+	hash, x, y, err := util.GetLocalFileMeta(localFilePath)
 	if err != nil {
 		return 0, err
 	}
@@ -112,7 +112,7 @@ func (f *fileDal) CreateFormFile(fileHeader *multipart.FileHeader, biz int) (int
 		log.Printf("CreateFormFile, open file failed: err = %v \n", err)
 		return 0, err
 	}
-	hash, x, y, err := util.GetFileHash(file)
+	hash, x, y, err := util.GetFileMeta(file)
 	if err != nil {
 		return 0, err
 	}

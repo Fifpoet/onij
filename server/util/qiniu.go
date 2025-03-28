@@ -47,7 +47,8 @@ func UploadFile(localFilePath string, ossFolder string) (string, error) {
 	formUploader := storage.NewFormUploader(&cfg)
 	ret := storage.PutRet{}
 	putExtra := storage.PutExtra{}
-	err := formUploader.PutFile(context.Background(), &ret, upToken, ossFolder+uuid.New().String()[:8], localFilePath, &putExtra)
+	ossPath := ossFolder + "/" + GetFilenameWithoutExtension(localFilePath) + "-" + uuid.New().String()[:8]
+	err := formUploader.PutFile(context.Background(), &ret, upToken, ossPath, localFilePath, &putExtra)
 	if err != nil {
 		log.Printf("UploadFile, upload file failed: err = %v \n", err)
 		return "", fmt.Errorf("file upload failed: %v", err)
@@ -106,7 +107,7 @@ func UploadFromReader(file multipart.File, size int64, ossFolder, prefix string)
 	return ret.Key, nil
 }
 
-func GetLocalFileHash(localFilePath string) (string, int, int, error) {
+func GetLocalFileMeta(localFilePath string) (string, int, int, error) {
 	file, err := os.Open(localFilePath)
 	if err != nil && !errors.Is(err, image.ErrFormat) {
 		log.Printf("GetLocalFileHash, open file failed: err = %v \n", err)
@@ -127,7 +128,7 @@ func GetLocalFileHash(localFilePath string) (string, int, int, error) {
 	return fmt.Sprintf("%x", hash.Sum(nil)), img.Width, img.Height, nil
 }
 
-func GetFileHash(file multipart.File) (string, int, int, error) {
+func GetFileMeta(file multipart.File) (string, int, int, error) {
 	hash := md5.New()
 	f, _, err := image.DecodeConfig(file)
 	if err != nil && !errors.Is(err, image.ErrFormat) {

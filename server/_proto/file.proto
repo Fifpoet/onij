@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package hello;
+
+option go_package = "handler/file";
+
+import "server/_proto/api.proto";
+
+enum AppId {
+  AppId_Unknown = 0;
+  AppId_Music = 1;
+}
+
+message UploadFileReq {
+  string filename = 1;          // 原始文件名（不含路径）
+  AppId app_id = 2; // 业务模块
+  repeated string folders = 3; // 自定义文件夹
+  bytes file = 4;// 文件内容
+}
+message UploadFileResp {
+  int32 file_id = 1;
+  string file_url = 2;
+}
+
+
+
+service FileService {
+  // 上传文件
+  rpc UploadFile(UploadFileReq) returns (UploadFileResp){
+    option (api.post) = "/file/upload";
+  }
+}

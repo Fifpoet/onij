@@ -18,8 +18,8 @@ func TestGetFirstDayScore(t *testing.T) {
 // 上传文件
 // 同一个key, 如果已存在默认不覆盖
 func TestUploadFile(t *testing.T) {
-	local := "/Users/asen/Documents/swagger在线文档.png"
-	str, err := util.UploadFile(local)
+	local := "C:\\KwDownload\\song\\Beyond-AMANI.lrc"
+	str, err := util.UploadFile(local, "music")
 	if err != nil {
 		t.Fatalf("upload file failed %v", err)
 	}
@@ -40,7 +40,7 @@ func TestDelFile(t *testing.T) {
 }
 
 func TestHashFromLocalAndForm(t *testing.T) {
-	hash, x, y, err := util.GetLocalFileHash("/Users/asen/Documents/后端API启动日志.png")
+	hash, x, y, err := util.GetLocalFileMeta("/Users/asen/Documents/后端API启动日志.png")
 	if err != nil {
 		return
 	}

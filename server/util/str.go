@@ -2,6 +2,7 @@ package util
 
 import (
 	"onij/boost/collection/collext"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -20,4 +21,13 @@ func DbToList(s string) []int {
 		i, _ := strconv.Atoi(str)
 		return i
 	})
+}
+
+// GetFilenameWithoutExtension 从路径提取无后缀的文件名
+func GetFilenameWithoutExtension(localFilePath string) string {
+	// 获取带后缀的文件名
+	fullFilename := filepath.Base(localFilePath)
+	// 去除后缀
+	ext := filepath.Ext(fullFilename)
+	return strings.TrimSuffix(fullFilename, ext)
 }
