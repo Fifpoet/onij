@@ -1,4 +1,4 @@
-hz new --idl=server/_proto/file.proto \
-       --model_dir=server/model \
-       --handler_dir=server/handler \
-       --module=server/
+hz new --idl=./_proto/all.proto \
+       --model_dir=./model \
+       --out_dir=. \
+       --handler_dir=./handler

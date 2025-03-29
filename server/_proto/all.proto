@@ -2,9 +2,9 @@ syntax = "proto3";
 
 package hello;
 
-option go_package = "handler/file";
+option go_package = "handler";
 
-import "server/_proto/api.proto";
+import "api.proto";
 
 enum AppId {
   AppId_Unknown = 0;
@@ -21,6 +21,8 @@ message UploadFileResp {
   int32 file_id = 1;
   string file_url = 2;
 }
+
+
 
 
 
