@@ -4,7 +4,7 @@ package main
 
 import (
 	"github.com/cloudwego/hertz/pkg/app/server"
-	handler "onij/./handler"
+	handler "onij/handler"
 )
 
 // customizeRegister registers customize routers.
