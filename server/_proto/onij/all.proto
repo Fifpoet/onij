@@ -12,7 +12,7 @@ enum AppId {
 }
 
 message UploadFileReq {
-  string filename = 1;          // 原始文件名（不含路径）
+  string filename = 1;         // 原始文件名（不含路径）
   AppId app_id = 2; // 业务模块
   repeated string folders = 3; // 自定义文件夹
   bytes file = 4;// 文件内容
