@@ -3,7 +3,6 @@ package resq
 import (
 	"database/sql"
 	"mime/multipart"
-	"onij/enum"
 	"onij/infra/mysql"
 	"time"
 )
@@ -34,19 +33,7 @@ func (u *UpsertRelayReq) ToModel() (*mysql.Relay, *multipart.FileHeader) {
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
-	switch u.ExpireType {
-	case enum.ExpireTypeNever:
-	case enum.ExpireTypeFiveMinute:
-		rl.ExpireAt = sql.NullTime{Time: time.Now().Add(5 * time.Minute), Valid: true}
-	case enum.ExpireTypeOneHour:
-		rl.ExpireAt = sql.NullTime{Time: time.Now().Add(1 * time.Hour), Valid: true}
-	case enum.ExpireTypeOneDay:
-		rl.ExpireAt = sql.NullTime{Time: time.Now().Add(24 * time.Hour), Valid: true}
-	case enum.ExpireTypeOneWeek:
-		rl.ExpireAt = sql.NullTime{Time: time.Now().Add(7 * 24 * time.Hour), Valid: true}
-	case enum.ExpireTypeOneMonth:
-		rl.ExpireAt = sql.NullTime{Time: time.Now().Add(30 * 24 * time.Hour), Valid: true}
-	}
+	rl.ExpireAt = sql.NullTime{Time: time.Now().Add(5 * time.Minute), Valid: true}
 
 	return rl, u.File
 }
