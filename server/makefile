@@ -1,4 +1,1 @@
-hz new --idl=./_proto/all.proto \
-       --model_dir=./model \
-       --out_dir=. \
-       --handler_dir=./handler
+hz update  -idl _proto/onij/all.proto -I _proto  -out_dir=. --handler_by_method=true
