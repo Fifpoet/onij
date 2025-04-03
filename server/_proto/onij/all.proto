@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package hello;
+package onij;
 
 option go_package = "handler";
 
@@ -10,7 +10,7 @@ import "all_model.proto";
 
 message UploadFileReq {
   string filename = 1;         // 原始文件名（不含路径）
-  hello.AppId app_id = 2;      // 业务模块
+  onij.AppId app_id = 2;       // 业务模块
   repeated string folders = 3; // 自定义文件夹
   bytes file = 4;              // 文件内容
 }

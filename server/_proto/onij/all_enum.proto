@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package hello;
+package onij;
 
 option go_package = "handler";
 
