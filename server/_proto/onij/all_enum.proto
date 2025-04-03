@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package hello;
+
+option go_package = "handler";
+
+import "api.proto";
+
+enum AppId {
+  AppId_Unknown = 0;
+  AppId_Music = 1;
+}

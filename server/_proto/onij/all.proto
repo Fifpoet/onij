@@ -5,15 +5,12 @@ package hello;
 option go_package = "handler";
 
 import "api.proto";
-
-enum AppId {
-  AppId_Unknown = 0;
-  AppId_Music = 1;
-}
+import "all_enum.proto";
+import "all_model.proto";
 
 message UploadFileReq {
   string filename = 1;         // 原始文件名（不含路径）
-  AppId app_id = 2;            // 业务模块
+  hello.AppId app_id = 2;      // 业务模块
   repeated string folders = 3; // 自定义文件夹
   bytes file = 4;              // 文件内容
 }
