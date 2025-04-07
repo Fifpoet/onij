@@ -7,21 +7,21 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
-	handler "onij/model/handler"
+	api "onij/model/api"
 )
 
 // UploadMusic .
 // @router /music/upload [POST]
 func UploadMusic(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req handler.UploadMusicReq
+	var req api.UploadMusicReq
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
-	resp := new(handler.UploadMusicResp)
+	resp := new(api.UploadMusicResp)
 
 	c.JSON(consts.StatusOK, resp)
 }

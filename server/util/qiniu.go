@@ -1,6 +1,7 @@
 package util
 
 import (
+	"bytes"
 	"context"
 	"crypto/md5"
 	"errors"
@@ -13,6 +14,7 @@ import (
 	"log"
 	"mime/multipart"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -26,6 +28,21 @@ const (
 	dm = "http://cloud.onij.fun"
 )
 
+type UploadInfo struct {
+	Name string
+
+	// 文件信息, 三选一
+	LocalPath string
+
+	Bytes []byte
+
+	File multipart.File
+	Size int64
+
+	// extra
+	OssFolder []string
+}
+
 func getQiniuMac() *qbox.Mac {
 	sk := os.Getenv("sk")
 	if sk == "" {
@@ -34,21 +51,29 @@ func getQiniuMac() *qbox.Mac {
 	return qbox.NewMac(ak, sk)
 }
 
-func UploadFile(localFilePath string, ossFolder string) (string, error) {
+func UploadFile(ctx context.Context, info UploadInfo) (string, error) {
 	putPolicy := storage.PutPolicy{Scope: bk}
 	upToken := putPolicy.UploadToken(getQiniuMac())
-
 	cfg := storage.Config{
 		Zone:          &storage.ZoneHuadong,
 		UseHTTPS:      false,
 		UseCdnDomains: false,
 	}
-
 	formUploader := storage.NewFormUploader(&cfg)
 	ret := storage.PutRet{}
 	putExtra := storage.PutExtra{}
-	ossPath := ossFolder + "/" + GetFilenameWithoutExtension(localFilePath) + "-" + uuid.New().String()[:8]
-	err := formUploader.PutFile(context.Background(), &ret, upToken, ossPath, localFilePath, &putExtra)
+
+	var err error
+	ossPath := strings.Join(info.OssFolder, "/") + info.Name + "-" + uuid.New().String()[:8]
+	if info.LocalPath != "" {
+		err = formUploader.PutFile(ctx, &ret, upToken, ossPath, info.LocalPath, &putExtra)
+	} else if len(info.Bytes) > 0 {
+		err = formUploader.Put(ctx, &ret, upToken, ossPath, bytes.NewReader(info.Bytes), int64(len(info.Bytes)), &putExtra)
+	} else if info.File != nil {
+		err = formUploader.Put(ctx, &ret, upToken, ossPath, info.File, info.Size, &putExtra)
+	} else {
+		return "", errors.New("no file to upload")
+	}
 	if err != nil {
 		log.Printf("UploadFile, upload file failed: err = %v \n", err)
 		return "", fmt.Errorf("file upload failed: %v", err)
@@ -81,30 +106,6 @@ func DeleteFile(key string) error {
 	}
 	fmt.Println("File deleted successfully.")
 	return nil
-}
-
-func UploadFromReader(file multipart.File, size int64, ossFolder, prefix string) (string, error) {
-
-	putPolicy := storage.PutPolicy{Scope: bk}
-	upToken := putPolicy.UploadToken(getQiniuMac())
-
-	cfg := storage.Config{
-		Zone:          &storage.ZoneHuadong,
-		UseHTTPS:      false,
-		UseCdnDomains: false,
-	}
-
-	formUploader := storage.NewFormUploader(&cfg)
-	ret := storage.PutRet{}
-	putExtra := storage.PutExtra{}
-
-	err := formUploader.Put(context.Background(), &ret, upToken, ossFolder+prefix+uuid.New().String()[:8], file, size, &putExtra)
-	if err != nil {
-		log.Printf("UploadFromReader, upload file failed: err = %v \n", err)
-		return "", fmt.Errorf("file upload failed: %v", err)
-	}
-	fmt.Printf("File uploaded successfully, key: %s\n", ret.Key)
-	return ret.Key, nil
 }
 
 func GetLocalFileMeta(localFilePath string) (string, int, int, error) {

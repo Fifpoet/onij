@@ -4,26 +4,35 @@ package handler
 
 import (
 	"context"
-
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
-	handler "onij/model/handler"
+	"onij/handler/prm"
+	api "onij/model/api"
 )
 
 // UploadFile .
 // @router /file/upload [POST]
 func UploadFile(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req handler.UploadFileReq
+	var req api.UploadFileReq
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
+	if err = checkUploadFileReq(&req); err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
 
-	resp := new(handler.UploadFileResp)
-
+	resp, err := ser.FileLogic.Upload(ctx, prm.NewUploadFileParam(&req))
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
-func checkUploadFileReq(req)
+func checkUploadFileReq(req *api.UploadFileReq) error {
+	return nil
+}

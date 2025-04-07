@@ -3,17 +3,11 @@ package logic
 import (
 	"errors"
 	"onij/infra/mysql"
-	"onij/inject"
 )
 
 type AllLogic struct {
-	LocalLogic
-}
-
-var app *inject.App
-
-func Init() {
-	app = inject.InitializeApp()
+	MusicLogic
+	FileLogic
 }
 
 type LocalLogic interface {

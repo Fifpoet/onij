@@ -7,21 +7,21 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
-	handler "onij/model/handler"
+	api "onij/model/api"
 )
 
 // GetMusicDetail .
 // @router /music/detail [GET]
 func GetMusicDetail(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req handler.GetMusicDetailReq
+	var req api.GetMusicDetailReq
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
-	resp := new(handler.GetMusicDetailResp)
+	resp := new(api.GetMusicDetailResp)
 
 	c.JSON(consts.StatusOK, resp)
 }

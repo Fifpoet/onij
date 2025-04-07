@@ -10,6 +10,7 @@ import (
 	"github.com/google/wire"
 	"onij/infra"
 	"onij/infra/mysql"
+	"onij/logic"
 )
 
 // Injectors from wire.go:
@@ -20,30 +21,39 @@ func InitializeApp() *App {
 	relayDal := mysql.NewRelayDal(db)
 	fileDal := mysql.NewFileDal(db)
 	musicDal := mysql.NewMusicDal(db)
-	metaDal := mysql.NewMetaDal(db)
 	performerDal := mysql.NewPerformerDal(db)
 	allInfra := &infra.AllInfra{
 		TagDal:       tagDal,
 		RelayDal:     relayDal,
 		FileDal:      fileDal,
 		MusicDal:     musicDal,
-		MetaDal:      metaDal,
 		PerformerDal: performerDal,
+	}
+	musicLogic := logic.NewMusicLogic(allInfra)
+	fileLogic := logic.NewFileLogic(allInfra)
+	allLogic := &logic.AllLogic{
+		MusicLogic: musicLogic,
+		FileLogic:  fileLogic,
 	}
 	app := &App{
 		AllInfra: allInfra,
+		AllLogic: allLogic,
 	}
 	return app
 }
 
 // wire.go:
 
-var infraSet = wire.NewSet(mysql.NewMysqlCli, mysql.NewTagDal, mysql.NewRelayDal, mysql.NewFileDal, mysql.NewMusicDal, mysql.NewMetaDal, mysql.NewPerformerDal, wire.Struct(new(infra.AllInfra), "*"))
+var infraSet = wire.NewSet(mysql.NewMysqlCli, mysql.NewTagDal, mysql.NewRelayDal, mysql.NewFileDal, mysql.NewMusicDal, mysql.NewPerformerDal, wire.Struct(new(infra.AllInfra), "*"))
+
+var logicSet = wire.NewSet(logic.NewMusicLogic, logic.NewFileLogic, wire.Struct(new(logic.AllLogic), "*"))
 
 var allSet = wire.NewSet(
-	infraSet, wire.Struct(new(App), "*"),
+	infraSet,
+	logicSet, wire.Struct(new(App), "*"),
 )
 
 type App struct {
 	*infra.AllInfra
+	*logic.AllLogic
 }

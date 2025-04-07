@@ -10,3 +10,10 @@ enum AppId {
   AppId_Unknown = 0;
   AppId_Music = 1;
 }
+
+enum FileType {
+  FT_Unknown = 0;
+  FT_Mp3 = 1;
+  FT_Lyrics = 2;
+  FT_Png = 3;
+}

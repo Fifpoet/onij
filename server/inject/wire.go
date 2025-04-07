@@ -4,7 +4,6 @@ package inject
 
 import (
 	"github.com/google/wire"
-	"onij/handler"
 	"onij/infra"
 	"onij/infra/mysql"
 	"onij/logic"
@@ -24,23 +23,19 @@ var infraSet = wire.NewSet(
 
 var logicSet = wire.NewSet(
 	logic.NewMusicLogic,
+	logic.NewFileLogic,
 	wire.Struct(new(logic.AllLogic), "*"),
-)
-
-var handleSet = wire.NewSet(
-	handler.NewBaseHandler,
-	wire.Struct(new(handler.AllHandler), "*"),
 )
 
 var allSet = wire.NewSet(
 	infraSet,
 	logicSet,
-	handleSet,
 	wire.Struct(new(App), "*"),
 )
 
 type App struct {
 	*infra.AllInfra
+	*logic.AllLogic
 }
 
 func InitializeApp() *App {

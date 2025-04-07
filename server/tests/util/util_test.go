@@ -2,6 +2,7 @@ package util
 
 import (
 	"onij/util"
+	"onij/util/boost/crypto"
 	"testing"
 	"time"
 )
@@ -18,12 +19,7 @@ func TestGetFirstDayScore(t *testing.T) {
 // 上传文件
 // 同一个key, 如果已存在默认不覆盖
 func TestUploadFile(t *testing.T) {
-	local := "C:\\KwDownload\\song\\Beyond-AMANI.lrc"
-	str, err := util.UploadFile(local, "music")
-	if err != nil {
-		t.Fatalf("upload file failed %v", err)
-	}
-	t.Log(str)
+	//local := "C:\\KwDownload\\song\\Beyond-AMANI.lrc"
 }
 
 func TestDownload(t *testing.T) {
@@ -45,4 +41,8 @@ func TestHashFromLocalAndForm(t *testing.T) {
 		return
 	}
 	t.Log(hash, x, y)
+}
+
+func TestMd5(t *testing.T) {
+	t.Log(crypto.Md5([]byte{1, 3, 2, 5, 53, 62, 1, 52, 12, 4, 6, 13}))
 }

@@ -7,21 +7,21 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
-	handler "onij/model/handler"
+	api "onij/model/api"
 )
 
 // UploadAlbum .
 // @router /album/upload [POST]
 func UploadAlbum(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req handler.UploadAlbumReq
+	var req api.UploadAlbumReq
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
-	resp := new(handler.UploadAlbumResp)
+	resp := new(api.UploadAlbumResp)
 
 	c.JSON(consts.StatusOK, resp)
 }

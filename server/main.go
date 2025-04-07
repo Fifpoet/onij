@@ -4,11 +4,13 @@ package main
 
 import (
 	"github.com/cloudwego/hertz/pkg/app/server"
+	"onij/handler"
 )
 
 func main() {
 	h := server.Default()
 
+	handler.InitApp()
 	register(h)
 	h.Spin()
 }

@@ -1,17 +1,9 @@
 package handler
 
-import "onij/logic"
+import "onij/inject"
 
-type AllHandler struct {
-	*BaseHandler
-}
+var ser *inject.App
 
-type BaseHandler struct {
-	*logic.AllLogic
-}
-
-func NewBaseHandler(allLogic *logic.AllLogic) *BaseHandler {
-	return &BaseHandler{
-		AllLogic: allLogic,
-	}
+func InitApp() {
+	ser = inject.InitializeApp()
 }

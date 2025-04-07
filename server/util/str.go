@@ -1,7 +1,7 @@
 package util
 
 import (
-	"onij/boost/collection/collext"
+	"code.chenji.com/pkg/boost/collection/collext"
 	"path/filepath"
 	"strconv"
 	"strings"
