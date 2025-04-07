@@ -20,3 +20,33 @@ func _uploadfileMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _albumMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getalbumdetailMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _uploadalbumMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _musicMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getmusicdetailMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _uploadmusicMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

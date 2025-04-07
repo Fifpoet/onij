@@ -2,7 +2,6 @@ package logic
 
 import (
 	"errors"
-	"onij/enum"
 	"onij/infra/mysql"
 	"onij/inject"
 )

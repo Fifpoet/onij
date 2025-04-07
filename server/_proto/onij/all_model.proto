@@ -5,3 +5,7 @@ package onij;
 option go_package = "handler";
 
 import "api.proto";
+
+message MusicDetail {}
+
+message AlbumDetail {}
