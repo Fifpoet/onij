@@ -6,6 +6,10 @@ import (
 	"onij/inject"
 )
 
+type AllLogic struct {
+	LocalLogic
+}
+
 var app *inject.App
 
 func Init() {

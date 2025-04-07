@@ -25,3 +25,5 @@ func UploadFile(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(consts.StatusOK, resp)
 }
+
+func checkUploadFileReq(req)
