@@ -6,23 +6,23 @@ import (
 	"time"
 )
 
-type PerformerDal interface {
-	GetByIds(id ...int) ([]*Performer, error)
-	GetByName(name string) ([]*Performer, error)
-	GetByNameAndType(name string, performType int) ([]*Performer, error)
-	Save(performer *Performer) (int, error)
+type ArtistDal interface {
+	GetByIds(id ...int) ([]*Artist, error)
+	GetByName(name string) ([]*Artist, error)
+	GetByNameAndType(name string, performType int) ([]*Artist, error)
+	Save(performer *Artist) (int, error)
 	DelById(id int) error
 }
 
-type performerDal struct {
+type artistDal struct {
 	db *gorm.DB
 }
 
-func NewPerformerDal(db *gorm.DB) PerformerDal {
-	return &performerDal{db: db}
+func NewArtistDal(db *gorm.DB) ArtistDal {
+	return &artistDal{db: db}
 }
 
-type Performer struct {
+type Artist struct {
 	Id            int            `json:"id" gorm:"primaryKey;autoIncrement"`
 	Name          string         `json:"name"`
 	PerformerType int            `json:"performer_type"`
@@ -31,8 +31,8 @@ type Performer struct {
 	DeletedAt     gorm.DeletedAt `json:"deleted_at"`
 }
 
-func (p *performerDal) GetByIds(id ...int) ([]*Performer, error) {
-	var res []*Performer
+func (p *artistDal) GetByIds(id ...int) ([]*Artist, error) {
+	var res []*Artist
 	err := p.db.Where("id IN ?", id).Order("created_at desc").Find(&res).Error
 	if err != nil {
 		return nil, err
@@ -40,8 +40,8 @@ func (p *performerDal) GetByIds(id ...int) ([]*Performer, error) {
 	return res, nil
 }
 
-func (p *performerDal) GetByName(name string) ([]*Performer, error) {
-	var res []*Performer
+func (p *artistDal) GetByName(name string) ([]*Artist, error) {
+	var res []*Artist
 	err := p.db.Where("name LIKE ?", "%"+name+"%").Order("created_at desc").Find(&res).Error
 	if err != nil {
 		return nil, err
@@ -49,8 +49,8 @@ func (p *performerDal) GetByName(name string) ([]*Performer, error) {
 	return res, nil
 }
 
-func (p *performerDal) GetByNameAndType(name string, performType int) ([]*Performer, error) {
-	var performers []*Performer
+func (p *artistDal) GetByNameAndType(name string, performType int) ([]*Artist, error) {
+	var performers []*Artist
 	err := p.db.Where("name LIKE ? AND performer_type = ?", "%"+name+"%", performType).Find(&performers).Error
 	if err != nil {
 		return nil, err
@@ -58,7 +58,7 @@ func (p *performerDal) GetByNameAndType(name string, performType int) ([]*Perfor
 	return performers, nil
 }
 
-func (p *performerDal) Save(performer *Performer) (int, error) {
+func (p *artistDal) Save(performer *Artist) (int, error) {
 	err := p.db.Clauses(clause.OnConflict{
 		UpdateAll: true,
 	}).Create(performer).Error
@@ -68,7 +68,7 @@ func (p *performerDal) Save(performer *Performer) (int, error) {
 	return performer.Id, nil
 }
 
-func (p *performerDal) DelById(id int) error {
-	err := p.db.Where("id = ?", id).Delete(&Performer{}).Error
+func (p *artistDal) DelById(id int) error {
+	err := p.db.Where("id = ?", id).Delete(&Artist{}).Error
 	return err
 }

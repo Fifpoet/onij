@@ -7,7 +7,7 @@ import (
 )
 
 type PerformerLogic interface {
-	Save(performer *mysql.Performer) (int, error)
+	Save(performer *mysql.Artist) (int, error)
 	DelById(id int) error
 	GetByNameAndType(name string, performType int) ([]*resq.GetPerformerModel, error)
 }
@@ -19,7 +19,7 @@ func NewPerformerLogic() PerformerLogic {
 	return &performerLogic{}
 }
 
-func (p *performerLogic) Save(performer *mysql.Performer) (int, error) {
+func (p *performerLogic) Save(performer *mysql.Artist) (int, error) {
 	return app.PerformerDal.Save(performer)
 }
 
@@ -28,7 +28,7 @@ func (p *performerLogic) GetByNameAndType(name string, performType int) ([]*resq
 	if err != nil {
 		return nil, err
 	}
-	return collext.Pick(dbModel, func(db *mysql.Performer) *resq.GetPerformerModel {
+	return collext.Pick(dbModel, func(db *mysql.Artist) *resq.GetPerformerModel {
 		return &resq.GetPerformerModel{
 			Id:   db.Id,
 			Name: db.Name,

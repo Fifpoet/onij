@@ -2,7 +2,9 @@ package logic
 
 import (
 	"code.chenji.com/pkg/boost/collection/collext"
+	"context"
 	"mime/multipart"
+	"onij/handler/prm"
 	"onij/handler/resq"
 	"onij/infra"
 	"onij/infra/mysql"
@@ -11,6 +13,7 @@ import (
 )
 
 type MusicLogic interface {
+	Upload(ctx context.Context, param *prm.UploadMusicParam) (*prm.UploadMusicResult, error)
 	Save(music *mysql.Music, cover, mp, lyric, sheet *multipart.FileHeader) (int, error)
 	DelById(id int) error
 
@@ -26,6 +29,12 @@ func NewMusicLogic(i *infra.AllInfra) MusicLogic {
 	return &musicLogic{
 		AllInfra: i,
 	}
+}
+
+func (m *musicLogic) Upload(ctx context.Context, param *prm.UploadMusicParam) (*prm.UploadMusicResult, error) {
+	// 处理artist
+
+	return nil, nil
 }
 
 // Save .
@@ -162,14 +171,14 @@ func getNameFormMusic(mu *mysql.Music) (string, string, string, error) {
 	if err != nil {
 		return "", "", "", err
 	}
-	singerNames := collext.Select(per, func(p *mysql.Performer) (string, bool) {
+	singerNames := collext.Select(per, func(p *mysql.Artist) (string, bool) {
 		return p.Name, p.PerformerType == 1 //TODO
 	})
 	singer := strings.Join(singerNames, "&")
-	composer := collext.SelectOne(per, func(p *mysql.Performer) (string, bool) {
+	composer := collext.SelectOne(per, func(p *mysql.Artist) (string, bool) {
 		return p.Name, p.PerformerType == 2
 	})
-	writer := collext.SelectOne(per, func(p *mysql.Performer) (string, bool) {
+	writer := collext.SelectOne(per, func(p *mysql.Artist) (string, bool) {
 		return p.Name, p.PerformerType == 3
 	})
 	return singer, composer, writer, nil

@@ -8,8 +8,8 @@ type UpsertPerformerReq struct {
 	PerformerType int    `json:"performer_type" form:"performer_type"`
 }
 
-func (u *UpsertPerformerReq) ToModel() *mysql.Performer {
-	return &mysql.Performer{Id: u.Id, Name: u.Name, PerformerType: u.PerformerType}
+func (u *UpsertPerformerReq) ToModel() *mysql.Artist {
+	return &mysql.Artist{Id: u.Id, Name: u.Name, PerformerType: u.PerformerType}
 }
 
 type GetPerformerModel struct {
