@@ -17,3 +17,10 @@ enum FileType {
   FT_Lyrics = 2;
   FT_Png = 3;
 }
+
+enum ArtistType {
+  AT_Unknown = 0;
+  AT_Singer = 1;
+  AT_Writer = 2;
+  AT_Composer = 3;
+}

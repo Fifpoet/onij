@@ -3,11 +3,14 @@ package logic
 import (
 	"code.chenji.com/pkg/boost/collection/collext"
 	"context"
+	"gorm.io/gorm"
 	"mime/multipart"
-	"onij/handler/prm"
+	"onij/biz/convert"
+	"onij/biz/prm"
 	"onij/handler/resq"
 	"onij/infra"
 	"onij/infra/mysql"
+	"onij/model/api"
 	"onij/util"
 	"strings"
 )
@@ -31,47 +34,42 @@ func NewMusicLogic(i *infra.AllInfra) MusicLogic {
 	}
 }
 
-func (m *musicLogic) Upload(ctx context.Context, param *prm.UploadMusicParam) (*prm.UploadMusicResult, error) {
-	// 处理artist
-
-	return nil, nil
-}
-
-// Save .
-// 这里如果原始文件已存在, 则fileDal校验hash后返回原id
-func (m *musicLogic) Save(music *mysql.Music, cover, mp, lyric, sheet *multipart.FileHeader) (int, error) {
-	// 如果上传文件成功, 则为覆盖场景, 更新model
-	var err error
-	cov, err := m.FileDal.CreateFormFile(cover, enum.BizMusic)
+func (l *musicLogic) Upload(ctx context.Context, param *prm.UploadMusicParam) (*prm.UploadMusicResult, error) {
+	arts := collext.Pick(param.Artists, convert.SingerNameToArtist)
+	if param.Composer != nil {
+		arts = append(arts, convert.NameToArtist(*param.Composer, api.ArtistType_AT_Composer))
+	}
+	if param.Writer != nil {
+		arts = append(arts, convert.NameToArtist(*param.Writer, api.ArtistType_AT_Writer))
+	}
+	err := l.ArtistDal.Save(arts...)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	if cov != 0 {
-		music.CoverOss = cov
-	}
-	mpo, err := m.FileDal.CreateFormFile(mp, enum.BizMusic)
-	if err != nil {
-		return 0, err
-	}
-	if mpo != 0 {
-		music.MpOss = mpo
-	}
-	lrc, err := m.FileDal.CreateFormFile(lyric, enum.BizMusic)
-	if err != nil {
-		return 0, err
-	}
-	if lrc != 0 {
-		music.LyricOss = lrc
-	}
-	sht, err := m.FileDal.CreateFormFile(sheet, enum.BizMusic)
-	if err != nil {
-		return 0, err
-	}
-	if sht != 0 {
-		music.SheetOss = sht
-	}
-
-	return m.MusicDal.Save(music)
+	err = l.MusicDal.Save(&mysql.Music{
+		Id:          0,
+		RootId:      0,
+		Title:       "",
+		ArtistIds:   "",
+		Composer:    0,
+		Writer:      0,
+		Length:      0,
+		IssueYear:   0,
+		Language:    0,
+		PerformType: 0,
+		Concert:     "",
+		ConcertYear: 0,
+		Sequence:    0,
+		MvUrl:       "",
+		CoverOss:    0,
+		MpOss:       0,
+		LyricOss:    0,
+		SheetOss:    0,
+		CreatedAt:   time.Time{},
+		UpdatedAt:   time.Time{},
+		DeletedAt:   gorm.DeletedAt{},
+	})
+	return &prm.UploadMusicResult{}, nil
 }
 
 func (m *musicLogic) DelById(id int) error {

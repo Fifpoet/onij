@@ -2,7 +2,7 @@ package logic
 
 import (
 	"context"
-	"onij/handler/prm"
+	"onij/biz/prm"
 	"onij/infra"
 	"onij/infra/mysql"
 	"onij/util"

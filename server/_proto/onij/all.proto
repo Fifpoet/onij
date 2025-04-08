@@ -27,8 +27,8 @@ message UploadMusicReq {
   // 基础信息
   string name = 1;
   repeated string artists = 2;
-  string mp3_file_id = 3;
-  string lyrics_file_id = 4;
+  int64 mp3_file_id = 3;
+  int64 lyrics_file_id = 4;
 
   // 表单信息
   optional string composer = 10;

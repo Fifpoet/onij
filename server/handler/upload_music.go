@@ -4,7 +4,7 @@ package handler
 
 import (
 	"context"
-	"onij/handler/prm"
+	"onij/biz/prm"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"

@@ -3,6 +3,7 @@ package mysql
 import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"log"
 	"time"
 )
 
@@ -10,7 +11,7 @@ type ArtistDal interface {
 	GetByIds(id ...int) ([]*Artist, error)
 	GetByName(name string) ([]*Artist, error)
 	GetByNameAndType(name string, performType int) ([]*Artist, error)
-	Save(performer *Artist) (int, error)
+	Save(arts ...*Artist) error
 	DelById(id int) error
 }
 
@@ -23,12 +24,12 @@ func NewArtistDal(db *gorm.DB) ArtistDal {
 }
 
 type Artist struct {
-	Id            int            `json:"id" gorm:"primaryKey;autoIncrement"`
-	Name          string         `json:"name"`
-	PerformerType int            `json:"performer_type"`
-	CreatedAt     time.Time      `json:"created_at"`
-	UpdatedAt     time.Time      `json:"updated_at"`
-	DeletedAt     gorm.DeletedAt `json:"deleted_at"`
+	Id         uint64         `json:"id" gorm:"primaryKey;autoIncrement"`
+	Name       string         `json:"name"`
+	ArtistType int32          `json:"artist_type"`
+	CreatedAt  time.Time      `json:"created_at"`
+	UpdatedAt  time.Time      `json:"updated_at"`
+	DeletedAt  gorm.DeletedAt `json:"deleted_at"`
 }
 
 func (p *artistDal) GetByIds(id ...int) ([]*Artist, error) {
@@ -58,14 +59,15 @@ func (p *artistDal) GetByNameAndType(name string, performType int) ([]*Artist, e
 	return performers, nil
 }
 
-func (p *artistDal) Save(performer *Artist) (int, error) {
+func (p *artistDal) Save(arts ...*Artist) error {
 	err := p.db.Clauses(clause.OnConflict{
 		UpdateAll: true,
-	}).Create(performer).Error
+	}).CreateInBatches(arts, 100).Error
 	if err != nil {
-		return 0, err
+		log.Printf("save artist err: %v", err)
+		return err
 	}
-	return performer.Id, nil
+	return nil
 }
 
 func (p *artistDal) DelById(id int) error {

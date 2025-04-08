@@ -6,7 +6,7 @@ import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
-	"onij/handler/prm"
+	"onij/biz/prm"
 	api "onij/model/api"
 )
 

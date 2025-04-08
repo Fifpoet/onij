@@ -12,7 +12,7 @@ import (
 type MusicDal interface {
 	GetById(id int) (*Music, error)
 
-	Save(music *Music) (int, error)
+	Save(musics ...*Music) error
 	DelById(id int) (*Music, error)
 	GetByTitle(title string) ([]*Music, error)
 	GetByArtist(artistId int) ([]*Music, error)
@@ -64,15 +64,15 @@ func (m *musicDal) GetById(id int) (*Music, error) {
 	return &music, nil
 }
 
-func (m *musicDal) Save(music *Music) (int, error) {
+func (m *musicDal) Save(musics ...*Music) error {
 	err := m.db.Clauses(clause.OnConflict{
 		UpdateAll: true,
-	}).Create(music).Error
+	}).CreateInBatches(musics, 100).Error
 	if err != nil {
 		log.Printf("Save, save music err: %v", err)
-		return 0, err
+		return err
 	}
-	return music.Id, nil
+	return nil
 }
 
 func (m *musicDal) DelById(id int) (*Music, error) {
