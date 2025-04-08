@@ -28,9 +28,9 @@ func NewFileDal(db *gorm.DB) FileDal {
 }
 
 type File struct {
-	Id       int    `json:"id" gorm:"primaryKey;autoIncrement"`
+	Id       int64  `json:"id" gorm:"primaryKey;autoIncrement"`
 	Name     string `json:"name"`
-	Format   int    `json:"format"`
+	Format   int32  `json:"format"`
 	StoreKey string `json:"store_key" gorm:"unique"`
 	Hash     string `json:"hash"  gorm:"unique"`
 

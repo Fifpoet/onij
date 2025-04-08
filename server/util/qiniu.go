@@ -3,14 +3,11 @@ package util
 import (
 	"bytes"
 	"context"
-	"crypto/md5"
 	"errors"
 	"fmt"
-	"image"
 	_ "image/gif"  // 必须导入
 	_ "image/jpeg" // 必须导入
 	_ "image/png"  // 必须导入
-	"io"
 	"log"
 	"mime/multipart"
 	"os"
@@ -106,42 +103,4 @@ func DeleteFile(key string) error {
 	}
 	fmt.Println("File deleted successfully.")
 	return nil
-}
-
-func GetLocalFileMeta(localFilePath string) (string, int, int, error) {
-	file, err := os.Open(localFilePath)
-	if err != nil && !errors.Is(err, image.ErrFormat) {
-		log.Printf("GetLocalFileHash, open file failed: err = %v \n", err)
-		return "", 0, 0, err
-	}
-	defer file.Close()
-	img, _, err := image.DecodeConfig(file)
-	if err != nil {
-		log.Printf("GetLocalFileHash, unable to decode image: %v \n", err)
-		return "", 0, 0, err
-	}
-
-	hash := md5.New()
-	if _, err := io.Copy(hash, file); err != nil {
-		log.Printf("GetLocalFileHash, copy file failed: err = %v \n", err)
-		return "", 0, 0, err
-	}
-	return fmt.Sprintf("%x", hash.Sum(nil)), img.Width, img.Height, nil
-}
-
-func GetFileMeta(file multipart.File) (string, int, int, error) {
-	hash := md5.New()
-	f, _, err := image.DecodeConfig(file)
-	if err != nil && !errors.Is(err, image.ErrFormat) {
-		log.Printf("getFormXY, unable to decode image: %v \n", err)
-		return "", 0, 0, err
-	}
-
-	if _, err := io.Copy(hash, file); err != nil {
-		log.Printf("GetFileHash, copy file failed: err = %v \n", err)
-		return "", 0, 0, err
-
-	}
-
-	return fmt.Sprintf("%x", hash.Sum(nil)), f.Width, f.Height, nil
 }

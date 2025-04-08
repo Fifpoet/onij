@@ -32,14 +32,19 @@ func (l *fileLogic) Upload(ctx context.Context, param *prm.UploadFileParam) (*pr
 	if err != nil {
 		return nil, err
 	}
-	err = l.FileDal.Save(&mysql.File{
+	fi := &mysql.File{
+		Id:       int64(util.IdGen.Generate()),
 		Name:     param.Filename,
-		Format:   0,
+		Format:   int32(util.GetFileType(param.Filename)),
 		StoreKey: key,
 		Hash:     crypto.Md5(param.File),
-	})
+	}
+	err = l.FileDal.Save(fi)
 	if err != nil {
 		return nil, err
 	}
-	return &prm.UploadFileResult{}, nil
+	return &prm.UploadFileResult{
+		FileId:  fi.Id,
+		FileUrl: util.DownloadFile(fi.StoreKey),
+	}, nil
 }

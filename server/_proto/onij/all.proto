@@ -33,12 +33,13 @@ message UploadMusicReq {
   // 表单信息
   optional string composer = 10;
   optional string writer = 11;
-  optional string album_id = 12;
+  optional int64 album_id = 12;
   optional string mv_url = 13;
-  optional string root_music_id = 14;
+  optional int64 root_music_id = 14;
   optional int32 issue_time = 15;
 
-  optional int32 music_id = 50;
+  // update
+  optional int64 music_id = 50;
 }
 message UploadMusicResp {
   int32 code = 1;

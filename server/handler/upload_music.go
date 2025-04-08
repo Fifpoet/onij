@@ -4,6 +4,7 @@ package handler
 
 import (
 	"context"
+	"onij/handler/prm"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
@@ -20,8 +21,20 @@ func UploadMusic(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
+	if err = checkUploadMusicReq(&req); err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
 
-	resp := new(api.UploadMusicResp)
+	resp, err := ser.MusicLogic.Upload(ctx, prm.NewUploadMusicParam(&req))
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
+}
+
+func checkUploadMusicReq(req *api.UploadMusicReq) error {
+	return nil
 }

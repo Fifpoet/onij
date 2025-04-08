@@ -19,4 +19,10 @@ func NewUploadFileParam(req *api.UploadFileReq) *UploadFileParam {
 }
 
 type UploadFileResult struct {
+	FileId  int64
+	FileUrl string
+}
+
+func (r *UploadFileResult) Response() *api.UploadFileResp {
+	return &api.UploadFileResp{}
 }

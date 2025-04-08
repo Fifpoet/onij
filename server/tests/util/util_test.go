@@ -35,14 +35,10 @@ func TestDelFile(t *testing.T) {
 	t.Log("delete file success")
 }
 
-func TestHashFromLocalAndForm(t *testing.T) {
-	hash, x, y, err := util.GetLocalFileMeta("/Users/asen/Documents/后端API启动日志.png")
-	if err != nil {
-		return
-	}
-	t.Log(hash, x, y)
-}
-
 func TestMd5(t *testing.T) {
 	t.Log(crypto.Md5([]byte{1, 3, 2, 5, 53, 62, 1, 52, 12, 4, 6, 13}))
+}
+
+func TestGetFileName(t *testing.T) {
+	t.Log(util.IdGen.Generate())
 }
