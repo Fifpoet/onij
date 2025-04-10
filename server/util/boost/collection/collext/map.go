@@ -2,7 +2,7 @@ package collext
 
 import (
 	"golang.org/x/exp/maps"
-	"onij/boost/exp"
+	"onij/util/boost/exp"
 )
 
 func Map[T any, K comparable](slice []T, kFn func(T) K) map[K]T {

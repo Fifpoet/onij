@@ -1,6 +1,6 @@
 package collext
 
-import "onij/boost/collection"
+import "onij/util/boost/collection"
 
 func Intersect[K comparable](sources ...[]K) collection.Collection[K] {
 	if len(sources) == 0 {

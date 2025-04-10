@@ -2,7 +2,7 @@ package conv
 
 import (
 	"math"
-	"onij/boost/exp"
+	"onij/util/boost/exp"
 )
 
 // mm to px, default 72 dpi

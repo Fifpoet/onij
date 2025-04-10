@@ -1,23 +1,20 @@
 package mysql
 
 import (
-	"code.chenji.com/pkg/boost/collection/collext"
+	"errors"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"log"
-	"onij/util"
 	"time"
 )
 
 type FileDal interface {
 	Save(file *File) error
 
-	DelByKey(key string) (*File, error)
 	DelByIds(id []int) ([]*File, error)
 
-	GetByKey(key string) (*File, error)
+	GetByHash(key string) (*File, error)
 	GetByIds(ids []int) ([]*File, error)
-	GetUrlByIds(ids ...int) ([]string, error)
 }
 type fileDal struct {
 	db *gorm.DB
@@ -31,7 +28,7 @@ type File struct {
 	Id       int64  `json:"id" gorm:"primaryKey;autoIncrement"`
 	Name     string `json:"name"`
 	Format   int32  `json:"format"`
-	StoreKey string `json:"store_key" gorm:"unique"`
+	StoreKey string `json:"store_key"`
 	Hash     string `json:"hash"  gorm:"unique"`
 
 	CreatedAt time.Time      `json:"created_at"`
@@ -50,18 +47,6 @@ func (f *fileDal) Save(file *File) error {
 	return nil
 }
 
-func (f *fileDal) DelByKey(key string) (*File, error) {
-	res, err := f.GetByKey(key)
-	if err != nil {
-		return nil, err
-	}
-	err = f.db.Delete(&File{}, "key = ?", key).Error
-	if err != nil {
-		log.Printf("DelByKey, delete file failed: err = %v \n", err)
-		return res, err
-	}
-	return res, nil
-}
 func (f *fileDal) DelByIds(ids []int) ([]*File, error) {
 	if len(ids) == 0 {
 		return nil, nil
@@ -78,11 +63,14 @@ func (f *fileDal) DelByIds(ids []int) ([]*File, error) {
 	return res, nil
 }
 
-func (f *fileDal) GetByKey(key string) (*File, error) {
+func (f *fileDal) GetByHash(hash string) (*File, error) {
 	res := &File{}
-	err := f.db.Where("key = ?", key).First(res).Error
+	err := f.db.Where("hash = ?", hash).First(res).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	if err != nil {
-		log.Printf("GetByKey, get file failed: err = %v \n", err)
+		log.Printf("GetByHash, get file failed: err = %v \n", err)
 		return nil, err
 	}
 	return res, nil
@@ -97,23 +85,6 @@ func (f *fileDal) GetByIds(ids []int) ([]*File, error) {
 	if err != nil {
 		log.Printf("GetByIds, get file failed: err = %v \n", err)
 		return nil, err
-	}
-	return res, nil
-}
-
-func (f *fileDal) GetUrlByIds(ids ...int) ([]string, error) {
-	fs, err := f.GetByIds(ids)
-	fsIdx := collext.Map(fs, func(fil *File) int { return fil.Id })
-	if err != nil {
-		return nil, err
-	}
-	var res []string
-	for _, id := range ids {
-		if fsIdx[id] != nil && fsIdx[id].StoreKey != "" {
-			res = append(res, util.DownloadFile(fsIdx[id].StoreKey))
-		} else {
-			res = append(res, "")
-		}
 	}
 	return res, nil
 }

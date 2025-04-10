@@ -1,9 +1,9 @@
 package logic
 
 import (
-	"onij/boost/collection/collext"
 	"onij/handler/resq"
 	"onij/infra/mysql"
+	"onij/util/boost/collection/collext"
 )
 
 type PerformerLogic interface {

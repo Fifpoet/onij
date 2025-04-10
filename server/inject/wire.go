@@ -38,6 +38,11 @@ type App struct {
 	*logic.AllLogic
 }
 
+func InitDalForTest() *infra.AllInfra {
+	wire.Build(infraSet)
+	return &infra.AllInfra{}
+}
+
 func InitializeApp() *App {
 	wire.Build(allSet)
 	return &App{}

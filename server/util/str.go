@@ -10,20 +10,18 @@ import (
 
 const delimiter = ","
 
-func DbToList(s string) []int {
+func StrList2Int64(s string) []int64 {
 	trimmed := strings.Trim(s, delimiter)
 	ss := strings.Split(trimmed, delimiter)
-	return collext.Pick(ss, func(str string) int {
-		i, _ := strconv.Atoi(str)
+	return collext.Pick(ss, func(str string) int64 {
+		i, _ := strconv.ParseInt(str, 10, 64)
 		return i
 	})
 }
-
-func GetFilenameWithoutExtension(localFilePath string) string {
-	fullFilename := filepath.Base(localFilePath)
-	// 去除后缀
-	ext := filepath.Ext(fullFilename)
-	return strings.TrimSuffix(fullFilename, ext)
+func Int64List2Str(s []int64) string {
+	return strings.Join(collext.Pick(s, func(i int64) string {
+		return strconv.FormatInt(i, 10)
+	}), delimiter)
 }
 
 func GetFileExtension(file string) string {

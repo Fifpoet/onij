@@ -48,7 +48,7 @@ func uploadMusic() {
 
 		models = append(models, &mysql.Music{
 			RootId:      0,
-			Title:       songName,
+			Name:        songName,
 			ArtistIds:   singer,
 			Composer:    0,
 			Writer:      0,

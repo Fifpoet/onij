@@ -2,8 +2,8 @@ package collext
 
 import (
 	"math"
-	"onij/boost/collection"
-	"onij/boost/exp"
+	"onij/util/boost/collection"
+	"onij/util/boost/exp"
 
 	"golang.org/x/exp/constraints"
 	"golang.org/x/exp/maps"

@@ -3,22 +3,17 @@ package logic
 import (
 	"code.chenji.com/pkg/boost/collection/collext"
 	"context"
-	"gorm.io/gorm"
-	"mime/multipart"
-	"onij/biz/convert"
+	"onij/biz/biz"
 	"onij/biz/prm"
 	"onij/handler/resq"
 	"onij/infra"
 	"onij/infra/mysql"
-	"onij/model/api"
 	"onij/util"
 	"strings"
 )
 
 type MusicLogic interface {
 	Upload(ctx context.Context, param *prm.UploadMusicParam) (*prm.UploadMusicResult, error)
-	Save(music *mysql.Music, cover, mp, lyric, sheet *multipart.FileHeader) (int, error)
-	DelById(id int) error
 
 	ListByCond(req *resq.ListMusicReq) ([]*resq.ListMusicResp, error)
 	GetMusic(id int) (*resq.GetMusicResp, error)
@@ -35,55 +30,20 @@ func NewMusicLogic(i *infra.AllInfra) MusicLogic {
 }
 
 func (l *musicLogic) Upload(ctx context.Context, param *prm.UploadMusicParam) (*prm.UploadMusicResult, error) {
-	arts := collext.Pick(param.Artists, convert.SingerNameToArtist)
-	if param.Composer != nil {
-		arts = append(arts, convert.NameToArtist(*param.Composer, api.ArtistType_AT_Composer))
-	}
-	if param.Writer != nil {
-		arts = append(arts, convert.NameToArtist(*param.Writer, api.ArtistType_AT_Writer))
-	}
-	err := l.ArtistDal.Save(arts...)
-	if err != nil {
-		return nil, err
-	}
-	err = l.MusicDal.Save(&mysql.Music{
-		Id:          0,
-		RootId:      0,
-		Title:       "",
-		ArtistIds:   "",
-		Composer:    0,
-		Writer:      0,
-		Length:      0,
-		IssueYear:   0,
-		Language:    0,
-		PerformType: 0,
-		Concert:     "",
-		ConcertYear: 0,
-		Sequence:    0,
-		MvUrl:       "",
-		CoverOss:    0,
-		MpOss:       0,
-		LyricOss:    0,
-		SheetOss:    0,
-		CreatedAt:   time.Time{},
-		UpdatedAt:   time.Time{},
-		DeletedAt:   gorm.DeletedAt{},
-	})
+	// Id:           nil,
+	//		Name:         "",
+	//		ArtistIds:    nil,
+	//		Mp3FileId:    0,
+	//		LyricsFileId: 0,
+	//		ComposerId:   nil,
+	//		WriterId:     nil,
+	//		AlbumId:      nil,
+	//		MvUrl:        nil,
+	//		RootMusicId:  nil,
+	//		IssueTime:    nil,
+	musicPrime := &biz.MusicPrime{}
+	err := l.MusicDal.Upsert()
 	return &prm.UploadMusicResult{}, nil
-}
-
-func (m *musicLogic) DelById(id int) error {
-	mus, err := m.MusicDal.DelById(id)
-	if err != nil {
-		return err
-	}
-
-	// del file
-	_, err = m.FileDal.DelByIds([]int{mus.CoverOss, mus.MpOss, mus.LyricOss, mus.SheetOss})
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func (m *musicLogic) GetByTitle(title string) ([]*mysql.Music, error) {
@@ -113,7 +73,7 @@ func (m *musicLogic) GetMusic(id int) (*resq.GetMusicResp, error) {
 	return &resq.GetMusicResp{
 		Id:          mu.Id,
 		RootId:      mu.RootId,
-		Title:       mu.Title,
+		Title:       mu.Name,
 		ArtistIds:   mu.ArtistIds,
 		Composer:    mu.Composer,
 		Writer:      mu.Writer,
@@ -152,7 +112,7 @@ func (m *musicLogic) ListByCond(req *resq.ListMusicReq) ([]*resq.ListMusicResp, 
 		}
 		return &resq.ListMusicResp{
 			Id:       mu.Id,
-			Title:    mu.Title,
+			Title:    mu.Name,
 			Artist:   singerNames,
 			Composer: composer,
 			Writer:   writer,
@@ -165,7 +125,7 @@ func (m *musicLogic) ListByCond(req *resq.ListMusicReq) ([]*resq.ListMusicResp, 
 }
 
 func getNameFormMusic(mu *mysql.Music) (string, string, string, error) {
-	per, err := m.PerformerDal.GetByIds(append(util.DbToList(mu.ArtistIds), mu.Composer, mu.Writer)...)
+	per, err := m.PerformerDal.GetByIds(append(util.StrList2Int64(mu.ArtistIds), mu.Composer, mu.Writer)...)
 	if err != nil {
 		return "", "", "", err
 	}

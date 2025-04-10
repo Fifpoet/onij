@@ -3,9 +3,9 @@ package ccmp
 import (
 	"cmp"
 	"hash/crc32"
-	"onij/boost/collection/collext"
-	"onij/boost/conv"
-	"onij/boost/exp"
+	"onij/util/boost/collection/collext"
+	"onij/util/boost/conv"
+	"onij/util/boost/exp"
 	"slices"
 	"strings"
 

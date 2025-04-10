@@ -33,7 +33,7 @@ func (u *UpsertMusicReq) ToModel() (m *mysql.Music, cover, mp, lyric, sheet *mul
 	return &mysql.Music{
 		Id:          u.Id,
 		RootId:      u.RootId,
-		Title:       u.Title,
+		Name:        u.Title,
 		ArtistIds:   u.ArtistIds,
 		Composer:    u.Composer,
 		Writer:      u.Writer,

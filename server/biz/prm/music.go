@@ -3,12 +3,13 @@ package prm
 import "onij/model/api"
 
 type UploadMusicParam struct {
+	Id           *int64
 	Name         string
-	Artists      []string
+	ArtistIds    []int64
 	Mp3FileId    int64
 	LyricsFileId int64
-	Composer     *string
-	Writer       *string
+	ComposerId   *int64
+	WriterId     *int64
 	AlbumId      *int64
 	MvUrl        *string
 	RootMusicId  *int64
@@ -17,12 +18,13 @@ type UploadMusicParam struct {
 
 func NewUploadMusicParam(req *api.UploadMusicReq) *UploadMusicParam {
 	return &UploadMusicParam{
+		Id:           req.MusicId,
 		Name:         req.Name,
-		Artists:      req.Artists,
+		ArtistIds:    req.ArtistIds,
 		Mp3FileId:    req.Mp3FileId,
 		LyricsFileId: req.LyricsFileId,
-		Composer:     req.Composer,
-		Writer:       req.Writer,
+		ComposerId:   req.ComposerId,
+		WriterId:     req.WriterId,
 		AlbumId:      req.AlbumId,
 		MvUrl:        req.MvUrl,
 		RootMusicId:  req.RootMusicId,

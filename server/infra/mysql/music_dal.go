@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 	"log"
 	"time"
 )
@@ -12,7 +11,7 @@ import (
 type MusicDal interface {
 	GetById(id int) (*Music, error)
 
-	Save(musics ...*Music) error
+	Upsert(music *Music, toUpdate map[string]any) error
 	DelById(id int) (*Music, error)
 	GetByTitle(title string) ([]*Music, error)
 	GetByArtist(artistId int) ([]*Music, error)
@@ -28,24 +27,18 @@ func NewMusicDal(db *gorm.DB) MusicDal {
 }
 
 type Music struct {
-	Id          int64  `json:"id" gorm:"primaryKey;autoIncrement"`
-	RootId      int    `json:"root_id"`
-	Title       string `json:"title" gorm:"not null;uniqueIndex:uni_idx_music"`
+	Id          uint64 `json:"id" gorm:"primaryKey;autoIncrement"`
+	RootId      int64  `json:"root_id"`
+	Name        string `json:"name" gorm:"not null;uniqueIndex:uni_idx_music"`
 	ArtistIds   string `json:"artist_ids" gorm:"not null;uniqueIndex:uni_idx_music"`
-	Composer    int    `json:"composer"`
-	Writer      int    `json:"writer"`
-	Length      int    `json:"length"`
-	IssueYear   int    `json:"issue_year"`
-	Language    int    `json:"language"`
-	PerformType int    `json:"perform_type"`
-	Concert     string `json:"concert" gorm:"uniqueIndex:uni_idx_music"`
-	ConcertYear int    `json:"concert_year"`
-	Sequence    int    `json:"sequence"`
+	ComposerId  int64  `json:"composer_id"`
+	WriterId    int64  `json:"writer_id"`
+	IssueTime   int32  `json:"issue_time"`
+	PerformType int32  `json:"perform_type"`
+	AlbumId     int64  `json:"album_id" gorm:"uniqueIndex:uni_idx_music"`
 	MvUrl       string `json:"mv_url"`
-	CoverOss    int    `json:"cover_oss"`
-	MpOss       int    `json:"mp_oss" gorm:"not null"`
-	LyricOss    int    `json:"lyric_oss"`
-	SheetOss    int    `json:"sheet_oss"`
+	Mp3FileId   int64  `json:"mp3_file_id" gorm:"not null"`
+	LyricFileId int64  `json:"lyric_file_id"`
 
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
@@ -64,13 +57,21 @@ func (m *musicDal) GetById(id int) (*Music, error) {
 	return &music, nil
 }
 
-func (m *musicDal) Save(musics ...*Music) error {
-	err := m.db.Clauses(clause.OnConflict{
-		UpdateAll: true,
-	}).CreateInBatches(musics, 100).Error
-	if err != nil {
-		log.Printf("Save, save music err: %v", err)
-		return err
+func (m *musicDal) Upsert(music *Music, toUpdate map[string]any) error {
+	if music == nil && toUpdate == nil {
+		return nil
+	}
+	if music != nil {
+		if err := m.db.Create(&music).Error; err != nil {
+			log.Printf("Upsert, save music err: %v", err)
+			return err
+		}
+	}
+	if toUpdate != nil {
+		if err := m.db.Model(&Music{}).Updates(toUpdate).Error; err != nil {
+			log.Printf("Upsert, update music err: %v", err)
+			return err
+		}
 	}
 	return nil
 }

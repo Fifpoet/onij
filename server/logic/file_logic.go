@@ -24,6 +24,18 @@ func NewFileLogic(i *infra.AllInfra) FileLogic {
 }
 
 func (l *fileLogic) Upload(ctx context.Context, param *prm.UploadFileParam) (*prm.UploadFileResult, error) {
+	// check hash
+	fi, err := l.FileDal.GetByHash(crypto.Md5(param.File))
+	if err != nil {
+		return nil, err
+	}
+	if fi != nil {
+		return &prm.UploadFileResult{
+			FileId:  fi.Id,
+			FileUrl: util.DownloadFile(fi.StoreKey),
+		}, nil
+	}
+
 	key, err := util.UploadFile(ctx, util.UploadInfo{
 		Name:      param.Filename,
 		Bytes:     param.File,
@@ -32,7 +44,7 @@ func (l *fileLogic) Upload(ctx context.Context, param *prm.UploadFileParam) (*pr
 	if err != nil {
 		return nil, err
 	}
-	fi := &mysql.File{
+	fi = &mysql.File{
 		Id:       int64(util.IdGen.Generate()),
 		Name:     param.Filename,
 		Format:   int32(util.GetFileType(param.Filename)),

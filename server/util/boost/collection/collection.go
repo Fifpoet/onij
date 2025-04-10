@@ -1,7 +1,7 @@
 package collection
 
 import (
-	"onij/boost/exp"
+	"onij/util/boost/exp"
 	"slices"
 )
 
