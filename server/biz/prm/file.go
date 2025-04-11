@@ -23,6 +23,6 @@ type UploadFileResult struct {
 	FileUrl string
 }
 
-func (r *UploadFileResult) Response() *api.UploadFileResp {
+func (r *UploadFileResult) Resp() *api.UploadFileResp {
 	return &api.UploadFileResp{}
 }

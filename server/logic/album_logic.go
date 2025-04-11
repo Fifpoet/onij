@@ -9,6 +9,7 @@ import (
 
 type AlbumLogic interface {
 	Upload(ctx context.Context, param *prm.UploadAlbumParam) (*prm.UploadAlbumResult, error)
+	GetDetail(ctx context.Context, param *prm.GetAlbumDetailParam) (*prm.GetAlbumDetailResult, error)
 }
 
 type albumLogic struct {
@@ -34,4 +35,8 @@ func (l *albumLogic) Upload(ctx context.Context, param *prm.UploadAlbumParam) (*
 		return nil, err
 	}
 	return &prm.UploadAlbumResult{}, nil
+}
+
+func (l *albumLogic) GetDetail(ctx context.Context, param *prm.GetAlbumDetailParam) (*prm.GetAlbumDetailResult, error) {
+
 }

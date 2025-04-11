@@ -30,7 +30,7 @@ func UploadFile(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
 	}
-	c.JSON(consts.StatusOK, resp)
+	c.JSON(consts.StatusOK, resp.Resp())
 }
 
 func checkUploadFileReq(req *api.UploadFileReq) error {

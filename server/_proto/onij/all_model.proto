@@ -16,18 +16,28 @@ message MusicDetail {
   string writer_id = 7;
   string writer_name = 8;
   int64 issue_time = 9;
+  string mv_url = 10;
 
-  string mv_url = 20;
   string mp3_file_url = 21;
   string lyrics_file_url = 22;
+
+  int64 album_id = 30;
+  string album_name = 31;
 }
 
 message AlbumDetail {
+  message RelatedMusic {
+    int64 id = 1;
+    string name = 2;
+  }
   int64 id = 1;
   string name = 2;
   int64 artist_id = 3;
   string artist_name = 4;
   int64 issue_time = 5;
 
-  string cover_url = 20;
+  string cover_file_url = 20;
+  string mv_file_url = 21;
+
+  repeated RelatedMusic related_musics = 30;
 }

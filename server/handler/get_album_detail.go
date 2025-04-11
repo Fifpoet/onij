@@ -4,6 +4,7 @@ package handler
 
 import (
 	"context"
+	"onij/biz/prm"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
@@ -21,7 +22,19 @@ func GetAlbumDetail(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(api.GetAlbumDetailResp)
+	if err = checkGetAlbumReq(&req); err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
 
-	c.JSON(consts.StatusOK, resp)
+	resp, err := ser.AlbumLogic.GetDetail(ctx, prm.NewGetAlbumParam(&req))
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
+	c.JSON(consts.StatusOK, resp.Resp())
+}
+
+func checkGetAlbumReq(req *api.GetAlbumDetailReq) error {
+	return nil
 }

@@ -35,6 +35,6 @@ func NewUploadMusicParam(req *api.UploadMusicReq) *UploadMusicParam {
 type UploadMusicResult struct {
 }
 
-func (p *UploadMusicParam) Response() *UploadMusicResult {
-	return &UploadMusicResult{}
+func (p *UploadMusicResult) Resp() *api.UploadMusicResp {
+	return &api.UploadMusicResp{}
 }

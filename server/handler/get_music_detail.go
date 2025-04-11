@@ -21,7 +21,19 @@ func GetMusicDetail(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(api.GetMusicDetailResp)
+	if err = checkGetMusicReq(&req); err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
 
-	c.JSON(consts.StatusOK, resp)
+	resp, err := ser.MusicLogic.GetDetail(ctx, prm.NewGetMusicParam(&req))
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
+	c.JSON(consts.StatusOK, resp.Resp())
+}
+
+func checkGetMusicReq(req *api.GetMusicDetailReq) error {
+	return nil
 }

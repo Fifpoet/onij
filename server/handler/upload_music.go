@@ -32,7 +32,7 @@ func UploadMusic(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	c.JSON(consts.StatusOK, resp)
+	c.JSON(consts.StatusOK, resp.Resp())
 }
 
 func checkUploadMusicReq(req *api.UploadMusicReq) error {
