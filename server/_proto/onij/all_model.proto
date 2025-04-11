@@ -6,6 +6,28 @@ option go_package = "api";
 
 import "api.proto";
 
-message MusicDetail {}
+message MusicDetail {
+  int64 id = 1;
+  string name = 2;
+  repeated int64 artist_ids = 3;
+  repeated string artist_names = 4;
+  string composer_id = 5;
+  string composer_name = 6;
+  string writer_id = 7;
+  string writer_name = 8;
+  int64 issue_time = 9;
 
-message AlbumDetail {}
+  string mv_url = 20;
+  string mp3_file_url = 21;
+  string lyrics_file_url = 22;
+}
+
+message AlbumDetail {
+  int64 id = 1;
+  string name = 2;
+  int64 artist_id = 3;
+  string artist_name = 4;
+  int64 issue_time = 5;
+
+  string cover_url = 20;
+}

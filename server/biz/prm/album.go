@@ -5,7 +5,7 @@ import "onij/model/api"
 type UploadAlbumParam struct {
 	Name        string
 	ArtistId    int64
-	CoverFileId string
+	CoverFileId int64
 	IssueTime   int32
 	MusicId     *int64
 }

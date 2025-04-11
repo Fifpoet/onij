@@ -61,7 +61,7 @@ message UploadArtistResp {
 message UploadAlbumReq {
   string name = 1;
   int64 artist_id = 2;
-  string cover_file_id = 3;
+  int64 cover_file_id = 3;
   int32 issue_time = 4;
   optional int64 music_id = 5;
 }

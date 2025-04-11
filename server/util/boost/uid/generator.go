@@ -17,7 +17,7 @@ const (
 
 // Generator 生成 uid(unique identifiers)
 type Generator interface {
-	Generate() uint64
+	Generate() int64
 }
 
 type Options struct {
@@ -66,7 +66,7 @@ type generator struct {
 }
 
 // Generate 生成一个 uid
-func (r *generator) Generate() uint64 { return r.generate() }
+func (r *generator) Generate() int64 { return r.generate() }
 
 // init 根据配置初始化生成器
 func (r *generator) init() {
@@ -75,8 +75,8 @@ func (r *generator) init() {
 }
 
 // generate 高低位计算生成 uid
-func (r *generator) generate() uint64 {
-	return r.high | r.intercept(atomic.AddUint64(&r.low, 1), bitsLow)
+func (r *generator) generate() int64 {
+	return int64(r.high | r.intercept(atomic.AddUint64(&r.low, 1), bitsLow))
 }
 
 // intercept 获取将 s 从低位起截取 n 位后的结果

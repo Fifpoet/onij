@@ -24,7 +24,7 @@ func NewArtistDal(db *gorm.DB) ArtistDal {
 }
 
 type Artist struct {
-	Id         uint64         `json:"id" gorm:"primaryKey;autoIncrement"`
+	Id         int64          `json:"id" gorm:"primaryKey;autoIncrement"`
 	Name       string         `json:"name"`
 	ArtistType int32          `json:"artist_type"`
 	CreatedAt  time.Time      `json:"created_at"`
