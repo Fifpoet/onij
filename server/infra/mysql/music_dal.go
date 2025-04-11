@@ -10,6 +10,7 @@ import (
 
 type MusicDal interface {
 	GetById(id int) (*Music, error)
+	GetByIds(ids ...int64) ([]*Music, error)
 
 	Upsert(music *Music, toUpdate map[string]any) error
 	DelById(id int) (*Music, error)
@@ -55,6 +56,17 @@ func (m *musicDal) GetById(id int) (*Music, error) {
 		return nil, err
 	}
 	return &music, nil
+}
+func (m *musicDal) GetByIds(ids ...int64) ([]*Music, error) {
+	var musics []*Music
+	err := m.db.First(&musics, "id in ?", ids).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	} else if err != nil {
+		log.Printf("GetByIds, get music error: %v \n", err)
+		return nil, err
+	}
+	return musics, nil
 }
 
 func (m *musicDal) Upsert(music *Music, toUpdate map[string]any) error {

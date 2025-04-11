@@ -8,7 +8,7 @@ import (
 )
 
 type ArtistDal interface {
-	GetByIds(id ...int) ([]*Artist, error)
+	GetByIds(id ...int64) ([]*Artist, error)
 	GetByName(name string) ([]*Artist, error)
 	GetByNameAndType(name string, performType int) ([]*Artist, error)
 	Save(arts ...*Artist) error
@@ -32,9 +32,9 @@ type Artist struct {
 	DeletedAt  gorm.DeletedAt `json:"deleted_at"`
 }
 
-func (p *artistDal) GetByIds(id ...int) ([]*Artist, error) {
+func (p *artistDal) GetByIds(id ...int64) ([]*Artist, error) {
 	var res []*Artist
-	err := p.db.Where("id IN ?", id).Order("created_at desc").Find(&res).Error
+	err := p.db.Where("id IN ?", id).Find(&res).Error
 	if err != nil {
 		return nil, err
 	}

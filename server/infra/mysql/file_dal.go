@@ -14,7 +14,7 @@ type FileDal interface {
 	DelByIds(id []int) ([]*File, error)
 
 	GetByHash(key string) (*File, error)
-	GetByIds(ids []int) ([]*File, error)
+	GetByIds(ids ...int64) ([]*File, error)
 }
 type fileDal struct {
 	db *gorm.DB
@@ -76,7 +76,7 @@ func (f *fileDal) GetByHash(hash string) (*File, error) {
 	return res, nil
 }
 
-func (f *fileDal) GetByIds(ids []int) ([]*File, error) {
+func (f *fileDal) GetByIds(ids ...int64) ([]*File, error) {
 	if len(ids) == 0 {
 		return nil, nil
 	}

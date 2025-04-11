@@ -37,7 +37,7 @@ message AlbumDetail {
   int64 issue_time = 5;
 
   string cover_file_url = 20;
-  string mv_file_url = 21;
+  string mv_url = 21;
 
   repeated RelatedMusic related_musics = 30;
 }

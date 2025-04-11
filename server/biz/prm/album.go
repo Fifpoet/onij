@@ -43,8 +43,10 @@ func NewGetAlbumParam(req *api.GetAlbumDetailReq) *GetAlbumDetailParam {
 }
 
 type GetAlbumDetailResult struct {
-	album  *mysql.Album
-	musics []*mysql.Music
+	Album    *mysql.Album
+	Musics   []*mysql.Music
+	CoverUrl string
+	Artist   *mysql.Artist
 }
 
 func (r *GetAlbumDetailResult) Resp() *api.GetAlbumDetailResp {
