@@ -28,7 +28,7 @@ func NewMusicDal(db *gorm.DB) MusicDal {
 }
 
 type Music struct {
-	Id          uint64 `json:"id" gorm:"primaryKey;autoIncrement"`
+	Id          int64  `json:"id" gorm:"primaryKey;autoIncrement"`
 	RootId      int64  `json:"root_id"`
 	Name        string `json:"name" gorm:"not null;uniqueIndex:uni_idx_music"`
 	ArtistIds   string `json:"artist_ids" gorm:"not null;uniqueIndex:uni_idx_music"`

@@ -18,14 +18,12 @@ import (
 func InitDalForTest() *infra.AllInfra {
 	db := mysql.NewMysqlCli()
 	tagDal := mysql.NewTagDal(db)
-	relayDal := mysql.NewRelayDal(db)
 	fileDal := mysql.NewFileDal(db)
 	musicDal := mysql.NewMusicDal(db)
 	albumDal := mysql.NewAlbumDal(db)
 	artistDal := mysql.NewArtistDal(db)
 	allInfra := &infra.AllInfra{
 		TagDal:    tagDal,
-		RelayDal:  relayDal,
 		FileDal:   fileDal,
 		MusicDal:  musicDal,
 		AlbumDal:  albumDal,
@@ -37,14 +35,12 @@ func InitDalForTest() *infra.AllInfra {
 func InitializeApp() *App {
 	db := mysql.NewMysqlCli()
 	tagDal := mysql.NewTagDal(db)
-	relayDal := mysql.NewRelayDal(db)
 	fileDal := mysql.NewFileDal(db)
 	musicDal := mysql.NewMusicDal(db)
 	albumDal := mysql.NewAlbumDal(db)
 	artistDal := mysql.NewArtistDal(db)
 	allInfra := &infra.AllInfra{
 		TagDal:    tagDal,
-		RelayDal:  relayDal,
 		FileDal:   fileDal,
 		MusicDal:  musicDal,
 		AlbumDal:  albumDal,
@@ -69,7 +65,7 @@ func InitializeApp() *App {
 
 // wire.go:
 
-var infraSet = wire.NewSet(mysql.NewMysqlCli, mysql.NewTagDal, mysql.NewRelayDal, mysql.NewFileDal, mysql.NewMusicDal, mysql.NewAlbumDal, mysql.NewArtistDal, wire.Struct(new(infra.AllInfra), "*"))
+var infraSet = wire.NewSet(mysql.NewMysqlCli, mysql.NewTagDal, mysql.NewFileDal, mysql.NewMusicDal, mysql.NewAlbumDal, mysql.NewArtistDal, wire.Struct(new(infra.AllInfra), "*"))
 
 var logicSet = wire.NewSet(logic.NewMusicLogic, logic.NewFileLogic, logic.NewAlbumLogic, logic.NewArtistLogic, wire.Struct(new(logic.AllLogic), "*"))
 

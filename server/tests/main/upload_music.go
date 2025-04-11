@@ -37,6 +37,7 @@ func uploadMusic() {
 		fileName := filepath.Base(mp3File)
 		tmp := strings.Split(fileName, ".")
 		singer, songName, _ := strings.Cut(tmp[0], "-")
+		print(singer)
 
 		// 构建歌词文件路径
 		lyricsFile := strings.Replace(mp3File, ".mp3", ".lrc", -1)

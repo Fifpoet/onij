@@ -13,7 +13,6 @@ var infraSet = wire.NewSet(
 	mysql.NewMysqlCli,
 
 	mysql.NewTagDal,
-	mysql.NewRelayDal,
 	mysql.NewFileDal,
 	mysql.NewMusicDal,
 	mysql.NewAlbumDal,
