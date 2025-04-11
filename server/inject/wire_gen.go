@@ -53,10 +53,12 @@ func InitializeApp() *App {
 	musicLogic := logic.NewMusicLogic(allInfra)
 	fileLogic := logic.NewFileLogic(allInfra)
 	albumLogic := logic.NewAlbumLogic(allInfra)
+	artistLogic := logic.NewArtistLogic(allInfra)
 	allLogic := &logic.AllLogic{
-		MusicLogic: musicLogic,
-		FileLogic:  fileLogic,
-		AlbumLogic: albumLogic,
+		MusicLogic:  musicLogic,
+		FileLogic:   fileLogic,
+		AlbumLogic:  albumLogic,
+		ArtistLogic: artistLogic,
 	}
 	app := &App{
 		AllInfra: allInfra,
@@ -69,7 +71,7 @@ func InitializeApp() *App {
 
 var infraSet = wire.NewSet(mysql.NewMysqlCli, mysql.NewTagDal, mysql.NewRelayDal, mysql.NewFileDal, mysql.NewMusicDal, mysql.NewAlbumDal, mysql.NewArtistDal, wire.Struct(new(infra.AllInfra), "*"))
 
-var logicSet = wire.NewSet(logic.NewMusicLogic, logic.NewFileLogic, logic.NewAlbumLogic, wire.Struct(new(logic.AllLogic), "*"))
+var logicSet = wire.NewSet(logic.NewMusicLogic, logic.NewFileLogic, logic.NewAlbumLogic, logic.NewArtistLogic, wire.Struct(new(logic.AllLogic), "*"))
 
 var allSet = wire.NewSet(
 	infraSet,

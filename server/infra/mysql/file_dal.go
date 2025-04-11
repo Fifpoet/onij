@@ -11,7 +11,7 @@ import (
 type FileDal interface {
 	Save(file *File) error
 
-	DelByIds(id []int) ([]*File, error)
+	DelByIds(id []int64) ([]*File, error)
 
 	GetByHash(key string) (*File, error)
 	GetByIds(ids ...int64) ([]*File, error)
@@ -47,11 +47,11 @@ func (f *fileDal) Save(file *File) error {
 	return nil
 }
 
-func (f *fileDal) DelByIds(ids []int) ([]*File, error) {
+func (f *fileDal) DelByIds(ids []int64) ([]*File, error) {
 	if len(ids) == 0 {
 		return nil, nil
 	}
-	res, err := f.GetByIds(ids)
+	res, err := f.GetByIds(ids...)
 	if err != nil {
 		return nil, err
 	}

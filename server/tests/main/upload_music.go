@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/dhowden/tag"
 	"onij/infra/mysql"
-	"onij/logic"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -47,27 +46,13 @@ func uploadMusic() {
 		lyricsFiles = append(lyricsFiles, lyricsFile)
 
 		models = append(models, &mysql.Music{
-			RootId:      0,
-			Name:        songName,
-			ArtistIds:   singer,
-			Composer:    0,
-			Writer:      0,
-			Length:      getMp3Meta(f),
-			IssueYear:   0,
-			Language:    0,
-			PerformType: 0,
-			Concert:     "",
-			ConcertYear: 0,
-			Sequence:    0,
-			MvUrl:       "",
+			RootId: 0,
+			Name:   songName,
+			MvUrl:  "",
 		})
 	}
 	defer f.Close()
 
-	err = logic.NewLocalLogic().SaveMusicFromDir(models, mp3Files, lyricsFiles)
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
 }
 
 // findMP3Files 遍历目录并返回符合条件的 .mp3 文件路径

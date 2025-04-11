@@ -26,6 +26,7 @@ var logicSet = wire.NewSet(
 	logic.NewMusicLogic,
 	logic.NewFileLogic,
 	logic.NewAlbumLogic,
+	logic.NewArtistLogic,
 	wire.Struct(new(logic.AllLogic), "*"),
 )
 

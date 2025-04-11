@@ -101,6 +101,10 @@ service AllService {
   rpc UploadAlbum(UploadAlbumReq) returns (UploadAlbumResp) {
     option (api.post) = "/album/upload";
   }
+  // 上传艺术家
+  rpc UploadArtist(UploadArtistReq) returns (UploadArtistResp) {
+    option (api.post) = "/artist/upload";
+  }
   // 获取音乐详情
   rpc GetMusicDetail(GetMusicDetailReq) returns (GetMusicDetailResp) {
     option (api.get) = "/music/detail";

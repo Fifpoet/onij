@@ -1,6 +1,9 @@
 package prm
 
-import "onij/model/api"
+import (
+	"onij/infra/mysql"
+	"onij/model/api"
+)
 
 type UploadMusicParam struct {
 	Id           *int64
@@ -37,4 +40,28 @@ type UploadMusicResult struct {
 
 func (p *UploadMusicResult) Resp() *api.UploadMusicResp {
 	return &api.UploadMusicResp{}
+}
+
+type GetMusicDetailParam struct {
+	Id int64
+}
+
+func NewGetMusicDetailParam(req *api.GetMusicDetailReq) *GetMusicDetailParam {
+	return &GetMusicDetailParam{
+		Id: req.MusicId,
+	}
+}
+
+type GetMusicDetailResult struct {
+	Music         *mysql.Music
+	Artists       []*mysql.Artist
+	Composer      *mysql.Artist
+	Writer        *mysql.Artist
+	Mp3FileUrl    string
+	LyricsFileUrl string
+	Album         *mysql.Album
+}
+
+func (p *GetMusicDetailResult) Resp() *api.GetMusicDetailResp {
+	return &api.GetMusicDetailResp{}
 }

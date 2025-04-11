@@ -11,23 +11,22 @@ import (
 	api "onij/model/api"
 )
 
-// GetMusicDetail .
-// @router /music/detail [GET]
-func GetMusicDetail(ctx context.Context, c *app.RequestContext) {
+// UploadArtist .
+// @router /artist/upload [POST]
+func UploadArtist(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req api.GetMusicDetailReq
+	var req api.UploadArtistReq
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-
-	if err = checkGetMusicReq(&req); err != nil {
+	if err = checkUploadArtistReq(&req); err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
-	resp, err := ser.MusicLogic.GetDetail(ctx, prm.NewGetMusicDetailParam(&req))
+	resp, err := ser.ArtistLogic.Upload(ctx, prm.NewUploadArtistParam(&req))
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -35,6 +34,6 @@ func GetMusicDetail(ctx context.Context, c *app.RequestContext) {
 	c.JSON(consts.StatusOK, resp.Resp())
 }
 
-func checkGetMusicReq(req *api.GetMusicDetailReq) error {
+func checkUploadArtistReq(req *api.UploadArtistReq) error {
 	return nil
 }

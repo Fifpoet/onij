@@ -23,6 +23,10 @@ func Register(r *server.Hertz) {
 		_album.POST("/upload", append(_uploadalbumMw(), handler.UploadAlbum)...)
 	}
 	{
+		_artist := root.Group("/artist", _artistMw()...)
+		_artist.POST("/upload", append(_uploadartistMw(), handler.UploadArtist)...)
+	}
+	{
 		_file := root.Group("/file", _fileMw()...)
 		_file.POST("/upload", append(_uploadfileMw(), handler.UploadFile)...)
 	}

@@ -50,3 +50,13 @@ func _uploadmusicMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _artistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _uploadartistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
