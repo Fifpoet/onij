@@ -6,7 +6,7 @@ import (
 	"onij/util/boost/exp"
 )
 
-type MusicPrime struct {
+type AlbumPrime struct {
 	Id           *int64
 	Name         string
 	ArtistIds    []int64
@@ -16,15 +16,15 @@ type MusicPrime struct {
 	WriterId     *int64
 	AlbumId      *int64
 	MvUrl        *string
-	RootMusicId  *int64
+	RootAlbumId  *int64
 	IssueTime    *int32
 }
 
-func (m *MusicPrime) Upsert() (music *mysql.Music, toUpdate map[string]any) {
+func (m *AlbumPrime) Upsert() (album *mysql.Album, toUpdate map[string]any) {
 	if m.Id == nil {
-		return &mysql.Music{
+		return &mysql.Album{
 			Id:          util.IdGen.Generate(),
-			RootId:      exp.ValueOrZero(m.RootMusicId),
+			RootId:      exp.ValueOrZero(m.RootAlbumId),
 			Name:        m.Name,
 			ArtistIds:   util.Int64List2Str(m.ArtistIds),
 			ComposerId:  exp.ValueOrZero(m.ComposerId),
@@ -55,12 +55,12 @@ func (m *MusicPrime) Upsert() (music *mysql.Music, toUpdate map[string]any) {
 		if m.MvUrl != nil {
 			toUpdate["mv_url"] = *m.MvUrl
 		}
-		if m.RootMusicId != nil {
-			toUpdate["root_id"] = *m.RootMusicId
+		if m.RootAlbumId != nil {
+			toUpdate["root_id"] = *m.RootAlbumId
 		}
 		if m.IssueTime != nil {
 			toUpdate["issue_time"] = *m.IssueTime
 		}
-		return &mysql.Music{}, toUpdate
+		return &mysql.Album{}, toUpdate
 	}
 }

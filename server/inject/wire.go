@@ -16,6 +16,7 @@ var infraSet = wire.NewSet(
 	mysql.NewRelayDal,
 	mysql.NewFileDal,
 	mysql.NewMusicDal,
+	mysql.NewAlbumDal,
 	mysql.NewArtistDal,
 
 	wire.Struct(new(infra.AllInfra), "*"),
@@ -24,6 +25,7 @@ var infraSet = wire.NewSet(
 var logicSet = wire.NewSet(
 	logic.NewMusicLogic,
 	logic.NewFileLogic,
+	logic.NewAlbumLogic,
 	wire.Struct(new(logic.AllLogic), "*"),
 )
 

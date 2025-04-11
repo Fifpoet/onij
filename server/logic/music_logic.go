@@ -30,19 +30,23 @@ func NewMusicLogic(i *infra.AllInfra) MusicLogic {
 }
 
 func (l *musicLogic) Upload(ctx context.Context, param *prm.UploadMusicParam) (*prm.UploadMusicResult, error) {
-	// Id:           nil,
-	//		Name:         "",
-	//		ArtistIds:    nil,
-	//		Mp3FileId:    0,
-	//		LyricsFileId: 0,
-	//		ComposerId:   nil,
-	//		WriterId:     nil,
-	//		AlbumId:      nil,
-	//		MvUrl:        nil,
-	//		RootMusicId:  nil,
-	//		IssueTime:    nil,
-	musicPrime := &biz.MusicPrime{}
-	err := l.MusicDal.Upsert()
+	musicPrime := &biz.MusicPrime{
+		Id:           param.Id,
+		Name:         param.Name,
+		ArtistIds:    param.ArtistIds,
+		Mp3FileId:    param.Mp3FileId,
+		LyricsFileId: param.LyricsFileId,
+		ComposerId:   param.ComposerId,
+		WriterId:     param.WriterId,
+		AlbumId:      param.AlbumId,
+		MvUrl:        param.MvUrl,
+		RootMusicId:  param.RootMusicId,
+		IssueTime:    param.IssueTime,
+	}
+	err := l.MusicDal.Upsert(musicPrime.Upsert())
+	if err != nil {
+		return nil, err
+	}
 	return &prm.UploadMusicResult{}, nil
 }
 

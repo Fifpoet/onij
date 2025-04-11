@@ -60,10 +60,10 @@ message UploadArtistResp {
 // 上传专辑
 message UploadAlbumReq {
   string name = 1;
-  string artist = 2;
+  int64 artist_id = 2;
   string cover_file_id = 3;
   int32 issue_time = 4;
-  repeated string music_name = 5;
+  optional int64 music_id = 5;
 }
 message UploadAlbumResp {
   int32 code = 1;

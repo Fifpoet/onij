@@ -8,6 +8,7 @@ import (
 type AllLogic struct {
 	MusicLogic
 	FileLogic
+	AlbumLogic
 }
 
 type LocalLogic interface {
