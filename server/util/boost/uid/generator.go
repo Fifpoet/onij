@@ -8,10 +8,10 @@ import (
 )
 
 const (
-	bitsTotal     = 64                       // 总位数
-	bitsHight     = 16                       // 高位部分位数
-	bitsTimestamp = 40                       // 时间戳部分位数
-	bitsIncr      = 8                        // 递增部分位数
+	bitsTotal     = 32                       // 总位数
+	bitsHight     = 4                        // 高位部分位数
+	bitsTimestamp = 8                        // 时间戳部分位数
+	bitsIncr      = 4                        // 递增部分位数
 	bitsLow       = bitsTimestamp + bitsIncr // 低位部分位数
 )
 
