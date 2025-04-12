@@ -25,8 +25,8 @@ func NewMysqlCli() *gorm.DB {
 		SkipInitializeWithVersion: false,                          // 根据当前 MySQL 版本自动配置
 	}), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
-			TablePrefix:   "fp_", // 表名前缀，`User`表为`dp_user`
-			SingularTable: true,  // 使用单数表名，启用该选项后，`User` 表将是`user`
+			TablePrefix:   "onij_", // 表名前缀，`User`表为`dp_user`
+			SingularTable: true,    // 使用单数表名，启用该选项后，`User` 表将是`user`
 		},
 		NowFunc: func() time.Time {
 			return time.Now().Local()
@@ -37,7 +37,7 @@ func NewMysqlCli() *gorm.DB {
 	}
 
 	// 库表自动迁移
-	err = Db.AutoMigrate(&Tag{}, &File{}, &Music{}, Artist{})
+	err = Db.AutoMigrate(&Tag{}, &Album{}, &File{}, &Music{}, Artist{})
 	if err != nil {
 		log.Fatalf("failed to migrate: %v", err)
 	}
