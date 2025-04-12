@@ -1,15 +1,18 @@
 package biz
 
 import (
+	"fmt"
 	"onij/infra/mysql"
 	"onij/util"
 	"onij/util/boost/exp"
+	"strings"
 )
 
 type MusicPrime struct {
 	Id           *int64
 	Name         string
 	ArtistIds    []int64
+	ArtistNames  []string
 	Mp3FileId    int64
 	LyricsFileId int64
 	ComposerId   *int64
@@ -26,12 +29,12 @@ func (m *MusicPrime) Upsert() (music *mysql.Music, toUpdate map[string]any) {
 			Id:          util.IdGen.Generate(),
 			RootId:      exp.ValueOrZero(m.RootMusicId),
 			Name:        m.Name,
+			FullName:    fmt.Sprintf("%s-%s", m.Name, strings.Join(m.ArtistNames, ",")),
 			ArtistIds:   util.Int64List2Str(m.ArtistIds),
 			ComposerId:  exp.ValueOrZero(m.ComposerId),
 			WriterId:    exp.ValueOrZero(m.WriterId),
 			IssueTime:   exp.ValueOrZero(m.IssueTime),
 			PerformType: 0,
-			AlbumId:     exp.ValueOrZero(m.AlbumId),
 			MvUrl:       exp.ValueOrZero(m.MvUrl),
 			Mp3FileId:   m.Mp3FileId,
 			LyricFileId: m.LyricsFileId,

@@ -5,12 +5,17 @@ import (
 	"onij/biz/biz"
 	"onij/biz/prm"
 	"onij/infra"
+	"onij/infra/mysql"
 	"onij/util"
+	"onij/util/boost/collection/collext"
+	"onij/util/boost/exp"
+	"strings"
 )
 
 type MusicLogic interface {
 	Upload(ctx context.Context, param *prm.UploadMusicParam) (*prm.UploadMusicResult, error)
 	GetDetail(ctx context.Context, param *prm.GetMusicDetailParam) (*prm.GetMusicDetailResult, error)
+	GetList(ctx context.Context, param *prm.GetMusicListParam) (*prm.GetMusicListResult, error)
 }
 
 type musicLogic struct {
@@ -24,10 +29,15 @@ func NewMusicLogic(i *infra.AllInfra) MusicLogic {
 }
 
 func (l *musicLogic) Upload(ctx context.Context, param *prm.UploadMusicParam) (*prm.UploadMusicResult, error) {
+	artistNames, err := l.ArtistDal.GetByIds(param.ArtistIds...)
+	if err != nil {
+		return nil, err
+	}
 	musicPrime := &biz.MusicPrime{
 		Id:           param.Id,
 		Name:         param.Name,
 		ArtistIds:    param.ArtistIds,
+		ArtistNames:  collext.Pick(artistNames, func(a *mysql.Artist) string { return a.Name }),
 		Mp3FileId:    param.Mp3FileId,
 		LyricsFileId: param.LyricsFileId,
 		ComposerId:   param.ComposerId,
@@ -37,7 +47,7 @@ func (l *musicLogic) Upload(ctx context.Context, param *prm.UploadMusicParam) (*
 		RootMusicId:  param.RootMusicId,
 		IssueTime:    param.IssueTime,
 	}
-	err := l.MusicDal.Upsert(musicPrime.Upsert())
+	err = l.MusicDal.Upsert(musicPrime.Upsert())
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +68,7 @@ func (l *musicLogic) GetDetail(ctx context.Context, param *prm.GetMusicDetailPar
 	if err != nil {
 		return nil, err
 	}
-	album, err := l.AlbumDal.GetById(music.AlbumId)
+	albums, err := l.AlbumDal.GetByMusicId(music.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -69,6 +79,46 @@ func (l *musicLogic) GetDetail(ctx context.Context, param *prm.GetMusicDetailPar
 		Writer:        artists[1],
 		Mp3FileUrl:    util.DownloadFile(files[0].StoreKey),
 		LyricsFileUrl: util.DownloadFile(files[1].StoreKey),
-		Album:         album,
+		Albums:        albums,
+	}, nil
+}
+
+func (l *musicLogic) GetList(ctx context.Context, param *prm.GetMusicListParam) (*prm.GetMusicListResult, error) {
+	// 专辑范围内
+	if param.AlbumId != nil {
+		album, err := l.AlbumDal.GetById(*param.AlbumId)
+		if err != nil {
+			return nil, err
+		}
+		relatedAlbum, err := l.AlbumDal.GetByRelatedId(album.Id)
+		if err != nil {
+			return nil, err
+		}
+		musics, err := l.MusicDal.GetByIds(collext.Pick(relatedAlbum, func(a *mysql.Album) int64 {
+			return a.MusicId
+		})...)
+		if err != nil {
+			return nil, err
+		}
+		if param.Keyword != nil {
+			return &prm.GetMusicListResult{Musics: musics}, nil
+		}
+		return &prm.GetMusicListResult{
+			Musics: collext.Select(musics, func(m *mysql.Music) (*mysql.Music, bool) {
+				return m, strings.Contains(m.FullName, *param.Keyword)
+			}),
+		}, nil
+	}
+
+	// 不指定专辑
+	musics, err := l.MusicDal.GetByArtistAndName(
+		exp.ValueOrZero(param.ArtistId), exp.ValueOrZero(param.Keyword),
+		util.Page{Page: param.Page, Limit: param.Limit},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &prm.GetMusicListResult{
+		Musics: musics,
 	}, nil
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gorm.io/gorm"
 	"log"
+	"onij/util"
 	"time"
 )
 
@@ -15,7 +16,7 @@ type MusicDal interface {
 	Upsert(music *Music, toUpdate map[string]any) error
 	DelById(id int) (*Music, error)
 	GetByTitle(title string) ([]*Music, error)
-	GetByArtist(artistId int) ([]*Music, error)
+	GetByArtistAndName(artistId int64, name string, pageInfo util.Page) ([]*Music, error)
 	GetByTitleArtistPerType(title string, artistId, performType, page, size int) ([]*Music, error)
 }
 
@@ -31,12 +32,12 @@ type Music struct {
 	Id          int64  `json:"id" gorm:"primaryKey;autoIncrement"`
 	RootId      int64  `json:"root_id"`
 	Name        string `json:"name" gorm:"not null;uniqueIndex:uni_idx_music"`
+	FullName    string `json:"full_name"`
 	ArtistIds   string `json:"artist_ids" gorm:"not null;uniqueIndex:uni_idx_music"`
 	ComposerId  int64  `json:"composer_id"`
 	WriterId    int64  `json:"writer_id"`
 	IssueTime   int32  `json:"issue_time"`
 	PerformType int32  `json:"perform_type"`
-	AlbumId     int64  `json:"album_id" gorm:"uniqueIndex:uni_idx_music"`
 	MvUrl       string `json:"mv_url"`
 	Mp3FileId   int64  `json:"mp3_file_id" gorm:"not null"`
 	LyricFileId int64  `json:"lyric_file_id"`
@@ -112,13 +113,22 @@ func (m *musicDal) GetByTitle(title string) ([]*Music, error) {
 	return musics, nil
 }
 
-// GetByArtist 通过 artist_id 模糊匹配查询
-func (m *musicDal) GetByArtist(artistId int) ([]*Music, error) {
+func (m *musicDal) GetByArtistAndName(artistId int64, name string, pageInfo util.Page) ([]*Music, error) {
 	var musics []*Music
-	artistIdStr := fmt.Sprintf(",%d,", artistId)
-	err := m.db.Where("artist_ids LIKE ?", "%"+artistIdStr+"%").Find(&musics).Error
+	artistIdStr := fmt.Sprintf("%d", artistId)
+	db := m.db
+	if artistId > 0 {
+		db = db.Where("artist_ids LIKE ?", "%"+artistIdStr+"%")
+	}
+	if name != "" {
+		db = db.Where("full_name LIKE ?", "%"+name+"%")
+	}
+	err := db.
+		Offset(pageInfo.OffsetNum()).
+		Limit(pageInfo.LimitNum()).
+		Find(&musics).Error
 	if err != nil {
-		log.Printf("GetByArtist, get music error: %v \n", err)
+		log.Printf("GetByArtistAndName, get music error: %v \n", err)
 		return nil, err
 	}
 	return musics, nil

@@ -59,9 +59,37 @@ type GetMusicDetailResult struct {
 	Writer        *mysql.Artist
 	Mp3FileUrl    string
 	LyricsFileUrl string
-	Album         *mysql.Album
+	Albums        []*mysql.Album
 }
 
 func (p *GetMusicDetailResult) Resp() *api.GetMusicDetailResp {
 	return &api.GetMusicDetailResp{}
+}
+
+type GetMusicListParam struct {
+	SortType api.MusicSortType
+	Keyword  *string
+	AlbumId  *int64
+	ArtistId *int64
+	Page     int32
+	Limit    int32
+}
+
+func NewGetMusicListParam(req *api.GetMusicListReq) *GetMusicListParam {
+	return &GetMusicListParam{
+		SortType: req.SortType,
+		Keyword:  req.Keyword,
+		AlbumId:  req.AlbumId,
+		ArtistId: req.ArtistId,
+		Page:     req.Page,
+		Limit:    req.Limit,
+	}
+}
+
+type GetMusicListResult struct {
+	Musics []*mysql.Music
+}
+
+func (p *GetMusicListResult) Resp() *api.GetMusicListResp {
+	return &api.GetMusicListResp{}
 }
