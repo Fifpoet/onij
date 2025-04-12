@@ -1,16 +1,14 @@
 <template>
   <div ref="audioContainer"
-       class="audio-container fixed bg-[rgb(245,245,245)] flex items-center bottom-5 left-5 w-[400px] h-[60px]">
+       class="audio-container fixed bg-[rgb(245,245,245)] flex items-center bottom-5 left-5 w-[300px] h-[60px]">
 
-    <!-- 左侧两竖排小点 -->
+    <!-- 拖拽手柄 -->
     <div class="drag-handle flex justify-between p-2 cursor-grab" @mousedown="startDragging">
-      <!-- 第一排小点 -->
       <div class="flex flex-col">
-        <div class="dot w-[4px] h-[4px] bg-gray-500 rounded-full mb-1" v-for="n in 3" :key="'left' + n"></div>
+        <div class="dot w-[3px] h-[3px] bg-gray-500 rounded-full mb-1" v-for="n in 4" :key="'left' + n"></div>
       </div>
-      <!-- 第二排小点 -->
       <div class="flex flex-col ml-1">
-        <div class="dot w-[4px] h-[4px] bg-gray-500 rounded-full mb-1" v-for="n in 3" :key="'right' + n"></div>
+        <div class="dot w-[3px] h-[3px] bg-gray-500 rounded-full mb-1" v-for="n in 4" :key="'right' + n"></div>
       </div>
     </div>
 
