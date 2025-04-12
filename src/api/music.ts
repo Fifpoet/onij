@@ -1,9 +1,10 @@
 import type {UploadCustomRequestOptions} from "naive-ui";
-import {convertToUpsertMusicReq} from "@/store/music.ts";
 
 import type {
     GetMusicListReq,
     GetMusicListResp,
+    GetMusicDetailReq,
+    GetMusicDetailResp,
     MusicSortType
 } from '@/api/types/music';
 import apiClient from "@/util/http.ts";
@@ -31,6 +32,24 @@ export const GetMusicList = async (
     }
 };
 
+export const GetMusicDetail = async (
+    params: GetMusicDetailReq
+): Promise<GetMusicDetailResp> => {
+    try {
+        // 注意：根据IDL定义，这是POST请求
+        const response = await apiClient.post<GetMusicDetailResp>('/music/detail', params);
+
+        if (response.data.code !== 200) {
+            throw new Error(response.data.message || '获取音乐详情失败');
+        }
+
+        return response.data;
+    } catch (error) {
+        console.error('getMusicDetail error:', error);
+        throw error;
+    }
+};
+
 
 export function uploadMp3 ({file}: UploadCustomRequestOptions) {
     if (currentMusicDetail.value) {
@@ -48,30 +67,3 @@ export function uploadMp3 ({file}: UploadCustomRequestOptions) {
     message.info("上传mp3成功");
 }
 
-export  async function  submitMusicForm  () {
-    if (currentMusicDetail.value) {
-        if (selectedSingerValues.value) {
-            currentMusicDetail.value.artist_ids = selectedSingerValues.value;
-        } else {
-            currentMusicDetail.value.artist_ids = [];
-        }
-
-
-        const upsertMusicReq = convertToUpsertMusicReq(currentMusicDetail.value);
-        console.log(upsertMusicReq);
-        // 发送更新音乐详情的请求
-        const response = await apiClient.post(`/music/upsert`, upsertMusicReq, {
-            headers: {
-                'Content-Type': 'multipart/form-data', // 指定请求类型为 multipart/form-data
-            },
-        });
-        console.log('音乐详情已更新', response.data);
-        // 可以选择刷新音乐列表或其他操作
-        if (response.status === 200) {
-            message.success("上传成功");
-        } else {
-            message.error("上传失败");
-        }
-    }
-
-}

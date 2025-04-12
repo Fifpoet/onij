@@ -16,10 +16,8 @@ apiClient.interceptors.request.use(
     (config) => {
         // 打印请求的 URL 和 body
         if (config.baseURL && config.url) {
-            console.log('Request URL:', config.baseURL + config.url);
         }
         if (config.method === 'post' || config.method === 'put') {
-            console.log('Request Body:', config.data);
         }
 
         // 在发送请求之前做点什么，比如添加 token
@@ -45,7 +43,6 @@ apiClient.interceptors.response.use(
     },
     (error) => {
         // 处理响应错误
-        console.error('API error:', error.response?.data || error.message);
         return Promise.reject(error);
     }
 );

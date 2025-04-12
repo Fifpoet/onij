@@ -14,13 +14,15 @@
 
     <!-- 音乐播放器主体，显示当前播放的音乐 -->
     <div class="audio-content flex-grow pl-5 group relative">
-      <div v-if="currentMusicDetail" class="flex items-center">
+      <div v-if="musicStore.current.detail" class="flex items-center">
         <div class="hidden group-hover:flex justify-center items-center">
           <button @click="playPrevious" class="w-[30px] h-[30px] rounded-full bg-gray-300 mr-2">⬅️</button>
-          <button @click="startOrPause" class="w-[30px] h-[30px] rounded-full bg-gray-300 mx-2">▶️</button>
+          <button @click="startOrPause" class="w-[30px] h-[30px] rounded-full bg-gray-300 mx-2">
+            {{ isPlaying ? '⏸️' : '▶️' }}
+          </button>
           <button @click="playNext" class="w-[30px] h-[30px] rounded-full bg-gray-300 ml-2">➡️</button>
         </div>
-        <span class="transition-all duration-300 group-hover:hidden">{{ currentMusicDetail.title }} - {{ currentMusicDetail.artist_name }}</span>
+        <span class="transition-all duration-300 group-hover:hidden">{{ musicStore.currentMusicName }} - {{ musicStore.currentMusicName }}</span>
       </div>
       <div v-else>
         <p>请选择一首音乐播放</p>
@@ -40,16 +42,16 @@
              max="100" v-model="currentProgress" @input="onSeek"/>
     </div>
 
-    <!-- music-列表 -->
+    <!-- music列表 -->
     <div v-if="showMusicList && !showSongDetail" @scroll="handleScroll"
          class="music-list absolute bg-white shadow-lg rounded-lg p-4 w-[400px] bottom-[70px] left-0 max-h-[300px] overflow-y-auto">
       <n-list hoverable clickable>
-        <div v-for="music in musicStore.MusicList" :key="music.id" class="mb-2 cursor-pointer"
-             @dblclick="playMusic(music.id)">
+        <div v-for="music in musicStore.musicList" :key="music?.id" class="mb-0.5 cursor-pointer"
+             @dblclick="playMusic(music?.id)">
           <n-list-item>
-            <n-thing :title="music.title" content-style="margin-top: 10px;">
+            <n-thing :title="music?.name" content-style="margin-top: 10px;">
               <template #description>
-                <n-space size="small" style="margin-top: 4px">
+                <n-space size="small" style="margin-top: 2px">
                   <n-tag :bordered="false" type="info" size="small">
                     暑夜
                   </n-tag>
@@ -59,7 +61,7 @@
                 </n-space>
               </template>
               <template #header-extra>
-                {{music.artist}}
+                {{music?.artist }}
               </template>
             </n-thing>
           </n-list-item>
@@ -146,7 +148,6 @@
 
 import {computed, onMounted, Ref, ref} from 'vue';
 import apiClient from '@/util/http.ts'; // 引入 axios 实例
-import type {MusicDetail} from "@/store/music.ts";
 import {convertToUpsertMusicReq, useMusicStore} from "@/store/music.ts";
 import type {SelectOption, UploadCustomRequestOptions} from 'naive-ui'
 import {
@@ -164,24 +165,14 @@ import {
   useMessage
 } from "naive-ui"
 import {languageOptions, performTypeOptions} from "@/util/enum.ts";
-import { GetMusicList, uploadMp3 } from '@/api';
-import { GetMusicListReq, GetMusicListResp, MusicSortType } from '@/api/types';
+import {GetMusicDetail, GetMusicList, uploadMp3} from '@/api';
+import {GetMusicDetailReq, GetMusicListReq, GetMusicListResp, MusicSortType, MusicDetail} from '@/api/types';
 
 const message = useMessage()
 // *************************************************** 音乐列表展示逻辑 *************************************************** //
 const showMusicList = ref(false);
 const showSongDetail = ref(false);
-const currentMusicDetail = ref<MusicDetail | null>(); // 用于保存当前音乐详情
 const musicStore = useMusicStore(); // 获取 Pinia store
-
-
-const listMusicReq = {
-  "title": "",
-  "artist": 0,
-  "perform_type": 0,
-  "page": 1,
-  "size": 100
-};
 
 // *************** music表单相关控件 *************** //
 const selectedSingerValues = ref<number[]>([]);
@@ -257,11 +248,12 @@ const formattedCurrentTime = computed(() => {
 // 播放音乐，获取音乐详情
 const playMusic = async (id: number) => {
   try {
-    const response = await apiClient.get(`/music/get/${id}`); // 获取音乐详情的 API
-    currentMusicDetail.value = response.data.data; // 更新当前音乐详情
-    musicStore.setCurrentMusic(currentMusicDetail); // 更新 Pinia store 中的当前播放的音乐 id
-    handleMp3()
+    const response = await GetMusicDetail({ music_id: 10318921068806 }); // TODO
+    console.log(musicStore.current.detail)
+    musicStore.setCurrentMusic(response.data) // TODO 煤矸石
+    console.log(musicStore.current.detail)
 
+    handleMp3()
   } catch (error) {
     console.error('获取音乐详情失败', error);
   }
@@ -284,7 +276,7 @@ const toggleSongDetail = () => {
 // 处理音频文件
 const handleMp3 = () => {
   // 确保有音乐链接
-  console.log("开始处理mp3并开始播放: ", currentMusicDetail.value?.title)
+  console.log("开始处理mp3并开始播放: ", musicStore.current.detail)
   if (!currentMusicDetail.value || !currentMusicDetail.value?.mp_url) {
     message.error("没有找到音频文件");
     return;
@@ -424,17 +416,14 @@ const playRandom = () => {
 
 
 
-
+// ************************* 播放器拖动 START ************************* //
 const startDragging = (e: MouseEvent) => {
   if (!audioContainer.value) return;
-
   isDragging = true;
   offset.x = e.clientX - audioContainer.value.getBoundingClientRect().left;
   offset.y = e.clientY - audioContainer.value.getBoundingClientRect().top;
 
-  // 禁用文本选择
   document.body.style.userSelect = 'none';
-
   document.addEventListener('mousemove', drag);
   document.addEventListener('mouseup', stopDragging);
 };
@@ -442,7 +431,6 @@ const startDragging = (e: MouseEvent) => {
 const stopDragging = () => {
   isDragging = false;
 
-  // 恢复文本选择
   document.body.style.userSelect = '';
 
   document.removeEventListener('mousemove', drag);
@@ -476,12 +464,25 @@ const drag = (e: MouseEvent) => {
 };
 
 
-onMounted(() => {
-  GetMusicList<GetMusicListReq>({
-    sort_type: MusicSortType.MST_Created_At_Desc,
-    page: 1,
-    limit: 10
-  });
+onMounted(async () => {
+  try {
+    const response = await GetMusicList<GetMusicListReq>({
+      sort_type: MusicSortType.MST_Created_At_Desc,
+      page: 1,
+      limit: 100
+    });
+
+    if (response?.musics) {
+      const musicStore = useMusicStore();
+      musicStore.append(response.musics); // TODO 去重问题
+    } else {
+      console.warn("返回数据格式异常:", response);
+    }
+  } catch (error) {
+    console.error("加载音乐列表失败:", error);
+  }
+
+
 });
 
 </script>

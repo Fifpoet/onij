@@ -30,9 +30,39 @@ export enum MusicSortType {
     MST_Issue_Time_Asc = 4,
 }
 
-/* 通用响应结构 */
-export interface BaseResponse<T> {
+export interface GetMusicDetailReq {
+    music_id: number;
+}
+
+// 响应数据类型
+export interface GetMusicDetailResp {
     code: number;
     message: string;
-    data?: T;
+    detail: MusicDetail;
+}
+
+export interface MusicDetail {
+    id: number;
+    name: string;
+    artist_ids: number[];
+    artist_names: string[];
+    composer_id: number;
+    composer_name: string;
+    writer_id: number;
+    writer_name: string;
+    issue_time: number; // 假设是时间戳
+    mv_url: string;
+
+    mp3_file_url: string;
+    lyrics_file_url: string;
+
+    album_id: number;
+    album_name: string;
+}
+
+export interface CurrentMusicState {
+    detail: MusicDetail | null;
+    isPlaying: boolean;
+    progress: number; // 当前播放进度 (0-100)
+    volume: number;   // 音量 (0-100)
 }
