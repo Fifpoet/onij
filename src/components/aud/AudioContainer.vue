@@ -27,23 +27,16 @@
       </div>
     </div>
 
-
-    <!-- 左侧歌曲详情图标 -->
     <div class="song-detail-toggle p-2 cursor-pointer" @click="toggleSongDetail">
-      📝 <!-- 可以替换为你想要的图标 -->
+      📝
     </div>
-    <!-- 右侧展示音乐列表的图标 -->
     <div class="music-list-toggle p-2 cursor-pointer" @click="toggleMusicList">
-      🎵 <!-- 可以替换为你想要的图标 -->
+      🎵
     </div>
-
     <!-- 进度条 -->
     <div class="absolute bottom-[-1px] left-0 w-full p-0 m-0 flex items-center">
-      <!-- 已播放时间显示 -->
       <span class="text-xs text-gray-500 ml-2">{{ formattedCurrentTime }}</span>
-
-      <!-- 进度条 -->
-      <input type="range" class="flex-grow h-[2px] bg-gray-300 outline-none appearance-none p-0 m-0 ml-2" min="0"
+      <input type="range" class="flex-grow h-[2px] bg-gray-300 outline-none appearance-none p-0 m-0 ml-2 mr-2" min="0"
              max="100" v-model="currentProgress" @input="onSeek"/>
     </div>
 
@@ -74,10 +67,7 @@
       </n-list>
     </div>
 
-
     <!-- 歌曲详情展示 -->
-
-
     <div v-if="showSongDetail && currentMusicDetail" class="song-detail fixed bg-[#00000000] rounded-lg p-4 w-[400px]">
       <input type="hidden" v-model="currentMusicDetail.id">
       <input type="hidden" v-model="currentMusicDetail.root_id">
@@ -174,6 +164,8 @@ import {
   useMessage
 } from "naive-ui"
 import {languageOptions, performTypeOptions} from "@/util/enum.ts";
+import { GetMusicList, uploadMp3 } from '@/api';
+import { GetMusicListReq, GetMusicListResp, MusicSortType } from '@/api/types';
 
 const message = useMessage()
 // *************************************************** 音乐列表展示逻辑 *************************************************** //
@@ -229,121 +221,6 @@ const handleSearchWriter = async (query: string) => {
   await handleSearch(query, 3, writerOptions, loadingWriter); // 传入typ为2
 };
 
-const uploadMp3 = ({file}: UploadCustomRequestOptions) => {
-  if (currentMusicDetail.value) {
-    if (file.file) {
-      currentMusicDetail.value.mp = file.file; // 确保 file.file 不是 null
-      console.log("上传mp3文件暂存: ", file.name)
-    } else {
-      message.error("文件无效");
-      return;
-    }
-  } else {
-    message.error("请先选择歌曲");
-    return;
-  }
-  message.info("上传mp3成功");
-}
-const uploadLyric = ({file}: UploadCustomRequestOptions) => {
-  if (currentMusicDetail.value) {
-    if (file.file) {
-      currentMusicDetail.value.lyric = file.file; // 确保 file.file 不是 null
-      console.log("上传歌词文件暂存: ", file.name)
-    } else {
-      message.error("文件无效");
-      return;
-    }
-  } else {
-    message.error("请先选择歌曲");
-    return;
-  }
-  message.info("上传歌词成功");
-}
-const uploadCover = ({file}: UploadCustomRequestOptions) => {
-  if (currentMusicDetail.value) {
-    if (file.file) {
-      currentMusicDetail.value.cover = file.file; // 确保 file.file 不是 null
-      console.log("上传封面文件暂存: ", file.name)
-    } else {
-      message.error("文件无效");
-      return;
-    }
-  } else {
-    message.error("请先选择歌曲");
-    return;
-  }
-}
-const uploadSheet = ({file}: UploadCustomRequestOptions) => {
-  if (currentMusicDetail.value) {
-    if (file.file) {
-      currentMusicDetail.value.sheet = file.file; // 确保 file.file 不是 null
-      console.log("上传曲谱文件暂存: ", file.name)
-    } else {
-      message.error("文件无效");
-      return;
-    }
-  } else {
-    message.error("请先选择歌曲");
-    return;
-  }
-}
-
-const submitMusicForm = async () => {
-  if (currentMusicDetail.value) {
-    if (selectedSingerValues.value) {
-      currentMusicDetail.value.artist_ids = selectedSingerValues.value;
-    } else {
-      currentMusicDetail.value.artist_ids = [];
-    }
-
-
-    const upsertMusicReq = convertToUpsertMusicReq(currentMusicDetail.value);
-    console.log(upsertMusicReq);
-    // 发送更新音乐详情的请求
-    const response = await apiClient.post(`/music/upsert`, upsertMusicReq, {
-      headers: {
-        'Content-Type': 'multipart/form-data', // 指定请求类型为 multipart/form-data
-      },
-    });
-    console.log('音乐详情已更新', response.data);
-    // 可以选择刷新音乐列表或其他操作
-    if (response.status === 200) {
-      message.success("上传成功");
-    } else {
-      message.error("上传失败");
-    }
-  }
-
-};
-
-const handleSearch = async (query: string, typ: number, options: Ref<SelectOption[]>, loading: Ref<boolean>) => {
-  if (!query.length) {
-    return
-  }
-  loading.value = true
-  // 搜索singer
-  try {
-    const response = await apiClient.get('/performer/get', {
-      params: {
-        type: typ,
-        name: query,
-      }
-    });
-    const singerList = response.data.data;
-    options.value = singerList.map((s: {
-      id: number;
-      name: string;
-    }) => ({
-      label: s.name,
-      value: s.id
-    }));
-    loading.value = false
-  } catch (error) {
-    console.error('搜索失败', error);
-  } finally {
-    loading.value = false; // 无论成功与否，都需要结束加载状态
-  }
-};
 
 
 const fetchMusicList = async () => {
@@ -545,10 +422,7 @@ const playRandom = () => {
   playMusic(nextMusic.id);
 };
 
-// 获取音乐列表
-onMounted(() => {
-  fetchMusicList();
-});
+
 
 
 const startDragging = (e: MouseEvent) => {
@@ -602,6 +476,14 @@ const drag = (e: MouseEvent) => {
 };
 
 
+onMounted(() => {
+  GetMusicList<GetMusicListReq>({
+    sort_type: MusicSortType.MST_Created_At_Desc,
+    page: 1,
+    limit: 10
+  });
+});
+
 </script>
 
 
@@ -639,3 +521,4 @@ input[type="range"]::-moz-range-thumb {
   cursor: pointer;
 }
 </style>
+

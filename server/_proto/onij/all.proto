@@ -124,14 +124,14 @@ service AllService {
   }
   // 获取音乐详情
   rpc GetMusicDetail(GetMusicDetailReq) returns (GetMusicDetailResp) {
-    option (api.get) = "/music/detail";
+    option (api.post) = "/music/detail";
   }
   // 获取专辑详情
   rpc GetAlbumDetail(GetAlbumDetailReq) returns (GetAlbumDetailResp) {
-    option (api.get) = "/album/detail";
+    option (api.post) = "/album/detail";
   }
   // 获取音乐列表
   rpc GetMusicList(GetMusicListReq) returns (GetMusicListResp) {
-    option (api.get) = "/music/list";
+    option (api.post) = "/music/list";
   }
 }

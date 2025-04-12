@@ -1,6 +1,9 @@
 package prm
 
-import "onij/model/api"
+import (
+	"onij/model/api"
+	"onij/util"
+)
 
 type UploadFileParam struct {
 	Filename string
@@ -25,6 +28,8 @@ type UploadFileResult struct {
 
 func (r *UploadFileResult) Resp() *api.UploadFileResp {
 	return &api.UploadFileResp{
+		Code:    util.BaseCodeOK,
+		Message: util.BaseMsgOK,
 		FileId:  r.FileId,
 		FileUrl: r.FileUrl,
 	}

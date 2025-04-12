@@ -4,11 +4,22 @@ package main
 
 import (
 	"github.com/cloudwego/hertz/pkg/app/server"
+	"github.com/hertz-contrib/cors"
 	"onij/handler"
+	"time"
 )
 
 func main() {
 	h := server.Default()
+
+	h.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://onij.fun", "http://localhost:18968"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization", "X-Requested-With"},
+		ExposeHeaders:    []string{"Content-Length", "X-Custom-Header"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	handler.InitApp()
 	register(h)

@@ -3,6 +3,7 @@ package prm
 import (
 	"onij/infra/mysql"
 	"onij/model/api"
+	"onij/util"
 	"onij/util/boost/collection/collext"
 )
 
@@ -42,6 +43,8 @@ type UploadMusicResult struct {
 
 func (p *UploadMusicResult) Resp() *api.UploadMusicResp {
 	return &api.UploadMusicResp{
+		Code:    util.BaseCodeOK,
+		Message: util.BaseMsgOK,
 		MusicId: p.MusicId,
 	}
 }
@@ -72,6 +75,8 @@ func (p *GetMusicDetailResult) Resp() *api.GetMusicDetailResp {
 		album = p.Albums[0]
 	}
 	return &api.GetMusicDetailResp{
+		Code:    util.BaseCodeOK,
+		Message: util.BaseMsgOK,
 		Detail: &api.MusicDetail{
 			Id:            p.Music.Id,
 			Name:          p.Music.Name,
@@ -117,6 +122,8 @@ type GetMusicListResult struct {
 
 func (p *GetMusicListResult) Resp() *api.GetMusicListResp {
 	return &api.GetMusicListResp{
+		Code:    util.BaseCodeOK,
+		Message: util.BaseMsgOK,
 		Musics: collext.Pick(p.Musics, func(music *mysql.Music) *api.MusicProfile {
 			return &api.MusicProfile{
 				Id:   music.Id,

@@ -33,11 +33,14 @@ func (l *albumLogic) Upload(ctx context.Context, param *prm.UploadAlbumParam) (*
 		IssueTime:   param.IssueTime,
 		MusicId:     param.MusicId,
 	}
-	err := l.AlbumDal.Save(albumPrime.Model())
+	album := albumPrime.Model()
+	err := l.AlbumDal.Save(album)
 	if err != nil {
 		return nil, err
 	}
-	return &prm.UploadAlbumResult{}, nil
+	return &prm.UploadAlbumResult{
+		AlbumId: album.Id,
+	}, nil
 }
 
 func (l *albumLogic) GetDetail(ctx context.Context, param *prm.GetAlbumDetailParam) (*prm.GetAlbumDetailResult, error) {

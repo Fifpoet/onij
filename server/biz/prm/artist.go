@@ -1,6 +1,9 @@
 package prm
 
-import "onij/model/api"
+import (
+	"onij/model/api"
+	"onij/util"
+)
 
 type UploadArtistParam struct {
 	Name       string
@@ -20,6 +23,8 @@ type UploadArtistResult struct {
 
 func (r *UploadArtistResult) Resp() *api.UploadArtistResp {
 	return &api.UploadArtistResp{
+		Code:     util.BaseCodeOK,
+		Message:  util.BaseMsgOK,
 		ArtistId: r.ArtistId,
 	}
 }
