@@ -61,7 +61,7 @@ func UploadFile(ctx context.Context, info UploadInfo) (string, error) {
 	putExtra := storage.PutExtra{}
 
 	var err error
-	ossPath := strings.Join(info.OssFolder, "/") + info.Name + "-" + uuid.New().String()[:8]
+	ossPath := strings.Join(info.OssFolder, "/") + "/" + info.Name + "-" + uuid.New().String()[:8]
 	if info.LocalPath != "" {
 		err = formUploader.PutFile(ctx, &ret, upToken, ossPath, info.LocalPath, &putExtra)
 	} else if len(info.Bytes) > 0 {

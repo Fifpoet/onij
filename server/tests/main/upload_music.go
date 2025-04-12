@@ -65,18 +65,18 @@ func uploadMusic() {
 
 		artistIds := make([]int64, 0)
 		for _, artistName := range artistNames {
-			artistId, err := processArtist(artistName)
+			artistId, err := processArtist(artistName, api.ArtistType_AT_Singer)
 			if err != nil {
 				return
 			}
 			artistIds = append(artistIds, artistId)
 		}
-		composerId, err := processArtist(composerName)
+		composerId, err := processArtist(composerName, api.ArtistType_AT_Composer)
 		if err != nil {
 			fmt.Println("Error:", err)
 			return
 		}
-		writerId, err := processArtist(writerName)
+		writerId, err := processArtist(writerName, api.ArtistType_AT_Writer)
 		if err != nil {
 			fmt.Println("Error:", err)
 			return
@@ -143,7 +143,7 @@ func processFile(path string) (int64, int64, error) {
 	}
 	return mp3.FileId, lyc.FileId, nil
 }
-func processArtist(name string) (int64, error) {
+func processArtist(name string, typ api.ArtistType) (int64, error) {
 	artist, err := allInfra.ArtistDal.GetByName(name)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -154,7 +154,7 @@ func processArtist(name string) (int64, error) {
 		err := allInfra.ArtistDal.Save(&mysql.Artist{
 			Id:         id,
 			Name:       name,
-			ArtistType: int32(api.ArtistType_AT_Singer),
+			ArtistType: int32(typ),
 			DeletedAt:  gorm.DeletedAt{},
 		})
 		if err != nil {
