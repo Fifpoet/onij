@@ -18,7 +18,7 @@ message UploadFileReq {
 message UploadFileResp {
   int32 code = 1;
   string message = 2;
-  int32 file_id = 3;
+  int64 file_id = 3;
   string file_url = 4;
 }
 
@@ -44,7 +44,7 @@ message UploadMusicReq {
 message UploadMusicResp {
   int32 code = 1;
   string message = 2;
-  int32 music_id = 3;
+  int64 music_id = 3;
 }
 
 message UploadArtistReq {
@@ -54,7 +54,7 @@ message UploadArtistReq {
 message UploadArtistResp {
   int32 code = 1;
   string message = 2;
-  int32 artist_id = 3;
+  int64 artist_id = 3;
 }
 
 // 上传专辑
@@ -69,7 +69,7 @@ message UploadAlbumReq {
 message UploadAlbumResp {
   int32 code = 1;
   string message = 2;
-  int32 album_id = 3;
+  int64 album_id = 3;
 }
 
 // 获取音乐详情

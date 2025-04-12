@@ -3,6 +3,7 @@ package prm
 import (
 	"onij/infra/mysql"
 	"onij/model/api"
+	"onij/util/boost/collection/collext"
 )
 
 type UploadAlbumParam struct {
@@ -50,5 +51,21 @@ type GetAlbumDetailResult struct {
 }
 
 func (r *GetAlbumDetailResult) Resp() *api.GetAlbumDetailResp {
-	return &api.GetAlbumDetailResp{}
+	return &api.GetAlbumDetailResp{
+		Detail: &api.AlbumDetail{
+			Id:           r.Album.Id,
+			Name:         r.Album.Name,
+			ArtistId:     r.Artist.Id,
+			ArtistName:   r.Artist.Name,
+			IssueTime:    r.Album.IssueTime,
+			CoverFileUrl: r.CoverUrl,
+			MvUrl:        r.Album.MvUrl,
+			RelatedMusics: collext.Pick(r.Musics, func(music *mysql.Music) *api.MusicProfile {
+				return &api.MusicProfile{
+					Id:   music.Id,
+					Name: music.Name,
+				}
+			}),
+		},
+	}
 }

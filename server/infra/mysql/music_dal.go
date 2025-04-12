@@ -71,17 +71,13 @@ func (m *musicDal) GetByIds(ids ...int64) ([]*Music, error) {
 }
 
 func (m *musicDal) Upsert(music *Music, toUpdate map[string]any) error {
-	if music == nil && toUpdate == nil {
-		return nil
-	}
-	if music != nil {
-		if err := m.db.Create(&music).Error; err != nil {
+	if toUpdate == nil {
+		if err := m.db.Create(music).Error; err != nil {
 			log.Printf("Upsert, save music err: %v", err)
 			return err
 		}
-	}
-	if toUpdate != nil {
-		if err := m.db.Model(&Music{}).Updates(toUpdate).Error; err != nil {
+	} else {
+		if err := m.db.Model(music).Updates(toUpdate).Error; err != nil {
 			log.Printf("Upsert, update music err: %v", err)
 			return err
 		}

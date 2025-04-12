@@ -15,8 +15,11 @@ func NewUploadArtistParam(req *api.UploadArtistReq) *UploadArtistParam {
 }
 
 type UploadArtistResult struct {
+	ArtistId int64
 }
 
 func (r *UploadArtistResult) Resp() *api.UploadArtistResp {
-	return &api.UploadArtistResp{}
+	return &api.UploadArtistResp{
+		ArtistId: r.ArtistId,
+	}
 }

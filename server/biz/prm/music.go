@@ -3,6 +3,7 @@ package prm
 import (
 	"onij/infra/mysql"
 	"onij/model/api"
+	"onij/util/boost/collection/collext"
 )
 
 type UploadMusicParam struct {
@@ -36,10 +37,13 @@ func NewUploadMusicParam(req *api.UploadMusicReq) *UploadMusicParam {
 }
 
 type UploadMusicResult struct {
+	MusicId int64
 }
 
 func (p *UploadMusicResult) Resp() *api.UploadMusicResp {
-	return &api.UploadMusicResp{}
+	return &api.UploadMusicResp{
+		MusicId: p.MusicId,
+	}
 }
 
 type GetMusicDetailParam struct {
@@ -63,7 +67,28 @@ type GetMusicDetailResult struct {
 }
 
 func (p *GetMusicDetailResult) Resp() *api.GetMusicDetailResp {
-	return &api.GetMusicDetailResp{}
+	album := &mysql.Album{}
+	if len(p.Albums) > 0 {
+		album = p.Albums[0]
+	}
+	return &api.GetMusicDetailResp{
+		Detail: &api.MusicDetail{
+			Id:            p.Music.Id,
+			Name:          p.Music.Name,
+			ArtistIds:     collext.Pick(p.Artists, func(artist *mysql.Artist) int64 { return artist.Id }),
+			ArtistNames:   collext.Pick(p.Artists, func(artist *mysql.Artist) string { return artist.Name }),
+			ComposerId:    p.Composer.Id,
+			ComposerName:  p.Composer.Name,
+			WriterId:      p.Writer.Id,
+			WriterName:    p.Writer.Name,
+			IssueTime:     p.Music.IssueTime,
+			MvUrl:         p.Music.MvUrl,
+			Mp3FileUrl:    p.Mp3FileUrl,
+			LyricsFileUrl: p.LyricsFileUrl,
+			AlbumId:       album.Id,
+			AlbumName:     album.Name,
+		},
+	}
 }
 
 type GetMusicListParam struct {

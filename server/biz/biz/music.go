@@ -64,6 +64,6 @@ func (m *MusicPrime) Upsert() (music *mysql.Music, toUpdate map[string]any) {
 		if m.IssueTime != nil {
 			toUpdate["issue_time"] = *m.IssueTime
 		}
-		return &mysql.Music{}, toUpdate
+		return &mysql.Music{Id: *m.Id}, toUpdate
 	}
 }

@@ -47,11 +47,14 @@ func (l *musicLogic) Upload(ctx context.Context, param *prm.UploadMusicParam) (*
 		RootMusicId:  param.RootMusicId,
 		IssueTime:    param.IssueTime,
 	}
-	err = l.MusicDal.Upsert(musicPrime.Upsert())
+	music, toUpdate := musicPrime.Upsert()
+	err = l.MusicDal.Upsert(music, toUpdate)
 	if err != nil {
 		return nil, err
 	}
-	return &prm.UploadMusicResult{}, nil
+	return &prm.UploadMusicResult{
+		MusicId: music.Id,
+	}, nil
 }
 
 func (l *musicLogic) GetDetail(ctx context.Context, param *prm.GetMusicDetailParam) (*prm.GetMusicDetailResult, error) {

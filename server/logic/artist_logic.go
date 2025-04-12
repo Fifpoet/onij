@@ -23,12 +23,15 @@ func NewArtistLogic(i *infra.AllInfra) ArtistLogic {
 }
 
 func (l *artistLogic) Upload(ctx context.Context, param *prm.UploadArtistParam) (*prm.UploadArtistResult, error) {
-	if err := l.ArtistDal.Save(&mysql.Artist{
+	artist := &mysql.Artist{
 		Id:         util.IdGen.Generate(),
 		Name:       param.Name,
 		ArtistType: int32(param.ArtistType),
-	}); err != nil {
+	}
+	if err := l.ArtistDal.Save(artist); err != nil {
 		return nil, err
 	}
-	return &prm.UploadArtistResult{}, nil
+	return &prm.UploadArtistResult{
+		ArtistId: artist.Id,
+	}, nil
 }

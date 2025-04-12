@@ -29,6 +29,7 @@ type Album struct {
 	MusicId        int64  `json:"music_id"`
 	RelatedAlbumId int64  `json:"related_album_id"`
 	CoverFileId    int64  `json:"cover_file_id"`
+	MvUrl          string `json:"mv_url"`
 	IssueTime      int32  `json:"issue_time"`
 
 	CreatedAt time.Time      `json:"created_at"`

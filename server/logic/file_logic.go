@@ -45,7 +45,7 @@ func (l *fileLogic) Upload(ctx context.Context, param *prm.UploadFileParam) (*pr
 		return nil, err
 	}
 	fi = &mysql.File{
-		Id:       int64(util.IdGen.Generate()),
+		Id:       util.IdGen.Generate(),
 		Name:     param.Filename,
 		Format:   int32(util.GetFileType(param.Filename)),
 		StoreKey: key,

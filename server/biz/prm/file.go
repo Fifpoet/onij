@@ -24,5 +24,8 @@ type UploadFileResult struct {
 }
 
 func (r *UploadFileResult) Resp() *api.UploadFileResp {
-	return &api.UploadFileResp{}
+	return &api.UploadFileResp{
+		FileId:  r.FileId,
+		FileUrl: r.FileUrl,
+	}
 }
