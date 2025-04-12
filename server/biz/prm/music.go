@@ -116,5 +116,12 @@ type GetMusicListResult struct {
 }
 
 func (p *GetMusicListResult) Resp() *api.GetMusicListResp {
-	return &api.GetMusicListResp{}
+	return &api.GetMusicListResp{
+		Musics: collext.Pick(p.Musics, func(music *mysql.Music) *api.MusicProfile {
+			return &api.MusicProfile{
+				Id:   music.Id,
+				Name: music.Name,
+			}
+		}),
+	}
 }
