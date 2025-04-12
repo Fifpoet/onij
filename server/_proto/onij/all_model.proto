@@ -26,10 +26,6 @@ message MusicDetail {
 }
 
 message AlbumDetail {
-  message RelatedMusic {
-    int64 id = 1;
-    string name = 2;
-  }
   int64 id = 1;
   string name = 2;
   int64 artist_id = 3;
@@ -39,5 +35,10 @@ message AlbumDetail {
   string cover_file_url = 20;
   string mv_url = 21;
 
-  repeated RelatedMusic related_musics = 30;
+  repeated MusicProfile related_musics = 30;
+}
+
+message MusicProfile {
+  int64 id = 1;
+  string name = 2;
 }

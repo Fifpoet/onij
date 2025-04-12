@@ -24,3 +24,11 @@ enum ArtistType {
   AT_Writer = 2;
   AT_Composer = 3;
 }
+
+enum MusicSortType {
+  MST_Unknown = 0;
+  MST_Created_At_Desc = 1;
+  MST_Created_At_Asc = 2;
+  MST_Issue_Time_Desc = 3;
+  MST_Issue_Time_Asc = 4;
+}

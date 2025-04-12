@@ -11,7 +11,7 @@ import "all_model.proto";
 // 上传文件
 message UploadFileReq {
   string filename = 1;         // 原始文件名（不含路径）
-  onij.AppId app_id = 2;       // 业务模块
+  AppId app_id = 2;            // 业务模块
   repeated string folders = 3; // 自定义文件夹
   bytes file = 4;              // 文件内容
 }
@@ -49,7 +49,7 @@ message UploadMusicResp {
 
 message UploadArtistReq {
   string name = 1;
-  onij.ArtistType artist_type = 2;
+  ArtistType artist_type = 2;
 }
 message UploadArtistResp {
   int32 code = 1;
@@ -88,6 +88,23 @@ message GetAlbumDetailResp {
   AlbumDetail detail = 3;
 }
 
+// 获取音乐列表
+message GetMusicListReq {
+  MusicSortType sort_type = 1;
+  optional string keyword = 2;
+  optional int64 album_id = 3;
+  optional int64 artist_id = 4;
+
+  int32 page = 10;
+  int32 limit = 11;
+}
+message GetMusicListResp {
+  int32 code = 1;
+  string message = 2;
+
+  repeated MusicProfile musics = 10;
+}
+
 service AllService {
   // 上传文件
   rpc UploadFile(UploadFileReq) returns (UploadFileResp) {
@@ -112,5 +129,9 @@ service AllService {
   // 获取专辑详情
   rpc GetAlbumDetail(GetAlbumDetailReq) returns (GetAlbumDetailResp) {
     option (api.get) = "/album/detail";
+  }
+  // 获取音乐列表
+  rpc GetMusicList(GetMusicListReq) returns (GetMusicListResp) {
+    option (api.get) = "/music/list";
   }
 }
