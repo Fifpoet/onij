@@ -44,6 +44,10 @@ func InitDalForTest() *infra.AllInfra {
 	wire.Build(infraSet)
 	return &infra.AllInfra{}
 }
+func InitLogicForTest() *logic.AllLogic {
+	wire.Build(allSet)
+	return &logic.AllLogic{}
+}
 
 func InitializeApp() *App {
 	wire.Build(allSet)

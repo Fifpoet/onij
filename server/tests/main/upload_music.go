@@ -1,62 +1,222 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
+	"context"
 	"fmt"
 	"github.com/dhowden/tag"
+	"golang.org/x/text/encoding/simplifiedchinese"
+	"golang.org/x/text/transform"
+	"gorm.io/gorm"
+	"io/ioutil"
+	"onij/biz/prm"
+	"onij/infra"
 	"onij/infra/mysql"
+	"onij/inject"
+	"onij/logic"
+	"onij/model/api"
+	"onij/util"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+	"unicode/utf8"
 )
 
-const targetDir = "C:\\KwDownload\\song"
+const targetDir = "/Users/asen/Downloads/"
 const fileSuffix = ".mp3"
 const lyricsSuffix = ".lrc"
 
+var allInfra *infra.AllInfra
+var allLogic *logic.AllLogic
+var ctx context.Context
+
 func uploadMusic() {
+	allInfra = inject.InitDalForTest()
+	allLogic = inject.InitLogicForTest()
+	ctx = context.Background()
 
 	mp3Files, err := findMP3Files(targetDir)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
 	}
-
 	fmt.Printf("Found MP3 files: %v \n", mp3Files)
 
-	var models []*mysql.Music
-	var lyricsFiles []string
-	var f *os.File
-	for _, mp3File := range mp3Files {
-		f, err = os.Open(mp3File)
-		if err != nil {
-			fmt.Println("Error opening file:", err)
+	//var models []*mysql.Music
+	var musicName string
+	var artistNames []string
+	var composerName string
+	var writerName string
+	for _, path := range mp3Files {
+		mp3FileName := filepath.Base(path)
+		splits := strings.Split(mp3FileName, "-")
+		if len(splits) < 2 {
+			fmt.Println("Error: Invalid file name:", path)
 			continue
 		}
+		musicName = splits[1]
+		singerSplits := strings.Split(splits[0], "&") // 分隔符待定
+		artistNames = singerSplits
 
-		fileName := filepath.Base(mp3File)
-		tmp := strings.Split(fileName, ".")
-		singer, songName, _ := strings.Cut(tmp[0], "-")
-		print(singer)
+		composerName, writerName = parseArtistFromLyr(path + lyricsSuffix)
+		fmt.Printf("<<%s>>艺术家: %s %s %s\n", musicName, artistNames, composerName, writerName)
 
-		// 构建歌词文件路径
-		lyricsFile := strings.Replace(mp3File, ".mp3", ".lrc", -1)
-		if _, err = os.Stat(lyricsFile); os.IsNotExist(err) {
-			lyricsFile = ""
+		artistIds := make([]int64, 0)
+		for _, artistName := range artistNames {
+			artistId, err := processArtist(artistName)
+			if err != nil {
+				return
+			}
+			artistIds = append(artistIds, artistId)
 		}
-		lyricsFiles = append(lyricsFiles, lyricsFile)
+		composerId, err := processArtist(composerName)
+		if err != nil {
+			fmt.Println("Error:", err)
+			return
+		}
+		writerId, err := processArtist(writerName)
+		if err != nil {
+			fmt.Println("Error:", err)
+			return
+		}
+		fmt.Println("保存艺术家成功")
 
-		models = append(models, &mysql.Music{
-			RootId: 0,
-			Name:   songName,
-			MvUrl:  "",
-		})
+		mp3FileId, lycFileId, err := processFile(path)
+		if err != nil {
+			return
+		}
+		fmt.Println("保存文件成功")
+
+		err = allInfra.MusicDal.Upsert(&mysql.Music{
+			Id:          util.IdGen.Generate(),
+			RootId:      0,
+			Name:        musicName,
+			FullName:    mp3FileName,
+			ArtistIds:   util.Int64List2Str(artistIds),
+			ComposerId:  composerId,
+			WriterId:    writerId,
+			IssueTime:   0,
+			PerformType: 0,
+			MvUrl:       "",
+			Mp3FileId:   mp3FileId,
+			LyricFileId: lycFileId,
+		}, nil)
+		if err != nil {
+			fmt.Println("save music Error:", err)
+			return
+		}
+		fmt.Println("保存音乐成功")
 	}
-	defer f.Close()
 
 }
 
-// findMP3Files 遍历目录并返回符合条件的 .mp3 文件路径
+func processFile(path string) (int64, int64, error) {
+	mp3Name := filepath.Base(path + fileSuffix)
+	lycName := filepath.Base(path + lyricsSuffix)
+	mp3Bytes, err := readLrcFile(path + fileSuffix)
+	if err != nil {
+		return 0, 0, err
+	}
+	lycBytes, err := readLrcFile(path + lyricsSuffix)
+	if err != nil {
+		return 0, 0, err
+	}
+	mp3, err := allLogic.FileLogic.Upload(ctx, &prm.UploadFileParam{
+		Filename: mp3Name,
+		AppId:    0,
+		Folders:  []string{"music"},
+		File:     mp3Bytes,
+	})
+	if err != nil {
+		return 0, 0, err
+	}
+	lyc, err := allLogic.FileLogic.Upload(ctx, &prm.UploadFileParam{
+		Filename: lycName,
+		AppId:    0,
+		Folders:  []string{"music"},
+		File:     lycBytes,
+	})
+	if err != nil {
+		return 0, 0, err
+	}
+	return mp3.FileId, lyc.FileId, nil
+}
+func processArtist(name string) (int64, error) {
+	artist, err := allInfra.ArtistDal.GetByName(name)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return 0, err
+	}
+	if artist == nil {
+		id := util.IdGen.Generate()
+		err := allInfra.ArtistDal.Save(&mysql.Artist{
+			Id:         id,
+			Name:       name,
+			ArtistType: int32(api.ArtistType_AT_Singer),
+			DeletedAt:  gorm.DeletedAt{},
+		})
+		if err != nil {
+			fmt.Println("save artists Error:", err)
+			return 0, err
+		}
+		return id, nil
+	} else {
+		return artist.Id, nil
+	}
+}
+
+func readLrcFile(filePath string) ([]byte, error) {
+	rawData, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+	if utf8.Valid(rawData) {
+		return rawData, nil
+	}
+	decoder := simplifiedchinese.GBK.NewDecoder()
+	utf8Data, err := ioutil.ReadAll(transform.NewReader(bytes.NewReader(rawData), decoder))
+	if err != nil {
+		return nil, err
+	}
+
+	return utf8Data, nil
+}
+
+func parseArtistFromLyr(path string) (string, string) {
+	data, err := readLrcFile(path)
+	if err != nil {
+		return "", ""
+	}
+
+	var lyricist, composer string
+	reader := bytes.NewReader(data)
+	scanner := bufio.NewScanner(reader)
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		if strings.Contains(line, "词：") {
+			// 提取词作者
+			start := strings.Index(line, "词：") + len("词：")
+			lyricist = strings.TrimSpace(line[start:])
+		}
+
+		if strings.Contains(line, "曲：") {
+			// 提取曲作者
+			start := strings.Index(line, "曲：") + len("曲：")
+			composer = strings.TrimSpace(line[start:])
+		}
+
+		// 如果已经找到两个信息，提前退出循环
+		if lyricist != "" && composer != "" {
+			break
+		}
+	}
+
+	return lyricist, composer
+}
+
 func findMP3Files(root string) ([]string, error) {
 	var mp3Files []string
 
@@ -64,18 +224,17 @@ func findMP3Files(root string) ([]string, error) {
 	re := regexp.MustCompile(`^.+-.+\.mp3$`)
 
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
 		if !info.IsDir() && filepath.Ext(info.Name()) == ".mp3" {
 			// 使用正则表达式匹配文件名是否符合 "singer-name" 的结构
 			if re.MatchString(info.Name()) {
-				mp3Files = append(mp3Files, path)
+				mp3Files = append(mp3Files, path[:len(path)-4])
 			}
 		}
 		return nil
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	return mp3Files, err
 }

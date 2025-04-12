@@ -32,6 +32,33 @@ func InitDalForTest() *infra.AllInfra {
 	return allInfra
 }
 
+func InitLogicForTest() *logic.AllLogic {
+	db := mysql.NewMysqlCli()
+	tagDal := mysql.NewTagDal(db)
+	fileDal := mysql.NewFileDal(db)
+	musicDal := mysql.NewMusicDal(db)
+	albumDal := mysql.NewAlbumDal(db)
+	artistDal := mysql.NewArtistDal(db)
+	allInfra := &infra.AllInfra{
+		TagDal:    tagDal,
+		FileDal:   fileDal,
+		MusicDal:  musicDal,
+		AlbumDal:  albumDal,
+		ArtistDal: artistDal,
+	}
+	musicLogic := logic.NewMusicLogic(allInfra)
+	fileLogic := logic.NewFileLogic(allInfra)
+	albumLogic := logic.NewAlbumLogic(allInfra)
+	artistLogic := logic.NewArtistLogic(allInfra)
+	allLogic := &logic.AllLogic{
+		MusicLogic:  musicLogic,
+		FileLogic:   fileLogic,
+		AlbumLogic:  albumLogic,
+		ArtistLogic: artistLogic,
+	}
+	return allLogic
+}
+
 func InitializeApp() *App {
 	db := mysql.NewMysqlCli()
 	tagDal := mysql.NewTagDal(db)

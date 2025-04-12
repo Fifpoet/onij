@@ -1,6 +1,7 @@
 package mysql
 
 import (
+	"errors"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"log"
@@ -9,7 +10,8 @@ import (
 
 type ArtistDal interface {
 	GetByIds(id ...int64) ([]*Artist, error)
-	GetByName(name string) ([]*Artist, error)
+	GetByKeyword(name string) ([]*Artist, error)
+	GetByName(name string) (*Artist, error)
 	GetByNameAndType(name string, performType int) ([]*Artist, error)
 	Save(arts ...*Artist) error
 	DelById(id int) error
@@ -41,10 +43,22 @@ func (p *artistDal) GetByIds(id ...int64) ([]*Artist, error) {
 	return res, nil
 }
 
-func (p *artistDal) GetByName(name string) ([]*Artist, error) {
+func (p *artistDal) GetByKeyword(name string) ([]*Artist, error) {
 	var res []*Artist
-	err := p.db.Where("name LIKE ?", "%"+name+"%").Order("created_at desc").Find(&res).Error
+	err := p.db.Where("name LIKE ?", "%"+name+"%").Find(&res).Error
 	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (p *artistDal) GetByName(name string) (*Artist, error) {
+	var res *Artist
+	err := p.db.Where("name = ?", name).First(&res).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
 	return res, nil
