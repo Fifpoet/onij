@@ -22,7 +22,7 @@
           </button>
           <button @click="playNext" class="w-[30px] h-[30px] rounded-full bg-gray-300 ml-2">➡️</button>
         </div>
-        <span class="transition-all duration-300 group-hover:hidden">{{ musicStore.currentMusicName }} - {{ musicStore.currentMusicName }}</span>
+        <span class="transition-all duration-300 group-hover:hidden">{{ musicStore.currentMusicName }} - {{ musicStore.currentMusicArtistName }}</span>
       </div>
       <div v-else>
         <p>请选择一首音乐播放</p>
@@ -190,13 +190,13 @@ const handleScroll = (event: Event) => {
   const target = event.target as HTMLElement;
   // 检查是否滚动到底部
   if (target.scrollHeight - target.scrollTop <= target.clientHeight + 10) {
-    if (!fetching.value) {
+    if (!fetching.value && musicStore.musicListContinue) {
       fetching.value = true; // 设置为正在加载状态
-      musicStore.incrPage() // 增加页面数
       fetchMusicList().finally(() => {
         fetching.value = false; // 重置加载状态
       });
     }
+    musicStore.incrPage()
   }
 };
 
@@ -215,10 +215,21 @@ const handleSearchWriter = async (query: string) => {
 
 
 const fetchMusicList = async () => {
-  const response = await apiClient.post('/music/list', null);
-  const musicList = response.data.data;
-  musicStore.appendMusicList(musicList);
-  console.log('获取音乐列表', musicStore.MusicList)
+  try {
+    const response = await GetMusicList<GetMusicListReq>({
+      sort_type: MusicSortType.MST_Created_At_Desc,
+      page: musicStore.page,
+      limit: 100
+    });
+    if (response?.musics) {
+      const musicStore = useMusicStore();
+      musicStore.append(response.musics);
+    } else {
+      musicStore.stopPage()
+    }
+  } catch (error) {
+    console.error("加载音乐列表失败:", error);
+  }
 };
 
 // *************************************************** 音乐播放逻辑 *************************************************** //
@@ -474,8 +485,6 @@ onMounted(async () => {
   } catch (error) {
     console.error("加载音乐列表失败:", error);
   }
-
-
 });
 
 </script>

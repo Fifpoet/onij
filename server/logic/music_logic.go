@@ -81,9 +81,10 @@ func (l *musicLogic) GetDetail(ctx context.Context, param *prm.GetMusicDetailPar
 	}
 	return &prm.GetMusicDetailResult{
 		Music:         music,
-		Artists:       artists[2:],
-		Composer:      artists[0],
-		Writer:        artists[1],
+		ArtistMap:     collext.Map(artists, func(art *mysql.Artist) int64 { return art.Id }),
+		ArtistIds:     util.StrList2Int64(music.ArtistIds),
+		ComposerId:    music.ComposerId,
+		WriterId:      music.WriterId,
 		Mp3FileUrl:    util.DownloadFile(files[0].StoreKey),
 		LyricsFileUrl: util.DownloadFile(files[1].StoreKey),
 		Albums:        albums,

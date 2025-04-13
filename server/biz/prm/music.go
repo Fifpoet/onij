@@ -61,9 +61,10 @@ func NewGetMusicDetailParam(req *api.GetMusicDetailReq) *GetMusicDetailParam {
 
 type GetMusicDetailResult struct {
 	Music         *mysql.Music
-	Artists       []*mysql.Artist
-	Composer      *mysql.Artist
-	Writer        *mysql.Artist
+	ArtistMap     map[int64]*mysql.Artist
+	ArtistIds     []int64
+	ComposerId    int64
+	WriterId      int64
 	Mp3FileUrl    string
 	LyricsFileUrl string
 	Albums        []*mysql.Album
@@ -80,12 +81,12 @@ func (p *GetMusicDetailResult) Resp() *api.GetMusicDetailResp {
 		Detail: &api.MusicDetail{
 			Id:            p.Music.Id,
 			Name:          p.Music.Name,
-			ArtistIds:     collext.Pick(p.Artists, func(artist *mysql.Artist) int64 { return artist.Id }),
-			ArtistNames:   collext.Pick(p.Artists, func(artist *mysql.Artist) string { return artist.Name }),
-			ComposerId:    p.Composer.Id,
-			ComposerName:  p.Composer.Name,
-			WriterId:      p.Writer.Id,
-			WriterName:    p.Writer.Name,
+			ArtistIds:     collext.Pick(p.ArtistIds, func(id int64) int64 { return p.ArtistMap[id].Id }),
+			ArtistNames:   collext.Pick(p.ArtistIds, func(id int64) string { return p.ArtistMap[id].Name }),
+			ComposerId:    p.ComposerId,
+			ComposerName:  p.ArtistMap[p.ComposerId].Name,
+			WriterId:      p.WriterId,
+			WriterName:    p.ArtistMap[p.WriterId].Name,
 			IssueTime:     p.Music.IssueTime,
 			MvUrl:         p.Music.MvUrl,
 			Mp3FileUrl:    p.Mp3FileUrl,
