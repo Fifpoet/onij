@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"errors"
 	"onij/biz/biz"
 	"onij/biz/prm"
 	"onij/infra"
@@ -61,6 +62,9 @@ func (l *musicLogic) GetDetail(ctx context.Context, param *prm.GetMusicDetailPar
 	musics, err := l.MusicDal.GetByIds(param.Id)
 	if err != nil {
 		return nil, err
+	}
+	if len(musics) == 0 {
+		return nil, errors.New("music not found")
 	}
 	music := musics[0]
 	artists, err := l.ArtistDal.GetByIds(append([]int64{music.ComposerId, music.WriterId}, util.StrList2Int64(music.ArtistIds)...)...)

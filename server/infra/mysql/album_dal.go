@@ -24,8 +24,8 @@ func NewAlbumDal(db *gorm.DB) AlbumDal {
 
 type Album struct {
 	Id             int64  `json:"id" gorm:"primaryKey;autoIncrement"`
-	Name           string `json:"name"`
-	ArtistId       int64  `json:"artist_id"`
+	Name           string `json:"name" gorm:"not null;uniqueIndex:uk_name_artist"`
+	ArtistId       int64  `json:"artist_id" gorm:"not null;uniqueIndex:uk_name_artist"`
 	MusicId        int64  `json:"music_id"`
 	RelatedAlbumId int64  `json:"related_album_id"`
 	CoverFileId    int64  `json:"cover_file_id"`

@@ -247,7 +247,7 @@ const formattedCurrentTime = computed(() => {
 // 播放音乐，获取音乐详情
 const playMusic = async (id: number) => {
   try {
-    const response = await GetMusicDetail({ music_id: 10318921068806 }); // TODO
+    const response = await GetMusicDetail({ music_id: 10320793690998 }); // TODO
     musicStore.setCurrentMusic(response.detail)
     handleMp3()
   } catch (error) {

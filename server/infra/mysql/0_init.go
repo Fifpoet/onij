@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"fmt"
+	"gorm.io/gorm/logger"
 	"log"
 	"os"
 	"time"
@@ -24,6 +25,7 @@ func NewMysqlCli() *gorm.DB {
 		DontSupportRenameColumn:   true,                           // 用 `change` 重命名列，MySQL 8 之前的数据库和 MariaDB 不支持重命名列
 		SkipInitializeWithVersion: false,                          // 根据当前 MySQL 版本自动配置
 	}), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Silent), // 完全关闭日志
 		NamingStrategy: schema.NamingStrategy{
 			TablePrefix:   "onij_", // 表名前缀，`User`表为`dp_user`
 			SingularTable: true,    // 使用单数表名，启用该选项后，`User` 表将是`user`

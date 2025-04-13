@@ -29,7 +29,7 @@ type File struct {
 	Name     string `json:"name"`
 	Format   int32  `json:"format"`
 	StoreKey string `json:"store_key"`
-	Hash     string `json:"hash"  gorm:"unique"`
+	Hash     string `json:"hash" gorm:"not null;uniqueIndex:uk_hash"`
 
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
