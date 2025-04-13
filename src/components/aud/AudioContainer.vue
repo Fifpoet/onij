@@ -215,8 +215,7 @@ const handleSearchWriter = async (query: string) => {
 
 
 const fetchMusicList = async () => {
-  listMusicReq.page = musicStore.Page;
-  const response = await apiClient.post('/music/list', listMusicReq);
+  const response = await apiClient.post('/music/list', null);
   const musicList = response.data.data;
   musicStore.appendMusicList(musicList);
   console.log('获取音乐列表', musicStore.MusicList)
@@ -249,10 +248,7 @@ const formattedCurrentTime = computed(() => {
 const playMusic = async (id: number) => {
   try {
     const response = await GetMusicDetail({ music_id: 10318921068806 }); // TODO
-    console.log(musicStore.current.detail)
-    musicStore.setCurrentMusic(response.data) // TODO 煤矸石
-    console.log(musicStore.current.detail)
-
+    musicStore.setCurrentMusic(response.detail)
     handleMp3()
   } catch (error) {
     console.error('获取音乐详情失败', error);
@@ -275,9 +271,8 @@ const toggleSongDetail = () => {
 
 // 处理音频文件
 const handleMp3 = () => {
-  // 确保有音乐链接
-  console.log("开始处理mp3并开始播放: ", musicStore.current.detail)
-  if (!currentMusicDetail.value || !currentMusicDetail.value?.mp_url) {
+  console.log("开始处理mp3并开始播放: ", musicStore.currentMusicName)
+  if (!musicStore.current.detail) {
     message.error("没有找到音频文件");
     return;
   }
@@ -290,10 +285,8 @@ const handleMp3 = () => {
   isPlaying.value = false;
   for (let i = 0; i < 5; i++) {
     if (!audio.value) {
-      audio.value = new Audio(currentMusicDetail.value.mp_url);
-      // 处理音频加载错误
+      audio.value = new Audio(musicStore.current.detail?.mp3_file_url);
       audio.value.onerror = () => {
-        // 清理音频对象
         audio.value = null;
         isPlaying.value = false;
       };

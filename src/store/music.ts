@@ -17,13 +17,16 @@ export const useMusicStore = defineStore('music', {
 
     getters: {
         // 获取音乐列表数量
-        count: (state) => state.musicList.length,
-        currentMusicName():string  {
+        count: (state) =>  { return state.musicList.length},
+        currentMusicName: (state) =>   {
             return state.current.detail?.name || '';
         },
-        currentMusicArtistName: ()=> {
-            return state.current.detail?.artist_names.join('&') || '';
-        },
+        currentMusicArtistName: (state) =>  {
+            if (!state.current.detail) return '';
+            const artists = this.current.detail.artist_names ||
+                state.current.detail.artist_names || [];
+            return Array.isArray(artists) ? artists.join(' & ') : '';
+        }
     },
 
     actions: {
@@ -32,14 +35,18 @@ export const useMusicStore = defineStore('music', {
         },
 
         setCurrentMusic(detail: MusicDetail) {
-            this.current.detail = detail;
-            this.current.progress = 0;
+            this.current = {
+                ...this.current, // 保留其他字段
+                detail: { ...detail } // 深拷贝新数据
+            };
             // this.play(); TODO
         },
 
         incrPage() {
             this.page += 1;
         }
+
+
     },
 
     persist: {
