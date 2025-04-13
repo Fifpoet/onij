@@ -9,7 +9,7 @@ import (
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"golang.org/x/text/transform"
 	"gorm.io/gorm"
-	"io/ioutil"
+	"io"
 	"onij/biz/prm"
 	"onij/infra"
 	"onij/infra/mysql"
@@ -115,11 +115,11 @@ func uploadMusic() {
 func processFile(path string) (int64, int64, error) {
 	mp3Name := filepath.Base(path + fileSuffix)
 	lycName := filepath.Base(path + lyricsSuffix)
-	mp3Bytes, err := readLrcFile(path + fileSuffix)
+	mp3Bytes, err := readMediaFile(path + fileSuffix)
 	if err != nil {
 		return 0, 0, err
 	}
-	lycBytes, err := readLrcFile(path + lyricsSuffix)
+	lycBytes, err := readMediaFile(path + lyricsSuffix)
 	if err != nil {
 		return 0, 0, err
 	}
@@ -167,25 +167,27 @@ func processArtist(name string, typ api.ArtistType) (int64, error) {
 	}
 }
 
-func readLrcFile(filePath string) ([]byte, error) {
-	rawData, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		return nil, err
-	}
-	if utf8.Valid(rawData) {
-		return rawData, nil
-	}
-	decoder := simplifiedchinese.GBK.NewDecoder()
-	utf8Data, err := ioutil.ReadAll(transform.NewReader(bytes.NewReader(rawData), decoder))
+func readMediaFile(filePath string) ([]byte, error) {
+	rawData, err := os.ReadFile(filePath) // Go 1.16+ 推荐
 	if err != nil {
 		return nil, err
 	}
 
-	return utf8Data, nil
+	// 通过扩展名判断类型
+	switch strings.ToLower(filepath.Ext(filePath)) {
+	case ".lrc", ".txt":
+		if utf8.Valid(rawData) {
+			return rawData, nil
+		}
+		decoder := simplifiedchinese.GBK.NewDecoder()
+		return io.ReadAll(transform.NewReader(bytes.NewReader(rawData), decoder))
+	default: // mp3/mp4等二进制文件
+		return rawData, nil // 直接返回原始数据
+	}
 }
 
 func parseArtistFromLyr(path string) (string, string) {
-	data, err := readLrcFile(path)
+	data, err := readMediaFile(path)
 	if err != nil {
 		return "", ""
 	}
