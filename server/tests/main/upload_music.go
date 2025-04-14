@@ -24,7 +24,7 @@ import (
 	"unicode/utf8"
 )
 
-const targetDir = "C:\\KwDownload\\song"
+const targetDir = "C:\\KwDownload\\song\\tmp"
 const fileSuffix = ".mp3"
 const lyricsSuffix = ".lrc"
 
@@ -59,6 +59,15 @@ func uploadMusic() {
 		musicName = splits[1]
 		singerSplits := strings.Split(splits[0], "&") // 分隔符待定
 		artistNames = singerSplits
+
+		searchMusic, err := allInfra.MusicDal.GetByFullName(mp3FileName)
+		if err != nil {
+			return
+		}
+		if len(searchMusic) > 0 {
+			fmt.Printf("歌曲已存在: <<%s>>\n", mp3FileName)
+			continue
+		}
 
 		writerName, composerName = parseArtistFromLyr(path + lyricsSuffix)
 		fmt.Printf("<<%s>>艺术家: %s %s %s\n", musicName, artistNames, composerName, writerName)

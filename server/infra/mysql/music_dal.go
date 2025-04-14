@@ -16,8 +16,8 @@ type MusicDal interface {
 
 	Upsert(music *Music, toUpdate map[string]any) error
 	DelById(id int) (*Music, error)
-	GetByTitle(title string) ([]*Music, error)
-	GetByArtistAndName(artistId int64, name string, pageInfo util.Page) ([]*Music, error)
+	GetByFullName(name string) ([]*Music, error)
+	SearchByArtistAndName(artistId int64, name string, pageInfo util.Page) ([]*Music, error)
 	GetByTitleArtistPerType(title string, artistId, performType, page, size int) ([]*Music, error)
 }
 
@@ -100,17 +100,17 @@ func (m *musicDal) DelById(id int) (*Music, error) {
 	return mus, nil
 }
 
-func (m *musicDal) GetByTitle(title string) ([]*Music, error) {
+func (m *musicDal) GetByFullName(name string) ([]*Music, error) {
 	var musics []*Music
-	err := m.db.Where("title LIKE ?", "%"+title+"%").Find(&musics).Error
+	err := m.db.Where("full_name = ?", name).Find(&musics).Error
 	if err != nil {
-		log.Printf("GetByTitle, get music error: %v \n", err)
+		log.Printf("GetByFullName, get music error: %v \n", err)
 		return nil, err
 	}
 	return musics, nil
 }
 
-func (m *musicDal) GetByArtistAndName(artistId int64, name string, pageInfo util.Page) ([]*Music, error) {
+func (m *musicDal) SearchByArtistAndName(artistId int64, name string, pageInfo util.Page) ([]*Music, error) {
 	var musics []*Music
 	artistIdStr := fmt.Sprintf("%d", artistId)
 	db := m.db
@@ -125,7 +125,7 @@ func (m *musicDal) GetByArtistAndName(artistId int64, name string, pageInfo util
 		Limit(pageInfo.LimitNum()).
 		Find(&musics).Error
 	if err != nil {
-		log.Printf("GetByArtistAndName, get music error: %v \n", err)
+		log.Printf("SearchByArtistAndName, get music error: %v \n", err)
 		return nil, err
 	}
 	return musics, nil

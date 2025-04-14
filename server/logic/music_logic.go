@@ -119,7 +119,7 @@ func (l *musicLogic) GetList(ctx context.Context, param *prm.GetMusicListParam) 
 	}
 
 	// 不指定专辑
-	musics, err := l.MusicDal.GetByArtistAndName(
+	musics, err := l.MusicDal.SearchByArtistAndName(
 		exp.ValueOrZero(param.ArtistId), exp.ValueOrZero(param.Keyword),
 		util.Page{Page: param.Page, Limit: param.Limit},
 	)
