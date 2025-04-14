@@ -196,7 +196,6 @@ const handleScroll = (event: Event) => {
         fetching.value = false; // 重置加载状态
       });
     }
-    musicStore.incrPage()
   }
 };
 
@@ -222,8 +221,8 @@ const fetchMusicList = async () => {
       limit: 100
     });
     if (response?.musics) {
-      const musicStore = useMusicStore();
       musicStore.append(response.musics);
+      musicStore.incrPage()
     } else {
       musicStore.stopPage()
     }
@@ -469,21 +468,8 @@ const drag = (e: MouseEvent) => {
 
 
 onMounted(async () => {
-  try {
-    const response = await GetMusicList<GetMusicListReq>({
-      sort_type: MusicSortType.MST_Created_At_Desc,
-      page: 1,
-      limit: 100
-    });
-
-    if (response?.musics) {
-      const musicStore = useMusicStore();
-      musicStore.append(response.musics); // TODO 去重问题
-    } else {
-      console.warn("返回数据格式异常:", response);
-    }
-  } catch (error) {
-    console.error("加载音乐列表失败:", error);
+  if (musicStore.musicListContinue) {
+    fetchMusicList()
   }
 });
 
