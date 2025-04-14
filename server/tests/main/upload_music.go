@@ -24,7 +24,7 @@ import (
 	"unicode/utf8"
 )
 
-const targetDir = "/Users/asen/Downloads/"
+const targetDir = "C:\\KwDownload\\song"
 const fileSuffix = ".mp3"
 const lyricsSuffix = ".lrc"
 
@@ -60,7 +60,7 @@ func uploadMusic() {
 		singerSplits := strings.Split(splits[0], "&") // 分隔符待定
 		artistNames = singerSplits
 
-		composerName, writerName = parseArtistFromLyr(path + lyricsSuffix)
+		writerName, composerName = parseArtistFromLyr(path + lyricsSuffix)
 		fmt.Printf("<<%s>>艺术家: %s %s %s\n", musicName, artistNames, composerName, writerName)
 
 		artistIds := make([]int64, 0)

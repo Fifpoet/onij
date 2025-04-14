@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"log"
 	"onij/util"
 	"time"
@@ -72,7 +73,7 @@ func (m *musicDal) GetByIds(ids ...int64) ([]*Music, error) {
 
 func (m *musicDal) Upsert(music *Music, toUpdate map[string]any) error {
 	if toUpdate == nil {
-		if err := m.db.Create(music).Error; err != nil {
+		if err := m.db.Clauses(clause.OnConflict{DoNothing: true}).Create(music).Error; err != nil {
 			log.Printf("Upsert, save music err: %v", err)
 			return err
 		}

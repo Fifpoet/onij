@@ -3,6 +3,7 @@ package mysql
 import (
 	"errors"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"log"
 	"time"
 )
@@ -38,7 +39,7 @@ type Album struct {
 }
 
 func (f *albumDal) Save(album *Album) error {
-	if err := f.db.Create(&album).Error; err != nil {
+	if err := f.db.Clauses(clause.OnConflict{DoNothing: true}).Create(&album).Error; err != nil {
 		log.Printf("save album err: %v", err)
 		return err
 	}
