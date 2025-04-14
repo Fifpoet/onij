@@ -24,7 +24,7 @@ import (
 	"unicode/utf8"
 )
 
-const targetDir = "C:\\KwDownload\\song\\tmp"
+const targetDir = "C:\\KwDownload\\song"
 const fileSuffix = ".mp3"
 const lyricsSuffix = ".lrc"
 
@@ -94,6 +94,7 @@ func uploadMusic() {
 
 		mp3FileId, lycFileId, err := processFile(path)
 		if err != nil {
+			fmt.Println("Error:", err)
 			return
 		}
 		fmt.Println("保存文件成功")
