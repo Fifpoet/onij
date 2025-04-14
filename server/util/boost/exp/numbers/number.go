@@ -1,9 +1,9 @@
 package numbers
 
 import (
-	"code.chenji.com/pkg/boost/ccmp"
-	"code.chenji.com/pkg/boost/collection/collext"
 	"golang.org/x/exp/constraints"
+	"onij/util/boost/ccmp"
+	"onij/util/boost/collection/collext"
 )
 
 const (

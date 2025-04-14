@@ -3,7 +3,6 @@ module onij
 go 1.23.0
 
 require (
-	code.chenji.com/pkg/boost v1.0.55
 	github.com/cespare/xxhash/v2 v2.3.0
 	github.com/cloudwego/hertz v0.9.6
 	github.com/dhowden/tag v0.0.0-20240417053706-3d75831295e8
