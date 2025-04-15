@@ -71,14 +71,17 @@ func (l *musicLogic) GetDetail(ctx context.Context, param *prm.GetMusicDetailPar
 	if err != nil {
 		return nil, err
 	}
-	files, err := l.FileDal.GetByIds(append([]int64{music.Mp3FileId}, music.LyricFileId)...)
-	if err != nil {
-		return nil, err
-	}
 	albums, err := l.AlbumDal.GetByMusicId(music.Id)
 	if err != nil {
 		return nil, err
 	}
+	files, err := l.FileDal.GetByIds(append(collext.Pick(albums, func(a *mysql.Album) int64 {
+		return a.CoverFileId
+	}), []int64{music.Mp3FileId, music.LyricFileId}...)...)
+	if err != nil {
+		return nil, err
+	}
+	fileMap := collext.Map(files, func(f *mysql.File) int64 { return f.Id })
 	return &prm.GetMusicDetailResult{
 		Music:         music,
 		ArtistMap:     collext.Map(artists, func(art *mysql.Artist) int64 { return art.Id }),
@@ -88,6 +91,7 @@ func (l *musicLogic) GetDetail(ctx context.Context, param *prm.GetMusicDetailPar
 		Mp3FileUrl:    util.DownloadFile(files[0].StoreKey),
 		LyricsFileUrl: util.DownloadFile(files[1].StoreKey),
 		Albums:        albums,
+		FileMap:       fileMap,
 	}, nil
 }
 

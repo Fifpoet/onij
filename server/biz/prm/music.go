@@ -68,6 +68,7 @@ type GetMusicDetailResult struct {
 	Mp3FileUrl    string
 	LyricsFileUrl string
 	Albums        []*mysql.Album
+	FileMap       map[int64]*mysql.File
 }
 
 func (p *GetMusicDetailResult) Resp() *api.GetMusicDetailResp {
@@ -79,20 +80,21 @@ func (p *GetMusicDetailResult) Resp() *api.GetMusicDetailResp {
 		Code:    util.BaseCodeOK,
 		Message: util.BaseMsgOK,
 		Detail: &api.MusicDetail{
-			Id:            p.Music.Id,
-			Name:          p.Music.Name,
-			ArtistIds:     collext.Pick(p.ArtistIds, func(id int64) int64 { return p.ArtistMap[id].Id }),
-			ArtistNames:   collext.Pick(p.ArtistIds, func(id int64) string { return p.ArtistMap[id].Name }),
-			ComposerId:    p.ComposerId,
-			ComposerName:  p.ArtistMap[p.ComposerId].Name,
-			WriterId:      p.WriterId,
-			WriterName:    p.ArtistMap[p.WriterId].Name,
-			IssueTime:     p.Music.IssueTime,
-			MvUrl:         p.Music.MvUrl,
-			Mp3FileUrl:    p.Mp3FileUrl,
-			LyricsFileUrl: p.LyricsFileUrl,
-			AlbumId:       album.Id,
-			AlbumName:     album.Name,
+			Id:                p.Music.Id,
+			Name:              p.Music.Name,
+			ArtistIds:         collext.Pick(p.ArtistIds, func(id int64) int64 { return p.ArtistMap[id].Id }),
+			ArtistNames:       collext.Pick(p.ArtistIds, func(id int64) string { return p.ArtistMap[id].Name }),
+			ComposerId:        p.ComposerId,
+			ComposerName:      p.ArtistMap[p.ComposerId].Name,
+			WriterId:          p.WriterId,
+			WriterName:        p.ArtistMap[p.WriterId].Name,
+			IssueTime:         p.Music.IssueTime,
+			MvUrl:             p.Music.MvUrl,
+			Mp3FileUrl:        p.Mp3FileUrl,
+			LyricsFileUrl:     p.LyricsFileUrl,
+			AlbumId:           album.Id,
+			AlbumName:         album.Name,
+			AlbumCoverFileUrl: util.DownloadFile(p.FileMap[album.CoverFileId].StoreKey),
 		},
 	}
 }
