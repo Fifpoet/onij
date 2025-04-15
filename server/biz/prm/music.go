@@ -60,15 +60,13 @@ func NewGetMusicDetailParam(req *api.GetMusicDetailReq) *GetMusicDetailParam {
 }
 
 type GetMusicDetailResult struct {
-	Music         *mysql.Music
-	ArtistMap     map[int64]*mysql.Artist
-	ArtistIds     []int64
-	ComposerId    int64
-	WriterId      int64
-	Mp3FileUrl    string
-	LyricsFileUrl string
-	Albums        []*mysql.Album
-	FileMap       map[int64]*mysql.File
+	Music      *mysql.Music
+	ArtistMap  map[int64]*mysql.Artist
+	ArtistIds  []int64
+	ComposerId int64
+	WriterId   int64
+	Albums     []*mysql.Album
+	FileMap    map[int64]*mysql.File
 }
 
 func (p *GetMusicDetailResult) Resp() *api.GetMusicDetailResp {
@@ -90,8 +88,8 @@ func (p *GetMusicDetailResult) Resp() *api.GetMusicDetailResp {
 			WriterName:        p.ArtistMap[p.WriterId].Name,
 			IssueTime:         p.Music.IssueTime,
 			MvUrl:             p.Music.MvUrl,
-			Mp3FileUrl:        p.Mp3FileUrl,
-			LyricsFileUrl:     p.LyricsFileUrl,
+			Mp3FileUrl:        util.DownloadFile(p.FileMap[p.Music.Mp3FileId].StoreKey),
+			LyricsFileUrl:     util.DownloadFile(p.FileMap[p.Music.LyricFileId].StoreKey),
 			AlbumId:           album.Id,
 			AlbumName:         album.Name,
 			AlbumCoverFileUrl: util.DownloadFile(p.FileMap[album.CoverFileId].StoreKey),
