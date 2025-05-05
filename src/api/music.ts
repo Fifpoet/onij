@@ -51,19 +51,4 @@ export const GetMusicDetail = async (
 };
 
 
-export function uploadMp3 ({file}: UploadCustomRequestOptions) {
-    if (currentMusicDetail.value) {
-        if (file.file) {
-            currentMusicDetail.value.mp = file.file; // 确保 file.file 不是 null
-            console.log("上传mp3文件暂存: ", file.name)
-        } else {
-            message.error("文件无效");
-            return;
-        }
-    } else {
-        message.error("请先选择歌曲");
-        return;
-    }
-    message.info("上传mp3成功");
-}
 

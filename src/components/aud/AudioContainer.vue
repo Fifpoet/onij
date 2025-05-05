@@ -118,19 +118,6 @@
             <n-input v-model:value="currentMusicDetail.mv_url" placeholder="Input Name"/>
           </n-form-item>
 
-          <n-upload :custom-request="uploadMp3">
-            <n-button>上传MP3</n-button>
-          </n-upload>
-          <n-upload :custom-request="uploadLyric">
-            <n-button>上传歌词</n-button>
-          </n-upload>
-          <n-upload :custom-request="uploadCover">
-            <n-button>上传封面</n-button>
-          </n-upload>
-          <n-upload :custom-request="uploadSheet">
-            <n-button>上传曲谱</n-button>
-          </n-upload>
-
 
         </n-form>
         <n-button @click="submitMusicForm">确定</n-button>
@@ -146,10 +133,9 @@
 
 <script lang="ts" setup>
 
-import {computed, onMounted, Ref, ref} from 'vue';
-import apiClient from '@/util/http.ts'; // 引入 axios 实例
-import {convertToUpsertMusicReq, useMusicStore} from "@/store/music.ts";
-import type {SelectOption, UploadCustomRequestOptions} from 'naive-ui'
+import {computed, onMounted, ref} from 'vue';
+import { useMusicStore} from "@/store/music.ts";
+import type {SelectOption} from 'naive-ui'
 import {
   NButton,
   NForm,
@@ -165,8 +151,8 @@ import {
   useMessage
 } from "naive-ui"
 import {languageOptions, performTypeOptions} from "@/util/enum.ts";
-import {GetMusicDetail, GetMusicList, uploadMp3} from '@/api';
-import {GetMusicDetailReq, GetMusicListReq, GetMusicListResp, MusicSortType, MusicDetail} from '@/api/types';
+import {GetMusicDetail, GetMusicList} from '@/api';
+import {GetMusicListReq, MusicSortType, MusicDetail} from '@/api/types';
 
 const message = useMessage()
 // *************************************************** 音乐列表展示逻辑 *************************************************** //
@@ -199,23 +185,10 @@ const handleScroll = (event: Event) => {
   }
 };
 
-const handleSearchSinger = async (query: string) => {
-  await handleSearch(query, 1, singerOptions, loadingSinger); // 传入typ为1
-};
-
-const handleSearchComposer = async (query: string) => {
-  await handleSearch(query, 2, composerOptions, loadingComposer); // 传入typ为2
-};
-
-const handleSearchWriter = async (query: string) => {
-  await handleSearch(query, 3, writerOptions, loadingWriter); // 传入typ为2
-};
-
-
 
 const fetchMusicList = async () => {
   try {
-    const response = await GetMusicList<GetMusicListReq>({
+    const response = await GetMusicList({
       sort_type: MusicSortType.MST_Created_At_Desc,
       page: musicStore.page,
       limit: 100
@@ -257,7 +230,7 @@ const formattedCurrentTime = computed(() => {
 // 播放音乐，获取音乐详情
 const playMusic = async (id: number) => {
   try {
-    const response = await GetMusicDetail({ music_id: 10320793690998 }); // TODO
+    const response = await GetMusicDetail({ music_id: id }); 
     musicStore.setCurrentMusic(response.detail)
     handleMp3()
   } catch (error) {
