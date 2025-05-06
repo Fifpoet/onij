@@ -3,6 +3,7 @@ import { RouterView } from 'vue-router';
 import PageHeader from './components/layout/PageHeader.vue'
 // import lbAudio from './components/audio/index.vue';
 import AudioContainer from "@/components/music/AudioContainer.vue";
+import MusicDetail from "@/components/music/MusicDetail.vue";
 import {NMessageProvider} from "naive-ui"
 
 const musicList = [
@@ -174,6 +175,7 @@ const musicList = [
 <!--    </article>-->
 
   <n-message-provider>
+  <MusicDetail />
   <AudioContainer></AudioContainer>
 <!--  <lbAudio class="music-player" :musicList="musicList" :index="8" :lyrics="true">-->
 <!--  </lbAudio>-->
