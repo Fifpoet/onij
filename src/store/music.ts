@@ -9,6 +9,7 @@ export const useMusicStore = defineStore('music', {
         current: {
             detail: null,
             isPlaying: false,
+            progressTime: 0,
             progress: 0,
             volume: 80
         } as CurrentMusicState,

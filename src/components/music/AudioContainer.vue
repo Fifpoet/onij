@@ -209,7 +209,6 @@ const audioContainer = ref<HTMLDivElement | null>(null);
 const audio = ref<HTMLAudioElement | null>(null); // 用于音频控制的全局 Audio 实例
 const isPlaying = ref(false); // 控制播放状态
 const currentTime = ref(0);
-const currentProgress = ref(0); // 当前进度百分比
 const duration = ref(0); // 音频总时长
 const playMod = ref(2); // 播放模式
 
@@ -328,14 +327,32 @@ const startOrPause = () => {
   }
 }
 
-const onSeek = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  const value = parseFloat(target.value);
-  if (audio.value) {
-    audio.value.currentTime = (value / 100) * duration.value;
+const currentProgress = computed({
+  get: () => musicStore.current.progress,
+  set: (value) => {
+    musicStore.current.progress = value;
+    onSeek();
   }
+});
+// TODO
+const onSeek = () => {
+  if (!audio.value || !musicStore.current.detail) return;
+  const time = (musicStore.current.progress / 100) * duration.value;
+  audio.value.currentTime = time;
+  currentTime.value = time;
 };
 
+// 添加时间更新监听
+onMounted(() => {
+  if (audio.value) {
+    audio.value.addEventListener('timeupdate', () => {
+      if (!isDragging && audio.value) {
+        currentTime.value = audio.value.currentTime;
+        musicStore.current.progress = (audio.value.currentTime / duration.value) * 100;
+      }
+    });
+  }
+});
 const playPrevious = () => {
   if (!musicStore.CurrentMusic || !musicStore.MusicList.length) {
     message.error("没有可播放的音乐");
