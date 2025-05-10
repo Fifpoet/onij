@@ -29,9 +29,7 @@
       </div>
     </div>
 
-    <div class="song-detail-toggle p-2 cursor-pointer" @click="toggleSongDetail">
-      📝
-    </div>
+  
     <div class="music-list-toggle p-2 cursor-pointer" @click="toggleMusicList">
       🎵
     </div>
@@ -39,7 +37,7 @@
     <div class="absolute bottom-[-1px] left-0 w-full p-0 m-0 flex items-center">
       <span class="text-xs text-gray-500 ml-2">{{ formattedCurrentTime }}</span>
       <input type="range" class="flex-grow h-[2px] bg-gray-300 outline-none appearance-none p-0 m-0 ml-2 mr-2" min="0"
-             max="100" v-model="currentProgress" @input="onSeek"/>
+             max="100" v-model="currentProgress" @input="onPullTime"/>
     </div>
 
     <!-- music列表 -->
@@ -153,6 +151,7 @@ import {
 import {languageOptions, performTypeOptions} from "@/util/enum.ts";
 import {GetMusicDetail, GetMusicList} from '@/api';
 import {GetMusicListReq, MusicSortType, MusicDetail} from '@/api/types';
+import { formatTime } from '@/util/time';
 
 const message = useMessage()
 // *************************************************** 音乐列表展示逻辑 *************************************************** //
@@ -197,21 +196,17 @@ const fetchMusicList = async () => {
 const audioContainer = ref<HTMLDivElement | null>(null);
 const audio = ref<HTMLAudioElement | null>(null); // 用于音频控制的全局 Audio 实例
 const isPlaying = ref(false); // 控制播放状态
-const currentTime = ref(0);
 const duration = ref(0); // 音频总时长
+const currentTime = ref(0); // 添加一个响应式变量来跟踪当前时间
 
 
 let isDragging = false;
 let offset = {x: 0, y: 0};
 
 const formattedCurrentTime = computed(() => {
-  const minutes = Math.floor(currentTime.value / 60)
-      .toString()
-      .padStart(2, "0");
-  const seconds = Math.floor(currentTime.value % 60)
-      .toString()
-      .padStart(2, "0");
-  return `${minutes}:${seconds}`;
+  if (!audio.value) return '00:00'; // TODO这里不会重新计算
+  
+  return formatTime(currentTime.value);
 });
 
 // 播放音乐，获取音乐详情
@@ -228,13 +223,6 @@ const playMusic = async (id: number) => {
 // 切换音乐列表展示
 const toggleMusicList = () => {
   showMusicList.value = !showMusicList.value;
-  showSongDetail.value = false; // 隐藏歌曲详情窗口
-};
-
-// 切换歌曲详情展示
-const toggleSongDetail = () => {
-  showSongDetail.value = !showSongDetail.value;
-  showMusicList.value = false; // 隐藏音乐列表
 };
 
 // 使用转换函数保存音乐详情
@@ -246,7 +234,6 @@ const handleMp3 = () => {
     message.error("没有找到音频文件");
     return;
   }
-
   // 先干掉之前的Audio对象, 初始化新Audio对象
   if (audio.value) {
     audio.value.pause();
@@ -270,8 +257,8 @@ const handleMp3 = () => {
   }
 
   audio.value.ontimeupdate = () => {
-    currentTime.value = audio.value!.currentTime;
     currentProgress.value = (audio.value!.currentTime / audio.value!.duration) * 100;
+    currentTime.value = audio.value!.currentTime;
   };
   audio.value.onloadedmetadata = () => {
     duration.value = audio.value!.duration;
@@ -298,15 +285,13 @@ const currentProgress = computed({
   get: () => musicStore.current.progress,
   set: (value) => {
     musicStore.current.progress = value;
-    onSeek();
   }
 });
-// TODO
-const onSeek = () => {
+
+const onPullTime = () => {
   if (!audio.value || !musicStore.current.detail) return;
   const time = (musicStore.current.progress / 100) * duration.value;
   audio.value.currentTime = time;
-  currentTime.value = time;
 };
 
 // 添加时间更新监听
@@ -314,7 +299,6 @@ onMounted(() => {
   if (audio.value) {
     audio.value.addEventListener('timeupdate', () => {
       if (!isDragging && audio.value) {
-        currentTime.value = audio.value.currentTime;
         musicStore.current.progress = (audio.value.currentTime / duration.value) * 100;
       }
     });
