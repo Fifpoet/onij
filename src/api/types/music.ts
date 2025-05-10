@@ -64,5 +64,6 @@ export interface CurrentMusicState {
     detail: MusicDetail | null;
     isPlaying: boolean;
     progress: number; // 当前播放进度 (0-100)
+    progressTime: number; // 当前播放时间 (秒)
     volume: number;   // 音量 (0-100)
 }

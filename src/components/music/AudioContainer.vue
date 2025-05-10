@@ -160,16 +160,6 @@ const showMusicList = ref(false);
 const showSongDetail = ref(false);
 const musicStore = useMusicStore(); // 获取 Pinia store
 
-// *************** music表单相关控件 *************** //
-const selectedSingerValues = ref<number[]>([]);
-const loadingSinger = ref(false)
-const singerOptions = ref<SelectOption[]>([])
-const selectedComposerValues = ref<number[]>([]);
-const loadingComposer = ref(false)
-const composerOptions = ref<SelectOption[]>([])
-const selectedWriterValues = ref<number[]>([]);
-const loadingWriter = ref(false)
-const writerOptions = ref<SelectOption[]>([])
 const fetching = ref(false); // 防止重复请求
 
 const handleScroll = (event: Event) => {
@@ -185,13 +175,12 @@ const handleScroll = (event: Event) => {
   }
 };
 
-
 const fetchMusicList = async () => {
   try {
     const response = await GetMusicList({
       sort_type: MusicSortType.MST_Created_At_Desc,
       page: musicStore.page,
-      limit: 100
+      limit: 20
     });
     if (response?.musics) {
       musicStore.append(response.musics);
@@ -210,7 +199,6 @@ const audio = ref<HTMLAudioElement | null>(null); // 用于音频控制的全局
 const isPlaying = ref(false); // 控制播放状态
 const currentTime = ref(0);
 const duration = ref(0); // 音频总时长
-const playMod = ref(2); // 播放模式
 
 
 let isDragging = false;
@@ -265,7 +253,7 @@ const handleMp3 = () => {
     audio.value = null;
   }
   isPlaying.value = false;
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 3; i++) {
     if (!audio.value) {
       audio.value = new Audio(musicStore.current.detail?.mp3_file_url);
       audio.value.onerror = () => {
@@ -279,27 +267,6 @@ const handleMp3 = () => {
   if (!audio.value) {
     message.error("音频文件加载失败，请检查链接");
     return;
-  }
-
-  // 设置下一曲
-  if (audio.value) {
-    switch (playMod.value) {
-      case 1:
-        audio.value.addEventListener('ended', () => {
-          playNext(); // 播放下一首
-        });
-        break;
-      case 2:
-        audio.value.addEventListener('ended', () => {
-          playRandom(); // 播放随机一首
-        });
-        break;
-      default:
-        audio.value.addEventListener('ended', () => {
-          playNext(); // 播放下一首
-        });
-        break;
-    }
   }
 
   audio.value.ontimeupdate = () => {
@@ -353,59 +320,6 @@ onMounted(() => {
     });
   }
 });
-const playPrevious = () => {
-  if (!musicStore.CurrentMusic || !musicStore.MusicList.length) {
-    message.error("没有可播放的音乐");
-    return;
-  }
-
-  // 获取当前音乐在列表中的索引
-  const currentIndex = musicStore.MusicList.findIndex(
-      (music: MusicDetail) => music.id === musicStore.CurrentMusic?.id
-  );
-
-  let previousMusic = musicStore.MusicList[currentIndex]
-  if (currentIndex > 0) {
-    previousMusic = musicStore.MusicList[currentIndex - 1];
-  } else {
-    previousMusic = musicStore.MusicList[musicStore.MusicList.length - 1];
-  }
-  playMusic(previousMusic.id);
-};
-
-const playNext = () => {
-  if (!musicStore.CurrentMusic || !musicStore.MusicList.length) {
-    message.error("没有可播放的音乐");
-    return;
-  }
-
-  // 获取当前音乐在列表中的索引
-  const currentIndex = musicStore.MusicList.findIndex(
-      (music: MusicDetail) => music.id === musicStore.CurrentMusic?.id
-  );
-
-  let nextMusic = musicStore.MusicList[currentIndex];
-  if (currentIndex < musicStore.MusicList.length - 1) {
-    // 如果有下一曲，播放下一曲
-     nextMusic = musicStore.MusicList[currentIndex + 1];
-  } else {
-    nextMusic = musicStore.MusicList[0];
-  }
-  playMusic(nextMusic.id);
-};
-
-const playRandom = () => {
-  if (!musicStore.CurrentMusic || !musicStore.MusicList.length) {
-    message.error("没有可播放的音乐");
-    return;
-  }
-
-  // 随机选择下一首音乐
-   const nextIndex = Math.floor(Math.random() * musicStore.MusicList.length);
-
-  const nextMusic = musicStore.MusicList[nextIndex];
-  playMusic(nextMusic.id);
-};
 
 
 
