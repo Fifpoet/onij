@@ -29,6 +29,16 @@
       </div>
     </div>
 
+    <!-- 音量按钮 -->
+    <div class="volume-control p-2 cursor-pointer relative" @click="toggleMute" @mouseenter="showVolumeSlider = true" @mouseleave="showVolumeSlider = false">
+      {{ isMuted ? '🔇' : volume > 50 ? '🔊' : volume > 0 ? '🔉' : '🔇' }}
+      
+      <!-- 音量滑块 -->
+      <div v-if="showVolumeSlider" class="volume-slider absolute bottom-[40px] left-0 bg-white shadow-lg rounded-lg p-2 flex flex-col items-center">
+        <input type="range" class="h-[80px] w-[20px] bg-gray-300 outline-none appearance-none" 
+               min="0" max="100" v-model="volume" @input="adjustVolume" orient="vertical" />
+      </div>
+    </div>
   
     <div class="music-list-toggle p-2 cursor-pointer" @click="toggleMusicList">
       🎵
@@ -159,6 +169,38 @@ const showMusicList = ref(false);
 const showSongDetail = ref(false);
 const musicStore = useMusicStore(); // 获取 Pinia store
 
+// 音量控制相关
+const volume = ref(80); // 音量值，范围0-100
+const isMuted = ref(false); // 是否静音
+const showVolumeSlider = ref(false); // 是否显示音量滑块
+const previousVolume = ref(100); // 存储静音前的音量值
+
+// 调整音量
+const adjustVolume = () => {
+  if (audio.value) {
+    isMuted.value = volume.value == 0
+    audio.value.volume = volume.value / 100;
+  }
+};
+
+// 切换静音状态
+const toggleMute = () => {
+  if (audio.value) {
+    if (isMuted.value) {
+      // 取消静音
+      isMuted.value = false;
+      volume.value = previousVolume.value;
+      audio.value.volume = volume.value / 100;
+    } else {
+      // 静音
+      isMuted.value = true;
+      previousVolume.value = volume.value;
+      volume.value = 0;
+      audio.value.volume = 0;
+    }
+  }
+};
+
 const fetching = ref(false); // 防止重复请求
 
 const handleScroll = (event: Event) => {
@@ -178,7 +220,7 @@ const fetchMusicList = async () => {
   try {
     const response = await GetMusicList({
       sort_type: MusicSortType.MST_Created_At_Desc,
-      page: musicStore.page,
+      page: musicStore.musicListPage,
       limit: 20
     });
     if (response?.musics) {
@@ -256,6 +298,9 @@ const handleMp3 = () => {
     return;
   }
 
+  // 设置音量
+  audio.value.volume = volume.value / 100;
+  
   audio.value.ontimeupdate = () => {
     currentProgress.value = (audio.value!.currentTime / audio.value!.duration) * 100;
     currentTime.value = audio.value!.currentTime;
@@ -280,6 +325,30 @@ const startOrPause = () => {
     }
   }
 }
+const playPrevious = () => {
+  if (!musicStore.musicList || musicStore.musicList.length === 0) return;
+  
+  const currentIndex = musicStore.musicList.findIndex(music => music?.id === musicStore.current.detail?.id);
+  if (currentIndex > 0) {
+    playMusic(musicStore.musicList[currentIndex - 1]?.id);
+  } else {
+    playMusic(musicStore.musicList[musicStore.musicList.length - 1]?.id);
+  }
+};
+const playNext = () => {
+  if (!musicStore.musicList || musicStore.musicList.length === 0) return;
+
+  const currentIndex = musicStore.musicList.findIndex(music => music?.id === musicStore.current.detail?.id);
+  let nextIndex;
+  if (musicStore.musicList.length > 1) {
+    do {
+      nextIndex = Math.floor(Math.random() * musicStore.musicList.length);
+    } while (nextIndex === currentIndex);
+  } else {
+    nextIndex = 0;
+  }
+  playMusic(musicStore.musicList[nextIndex]?.id);
+};
 
 const currentProgress = computed({
   get: () => musicStore.current.progress,
@@ -359,6 +428,7 @@ onMounted(async () => {
   if (musicStore.musicListContinue) {
     fetchMusicList()
   }
+  
 });
 
 </script>
@@ -396,6 +466,22 @@ input[type="range"]::-moz-range-thumb {
   background-color: #333;
   border-radius: 50%;
   cursor: pointer;
+}
+
+/* 垂直方向的音量滑块样式 */
+input[type="range"][orient="vertical"] {
+  -webkit-appearance: slider-vertical;
+  writing-mode: bt-lr;
+}
+
+input[type="range"][orient="vertical"]::-webkit-slider-thumb {
+  width: 12px;
+  height: 12px;
+}
+
+input[type="range"][orient="vertical"]::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
 }
 </style>
 
