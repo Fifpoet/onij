@@ -70,3 +70,13 @@ func _searchartistMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _tagMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _uploadtagMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

@@ -5,4 +5,5 @@ type AllLogic struct {
 	FileLogic
 	AlbumLogic
 	ArtistLogic
+	TagLogic
 }

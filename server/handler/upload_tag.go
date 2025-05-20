@@ -12,22 +12,22 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 )
 
-// SearchArtist .
-// @router /artist/search [POST]
-func SearchArtist(ctx context.Context, c *app.RequestContext) {
+// UploadTag .
+// @router /tag/upload [POST]
+func UploadTag(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req api.SearchArtistReq
+	var req api.UploadTagReq
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-	if err = checkSearchArtistReq(&req); err != nil {
+	if err = checkUploadTagReq(&req); err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
 
-	resp, err := ser.ArtistLogic.Search(ctx, prm.NewSearchArtistParam(&req))
+	resp, err := ser.TagLogic.Upload(ctx, prm.NewUploadTagParam(&req))
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
@@ -35,6 +35,6 @@ func SearchArtist(ctx context.Context, c *app.RequestContext) {
 	c.JSON(consts.StatusOK, resp.Resp())
 }
 
-func checkSearchArtistReq(req *api.SearchArtistReq) error {
+func checkUploadTagReq(req *api.UploadTagReq) error {
 	return nil
 }

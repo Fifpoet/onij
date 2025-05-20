@@ -37,4 +37,8 @@ func Register(r *server.Hertz) {
 		_music.POST("/list", append(_getmusiclistMw(), handler.GetMusicList)...)
 		_music.POST("/upload", append(_uploadmusicMw(), handler.UploadMusic)...)
 	}
+	{
+		_tag := root.Group("/tag", _tagMw()...)
+		_tag.POST("/upload", append(_uploadtagMw(), handler.UploadTag)...)
+	}
 }

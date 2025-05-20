@@ -225,6 +225,157 @@ func (MusicSortType) EnumDescriptor() ([]byte, []int) {
 	return file_all_enum_proto_rawDescGZIP(), []int{3}
 }
 
+type TagBiz int32
+
+const (
+	TagBiz_TB_Unknown TagBiz = 0
+	TagBiz_TB_Music   TagBiz = 1
+)
+
+// Enum value maps for TagBiz.
+var (
+	TagBiz_name = map[int32]string{
+		0: "TB_Unknown",
+		1: "TB_Music",
+	}
+	TagBiz_value = map[string]int32{
+		"TB_Unknown": 0,
+		"TB_Music":   1,
+	}
+)
+
+func (x TagBiz) Enum() *TagBiz {
+	p := new(TagBiz)
+	*p = x
+	return p
+}
+
+func (x TagBiz) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (TagBiz) Descriptor() protoreflect.EnumDescriptor {
+	return file_all_enum_proto_enumTypes[4].Descriptor()
+}
+
+func (TagBiz) Type() protoreflect.EnumType {
+	return &file_all_enum_proto_enumTypes[4]
+}
+
+func (x TagBiz) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use TagBiz.Descriptor instead.
+func (TagBiz) EnumDescriptor() ([]byte, []int) {
+	return file_all_enum_proto_rawDescGZIP(), []int{4}
+}
+
+type TagGroup int32
+
+const (
+	TagGroup_TG_Unknown         TagGroup = 0
+	TagGroup_TG_MusicTheme      TagGroup = 1
+	TagGroup_TG_MusicStyle      TagGroup = 2
+	TagGroup_TG_MusicEmotion    TagGroup = 3
+	TagGroup_TG_MusicHighlight  TagGroup = 4
+	TagGroup_TG_MusicCollection TagGroup = 5
+)
+
+// Enum value maps for TagGroup.
+var (
+	TagGroup_name = map[int32]string{
+		0: "TG_Unknown",
+		1: "TG_MusicTheme",
+		2: "TG_MusicStyle",
+		3: "TG_MusicEmotion",
+		4: "TG_MusicHighlight",
+		5: "TG_MusicCollection",
+	}
+	TagGroup_value = map[string]int32{
+		"TG_Unknown":         0,
+		"TG_MusicTheme":      1,
+		"TG_MusicStyle":      2,
+		"TG_MusicEmotion":    3,
+		"TG_MusicHighlight":  4,
+		"TG_MusicCollection": 5,
+	}
+)
+
+func (x TagGroup) Enum() *TagGroup {
+	p := new(TagGroup)
+	*p = x
+	return p
+}
+
+func (x TagGroup) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (TagGroup) Descriptor() protoreflect.EnumDescriptor {
+	return file_all_enum_proto_enumTypes[5].Descriptor()
+}
+
+func (TagGroup) Type() protoreflect.EnumType {
+	return &file_all_enum_proto_enumTypes[5]
+}
+
+func (x TagGroup) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use TagGroup.Descriptor instead.
+func (TagGroup) EnumDescriptor() ([]byte, []int) {
+	return file_all_enum_proto_rawDescGZIP(), []int{5}
+}
+
+type TagType int32
+
+const (
+	TagType_TT_Unknown TagType = 0 // 10101
+	// 10401
+	TagType_TT_NcBridge TagType = 10401
+)
+
+// Enum value maps for TagType.
+var (
+	TagType_name = map[int32]string{
+		0:     "TT_Unknown",
+		10401: "TT_NcBridge",
+	}
+	TagType_value = map[string]int32{
+		"TT_Unknown":  0,
+		"TT_NcBridge": 10401,
+	}
+)
+
+func (x TagType) Enum() *TagType {
+	p := new(TagType)
+	*p = x
+	return p
+}
+
+func (x TagType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (TagType) Descriptor() protoreflect.EnumDescriptor {
+	return file_all_enum_proto_enumTypes[6].Descriptor()
+}
+
+func (TagType) Type() protoreflect.EnumType {
+	return &file_all_enum_proto_enumTypes[6]
+}
+
+func (x TagType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use TagType.Descriptor instead.
+func (TagType) EnumDescriptor() ([]byte, []int) {
+	return file_all_enum_proto_rawDescGZIP(), []int{6}
+}
+
 var File_all_enum_proto protoreflect.FileDescriptor
 
 var file_all_enum_proto_rawDesc = []byte{
@@ -250,8 +401,22 @@ var file_all_enum_proto_rawDesc = []byte{
 	0x10, 0x02, 0x12, 0x17, 0x0a, 0x13, 0x4d, 0x53, 0x54, 0x5f, 0x49, 0x73, 0x73, 0x75, 0x65, 0x5f,
 	0x54, 0x69, 0x6d, 0x65, 0x5f, 0x44, 0x65, 0x73, 0x63, 0x10, 0x03, 0x12, 0x16, 0x0a, 0x12, 0x4d,
 	0x53, 0x54, 0x5f, 0x49, 0x73, 0x73, 0x75, 0x65, 0x5f, 0x54, 0x69, 0x6d, 0x65, 0x5f, 0x41, 0x73,
-	0x63, 0x10, 0x04, 0x42, 0x10, 0x5a, 0x0e, 0x6f, 0x6e, 0x69, 0x6a, 0x2f, 0x6d, 0x6f, 0x64, 0x65,
-	0x6c, 0x2f, 0x61, 0x70, 0x69, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x63, 0x10, 0x04, 0x2a, 0x26, 0x0a, 0x06, 0x54, 0x61, 0x67, 0x42, 0x69, 0x7a, 0x12, 0x0e, 0x0a,
+	0x0a, 0x54, 0x42, 0x5f, 0x55, 0x6e, 0x6b, 0x6e, 0x6f, 0x77, 0x6e, 0x10, 0x00, 0x12, 0x0c, 0x0a,
+	0x08, 0x54, 0x42, 0x5f, 0x4d, 0x75, 0x73, 0x69, 0x63, 0x10, 0x01, 0x2a, 0x84, 0x01, 0x0a, 0x08,
+	0x54, 0x61, 0x67, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x12, 0x0e, 0x0a, 0x0a, 0x54, 0x47, 0x5f, 0x55,
+	0x6e, 0x6b, 0x6e, 0x6f, 0x77, 0x6e, 0x10, 0x00, 0x12, 0x11, 0x0a, 0x0d, 0x54, 0x47, 0x5f, 0x4d,
+	0x75, 0x73, 0x69, 0x63, 0x54, 0x68, 0x65, 0x6d, 0x65, 0x10, 0x01, 0x12, 0x11, 0x0a, 0x0d, 0x54,
+	0x47, 0x5f, 0x4d, 0x75, 0x73, 0x69, 0x63, 0x53, 0x74, 0x79, 0x6c, 0x65, 0x10, 0x02, 0x12, 0x13,
+	0x0a, 0x0f, 0x54, 0x47, 0x5f, 0x4d, 0x75, 0x73, 0x69, 0x63, 0x45, 0x6d, 0x6f, 0x74, 0x69, 0x6f,
+	0x6e, 0x10, 0x03, 0x12, 0x15, 0x0a, 0x11, 0x54, 0x47, 0x5f, 0x4d, 0x75, 0x73, 0x69, 0x63, 0x48,
+	0x69, 0x67, 0x68, 0x6c, 0x69, 0x67, 0x68, 0x74, 0x10, 0x04, 0x12, 0x16, 0x0a, 0x12, 0x54, 0x47,
+	0x5f, 0x4d, 0x75, 0x73, 0x69, 0x63, 0x43, 0x6f, 0x6c, 0x6c, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e,
+	0x10, 0x05, 0x2a, 0x2b, 0x0a, 0x07, 0x54, 0x61, 0x67, 0x54, 0x79, 0x70, 0x65, 0x12, 0x0e, 0x0a,
+	0x0a, 0x54, 0x54, 0x5f, 0x55, 0x6e, 0x6b, 0x6e, 0x6f, 0x77, 0x6e, 0x10, 0x00, 0x12, 0x10, 0x0a,
+	0x0b, 0x54, 0x54, 0x5f, 0x4e, 0x63, 0x42, 0x72, 0x69, 0x64, 0x67, 0x65, 0x10, 0xa1, 0x51, 0x42,
+	0x10, 0x5a, 0x0e, 0x6f, 0x6e, 0x69, 0x6a, 0x2f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x2f, 0x61, 0x70,
+	0x69, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -266,12 +431,15 @@ func file_all_enum_proto_rawDescGZIP() []byte {
 	return file_all_enum_proto_rawDescData
 }
 
-var file_all_enum_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
+var file_all_enum_proto_enumTypes = make([]protoimpl.EnumInfo, 7)
 var file_all_enum_proto_goTypes = []interface{}{
 	(AppId)(0),         // 0: onij.AppId
 	(FileType)(0),      // 1: onij.FileType
 	(ArtistType)(0),    // 2: onij.ArtistType
 	(MusicSortType)(0), // 3: onij.MusicSortType
+	(TagBiz)(0),        // 4: onij.TagBiz
+	(TagGroup)(0),      // 5: onij.TagGroup
+	(TagType)(0),       // 6: onij.TagType
 }
 var file_all_enum_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -292,7 +460,7 @@ func file_all_enum_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_all_enum_proto_rawDesc,
-			NumEnums:      4,
+			NumEnums:      7,
 			NumMessages:   0,
 			NumExtensions: 0,
 			NumServices:   0,

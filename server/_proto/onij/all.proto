@@ -57,6 +57,22 @@ message UploadArtistResp {
   int64 artist_id = 3;
 }
 
+message UploadTagReq {
+  int64 resource_id = 1;
+  int32 resource_type = 2;
+  TagBiz tag_biz = 3;
+  TagGroup tag_group = 4;
+  TagType tag_type = 5;
+  optional int64 target_id = 6;
+  optional int32 target_type = 7;
+  string extra = 8;
+  bool list_show = 9;
+}
+message UploadTagResp {
+  int32 code = 1;
+  string message = 2;
+}
+
 // 上传专辑
 message UploadAlbumReq {
   string name = 1;
@@ -134,6 +150,11 @@ service AllService {
   rpc UploadArtist(UploadArtistReq) returns (UploadArtistResp) {
     option (api.post) = "/artist/upload";
   }
+  // 上传标签
+  rpc UploadTag(UploadTagReq) returns (UploadTagResp) {
+    option (api.post) = "/tag/upload";
+  }
+
   // 获取音乐详情
   rpc GetMusicDetail(GetMusicDetailReq) returns (GetMusicDetailResp) {
     option (api.post) = "/music/detail";

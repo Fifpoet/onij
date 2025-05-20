@@ -24,7 +24,13 @@ func NewArtistLogic(i *infra.AllInfra) ArtistLogic {
 }
 
 func (l *artistLogic) Search(ctx context.Context, param *prm.SearchArtistParam) (*prm.SearchArtistResult, error) {
-	
+	arts, err := l.ArtistDal.GetLikeNameAndType(param.Keyword, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &prm.SearchArtistResult{
+		Artists: arts,
+	}, nil
 }
 
 func (l *artistLogic) Upload(ctx context.Context, param *prm.UploadArtistParam) (*prm.UploadArtistResult, error) {

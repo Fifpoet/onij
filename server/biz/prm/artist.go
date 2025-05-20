@@ -47,7 +47,6 @@ func NewSearchArtistParam(req *api.SearchArtistReq) *SearchArtistParam {
 
 type SearchArtistResult struct {
 	Artists []*mysql.Artist
-	Total   int64
 }
 func (r *SearchArtistResult) Resp() *api.SearchArtistResp {
 	return &api.SearchArtistResp{

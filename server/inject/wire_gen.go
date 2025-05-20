@@ -50,11 +50,13 @@ func InitLogicForTest() *logic.AllLogic {
 	fileLogic := logic.NewFileLogic(allInfra)
 	albumLogic := logic.NewAlbumLogic(allInfra)
 	artistLogic := logic.NewArtistLogic(allInfra)
+	tagLogic := logic.NewTagLogic(allInfra)
 	allLogic := &logic.AllLogic{
 		MusicLogic:  musicLogic,
 		FileLogic:   fileLogic,
 		AlbumLogic:  albumLogic,
 		ArtistLogic: artistLogic,
+		TagLogic:    tagLogic,
 	}
 	return allLogic
 }
@@ -77,11 +79,13 @@ func InitializeApp() *App {
 	fileLogic := logic.NewFileLogic(allInfra)
 	albumLogic := logic.NewAlbumLogic(allInfra)
 	artistLogic := logic.NewArtistLogic(allInfra)
+	tagLogic := logic.NewTagLogic(allInfra)
 	allLogic := &logic.AllLogic{
 		MusicLogic:  musicLogic,
 		FileLogic:   fileLogic,
 		AlbumLogic:  albumLogic,
 		ArtistLogic: artistLogic,
+		TagLogic:    tagLogic,
 	}
 	app := &App{
 		AllInfra: allInfra,
@@ -94,7 +98,7 @@ func InitializeApp() *App {
 
 var infraSet = wire.NewSet(mysql.NewMysqlCli, mysql.NewTagDal, mysql.NewFileDal, mysql.NewMusicDal, mysql.NewAlbumDal, mysql.NewArtistDal, wire.Struct(new(infra.AllInfra), "*"))
 
-var logicSet = wire.NewSet(logic.NewMusicLogic, logic.NewFileLogic, logic.NewAlbumLogic, logic.NewArtistLogic, wire.Struct(new(logic.AllLogic), "*"))
+var logicSet = wire.NewSet(logic.NewMusicLogic, logic.NewFileLogic, logic.NewAlbumLogic, logic.NewArtistLogic, logic.NewTagLogic, wire.Struct(new(logic.AllLogic), "*"))
 
 var allSet = wire.NewSet(
 	infraSet,

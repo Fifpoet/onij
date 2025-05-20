@@ -32,3 +32,31 @@ enum MusicSortType {
   MST_Issue_Time_Desc = 3;
   MST_Issue_Time_Asc = 4;
 }
+
+enum TagBiz {
+  TB_Unknown = 0;
+  TB_Music = 1;
+}
+
+enum TagGroup {
+  TG_Unknown = 0;
+  TG_MusicTheme = 1;
+  TG_MusicStyle = 2;
+  TG_MusicEmotion = 3;
+  TG_MusicHighlight = 4;
+  TG_MusicCollection = 5;
+}
+
+enum TagType {
+  TT_Unknown = 0;
+  // 10101
+
+  // 10201
+
+  // 10301
+
+  // 10401
+  TT_NcBridge = 10401;
+
+  // 10501
+}

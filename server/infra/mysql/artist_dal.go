@@ -12,7 +12,7 @@ type ArtistDal interface {
 	GetByIds(id ...int64) ([]*Artist, error)
 	GetByKeyword(name string) ([]*Artist, error)
 	GetByName(name string) (*Artist, error)
-	GetByNameAndType(name string, performType int) ([]*Artist, error)
+	GetLikeNameAndType(name string, artistType *int) ([]*Artist, error)
 	Save(arts ...*Artist) error
 	DelById(id int) error
 }
@@ -64,9 +64,13 @@ func (p *artistDal) GetByName(name string) (*Artist, error) {
 	return res, nil
 }
 
-func (p *artistDal) GetByNameAndType(name string, performType int) ([]*Artist, error) {
+func (p *artistDal) GetLikeNameAndType(name string, artistType *int) ([]*Artist, error) {
 	var performers []*Artist
-	err := p.db.Where("name LIKE ? AND performer_type = ?", "%"+name+"%", performType).Find(&performers).Error
+	tx := p.db.Where("name LIKE ?", "%"+name+"%")
+	if artistType!= nil {
+		tx.Where("performer_type = ?", artistType)
+	}
+	err := tx.Find(&performers).Error
 	if err != nil {
 		return nil, err
 	}
