@@ -10,6 +10,7 @@ import (
 
 type ArtistLogic interface {
 	Upload(ctx context.Context, prm *prm.UploadArtistParam) (*prm.UploadArtistResult, error)
+	Search(ctx context.Context, prm *prm.SearchArtistParam) (*prm.SearchArtistResult, error)
 }
 
 type artistLogic struct {
@@ -20,6 +21,10 @@ func NewArtistLogic(i *infra.AllInfra) ArtistLogic {
 	return &artistLogic{
 		AllInfra: i,
 	}
+}
+
+func (l *artistLogic) Search(ctx context.Context, param *prm.SearchArtistParam) (*prm.SearchArtistResult, error) {
+	
 }
 
 func (l *artistLogic) Upload(ctx context.Context, param *prm.UploadArtistParam) (*prm.UploadArtistResult, error) {

@@ -24,6 +24,7 @@ func Register(r *server.Hertz) {
 	}
 	{
 		_artist := root.Group("/artist", _artistMw()...)
+		_artist.POST("/search", append(_searchartistMw(), handler.SearchArtist)...)
 		_artist.POST("/upload", append(_uploadartistMw(), handler.UploadArtist)...)
 	}
 	{

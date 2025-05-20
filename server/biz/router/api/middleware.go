@@ -65,3 +65,8 @@ func _getmusiclistMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _searchartistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

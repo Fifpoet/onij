@@ -105,6 +105,18 @@ message GetMusicListResp {
   repeated MusicProfile musics = 10;
 }
 
+message SearchArtistReq {
+  string keyword = 1;
+  int32 page = 10;
+  int32 limit = 11;
+}
+message SearchArtistResp {
+  int32 code = 1;
+  string message = 2;
+
+  repeated ArtistProfile artists = 10;
+}
+
 service AllService {
   // 上传文件
   rpc UploadFile(UploadFileReq) returns (UploadFileResp) {
@@ -133,5 +145,9 @@ service AllService {
   // 获取音乐列表
   rpc GetMusicList(GetMusicListReq) returns (GetMusicListResp) {
     option (api.post) = "/music/list";
+  }
+  // 搜索艺术家
+  rpc SearchArtist(SearchArtistReq) returns (SearchArtistResp) {
+    option (api.post) = "/artist/search";
   }
 }

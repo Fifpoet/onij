@@ -1,8 +1,10 @@
 package prm
 
 import (
+	"onij/infra/mysql"
 	"onij/model/api"
 	"onij/util"
+	"onij/util/boost/collection/collext"
 )
 
 type UploadArtistParam struct {
@@ -26,5 +28,36 @@ func (r *UploadArtistResult) Resp() *api.UploadArtistResp {
 		Code:     util.BaseCodeOK,
 		Message:  util.BaseMsgOK,
 		ArtistId: r.ArtistId,
+	}
+}
+
+type SearchArtistParam struct {
+	Keyword string
+	Page    int32
+	Limit   int32
+}
+
+func NewSearchArtistParam(req *api.SearchArtistReq) *SearchArtistParam {
+	return &SearchArtistParam{
+		Keyword: req.Keyword,
+		Page:    req.Page,
+		Limit:   req.Limit,
+	}
+}
+
+type SearchArtistResult struct {
+	Artists []*mysql.Artist
+	Total   int64
+}
+func (r *SearchArtistResult) Resp() *api.SearchArtistResp {
+	return &api.SearchArtistResp{
+		Code:    util.BaseCodeOK,
+		Message: util.BaseMsgOK,
+		Artists: collext.Pick(r.Artists, func(at *mysql.Artist) *api.ArtistProfile {
+			return &api.ArtistProfile{
+				Id: at.Id,
+				Name: at.Name,
+			}
+		}),
 	}
 }
