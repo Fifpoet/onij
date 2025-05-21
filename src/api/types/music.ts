@@ -41,23 +41,54 @@ export interface GetMusicDetailResp {
     detail: MusicDetail;
 }
 
+// 添加上传音乐的接口定义
+
+/* 请求参数类型 */
+export interface UploadMusicReq {
+  // 基础信息
+  name: string;
+  artist_ids: number[];
+  mp3_file_id: number;
+  lyrics_file_id: number;
+
+  // 表单信息
+  composer_id?: number;
+  writer_id?: number;
+  album_id?: number;
+  mv_url?: string;
+  root_music_id?: number;
+  issue_time?: number;
+
+  // 更新
+  music_id?: number;
+}
+
+/* 响应数据类型 */
+export interface UploadMusicResp {
+  code: number;
+  message: string;
+  music_id: number;
+}
+
+// 更新 MusicDetail 接口，添加缺少的字段
 export interface MusicDetail {
-    id: number;
-    name: string;
-    artist_ids: number[];
-    artist_names: string[];
-    composer_id: number;
-    composer_name: string;
-    writer_id: number;
-    writer_name: string;
-    issue_time: number; // 假设是时间戳
-    mv_url: string;
+  id: number;
+  name: string;
+  artist_ids: number[];
+  artist_names: string[];
+  composer_id: number;
+  composer_name: string;
+  writer_id: number;
+  writer_name: string;
+  issue_time: number;
+  mv_url: string;
 
-    mp3_file_url: string;
-    lyrics_file_url: string;
+  mp3_file_url: string;
+  lyrics_file_url: string;
 
-    album_id: number;
-    album_name: string;
+  album_id: number;
+  album_name: string;
+  album_cover_file_url: string; // 添加缺少的字段
 }
 
 export interface CurrentMusicState {

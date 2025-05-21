@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { AxiosRequestConfig } from 'axios'
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://127.0.0.1:8888/";
 
@@ -46,5 +46,26 @@ apiClient.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
+// GET 请求
+export const get = <T>(url: string, params?: any, config?: AxiosRequestConfig): Promise<T> => {
+    return apiClient.get(url, { params, ...config });
+};
+
+// POST 请求
+export const post = <T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
+    return apiClient.post(url, data, config);
+};
+
+// 上传文件专用 POST 请求
+export const uploadFile = <T>(url: string, formData: FormData, config?: AxiosRequestConfig): Promise<T> => {
+    const uploadConfig = {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+        ...config,
+    };
+    return apiClient.post(url, formData, uploadConfig);
+};
 
 export default apiClient;
