@@ -51,31 +51,10 @@
     </div>
 
     <!-- music列表 -->
-    <div v-if="showMusicList && !showSongDetail" @scroll="handleScroll"
-         class="music-list absolute bg-white shadow-lg rounded-lg p-4 w-[400px] bottom-[70px] left-0 max-h-[300px] overflow-y-auto">
-      <n-list hoverable clickable>
-        <div v-for="music in musicStore.musicList" :key="music?.id" class="mb-0.5 cursor-pointer"
-             @dblclick="playMusic(music?.id)">
-          <n-list-item>
-            <n-thing :title="music?.name" content-style="margin-top: 10px;">
-              <template #description>
-                <n-space size="small" style="margin-top: 2px">
-                  <n-tag :bordered="false" type="info" size="small">
-                    暑夜
-                  </n-tag>
-                  <n-tag :bordered="false" type="info" size="small">
-                    晚春
-                  </n-tag>
-                </n-space>
-              </template>
-              <template #header-extra>
-                {{music?.artist }}
-              </template>
-            </n-thing>
-          </n-list-item>
-        </div>
-      </n-list>
-    </div>
+    <MusicList 
+      v-if="showMusicList && !showSongDetail"
+      @play-music="playMusic"
+    />
 
     <!-- 歌曲详情展示 -->
     <div v-if="showSongDetail && currentMusicDetail" class="song-detail fixed bg-[#00000000] rounded-lg p-4 w-[400px]">
@@ -142,6 +121,7 @@
 <script lang="ts" setup>
 
 import {computed, onMounted, ref} from 'vue';
+import MusicList from './MusicList.vue';
 import { useMusicStore} from "@/store/music.ts";
 import type {SelectOption} from 'naive-ui'
 import {
