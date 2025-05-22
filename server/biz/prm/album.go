@@ -1,6 +1,7 @@
 package prm
 
 import (
+	"onij/biz/getter"
 	"onij/infra/mysql"
 	"onij/model/api"
 	"onij/util"
@@ -54,6 +55,8 @@ type GetAlbumDetailResult struct {
 	Musics   []*mysql.Music
 	CoverUrl string
 	Artist   *mysql.Artist
+	MusicArtistsMap map[int64][]*mysql.Artist
+	MusicTagsMap map[int64][]*mysql.Tag
 }
 
 func (r *GetAlbumDetailResult) Resp() *api.GetAlbumDetailResp {
@@ -70,8 +73,10 @@ func (r *GetAlbumDetailResult) Resp() *api.GetAlbumDetailResp {
 			MvUrl:        r.Album.MvUrl,
 			RelatedMusics: collext.Pick(r.Musics, func(music *mysql.Music) *api.MusicProfile {
 				return &api.MusicProfile{
-					Id:   music.Id,
-					Name: music.Name,
+					Id:             music.Id,
+					Name:           music.Name,
+					SingerProfiles: collext.Pick(r.MusicArtistsMap[music.Id], getter.ArtistToProfile),
+					Tags:           collext.Pick(r.MusicTagsMap[music.Id], getter.TagToDetail),
 				}
 			}),
 		},

@@ -56,6 +56,7 @@ func (r *SearchArtistResult) Resp() *api.SearchArtistResp {
 			return &api.ArtistProfile{
 				Id: at.Id,
 				Name: at.Name,
+				ArtistType: api.ArtistType(at.ArtistType),
 			}
 		}),
 	}

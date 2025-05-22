@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"onij/biz/biz"
+	"onij/biz/getter"
 	"onij/biz/prm"
 	"onij/infra"
 	"onij/infra/mysql"
@@ -38,7 +39,7 @@ func (l *musicLogic) Upload(ctx context.Context, param *prm.UploadMusicParam) (*
 		Id:           param.Id,
 		Name:         param.Name,
 		ArtistIds:    param.ArtistIds,
-		ArtistNames:  collext.Pick(artistNames, func(a *mysql.Artist) string { return a.Name }),
+		ArtistNames:  collext.Pick(artistNames, getter.ArtistName),
 		Mp3FileId:    param.Mp3FileId,
 		LyricsFileId: param.LyricsFileId,
 		ComposerId:   param.ComposerId,
@@ -75,9 +76,10 @@ func (l *musicLogic) GetDetail(ctx context.Context, param *prm.GetMusicDetailPar
 	if err != nil {
 		return nil, err
 	}
-	files, err := l.FileDal.GetByIds(append(collext.Pick(albums, func(a *mysql.Album) int64 {
-		return a.CoverFileId
-	}), []int64{music.Mp3FileId, music.LyricFileId}...)...)
+	files, err := l.FileDal.GetByIds(append(
+		collext.Pick(albums, getter.AlbumCoverFileId),
+		[]int64{music.Mp3FileId, music.LyricFileId}...)...,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -85,11 +87,11 @@ func (l *musicLogic) GetDetail(ctx context.Context, param *prm.GetMusicDetailPar
 	if err != nil {
 		return nil, err
 	}
-	fileMap := collext.Map(files, func(f *mysql.File) int64 { return f.Id })
+	fileMap := collext.Map(files, getter.FileId)
 	return &prm.GetMusicDetailResult{
 		Music:      music,
 		Tags:       tags,
-		ArtistMap:  collext.Map(artists, func(art *mysql.Artist) int64 { return art.Id }),
+		ArtistMap:  collext.Map(artists, getter.ArtistId),
 		ArtistIds:  util.StrList2Int64(music.ArtistIds),
 		ComposerId: music.ComposerId,
 		WriterId:   music.WriterId,
@@ -99,8 +101,10 @@ func (l *musicLogic) GetDetail(ctx context.Context, param *prm.GetMusicDetailPar
 }
 
 func (l *musicLogic) GetList(ctx context.Context, param *prm.GetMusicListParam) (*prm.GetMusicListResult, error) {
-	// 专辑范围内
+	var musics []*mysql.Music
+	var err error
 	if param.AlbumId != nil {
+		// 专辑范围内
 		album, err := l.AlbumDal.GetById(*param.AlbumId)
 		if err != nil {
 			return nil, err
@@ -109,31 +113,54 @@ func (l *musicLogic) GetList(ctx context.Context, param *prm.GetMusicListParam) 
 		if err != nil {
 			return nil, err
 		}
-		musics, err := l.MusicDal.GetByIds(collext.Pick(relatedAlbum, func(a *mysql.Album) int64 {
-			return a.MusicId
-		})...)
+		musics, err = l.MusicDal.GetByIds(collext.Pick(relatedAlbum, getter.AlbumMusicId)...)
 		if err != nil {
 			return nil, err
 		}
-		if param.Keyword != nil {
-			return &prm.GetMusicListResult{Musics: musics}, nil
-		}
-		return &prm.GetMusicListResult{
-			Musics: collext.Select(musics, func(m *mysql.Music) (*mysql.Music, bool) {
+		if param.Keyword != nil && len(*param.Keyword) > 0 {
+			musics = collext.Select(musics, func(m *mysql.Music) (*mysql.Music, bool) {
 				return m, strings.Contains(m.FullName, *param.Keyword)
-			}),
-		}, nil
+			})
+		}
+	} else {
+		// 不指定专辑
+		musics, err = l.MusicDal.SearchByArtistAndName(
+			exp.ValueOrZero(param.ArtistId), exp.ValueOrZero(param.Keyword),
+			util.Page{Page: param.Page, Limit: param.Limit},
+		)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	// 不指定专辑
-	musics, err := l.MusicDal.SearchByArtistAndName(
-		exp.ValueOrZero(param.ArtistId), exp.ValueOrZero(param.Keyword),
-		util.Page{Page: param.Page, Limit: param.Limit},
-	)
+	artGroup, tagGroup, err := l.getMusicArtistAndTags(musics...)
 	if err != nil {
 		return nil, err
 	}
 	return &prm.GetMusicListResult{
-		Musics: musics,
+		Musics:          musics,
+		MusicArtistsMap: artGroup,
+		MusicTagsMap:    tagGroup,
 	}, nil
+}
+
+func (l *musicLogic) getMusicArtistAndTags(musics ...*mysql.Music) (map[int64][]*mysql.Artist, map[int64][]*mysql.Tag, error) {
+	musicArtistsMap := collext.MapKV(musics, getter.MusicId, getter.MusicArtistIds)
+	artIds := collext.PickCombine(musics, getter.MusicArtistIds)
+	musIds := collext.Pick(musics, getter.MusicId)
+	arts, err := l.ArtistDal.GetByIds(artIds...)
+	if err != nil {
+		return nil, nil, err
+	}
+	artMap := collext.Map(arts, getter.ArtistId)
+	tags, err := l.TagDal.GetByResource(musIds...)
+	if err != nil {
+		return nil, nil, err
+	}
+	artGroup := make(map[int64][]*mysql.Artist)
+	for mId, artIds := range musicArtistsMap {
+		artGroup[mId] = collext.Pick(artIds, func(id int64) *mysql.Artist { return artMap[id] })
+	}
+	return collext.Group(arts, getter.ArtistId),
+		collext.Group(tags, getter.TagResourceId), nil
 }
