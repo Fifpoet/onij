@@ -81,9 +81,14 @@ func (l *musicLogic) GetDetail(ctx context.Context, param *prm.GetMusicDetailPar
 	if err != nil {
 		return nil, err
 	}
+	tags, err := l.TagDal.GetByResource(music.Id)
+	if err != nil {
+		return nil, err
+	}
 	fileMap := collext.Map(files, func(f *mysql.File) int64 { return f.Id })
 	return &prm.GetMusicDetailResult{
 		Music:      music,
+		Tags:       tags,
 		ArtistMap:  collext.Map(artists, func(art *mysql.Artist) int64 { return art.Id }),
 		ArtistIds:  util.StrList2Int64(music.ArtistIds),
 		ComposerId: music.ComposerId,

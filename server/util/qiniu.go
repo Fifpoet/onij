@@ -80,6 +80,9 @@ func UploadFile(ctx context.Context, info UploadInfo) (string, error) {
 }
 
 func DownloadFile(key string) string {
+	if len(key) == 0 {
+		return ""
+	}
 	deadline := time.Now().Add(time.Hour).Unix()
 
 	privateAccessURL := storage.MakePrivateURL(getQiniuMac(), dm, key, deadline)

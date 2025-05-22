@@ -5,6 +5,7 @@ package onij;
 option go_package = "api";
 
 import "api.proto";
+import "all_enum.proto";
 
 message MusicDetail {
   int64 id = 1;
@@ -21,9 +22,22 @@ message MusicDetail {
   string mp3_file_url = 21;
   string lyrics_file_url = 22;
 
-  int64 album_id = 30;
-  string album_name = 31;
-  string album_cover_file_url = 32;
+  // 专辑信息
+  AlbumProfile album_profile = 30;
+  // 标签信息
+  repeated TagDetail tag_details = 31;
+}
+
+message TagDetail {
+  int64 resource_id = 1;
+  int32 resource_type = 2;
+  TagBiz tag_biz = 3;
+  TagGroup tag_group = 4;
+  TagType tag_type = 5;
+  optional int64 target_id = 6;
+  optional int32 target_type = 7;
+  string extra = 8;
+  bool list_show = 9;
 }
 
 message AlbumDetail {
@@ -39,6 +53,12 @@ message AlbumDetail {
   repeated MusicProfile related_musics = 30;
 }
 
+message AlbumProfile {
+  int64 id = 1;
+  string name = 2;
+  string cover_file_url = 3;
+}
+
 message MusicProfile {
   int64 id = 1;
   string name = 2;
@@ -47,4 +67,5 @@ message MusicProfile {
 message ArtistProfile {
   int64 id = 1;
   string name = 2;
+  ArtistType artist_type = 3;
 }

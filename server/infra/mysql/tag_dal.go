@@ -1,13 +1,16 @@
 package mysql
 
 import (
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
+	"errors"
 	"log"
 	"time"
+
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type TagDal interface {
+	GetByResource(ids ...int64) ([]*Tag, error)
 	Save(tags ...*Tag) error
 	DelById(id int) error
 }
@@ -36,6 +39,17 @@ type Tag struct {
 	DeletedAt  time.Time `json:"deleted_at"`
 }
 
+func (t *tagDal) GetByResource(ids ...int64) ([]*Tag, error) {
+	var tags []*Tag
+	err := t.db.First(&tags, "id in ?", ids).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	} else if err != nil {
+		log.Printf("GetByResource, get tags error: %v \n", err)
+		return nil, err
+	}
+	return tags, nil
+}
 
 func (t *tagDal) Save(tags ...*Tag) error {
 	err := t.db.Clauses(clause.OnConflict{

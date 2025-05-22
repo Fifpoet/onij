@@ -61,6 +61,7 @@ func NewGetMusicDetailParam(req *api.GetMusicDetailReq) *GetMusicDetailParam {
 
 type GetMusicDetailResult struct {
 	Music      *mysql.Music
+	Tags []*mysql.Tag
 	ArtistMap  map[int64]*mysql.Artist
 	ArtistIds  []int64
 	ComposerId int64
@@ -74,25 +75,50 @@ func (p *GetMusicDetailResult) Resp() *api.GetMusicDetailResp {
 	if len(p.Albums) > 0 {
 		album = p.Albums[0]
 	}
+	var mp3Url, lyrUrl, abmUrl string
+	if p.FileMap[p.Music.Mp3FileId] != nil {
+		mp3Url = p.FileMap[p.Music.Mp3FileId].StoreKey
+	}
+	if p.FileMap[p.Music.LyricFileId] != nil {
+		lyrUrl = p.FileMap[p.Music.LyricFileId].StoreKey
+	}
+	if p.FileMap[album.CoverFileId] != nil {
+		abmUrl = p.FileMap[album.CoverFileId].StoreKey
+	}
 	return &api.GetMusicDetailResp{
 		Code:    util.BaseCodeOK,
 		Message: util.BaseMsgOK,
 		Detail: &api.MusicDetail{
-			Id:                p.Music.Id,
-			Name:              p.Music.Name,
-			ArtistIds:         collext.Pick(p.ArtistIds, func(id int64) int64 { return p.ArtistMap[id].Id }),
-			ArtistNames:       collext.Pick(p.ArtistIds, func(id int64) string { return p.ArtistMap[id].Name }),
-			ComposerId:        p.ComposerId,
-			ComposerName:      p.ArtistMap[p.ComposerId].Name,
-			WriterId:          p.WriterId,
-			WriterName:        p.ArtistMap[p.WriterId].Name,
-			IssueTime:         p.Music.IssueTime,
-			MvUrl:             p.Music.MvUrl,
-			Mp3FileUrl:        util.DownloadFile(p.FileMap[p.Music.Mp3FileId].StoreKey),
-			LyricsFileUrl:     util.DownloadFile(p.FileMap[p.Music.LyricFileId].StoreKey),
-			AlbumId:           album.Id,
-			AlbumName:         album.Name,
-			AlbumCoverFileUrl: util.DownloadFile(p.FileMap[album.CoverFileId].StoreKey),
+			Id:            p.Music.Id,
+			Name:          p.Music.Name,
+			ArtistIds:     collext.Pick(p.ArtistIds, func(id int64) int64 { return p.ArtistMap[id].Id }),
+			ArtistNames:   collext.Pick(p.ArtistIds, func(id int64) string { return p.ArtistMap[id].Name }),
+			ComposerId:    p.ComposerId,
+			ComposerName:  p.ArtistMap[p.ComposerId].Name,
+			WriterId:      p.WriterId,
+			WriterName:    p.ArtistMap[p.WriterId].Name,
+			IssueTime:     p.Music.IssueTime,
+			MvUrl:         p.Music.MvUrl,
+			Mp3FileUrl:    util.DownloadFile(mp3Url),
+			LyricsFileUrl: util.DownloadFile(lyrUrl),
+			AlbumProfile: &api.AlbumProfile{
+				Id:           album.Id,
+				Name:         album.Name,
+				CoverFileUrl: util.DownloadFile(abmUrl),
+			},
+			TagDetails: collext.Pick(p.Tags, func(tag *mysql.Tag)*api.TagDetail {
+				return &api.TagDetail{
+					ResourceId:   tag.ResourceId,
+					ResourceType: tag.ResourceType,
+					TagBiz:       api.TagBiz(tag.TagBiz),
+					TagGroup:     api.TagGroup(tag.TagGroup),
+					TagType:      api.TagType(tag.TagType),
+					TargetId:     &tag.TargetId,
+					TargetType:   &tag.TargetType,
+					Extra:        tag.Extra,
+					ListShow:     tag.ListShow,
+				}
+			}),
 		},
 	}
 }

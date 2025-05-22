@@ -4,6 +4,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 
 	"onij/biz/prm"
 	api "onij/model/api"
@@ -36,5 +37,8 @@ func UploadTag(ctx context.Context, c *app.RequestContext) {
 }
 
 func checkUploadTagReq(req *api.UploadTagReq) error {
+	if req.TagDetail == nil {
+		return errors.New("tag detail is nil")
+	}
 	return nil
 }
