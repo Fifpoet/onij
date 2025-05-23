@@ -1,4 +1,5 @@
 // src/api/types/tag.ts
+import { NList, NListItem, NThing, NSpace, NTag, NSelect, NIcon, SelectGroupOption } from 'naive-ui';
 
 export enum TagBiz {
   TB_Unknown = 0,
@@ -32,6 +33,60 @@ export interface TagDetail {
   extra: string;
   list_show: boolean;
 }
+
+// select tag
+export const tagOpts: SelectGroupOption[] = [
+  {
+    type: 'group',
+    label: '主题',
+    key: 'theme',
+    children: [{
+      label: "第三者",
+      value: "11111",
+      type: 'success'
+    }]
+  },
+  {
+    type: 'group',
+    label: '风格',
+    key: 'style',
+    children: [{
+      label: "hhh",
+      value: "11111",
+      type: 'success'
+    }]
+  },
+  {
+    type: 'group',
+    label: '情感',
+    key: 'emotion',
+    children: [{
+      label: "痛",
+      value: "11111",
+      type: 'success'
+    }]
+  },
+  {
+    type: 'group',
+    label: 'highlight',
+    key: 'highlight',
+    children: [{
+      label: "神级live",
+      value: "11111",
+      type: 'success'
+    }]
+  },
+  {
+    type: 'group',
+    label: '合集',
+    key: 'collection',
+    children: [{
+      label: "垃圾三部曲",
+      value: "11111",
+      type: 'success'
+    }]
+  }
+]
 
 export interface UploadTagReq {
   tag_detail: TagDetail;

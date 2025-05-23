@@ -9,10 +9,10 @@ import {
 
 // 上传艺术家
 export const UploadArtist = async (params: UploadArtistReq): Promise<UploadArtistResp> => {
-  return post<UploadArtistResp>('/artist/upload', params);
+  return (await post<UploadArtistResp>('/artist/upload', params)).data;
 };
 
 // 搜索艺人
 export const SearchArtist = async (params: SearchArtistReq): Promise<SearchArtistResp> => {
-  return post<SearchArtistResp>('/artist/search', params);
+  return (await post<SearchArtistResp>('/artist/search', params)).data;
 };

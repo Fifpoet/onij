@@ -1,19 +1,14 @@
 <template>
   <div @scroll="handleScroll"
-       class="music-list absolute bg-white shadow-lg rounded-lg p-4 w-[400px] bottom-[70px] left-0 max-h-[300px] overflow-y-auto">
-       <!-- 新增选择器 -->
-  <div class="mt-4">
-      <n-select
-      multiple
-        v-model:value="selectedMusic"
-        :options="selectOptions"
-        :render-label="renderLabel"
-        placeholder="选择标签"
-      />
+    class="music-list absolute bg-white shadow-lg rounded-lg p-4 w-[400px] bottom-[70px] left-0 max-h-[300px] overflow-y-auto">
+    <!-- 新增选择器 -->
+    <div class="mt-4">
+      <n-select multiple v-model:value="selectedTag" :options="tagOptions" :render-label="renderLabel"
+        placeholder="选择标签" />
     </div>
     <n-list hoverable clickable>
       <div v-for="music in musicStore.musicList" :key="music?.id" class="mb-0.5 cursor-pointer"
-           @dblclick="playMusic(music?.id)">
+        @dblclick="playMusic(music?.id)">
         <n-list-item>
           <n-thing :title="music?.name" content-style="margin-top: 1px;">
             <template #description>
@@ -27,23 +22,23 @@
               </n-space>
             </template>
             <template #header-extra>
-              {{music?.artist }}
+              {{ music?.artist }}
             </template>
           </n-thing>
         </n-list-item>
       </div>
     </n-list>
-    
+
   </div>
-  
+
 </template>
 
 <script lang="ts" setup>
-import { ref, h ,onMounted} from 'vue';
-import { NList, NListItem, NThing, NSpace, NTag, NSelect, NIcon } from 'naive-ui';
+import { ref, h, onMounted } from 'vue';
+import { NList, NListItem, NThing, NSpace, NTag, NSelect, NIcon, SelectGroupOption } from 'naive-ui';
 import { useMusicStore } from "@/store/music.ts";
 import { GetMusicDetail, GetMusicList, SearchArtist } from '@/api';
-import { MusicSortType, TagType } from '@/api/types';
+import { MusicSortType, tagOpts, TagType } from '@/api/types';
 import { MusicalNote as MusicIcon } from '@vicons/ionicons5';
 import type { SelectOption } from 'naive-ui';
 
@@ -95,37 +90,9 @@ const fetchMusicList = async () => {
 };
 
 // 新增选择器相关代码
-const selectedMusic = ref(null);
+const selectedTag = ref(null);
 
-const selectOptions = [
-  {
-    type: 'group',
-    label: '艺术家',
-    key: 'artist',
-    children: [
-      {
-        label: '晴天',
-        value: 'sunny',
-        type: 'success'
-      }
-    ]
-  },
-  {
-    type: 'group',
-    label: '情感',
-    key: 'folk',
-    children: [
-      {
-        label: '南山南',
-        value: 'nanshan',
-      },
-      {
-        label: '斑马斑马',
-        value: 'zebra',
-      }
-    ]
-  }
-];
+const tagOptions = ref<SelectGroupOption[]>([])
 
 const renderLabel = (option: SelectOption) => {
   if (option.type === 'group') {
@@ -158,15 +125,24 @@ onMounted(async () => {
       limit: 50
     });
     if (response?.artists) {
-      // 更新艺术家选项
-      selectOptions[0].children = response.artists.map(artist => ({
-        label: artist.name,
-        value: String(artist.id),
-        type: 'success'
-      }));
+      // 艺术家tag
+      tagOptions.value.push({
+        type: 'group',
+        label: '艺术家',
+        key: 'artist',
+        children: response.artists.map(artist => ({
+          label: artist.name,
+          value: String(artist.id),
+          type: 'success'
+        }))
+      });
+    console.log(tagOptions.value)
     }
   } catch (error) {
     console.error("加载艺术家列表失败:", error);
   }
+
+  // 固定tag
+  tagOptions.value.push(...tagOpts)
 });
 </script>

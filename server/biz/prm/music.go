@@ -110,7 +110,7 @@ func (p *GetMusicDetailResult) Resp() *api.GetMusicDetailResp {
 			TagDetails: collext.Pick(p.Tags, func(tag *mysql.Tag)*api.TagDetail {
 				return &api.TagDetail{
 					ResourceId:   tag.ResourceId,
-					ResourceType: tag.ResourceType,
+					ResourceType: api.ResourceType(tag.ResourceType),
 					TagBiz:       api.TagBiz(tag.TagBiz),
 					TagGroup:     api.TagGroup(tag.TagGroup),
 					TagType:      api.TagType(tag.TagType),

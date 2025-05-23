@@ -181,21 +181,6 @@ const toggleMute = () => {
   }
 };
 
-const fetching = ref(false); // 防止重复请求
-
-const handleScroll = (event: Event) => {
-  const target = event.target as HTMLElement;
-  // 检查是否滚动到底部
-  if (target.scrollHeight - target.scrollTop <= target.clientHeight + 10) {
-    if (!fetching.value && musicStore.musicListContinue) {
-      fetching.value = true; // 设置为正在加载状态
-      fetchMusicList().finally(() => {
-        fetching.value = false; // 重置加载状态
-      });
-    }
-  }
-};
-
 const fetchMusicList = async () => {
   try {
     const response = await GetMusicList({

@@ -37,7 +37,7 @@ type Tag struct {
 	Extra      string    `json:"extra"`
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
-	DeletedAt  time.Time `json:"deleted_at"`
+	DeletedAt  gorm.DeletedAt `json:"deleted_at"`
 }
 
 func (t *tagDal) GetByGroupType(tagGroup, tagType *int32) ([]*Tag, error) {

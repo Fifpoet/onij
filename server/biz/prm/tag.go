@@ -20,7 +20,7 @@ type UploadTagParam struct {
 func NewUploadTagParam(req *api.UploadTagReq) *UploadTagParam {
 	return &UploadTagParam{
 		ResourceId:   req.TagDetail.ResourceId,
-		ResourceType: req.TagDetail.ResourceType,
+		ResourceType: int32(req.TagDetail.ResourceType),
 		TagBiz:       int32(req.TagDetail.TagBiz),
 		TagGroup:     int32(req.TagDetail.TagGroup),
 		TagType:      int32(req.TagDetail.TagType),

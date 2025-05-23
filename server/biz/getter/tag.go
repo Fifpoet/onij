@@ -9,7 +9,7 @@ func TagResourceId(t *mysql.Tag) int64 { return t.ResourceId }
 func TagToDetail(t *mysql.Tag) *api.TagDetail {
 	return &api.TagDetail{
 		ResourceId:   t.ResourceId,
-		ResourceType: t.ResourceType,
+		ResourceType: api.ResourceType(t.ResourceType),
 		TagBiz:       api.TagBiz(t.TagBiz),
 		TagGroup:     api.TagGroup(t.TagGroup),
 		TagType:      api.TagType(t.TagType),

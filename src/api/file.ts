@@ -16,5 +16,5 @@ export const UploadFile = async (params: UploadFileReq): Promise<UploadFileResp>
   
   formData.append('file', params.file);
   
-  return post<UploadFileResp>('/file/upload', formData);
+  return (await post<UploadFileResp>('/file/upload', formData)).data;
 };

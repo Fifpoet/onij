@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig } from 'axios'
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://127.0.0.1:8888/";
 
@@ -53,7 +53,7 @@ export const get = <T>(url: string, params?: any, config?: AxiosRequestConfig): 
 };
 
 // POST 请求
-export const post = <T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
+export const post = <T = any, R = AxiosResponse<T>, _D = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<R> => {
     return apiClient.post(url, data, config);
 };
 
