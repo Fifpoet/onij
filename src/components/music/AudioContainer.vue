@@ -138,7 +138,7 @@ import {
   NUpload,
   useMessage
 } from "naive-ui"
-import {languageOptions, performTypeOptions} from "@/util/enum.ts";
+import {performTypeOptions} from "@/util/enum.ts";
 import {GetMusicDetail, GetMusicList} from '@/api';
 import {GetMusicListReq, MusicSortType, MusicDetail} from '@/api/types';
 import { formatTime } from '@/util/time';

@@ -20,3 +20,23 @@ export interface UploadArtistResp {
   message: string;
   artist_id: number;
 }
+
+/* 搜索艺人请求参数 */
+export interface SearchArtistReq {
+  keyword: string;
+  tag_group?: number;
+  tag_type?: number;
+  page: number;
+  limit: number;
+}
+
+/* 搜索艺人响应数据 */
+export interface SearchArtistResp {
+  code: number;
+  message: string;
+  artists: Array<{
+    id: number;
+    name: string;
+    artist_type: ArtistType;
+  }>;
+}

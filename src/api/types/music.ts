@@ -86,10 +86,48 @@ export interface MusicDetail {
   mp3_file_url: string;
   lyrics_file_url: string;
 
-  album_id: number;
-  album_name: string;
-  album_cover_file_url: string; // 添加缺少的字段
+  // 更新专辑信息结构
+  album_profile: {
+    id: number;
+    name: string;
+    cover_file_url: string;
+  };
+  // 添加标签信息
+  tag_details: Array<{
+    resource_id: number;
+    resource_type: number;
+    tag_biz: number;
+    tag_group: number;
+    tag_type: number;
+    target_id?: number;
+    target_type?: number;
+    extra: string;
+    list_show: boolean;
+  }>;
 }
+
+export interface MusicProfile {
+  id: number;
+  name: string;
+  singer_profiles: Array<{
+    id: number;
+    name: string;
+    artist_type: number;
+  }>;
+  tags: Array<{
+    resource_id: number;
+    resource_type: number;
+    tag_biz: number;
+    tag_group: number;
+    tag_type: number;
+    target_id?: number;
+    target_type?: number;
+    extra: string;
+    list_show: boolean;
+  }>;
+}
+
+// ********* 自定model
 
 export interface CurrentMusicState {
     detail: MusicDetail | null;

@@ -42,8 +42,8 @@
 import { ref, h ,onMounted} from 'vue';
 import { NList, NListItem, NThing, NSpace, NTag, NSelect, NIcon } from 'naive-ui';
 import { useMusicStore } from "@/store/music.ts";
-import { GetMusicDetail, GetMusicList } from '@/api';
-import { MusicSortType } from '@/api/types';
+import { GetMusicDetail, GetMusicList, SearchArtist } from '@/api';
+import { MusicSortType, TagType } from '@/api/types';
 import { MusicalNote as MusicIcon } from '@vicons/ionicons5';
 import type { SelectOption } from 'naive-ui';
 
@@ -150,6 +150,23 @@ const renderLabel = (option: SelectOption) => {
 
 onMounted(async () => {
   // 获取标签
-  
+  try {
+    const response = await SearchArtist({
+      keyword: '',
+      tag_type: TagType.TT_Star,
+      page: 1,
+      limit: 50
+    });
+    if (response?.artists) {
+      // 更新艺术家选项
+      selectOptions[0].children = response.artists.map(artist => ({
+        label: artist.name,
+        value: String(artist.id),
+        type: 'success'
+      }));
+    }
+  } catch (error) {
+    console.error("加载艺术家列表失败:", error);
+  }
 });
 </script>
