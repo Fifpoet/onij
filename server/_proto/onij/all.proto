@@ -113,6 +113,8 @@ message GetMusicListResp {
 
 message SearchArtistReq {
   string keyword = 1;
+  optional TagGroup tag_group = 2;
+  optional TagType tag_type = 3;
   int32 page = 10;
   int32 limit = 11;
 }

@@ -40,11 +40,13 @@ enum TagBiz {
 
 enum TagGroup {
   TG_Unknown = 0;
-  TG_MusicTheme = 1;
-  TG_MusicStyle = 2;
-  TG_MusicEmotion = 3;
-  TG_MusicHighlight = 4;
-  TG_MusicCollection = 5;
+  TG_MusicTheme = 101;
+  TG_MusicStyle = 102;
+  TG_MusicEmotion = 103;
+  TG_MusicHighlight = 104;
+  TG_MusicCollection = 105;
+
+  TG_ArtistStar = 120;
 }
 
 enum TagType {
@@ -59,4 +61,14 @@ enum TagType {
   TT_NcBridge = 10401;
 
   // 10501
+
+  // 12001
+  TT_Star = 12001;
+}
+
+enum ResourceType {
+  RT_Unknown = 0;
+  RT_Artist = 1;
+  RT_Music = 2;
+  RT_Album = 3;
 }

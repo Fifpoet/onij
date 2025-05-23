@@ -5,7 +5,9 @@ import (
 	"onij/biz/prm"
 	"onij/infra"
 	"onij/infra/mysql"
+	"onij/model/api"
 	"onij/util"
+	"onij/util/boost/collection/collext"
 )
 
 type ArtistLogic interface {
@@ -24,9 +26,26 @@ func NewArtistLogic(i *infra.AllInfra) ArtistLogic {
 }
 
 func (l *artistLogic) Search(ctx context.Context, param *prm.SearchArtistParam) (*prm.SearchArtistResult, error) {
-	arts, err := l.ArtistDal.GetLikeNameAndType(param.Keyword, nil)
-	if err != nil {
-		return nil, err
+	var arts []*mysql.Artist
+	var err error
+	if param.TagType != nil || param.TagGroup != nil {
+		var tags []*mysql.Tag
+		tags, err = l.TagDal.GetByGroupType(param.TagGroup, param.TagType)
+		if err != nil {
+			return nil, err
+		}
+		artistIds := collext.Select(tags, func(tag *mysql.Tag) (int64, bool) {
+			return tag.ResourceId, tag.ResourceType == int32(api.ResourceType_RT_Artist)
+		})
+		arts, err = l.ArtistDal.GetByIds(artistIds...)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		arts, err = l.ArtistDal.GetLikeNameAndType(param.Keyword, nil)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return &prm.SearchArtistResult{
 		Artists: arts,

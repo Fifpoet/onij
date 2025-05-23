@@ -33,15 +33,19 @@ func (r *UploadArtistResult) Resp() *api.UploadArtistResp {
 
 type SearchArtistParam struct {
 	Keyword string
+	TagGroup *int32
+	TagType *int32
 	Page    int32
 	Limit   int32
 }
 
 func NewSearchArtistParam(req *api.SearchArtistReq) *SearchArtistParam {
 	return &SearchArtistParam{
-		Keyword: req.Keyword,
-		Page:    req.Page,
-		Limit:   req.Limit,
+		Keyword:  req.Keyword,
+		TagGroup: (*int32)(req.TagGroup),
+		TagType:  (*int32)(req.TagType),
+		Page:     req.Page,
+		Limit:    req.Limit,
 	}
 }
 

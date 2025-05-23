@@ -1,6 +1,16 @@
 <template>
   <div @scroll="handleScroll"
        class="music-list absolute bg-white shadow-lg rounded-lg p-4 w-[400px] bottom-[70px] left-0 max-h-[300px] overflow-y-auto">
+       <!-- 新增选择器 -->
+  <div class="mt-4">
+      <n-select
+      multiple
+        v-model:value="selectedMusic"
+        :options="selectOptions"
+        :render-label="renderLabel"
+        placeholder="选择标签"
+      />
+    </div>
     <n-list hoverable clickable>
       <div v-for="music in musicStore.musicList" :key="music?.id" class="mb-0.5 cursor-pointer"
            @dblclick="playMusic(music?.id)">
@@ -24,20 +34,12 @@
       </div>
     </n-list>
     
-    <!-- 新增选择器 -->
-    <div class="mt-4">
-      <n-select
-        v-model:value="selectedMusic"
-        :options="selectOptions"
-        :render-label="renderLabel"
-        placeholder="选择音乐"
-      />
-    </div>
   </div>
+  
 </template>
 
 <script lang="ts" setup>
-import { ref, h } from 'vue';
+import { ref, h ,onMounted} from 'vue';
 import { NList, NListItem, NThing, NSpace, NTag, NSelect, NIcon } from 'naive-ui';
 import { useMusicStore } from "@/store/music.ts";
 import { GetMusicDetail, GetMusicList } from '@/api';
@@ -98,26 +100,19 @@ const selectedMusic = ref(null);
 const selectOptions = [
   {
     type: 'group',
-    label: '流行音乐',
-    key: 'pop',
+    label: '艺术家',
+    key: 'artist',
     children: [
       {
         label: '晴天',
         value: 'sunny',
-      },
-      {
-        label: '告白气球',
-        value: 'balloon',
-      },
-      {
-        label: '稻香',
-        value: 'rice',
+        type: 'success'
       }
     ]
   },
   {
     type: 'group',
-    label: '民谣',
+    label: '情感',
     key: 'folk',
     children: [
       {
@@ -152,4 +147,9 @@ const renderLabel = (option: SelectOption) => {
     option.label as string
   ];
 };
+
+onMounted(async () => {
+  // 获取标签
+  
+});
 </script>

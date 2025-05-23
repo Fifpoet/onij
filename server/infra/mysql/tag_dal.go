@@ -11,6 +11,7 @@ import (
 
 type TagDal interface {
 	GetByResource(ids ...int64) ([]*Tag, error)
+	GetByGroupType(tagGroup, tagType *int32) ([]*Tag, error)
 	Save(tags ...*Tag) error
 	DelById(id int) error
 }
@@ -37,6 +38,28 @@ type Tag struct {
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
 	DeletedAt  time.Time `json:"deleted_at"`
+}
+
+func (t *tagDal) GetByGroupType(tagGroup, tagType *int32) ([]*Tag, error) {
+	var tags []*Tag
+	if tagGroup == nil && tagType == nil {
+		return nil, nil
+	}
+	tx := t.db
+	if tagGroup != nil {
+		tx = tx.Where("tag_group =?", tagGroup)
+	}
+	if tagType != nil {
+		tx = tx.Where("tag_type =?", tagType)
+	}
+	err := tx.Find(&tags).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	} else if err!= nil {
+		log.Printf("GetByGroupType, get tags error: %v \n", err)
+		return nil, err
+	}
+	return tags, nil
 }
 
 func (t *tagDal) GetByResource(ids ...int64) ([]*Tag, error) {

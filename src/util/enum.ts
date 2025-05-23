@@ -8,15 +8,3 @@ export const performTypeOptions = [
         value: 2
     }
 ]
-
-export const languageOptions = [
-    {
-        label: '国语',
-        value: 1
-    },
-    {
-        label: '粤语',
-        value: 2
-    }
-]
-
