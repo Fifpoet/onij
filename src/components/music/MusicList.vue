@@ -4,7 +4,7 @@
     <!-- 新增选择器 -->
     <div class="mt-4">
       <n-select multiple v-model:value="selectedTag" :options="tagOptions" :render-label="renderLabel" tag filterable
-        placeholder="选择标签" />
+        @blur="handleTagSearch" placeholder="选择标签" />
     </div>
     <n-list hoverable clickable>
       <div v-for="music in musicStore.musicList" :key="music?.id" class="mb-0.5 cursor-pointer"
@@ -38,7 +38,7 @@ import { ref, h, onMounted } from 'vue';
 import { NList, NListItem, NThing, NSpace, NTag, NSelect, NIcon, SelectGroupOption } from 'naive-ui';
 import { useMusicStore } from "@/store/music.ts";
 import { GetMusicDetail, GetMusicList, SearchArtist } from '@/api';
-import { MusicSortType, tagOpts, TagType } from '@/api/types';
+import { MusicSortType, tagOpts, TagType, SelectTagExtra } from '@/api/types';
 import { MusicalNote as MusicIcon } from '@vicons/ionicons5';
 import type { SelectOption } from 'naive-ui';
 
@@ -115,6 +115,11 @@ const renderLabel = (option: SelectOption) => {
   ];
 };
 
+const handleTagSearch = () => {
+  console.log(selectedTag.value);
+  
+}
+
 onMounted(async () => {
   // 获取标签
   try {
@@ -132,11 +137,10 @@ onMounted(async () => {
         key: 'artist',
         children: response.artists.map(artist => ({
           label: artist.name,
-          value: String(artist.id),
+          value: JSON.stringify({ id: artist.id, artist_type: artist.artist_type }),
           type: 'success'
         }))
       });
-    console.log(tagOptions.value)
     }
   } catch (error) {
     console.error("加载艺术家列表失败:", error);

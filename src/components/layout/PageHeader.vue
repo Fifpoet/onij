@@ -89,7 +89,7 @@ const options = {
       <div class="h-full flex items-center justify-between px-9">
         <!-- 左上角标题 -->
         <RouterLink to="/" class="text-xl font-bold">
-          哭哭
+          onij
         </RouterLink>
         <!-- 右上角菜单 -->
         <div class="flex items-center justify-end space-x-4">

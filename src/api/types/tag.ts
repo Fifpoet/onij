@@ -34,6 +34,13 @@ export interface TagDetail {
   list_show: boolean;
 }
 
+// 选择tag的value值结构, 用于区分不同tag类型
+export interface SelectTagExtra {
+  artist_id?: number;
+  artist_type?: number;
+  tag_type?: number;
+}
+
 // select tag
 export const tagOpts: SelectGroupOption[] = [
   {
@@ -42,7 +49,7 @@ export const tagOpts: SelectGroupOption[] = [
     key: 'theme',
     children: [{
       label: "第三者",
-      value: "124325",
+      value: JSON.stringify({tag_type: "124325"}),
       type: 'success'
     }]
   },
@@ -52,7 +59,7 @@ export const tagOpts: SelectGroupOption[] = [
     key: 'style',
     children: [{
       label: "hhh",
-      value: "3515462",
+      value: JSON.stringify({tag_type: "124331425"}),
       type: 'success'
     }]
   },
@@ -62,7 +69,7 @@ export const tagOpts: SelectGroupOption[] = [
     key: 'emotion',
     children: [{
       label: "痛",
-      value: "35135326",
+      value: JSON.stringify({tag_type: "1332452"}),
       type: 'success'
     }]
   },
@@ -72,7 +79,7 @@ export const tagOpts: SelectGroupOption[] = [
     key: 'highlight',
     children: [{
       label: "神级live",
-      value: "1343112",
+      value: JSON.stringify({tag_type: "24531"}),
       type: 'success'
     }]
   },
@@ -82,7 +89,7 @@ export const tagOpts: SelectGroupOption[] = [
     key: 'collection',
     children: [{
       label: "垃圾三部曲",
-      value: "4523135",
+      value: JSON.stringify({tag_type: "1351341"}),
       type: 'success'
     }]
   }
