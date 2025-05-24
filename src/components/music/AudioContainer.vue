@@ -181,24 +181,6 @@ const toggleMute = () => {
   }
 };
 
-const fetchMusicList = async () => {
-  try {
-    const response = await GetMusicList({
-      sort_type: MusicSortType.MST_Created_At_Desc,
-      page: musicStore.musicListPage,
-      limit: 20
-    });
-    if (response?.musics) {
-      musicStore.append(response.musics);
-      musicStore.incrPage()
-    } else {
-      musicStore.stopPage()
-    }
-  } catch (error) {
-    console.error("加载音乐列表失败:", error);
-  }
-};
-
 // *************************************************** 音乐播放逻辑 *************************************************** //
 const audioContainer = ref<HTMLDivElement | null>(null);
 const audio = ref<HTMLAudioElement | null>(null); // 用于音频控制的全局 Audio 实例
@@ -390,9 +372,6 @@ const drag = (e: MouseEvent) => {
 
 
 onMounted(async () => {
-  if (musicStore.musicListContinue) {
-    fetchMusicList()
-  }
   
 });
 

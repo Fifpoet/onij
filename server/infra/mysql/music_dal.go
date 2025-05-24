@@ -3,11 +3,13 @@ package mysql
 import (
 	"errors"
 	"fmt"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 	"log"
 	"onij/util"
+	"strings"
 	"time"
+
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type MusicDal interface {
@@ -17,7 +19,7 @@ type MusicDal interface {
 	Upsert(music *Music, toUpdate map[string]any) error
 	DelById(id int) (*Music, error)
 	GetByFullName(name string) ([]*Music, error)
-	SearchByArtistAndName(artistId int64, name string, pageInfo util.Page) ([]*Music, error)
+	SearchByArtistAndNameAndTag(artistIds, writerIds, composeIds []int64, tagTypes []int32, name string, pageInfo util.Page) ([]*Music, error)
 	GetByTitleArtistPerType(title string, artistId, performType, page, size int) ([]*Music, error)
 }
 
@@ -110,22 +112,47 @@ func (m *musicDal) GetByFullName(name string) ([]*Music, error) {
 	return musics, nil
 }
 
-func (m *musicDal) SearchByArtistAndName(artistId int64, name string, pageInfo util.Page) ([]*Music, error) {
+func (m *musicDal) SearchByArtistAndNameAndTag(artistIds, writerIds, composeIds []int64, tagTypes []int32, name string, pageInfo util.Page) ([]*Music, error) {
 	var musics []*Music
-	artistIdStr := fmt.Sprintf("%d", artistId)
 	db := m.db
-	if artistId > 0 {
-		db = db.Where("artist_ids LIKE ?", "%"+artistIdStr+"%")
+
+	// 处理artist_ids LIKE条件（满足一个即可）
+	if len(artistIds) > 0 {
+		var orConditions []string
+		for _, id := range artistIds {
+			orConditions = append(orConditions, fmt.Sprintf("artist_ids LIKE '%%%d%%'", id))
+		}
+		db = db.Where(strings.Join(orConditions, " OR "))
 	}
+
+	// 处理writer_id IN条件
+	if len(writerIds) > 0 {
+		db = db.Where("writer_id IN ?", writerIds)
+	}
+
+	// 处理composer_id IN条件
+	if len(composeIds) > 0 {
+		db = db.Where("composer_id IN ?", composeIds)
+	}
+
+	// 处理tag_type条件（需要连表查询）
+	if len(tagTypes) > 0 {
+		db = db.Joins("JOIN tag ON tag.resource_id = music.id AND tag.resource_type = ?", "music").
+			Where("tag.tag_type IN ?", tagTypes)
+	}
+
+	// 处理name条件
 	if name != "" {
 		db = db.Where("full_name LIKE ?", "%"+name+"%")
 	}
+
 	err := db.
 		Offset(pageInfo.OffsetNum()).
 		Limit(pageInfo.LimitNum()).
 		Find(&musics).Error
+
 	if err != nil {
-		log.Printf("SearchByArtistAndName, get music error: %v \n", err)
+		log.Printf("SearchByArtistAndNameAndTag, get music error: %v \n", err)
 		return nil, err
 	}
 	return musics, nil

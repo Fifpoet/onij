@@ -128,19 +128,25 @@ type GetMusicListParam struct {
 	SortType api.MusicSortType
 	Keyword  *string
 	AlbumId  *int64
-	ArtistId *int64
+	ArtistIds []int64
+	WriterIds []int64
+	ComposerIds []int64
+	TagTypes []int32
 	Page     int32
 	Limit    int32
 }
 
 func NewGetMusicListParam(req *api.GetMusicListReq) *GetMusicListParam {
 	return &GetMusicListParam{
-		SortType: req.SortType,
-		Keyword:  req.Keyword,
-		AlbumId:  req.AlbumId,
-		ArtistId: req.ArtistId,
-		Page:     req.Page,
-		Limit:    req.Limit,
+		SortType:    req.SortType,
+		Keyword:     req.Keyword,
+		AlbumId:     req.AlbumId,
+		ArtistIds:   req.ArtistIds,
+		WriterIds:   req.WriterIds,
+		ComposerIds: req.ComposerIds,
+		TagTypes:     collext.Pick(req.TagTypes, func(tt api.TagType) int32{return int32(tt)}),
+		Page:        req.Page,
+		Limit:       req.Limit,
 	}
 }
 

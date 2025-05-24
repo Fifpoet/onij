@@ -124,9 +124,9 @@ func (l *musicLogic) GetList(ctx context.Context, param *prm.GetMusicListParam) 
 		}
 	} else {
 		// 不指定专辑
-		musics, err = l.MusicDal.SearchByArtistAndName(
-			exp.ValueOrZero(param.ArtistId), exp.ValueOrZero(param.Keyword),
-			util.Page{Page: param.Page, Limit: param.Limit},
+		musics, err = l.MusicDal.SearchByArtistAndNameAndTag(
+			param.ArtistIds, param.ComposerIds, param.WriterIds, param.TagTypes, 
+			exp.ValueOrZero(param.Keyword), util.Page{Page: param.Page, Limit: param.Limit},
 		)
 		if err != nil {
 			return nil, err

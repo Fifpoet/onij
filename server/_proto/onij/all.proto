@@ -99,7 +99,10 @@ message GetMusicListReq {
   MusicSortType sort_type = 1;
   optional string keyword = 2;
   optional int64 album_id = 3;
-  optional int64 artist_id = 4;
+  repeated int64 artist_ids = 4;
+  repeated int64 writer_ids = 5;
+  repeated int64 composer_ids = 6;
+  repeated TagType tag_types = 7;
 
   int32 page = 10;
   int32 limit = 11;

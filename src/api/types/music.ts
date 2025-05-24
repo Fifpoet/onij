@@ -1,11 +1,16 @@
 // src/api/types/music.ts
 
+import { TagType } from "./tag";
+
 /* 请求参数类型 */
 export interface GetMusicListReq {
     sort_type?: MusicSortType;
     keyword?: string;
     album_id?: number;
-    artist_id?: number;
+    artist_ids?: number[];
+    writer_ids?: number[];
+    composer_ids?: number[];
+    tag_types?: TagType[];
     page: number;
     limit: number;
 }
