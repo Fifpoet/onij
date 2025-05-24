@@ -1,9 +1,9 @@
 <template>
   <div @scroll="handleScroll"
-    class="music-list absolute bg-white shadow-lg rounded-lg p-4 w-[400px] bottom-[70px] left-0 max-h-[300px] overflow-y-auto">
+    class="music-list absolute bg-white shadow-lg rounded-lg p-4 w-[400px] bottom-[70px] left-0 max-h-[300px] overflow-y-auto text-sm">
     <!-- 新增选择器 -->
     <div class="mt-4">
-      <n-select multiple v-model:value="selectedTag" :options="tagOptions" :render-label="renderLabel"
+      <n-select multiple v-model:value="selectedTag" :options="tagOptions" :render-label="renderLabel" tag filterable
         placeholder="选择标签" />
     </div>
     <n-list hoverable clickable>
