@@ -5,7 +5,7 @@ import { TagType } from "./tag";
 /* 请求参数类型 */
 export interface GetMusicListReq {
     sort_type?: MusicSortType;
-    keyword?: string;
+    keywords?: string[];
     album_id?: number;
     artist_ids?: number[];
     writer_ids?: number[];

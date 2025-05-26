@@ -1,6 +1,6 @@
 <template>
   <div ref="audioContainer"
-       class="audio-container fixed bg-[rgb(245,245,245)] flex items-center bottom-5 left-5 w-[300px] h-[60px]">
+    class="audio-container fixed bg-[rgb(245,245,245)] flex items-center bottom-5 left-5 w-[300px] h-[60px]">
 
     <!-- 拖拽手柄 -->
     <div class="drag-handle flex justify-between p-2 cursor-grab" @mousedown="startDragging">
@@ -22,7 +22,8 @@
           </button>
           <button @click="playNext" class="w-[30px] h-[30px] rounded-full bg-gray-300 ml-2">➡️</button>
         </div>
-        <span class="transition-all duration-300 group-hover:hidden">{{ musicStore.currentMusicName }} - {{ musicStore.currentMusicArtistName }}</span>
+        <span class="transition-all duration-300 group-hover:hidden">{{ musicStore.currentMusicName }} - {{
+          musicStore.currentMusicArtistName }}</span>
       </div>
       <div v-else>
         <p>请选择一首音乐播放</p>
@@ -30,16 +31,18 @@
     </div>
 
     <!-- 音量按钮 -->
-    <div class="volume-control p-2 cursor-pointer relative" @click="toggleMute" @mouseenter="showVolumeSlider = true" @mouseleave="showVolumeSlider = false">
+    <div class="volume-control p-2 cursor-pointer relative" @click="toggleMute" @mouseenter="showVolumeSlider = true"
+      @mouseleave="showVolumeSlider = false">
       {{ isMuted ? '🔇' : volume > 50 ? '🔊' : volume > 0 ? '🔉' : '🔇' }}
-      
+
       <!-- 音量滑块 -->
-      <div v-if="showVolumeSlider" class="volume-slider absolute bottom-[40px] left-0 bg-white shadow-lg rounded-lg p-2 flex flex-col items-center">
-        <input type="range" class="h-[80px] w-[20px] bg-gray-300 outline-none appearance-none" 
-               min="0" max="100" v-model="volume" @input="adjustVolume" orient="vertical" />
+      <div v-if="showVolumeSlider"
+        class="volume-slider absolute bottom-[40px] left-0 bg-white shadow-lg rounded-lg p-2 flex flex-col items-center">
+        <input type="range" class="h-[80px] w-[20px] bg-gray-300 outline-none appearance-none" min="0" max="100"
+          v-model="volume" @input="adjustVolume" orient="vertical" />
       </div>
     </div>
-  
+
     <div class="music-list-toggle p-2 cursor-pointer" @click="toggleMusicList">
       🎵
     </div>
@@ -47,14 +50,11 @@
     <div class="absolute bottom-[-1px] left-0 w-full p-0 m-0 flex items-center">
       <span class="text-xs text-gray-500 ml-2">{{ formattedCurrentTime }}</span>
       <input type="range" class="flex-grow h-[2px] bg-gray-300 outline-none appearance-none p-0 m-0 ml-2 mr-2" min="0"
-             max="100" v-model="currentProgress" @input="onPullTime"/>
+        max="100" v-model="currentProgress" @input="onPullTime" />
     </div>
 
     <!-- music列表 -->
-    <MusicList 
-      v-if="showMusicList && !showSongDetail"
-      @play-music="playMusic"
-    />
+    <MusicList v-if="showMusicList && !showSongDetail" @play-music="playMusic" />
 
     <!-- 歌曲详情展示 -->
     <div v-if="showSongDetail && currentMusicDetail" class="song-detail fixed bg-[#00000000] rounded-lg p-4 w-[400px]">
@@ -64,45 +64,43 @@
         <n-form>
           <n-form-item label="歌手" :show-label="true">
             <n-select v-model:value="selectedSingerValues" multiple filterable placeholder="搜索歌手"
-                      :options="singerOptions"
-                      :loading="loadingSinger" clearable remote :clear-filter-after-select="false"
-                      @search="handleSearchSinger"/>
+              :options="singerOptions" :loading="loadingSinger" clearable remote :clear-filter-after-select="false"
+              @search="handleSearchSinger" />
           </n-form-item>
 
 
           <n-form-item label="作曲" :show-label="true">
-            <n-select v-model:value="selectedComposerValues" filterable placeholder="搜索作曲"
-                      :options="composerOptions"
-                      :loading="loadingComposer" clearable remote @search="handleSearchComposer"/>
+            <n-select v-model:value="selectedComposerValues" filterable placeholder="搜索作曲" :options="composerOptions"
+              :loading="loadingComposer" clearable remote @search="handleSearchComposer" />
           </n-form-item>
 
           <n-form-item label="作词" :show-label="true">
             <n-select v-model:value="selectedWriterValues" filterable placeholder="搜索作词" :options="writerOptions"
-                      :loading="loadingWriter" clearable remote @search="handleSearchWriter"/>
+              :loading="loadingWriter" clearable remote @search="handleSearchWriter" />
           </n-form-item>
 
           <n-form-item label="发布年份" path="issue_year">
-            <n-input v-model:value="currentMusicDetail.issue_year" placeholder="Input Name"/>
+            <n-input v-model:value="currentMusicDetail.issue_year" placeholder="Input Name" />
           </n-form-item>
 
           <n-form-item label="地区" path="language">
-            <n-select v-model:value="currentMusicDetail.language" :options="languageOptions"/>
+            <n-select v-model:value="currentMusicDetail.language" :options="languageOptions" />
           </n-form-item>
 
           <n-form-item label="表演形式" path="perform_type">
-            <n-select v-model:value="currentMusicDetail.perform_type" :options="performTypeOptions"/>
+            <n-select v-model:value="currentMusicDetail.perform_type" :options="performTypeOptions" />
           </n-form-item>
 
           <n-form-item label="演唱会" path="concert">
-            <n-input v-model:value="currentMusicDetail.concert" placeholder="Input Name"/>
+            <n-input v-model:value="currentMusicDetail.concert" placeholder="Input Name" />
           </n-form-item>
 
           <n-form-item label="表演时间" path="concert_year">
-            <n-input v-model:value="currentMusicDetail.concert_year" placeholder="Input Name"/>
+            <n-input v-model:value="currentMusicDetail.concert_year" placeholder="Input Name" />
           </n-form-item>
 
           <n-form-item label="MV链接" path="concert_year">
-            <n-input v-model:value="currentMusicDetail.mv_url" placeholder="Input Name"/>
+            <n-input v-model:value="currentMusicDetail.mv_url" placeholder="Input Name" />
           </n-form-item>
 
 
@@ -120,10 +118,10 @@
 
 <script lang="ts" setup>
 
-import {computed, onMounted, ref} from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import MusicList from './MusicList.vue';
-import { useMusicStore} from "@/store/music.ts";
-import type {SelectOption} from 'naive-ui'
+import { useMusicStore } from "@/store/music.ts";
+import type { SelectOption } from 'naive-ui'
 import {
   NButton,
   NForm,
@@ -138,9 +136,9 @@ import {
   NUpload,
   useMessage
 } from "naive-ui"
-import {performTypeOptions} from "@/util/enum.ts";
-import {GetMusicDetail, GetMusicList} from '@/api';
-import {GetMusicListReq, MusicSortType, MusicDetail} from '@/api/types';
+import { performTypeOptions } from "@/util/enum.ts";
+import { GetMusicDetail, GetMusicList } from '@/api';
+import { GetMusicListReq, MusicSortType, MusicDetail } from '@/api/types';
 import { formatTime } from '@/util/time';
 
 const message = useMessage()
@@ -190,19 +188,19 @@ const currentTime = ref(0); // 添加一个响应式变量来跟踪当前时间
 
 
 let isDragging = false;
-let offset = {x: 0, y: 0};
+let offset = { x: 0, y: 0 };
 
 const formattedCurrentTime = computed(() => {
   if (!audio.value) return '00:00'; // TODO这里不会重新计算
-  
+
   return formatTime(currentTime.value);
 });
 
 // 播放音乐，获取音乐详情
 const playMusic = async (id: number) => {
   try {
-    const response = await GetMusicDetail({ music_id: id }); 
-    musicStore.setCurrentMusic(response.detail)
+    const response = await GetMusicDetail({ music_id: id });
+    useMusicStore.setCurrentMusic(response.detail)
     handleMp3()
   } catch (error) {
     console.error('获取音乐详情失败', error);
@@ -247,7 +245,7 @@ const handleMp3 = () => {
 
   // 设置音量
   audio.value.volume = volume.value / 100;
-  
+
   audio.value.ontimeupdate = () => {
     currentProgress.value = (audio.value!.currentTime / audio.value!.duration) * 100;
     currentTime.value = audio.value!.currentTime;
@@ -274,7 +272,7 @@ const startOrPause = () => {
 }
 const playPrevious = () => {
   if (!musicStore.musicList || musicStore.musicList.length === 0) return;
-  
+
   const currentIndex = musicStore.musicList.findIndex(music => music?.id === musicStore.current.detail?.id);
   if (currentIndex > 0) {
     playMusic(musicStore.musicList[currentIndex - 1]?.id);
@@ -372,7 +370,7 @@ const drag = (e: MouseEvent) => {
 
 
 onMounted(async () => {
-  
+
 });
 
 </script>
@@ -428,4 +426,3 @@ input[type="range"][orient="vertical"]::-moz-range-thumb {
   height: 12px;
 }
 </style>
-

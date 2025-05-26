@@ -126,7 +126,7 @@ func (p *GetMusicDetailResult) Resp() *api.GetMusicDetailResp {
 
 type GetMusicListParam struct {
 	SortType api.MusicSortType
-	Keyword  *string
+	Keywords  []string
 	AlbumId  *int64
 	ArtistIds []int64
 	WriterIds []int64
@@ -139,7 +139,7 @@ type GetMusicListParam struct {
 func NewGetMusicListParam(req *api.GetMusicListReq) *GetMusicListParam {
 	return &GetMusicListParam{
 		SortType:    req.SortType,
-		Keyword:     req.Keyword,
+		Keywords:     req.Keywords,
 		AlbumId:     req.AlbumId,
 		ArtistIds:   req.ArtistIds,
 		WriterIds:   req.WriterIds,

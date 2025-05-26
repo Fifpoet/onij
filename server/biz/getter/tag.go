@@ -7,6 +7,9 @@ import (
 
 func TagResourceId(t *mysql.Tag) int64 { return t.ResourceId }
 func TagToDetail(t *mysql.Tag) *api.TagDetail {
+	if t == nil {
+		return nil
+	}
 	return &api.TagDetail{
 		ResourceId:   t.ResourceId,
 		ResourceType: api.ResourceType(t.ResourceType),

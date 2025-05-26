@@ -19,7 +19,7 @@ type MusicDal interface {
 	Upsert(music *Music, toUpdate map[string]any) error
 	DelById(id int) (*Music, error)
 	GetByFullName(name string) ([]*Music, error)
-	SearchByArtistAndNameAndTag(artistIds, writerIds, composeIds []int64, tagTypes []int32, name string, pageInfo util.Page) ([]*Music, error)
+	SearchByArtistAndNameAndTag(artistIds, writerIds, composeIds []int64, tagTypes []int32, keywords []string, pageInfo util.Page) ([]*Music, error)
 	GetByTitleArtistPerType(title string, artistId, performType, page, size int) ([]*Music, error)
 }
 
@@ -112,7 +112,7 @@ func (m *musicDal) GetByFullName(name string) ([]*Music, error) {
 	return musics, nil
 }
 
-func (m *musicDal) SearchByArtistAndNameAndTag(artistIds, writerIds, composeIds []int64, tagTypes []int32, name string, pageInfo util.Page) ([]*Music, error) {
+func (m *musicDal) SearchByArtistAndNameAndTag(artistIds, writerIds, composeIds []int64, tagTypes []int32, keywords []string, pageInfo util.Page) ([]*Music, error) {
 	var musics []*Music
 	db := m.db
 
@@ -142,8 +142,12 @@ func (m *musicDal) SearchByArtistAndNameAndTag(artistIds, writerIds, composeIds 
 	}
 
 	// 处理name条件
-	if name != "" {
-		db = db.Where("full_name LIKE ?", "%"+name+"%")
+	if len(keywords) > 0 {
+		var orConditions []string
+		for _, keyword := range keywords {
+			orConditions = append(orConditions, fmt.Sprintf("full_name LIKE '%%%s%%'", keyword))
+		}
+		db = db.Where(strings.Join(orConditions, " OR "))
 	}
 
 	err := db.

@@ -10,7 +10,6 @@ import (
 	"onij/infra/mysql"
 	"onij/util"
 	"onij/util/boost/collection/collext"
-	"onij/util/boost/exp"
 	"strings"
 )
 
@@ -117,16 +116,21 @@ func (l *musicLogic) GetList(ctx context.Context, param *prm.GetMusicListParam) 
 		if err != nil {
 			return nil, err
 		}
-		if param.Keyword != nil && len(*param.Keyword) > 0 {
+		if len(param.Keywords) > 0 {
 			musics = collext.Select(musics, func(m *mysql.Music) (*mysql.Music, bool) {
-				return m, strings.Contains(m.FullName, *param.Keyword)
+				for _, kw := range param.Keywords {
+					if strings.Contains(m.Name, kw) {
+						return m, true
+					}
+				}
+				return nil, false
 			})
 		}
 	} else {
 		// 不指定专辑
 		musics, err = l.MusicDal.SearchByArtistAndNameAndTag(
-			param.ArtistIds, param.ComposerIds, param.WriterIds, param.TagTypes, 
-			exp.ValueOrZero(param.Keyword), util.Page{Page: param.Page, Limit: param.Limit},
+			param.ArtistIds, param.WriterIds, param.ComposerIds, param.TagTypes, 
+			param.Keywords, util.Page{Page: param.Page, Limit: param.Limit},
 		)
 		if err != nil {
 			return nil, err
@@ -161,6 +165,5 @@ func (l *musicLogic) getMusicArtistAndTags(musics ...*mysql.Music) (map[int64][]
 	for mId, artIds := range musicArtistsMap {
 		artGroup[mId] = collext.Pick(artIds, func(id int64) *mysql.Artist { return artMap[id] })
 	}
-	return collext.Group(arts, getter.ArtistId),
-		collext.Group(tags, getter.TagResourceId), nil
+	return artGroup, collext.Group(tags, getter.TagResourceId), nil
 }

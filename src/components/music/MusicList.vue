@@ -4,7 +4,7 @@
     <!-- 新增选择器 -->
     <div class="mt-4">
       <n-select multiple v-model:value="selectedTag" :options="tagOptions" :render-label="renderLabel" tag filterable
-        @blur="handleTagSearch" placeholder="选择标签" />
+        clearable @update:value="handleTagSearch" placeholder="选择标签" />
     </div>
     <n-list hoverable clickable>
       <div v-for="music in musicStore.musicList" :key="music?.id" class="mb-0.5 cursor-pointer"
@@ -38,7 +38,7 @@ import { ref, h, onMounted } from 'vue';
 import { NList, NListItem, NThing, NSpace, NTag, NSelect, NIcon, SelectGroupOption } from 'naive-ui';
 import { useMusicStore } from "@/store/music.ts";
 import { GetMusicDetail, GetMusicList, SearchArtist } from '@/api';
-import { MusicSortType, tagOpts, TagType, SelectTagExtra } from '@/api/types';
+import { MusicSortType, tagOpts, TagType, SelectTagExtra, ArtistType } from '@/api/types';
 import { MusicalNote as MusicIcon } from '@vicons/ionicons5';
 import type { SelectOption } from 'naive-ui';
 
@@ -80,9 +80,6 @@ const fetchMusicList = async () => {
     });
     if (response?.musics) {
       musicStore.append(response.musics);
-      musicStore.incrPage()
-    } else {
-      musicStore.stopPage()
     }
   } catch (error) {
     console.error("加载音乐列表失败:", error);
@@ -90,8 +87,7 @@ const fetchMusicList = async () => {
 };
 
 // 新增选择器相关代码
-const selectedTag = ref(null);
-
+const selectedTag = ref<string[]>([]);
 const tagOptions = ref<SelectGroupOption[]>([])
 
 const renderLabel = (option: SelectOption) => {
@@ -115,9 +111,50 @@ const renderLabel = (option: SelectOption) => {
   ];
 };
 
-const handleTagSearch = () => {
-  console.log(selectedTag.value);
-  
+const handleTagSearch = async () => {
+  // 处理选择的标签
+  const keywords: string[] = [];
+  const artistIds: number[] = [];
+  const writerIds: number[] = [];
+  const composerIds: number[] = [];
+  const tagTypes: number[] = [];
+  selectedTag.value.forEach((tag) => {
+    if (tag.includes('{') && tag.includes('}')) {
+      const extra = JSON.parse(tag) as SelectTagExtra;
+      switch (extra.artist_type) {
+        case ArtistType.AT_Singer:
+          artistIds.push(extra.artist_id!);
+          break;
+        case ArtistType.AT_Composer:
+          composerIds.push(extra.artist_id!);
+          break;
+        case ArtistType.AT_Writer:
+          writerIds.push(extra.artist_id!);
+          break;
+        default:
+          if (extra.tag_type != TagType.TT_Unknown) {
+            tagTypes.push(extra.tag_type!)
+          }
+      }
+    } else {
+      keywords.push(tag);
+    }
+  });
+  try {
+    const response = await GetMusicList({
+      sort_type: MusicSortType.MST_Created_At_Asc,
+      keywords: keywords,
+      artist_ids: artistIds,
+      writer_ids: writerIds,
+      composer_ids: composerIds,
+      tag_types: tagTypes,
+      page: 1,
+      limit: 20,
+    });
+    musicStore.resetMusicList(response.musics);
+  } catch (error) {
+    console.error("条件获取音乐失败:", error);
+  }
 }
 
 onMounted(async () => {

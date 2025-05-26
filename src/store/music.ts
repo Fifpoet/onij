@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import type { CurrentMusicState, MusicDetail, MusicProfile } from '@/api/types/music';
 import { ref, computed } from 'vue';
+import { loadEnv } from 'vite';
 
 export const useMusicStore = defineStore('music', () => {
     // 定义状态
@@ -25,23 +26,24 @@ export const useMusicStore = defineStore('music', () => {
     });
 
     // 方法
-    function append(newMusics: MusicProfile | MusicProfile[]) {
-        musicList.value.push(...(Array.isArray(newMusics) ? newMusics : [newMusics]));
+    function append(newMusics: MusicProfile[]) {
+        musicList.value.push(...newMusics);
+        if (newMusics.length == 0) {
+            musicListContinue.value = false;
+        } else {
+            musicListPage.value += 1;
+        }
     }
-
     function setCurrentMusic(detail: MusicDetail) {
         current.value = {
             ...current.value,
             detail: { ...detail }
         };
     }
-
-    function incrPage() {
-        musicListPage.value += 1;
-    }
-
-    function stopPage() {
-        musicListContinue.value = false;
+    function resetMusicList(list: MusicProfile[]) {
+        musicList.value = list;
+        musicListPage.value = 1;
+        musicListContinue.value = true;
     }
 
     return {
@@ -54,8 +56,7 @@ export const useMusicStore = defineStore('music', () => {
         currentMusicArtistName,
         append,
         setCurrentMusic,
-        incrPage,
-        stopPage
+        resetMusicList,
     };
 }, {
     persist: {
