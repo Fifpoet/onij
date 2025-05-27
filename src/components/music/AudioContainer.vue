@@ -31,9 +31,11 @@
     </div>
 
     <!-- 音量按钮 -->
-    <div class="volume-control p-2 cursor-pointer relative" @click="toggleMute" @mouseenter="showVolumeSlider = true"
+    <div class="volume-control p-2 cursor-pointer relative" @mouseenter="showVolumeSlider = true"
       @mouseleave="showVolumeSlider = false">
-      {{ isMuted ? '🔇' : volume > 50 ? '🔊' : volume > 0 ? '🔉' : '🔇' }}
+      <div @click="toggleMute">
+        {{ isMuted ? '🔇' : volume > 50 ? '🔊' : volume > 0 ? '🔉' : '🔇' }}
+      </div>
 
       <!-- 音量滑块 -->
       <div v-if="showVolumeSlider"
@@ -200,7 +202,7 @@ const formattedCurrentTime = computed(() => {
 const playMusic = async (id: number) => {
   try {
     const response = await GetMusicDetail({ music_id: id });
-    useMusicStore.setCurrentMusic(response.detail)
+    musicStore.setCurrentMusic(response.detail)
     handleMp3()
   } catch (error) {
     console.error('获取音乐详情失败', error);
@@ -252,6 +254,10 @@ const handleMp3 = () => {
   };
   audio.value.onloadedmetadata = () => {
     duration.value = audio.value!.duration;
+  };
+  audio.value.onended = () => {
+    isPlaying.value = false;
+    playNext();
   };
 
   audio.value.play();

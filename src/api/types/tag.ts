@@ -49,7 +49,7 @@ export const tagOpts: SelectGroupOption[] = [
     key: 'theme',
     children: [{
       label: "第三者",
-      value: JSON.stringify({tag_type: "124325"}),
+      value: JSON.stringify({tag_type: 124325}),
       type: 'success'
     }]
   },
@@ -59,7 +59,7 @@ export const tagOpts: SelectGroupOption[] = [
     key: 'style',
     children: [{
       label: "hhh",
-      value: JSON.stringify({tag_type: "124331425"}),
+      value: JSON.stringify({tag_type: 124331425}),
       type: 'success'
     }]
   },
@@ -69,7 +69,7 @@ export const tagOpts: SelectGroupOption[] = [
     key: 'emotion',
     children: [{
       label: "痛",
-      value: JSON.stringify({tag_type: "1332452"}),
+      value: JSON.stringify({tag_type: 1332452}),
       type: 'success'
     }]
   },
@@ -79,7 +79,7 @@ export const tagOpts: SelectGroupOption[] = [
     key: 'highlight',
     children: [{
       label: "神级live",
-      value: JSON.stringify({tag_type: "24531"}),
+      value: JSON.stringify({tag_type: 24531}),
       type: 'success'
     }]
   },
