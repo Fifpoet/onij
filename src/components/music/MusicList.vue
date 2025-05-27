@@ -3,7 +3,7 @@
     class="music-list absolute bg-white shadow-lg rounded-lg p-4 w-[400px] bottom-[70px] left-0 max-h-[300px] overflow-y-auto text-sm">
     <!-- 新增选择器 -->
     <div class="mt-4">
-      <n-select multiple v-model:value="selectedTag" :options="tagOptions" :render-label="renderLabel" tag filterable
+      <n-select  v-model:value="selectedTag" :options="tagOptions" :render-label="renderLabel" tag filterable multiple
         clearable @update:value="handleTagSearch" placeholder="选择标签" />
     </div>
     <n-list hoverable clickable>
@@ -34,7 +34,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, h, onMounted } from 'vue';
+import { ref, h, onMounted, VNodeChild } from 'vue';
 import { NList, NListItem, NThing, NSpace, NTag, NSelect, NIcon, SelectGroupOption } from 'naive-ui';
 import { useMusicStore } from "@/store/music.ts";
 import { GetMusicDetail, GetMusicList, SearchArtist } from '@/api';
@@ -89,9 +89,9 @@ const fetchMusicList = async () => {
 const selectedTag = ref<string[]>([]);
 const tagOptions = ref<SelectGroupOption[]>([])
 
-const renderLabel = (option: SelectOption) => {
+const renderLabel = (option: SelectOption): VNodeChild => {
   if (option.type === 'group') {
-    return option.label;
+    return option.label as string;
   }
   return [
     h(
