@@ -72,12 +72,11 @@ const handleScroll = (event: Event) => {
 
 // 获取音乐列表
 const fetchMusicList = async () => {
+  if (!musicStore.musicListContinue) return;
+  const req = buildGetMusicListReq();
+  req.page = musicStore.musicListPage;
   try {
-    const response = await GetMusicList({
-      sort_type: MusicSortType.MST_Created_At_Desc,
-      page: musicStore.musicListPage,
-      limit: 20
-    });
+    const response = await GetMusicList(req);
     if (response?.musics) {
       musicStore.append(response.musics);
     }
@@ -112,8 +111,18 @@ const renderLabel = (option: SelectOption) => {
 };
 
 const handleTagSearch = async () => {
-  // 处理选择的标签
-  const keywords: string[] = [];
+  const req = buildGetMusicListReq()
+  try {
+    const response = await GetMusicList(req);
+    musicStore.resetMusicList(response.musics);
+  } catch (error) {
+    console.error("条件获取音乐失败:", error);
+  }
+}
+
+const buildGetMusicListReq = () =>{
+// 处理选择的标签
+const keywords: string[] = [];
   const artistIds: number[] = [];
   const writerIds: number[] = [];
   const composerIds: number[] = [];
@@ -140,8 +149,7 @@ const handleTagSearch = async () => {
       keywords.push(tag);
     }
   });
-  try {
-    const response = await GetMusicList({
+  return {
       sort_type: MusicSortType.MST_Created_At_Asc,
       keywords: keywords,
       artist_ids: artistIds,
@@ -150,11 +158,7 @@ const handleTagSearch = async () => {
       tag_types: tagTypes,
       page: 1,
       limit: 20,
-    });
-    musicStore.resetMusicList(response.musics);
-  } catch (error) {
-    console.error("条件获取音乐失败:", error);
-  }
+    }
 }
 
 onMounted(async () => {
@@ -174,7 +178,7 @@ onMounted(async () => {
         key: 'artist',
         children: response.artists.map(artist => ({
           label: artist.name,
-          value: JSON.stringify({ id: artist.id, artist_type: artist.artist_type }),
+          value: JSON.stringify({ artist_id: artist.id, artist_type: artist.artist_type }),
           type: 'success'
         }))
       });
