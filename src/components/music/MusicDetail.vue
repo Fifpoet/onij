@@ -1,6 +1,6 @@
 <template>
   <Transition name="fade">
-    <div v-if="show" class="music-detail-container">
+    <div v-if="musicStore.midShowWhat == MidShowWhat.ShowMusicDetail" class="music-detail-container">
       <div class="music-detail-content relative p-8 flex max-w-4xl w-full">
         <!-- 左侧封面 -->
         <div class="cover-container w-[300px] h-[300px] mr-8">
@@ -62,6 +62,7 @@
 </template>
 
 <script setup lang="ts">
+import { MidShowWhat } from "@/api/types";
 import { useMusicStore } from "@/store/music.ts";
 import { watch, ref, onMounted, onUnmounted } from 'vue';
 
@@ -185,7 +186,6 @@ watch(
   () => musicStore.current.detail,
   (newVal) => {
     if (newVal) {
-      show.value = true;
       // 当歌曲变化时，获取新的歌词
       if (newVal.lyrics_file_url) {
         fetchLyrics(newVal.lyrics_file_url);

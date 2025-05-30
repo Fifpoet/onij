@@ -1,5 +1,5 @@
 // src/api/types/tag.ts
-import { NList, NListItem, NThing, NSpace, NTag, NSelect, NIcon, SelectGroupOption } from 'naive-ui';
+import { SelectGroupOption } from 'naive-ui';
 
 export enum TagBiz {
   TB_Unknown = 0,
@@ -103,3 +103,28 @@ export interface UploadTagResp {
   code: number;
   message: string;
 }
+
+interface BaseTag {
+  tag_name: string;
+  tag_type: TagType;
+}
+
+export const MusicTheme: BaseTag[] = [
+  {tag_name: "第三者", tag_type: TagType.TT_Star},
+]
+
+export const MusicStyle: BaseTag[] = [
+  {tag_name: "第三者", tag_type: TagType.TT_Star},
+]
+
+export const MusicEmotion: BaseTag[] = [
+  {tag_name: "第三者", tag_type: TagType.TT_Star},
+]
+
+export const MusicHighLight: BaseTag[] = [
+  {tag_name: "第三者", tag_type: TagType.TT_Star},
+]
+
+export const MusicCollection: BaseTag[] = [
+  {tag_name: "第三者", tag_type: TagType.TT_Star},
+]

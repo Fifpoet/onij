@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import type { CurrentMusicState, MusicDetail, MusicProfile } from '@/api/types/music';
 import { ref, computed } from 'vue';
 import { loadEnv } from 'vite';
+import { MidShowWhat } from '@/api/types';
 
 export const useMusicStore = defineStore('music', () => {
     // 定义状态
@@ -15,6 +16,7 @@ export const useMusicStore = defineStore('music', () => {
     });
     const musicListPage = ref(1);
     const musicListContinue = ref(true);
+    const midShowWhat = ref(0);
 
     // 计算属性
     const count = computed(() => musicList.value.length);
@@ -45,6 +47,9 @@ export const useMusicStore = defineStore('music', () => {
         musicListPage.value = 1;
         musicListContinue.value = true;
     }
+    function setMidShowWhat(what: MidShowWhat) {
+        midShowWhat.value = what;
+    }
 
     return {
         musicList,
@@ -56,6 +61,7 @@ export const useMusicStore = defineStore('music', () => {
         currentMusicArtistName,
         append,
         setCurrentMusic,
+        setMidShowWhat,
         resetMusicList,
     };
 }, {

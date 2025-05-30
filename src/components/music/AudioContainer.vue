@@ -44,7 +44,9 @@
           v-model="volume" @input="adjustVolume" orient="vertical" />
       </div>
     </div>
-
+    <div class="like-toggle p-2 cursor-pointer" @click="toggleMusicLike">
+      ❤️
+    </div>
     <div class="music-list-toggle p-2 cursor-pointer" @click="toggleMusicList">
       🎵
     </div>
@@ -57,63 +59,6 @@
 
     <!-- music列表 -->
     <MusicList v-if="showMusicList && !showSongDetail" @play-music="playMusic" />
-
-    <!-- 歌曲详情展示 -->
-    <div v-if="showSongDetail && currentMusicDetail" class="song-detail fixed bg-[#00000000] rounded-lg p-4 w-[400px]">
-      <input type="hidden" v-model="currentMusicDetail.id">
-      <input type="hidden" v-model="currentMusicDetail.root_id">
-      <n-space vertical>
-        <n-form>
-          <n-form-item label="歌手" :show-label="true">
-            <n-select v-model:value="selectedSingerValues" multiple filterable placeholder="搜索歌手"
-              :options="singerOptions" :loading="loadingSinger" clearable remote :clear-filter-after-select="false"
-              @search="handleSearchSinger" />
-          </n-form-item>
-
-
-          <n-form-item label="作曲" :show-label="true">
-            <n-select v-model:value="selectedComposerValues" filterable placeholder="搜索作曲" :options="composerOptions"
-              :loading="loadingComposer" clearable remote @search="handleSearchComposer" />
-          </n-form-item>
-
-          <n-form-item label="作词" :show-label="true">
-            <n-select v-model:value="selectedWriterValues" filterable placeholder="搜索作词" :options="writerOptions"
-              :loading="loadingWriter" clearable remote @search="handleSearchWriter" />
-          </n-form-item>
-
-          <n-form-item label="发布年份" path="issue_year">
-            <n-input v-model:value="currentMusicDetail.issue_year" placeholder="Input Name" />
-          </n-form-item>
-
-          <n-form-item label="地区" path="language">
-            <n-select v-model:value="currentMusicDetail.language" :options="languageOptions" />
-          </n-form-item>
-
-          <n-form-item label="表演形式" path="perform_type">
-            <n-select v-model:value="currentMusicDetail.perform_type" :options="performTypeOptions" />
-          </n-form-item>
-
-          <n-form-item label="演唱会" path="concert">
-            <n-input v-model:value="currentMusicDetail.concert" placeholder="Input Name" />
-          </n-form-item>
-
-          <n-form-item label="表演时间" path="concert_year">
-            <n-input v-model:value="currentMusicDetail.concert_year" placeholder="Input Name" />
-          </n-form-item>
-
-          <n-form-item label="MV链接" path="concert_year">
-            <n-input v-model:value="currentMusicDetail.mv_url" placeholder="Input Name" />
-          </n-form-item>
-
-
-        </n-form>
-        <n-button @click="submitMusicForm">确定</n-button>
-
-      </n-space>
-
-    </div>
-
-
   </div>
 </template>
 
@@ -140,7 +85,7 @@ import {
 } from "naive-ui"
 import { performTypeOptions } from "@/util/enum.ts";
 import { GetMusicDetail, GetMusicList } from '@/api';
-import { GetMusicListReq, MusicSortType, MusicDetail } from '@/api/types';
+import { GetMusicListReq, MusicSortType, MusicDetail, MidShowWhat } from '@/api/types';
 import { formatTime } from '@/util/time';
 
 const message = useMessage()
@@ -203,6 +148,7 @@ const playMusic = async (id: number) => {
   try {
     const response = await GetMusicDetail({ music_id: id });
     musicStore.setCurrentMusic(response.detail)
+    musicStore.setMidShowWhat(MidShowWhat.ShowMusicDetail)
     handleMp3()
   } catch (error) {
     console.error('获取音乐详情失败', error);
@@ -214,7 +160,10 @@ const toggleMusicList = () => {
   showMusicList.value = !showMusicList.value;
 };
 
-// 使用转换函数保存音乐详情
+const toggleMusicLike = () => {
+  musicStore.setMidShowWhat(MidShowWhat.ShowMusicLike)
+};
+
 
 // 处理音频文件
 const handleMp3 = () => {

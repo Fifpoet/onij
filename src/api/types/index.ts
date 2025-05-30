@@ -4,3 +4,8 @@ export * from './file';
 export * from './artist';
 export * from './album';
 export * from './tag';
+
+export enum MidShowWhat {
+    ShowMusicDetail = 1,
+    ShowMusicLike = 2,
+}
