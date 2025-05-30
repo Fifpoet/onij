@@ -114,6 +114,17 @@ message GetMusicListResp {
   repeated MusicProfile musics = 10;
 }
 
+message GetTagListReq {
+  repeated int64 resource_ids = 1;
+  repeated TagGroup tag_groups = 2;
+  repeated TagType tag_types = 3;
+}
+message GetTagListResp {
+  int32 code = 1;
+  string message = 2;
+  repeated TagDetail tags = 10;
+}
+
 message SearchArtistReq {
   string keyword = 1;
   optional TagGroup tag_group = 2;
@@ -149,7 +160,6 @@ service AllService {
   rpc UploadTag(UploadTagReq) returns (UploadTagResp) {
     option (api.post) = "/tag/upload";
   }
-
   // 获取音乐详情
   rpc GetMusicDetail(GetMusicDetailReq) returns (GetMusicDetailResp) {
     option (api.post) = "/music/detail";
@@ -161,6 +171,10 @@ service AllService {
   // 获取音乐列表
   rpc GetMusicList(GetMusicListReq) returns (GetMusicListResp) {
     option (api.post) = "/music/list";
+  }
+  // 获取tag
+  rpc GetTagList(GetTagListReq) returns (GetTagListResp) {
+    option (api.post) = "/tag/list";
   }
   // 搜索艺术家
   rpc SearchArtist(SearchArtistReq) returns (SearchArtistResp) {

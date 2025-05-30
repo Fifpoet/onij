@@ -80,3 +80,8 @@ func _uploadtagMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _gettaglistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

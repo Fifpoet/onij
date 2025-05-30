@@ -1,8 +1,11 @@
 package prm
 
 import (
+	"onij/biz/getter"
+	"onij/infra/mysql"
 	"onij/model/api"
 	"onij/util"
+	"onij/util/boost/collection/collext"
 )
 
 type UploadTagParam struct {
@@ -14,7 +17,7 @@ type UploadTagParam struct {
 	TargetId     *int64
 	TargetType   *int32
 	Extra        string
-	ListShow bool
+	ListShow     bool
 }
 
 func NewUploadTagParam(req *api.UploadTagReq) *UploadTagParam {
@@ -27,7 +30,7 @@ func NewUploadTagParam(req *api.UploadTagReq) *UploadTagParam {
 		TargetId:     req.TagDetail.TargetId,
 		TargetType:   (*int32)(req.TagDetail.TargetType),
 		Extra:        req.TagDetail.Extra,
-		ListShow: req.TagDetail.ListShow,
+		ListShow:     req.TagDetail.ListShow,
 	}
 }
 
@@ -38,5 +41,31 @@ func (r *UploadTagResult) Resp() *api.UploadTagResp {
 	return &api.UploadTagResp{
 		Code:    util.BaseCodeOK,
 		Message: util.BaseMsgOK,
+	}
+}
+
+type GetTagListParam struct {
+	ResourceIds []int64
+	TagGroups   []int32
+	TagTypes    []int32
+}
+
+func NewGetTagListParam(req *api.GetTagListReq) *GetTagListParam {
+	return &GetTagListParam{
+		ResourceIds: req.ResourceIds,
+		TagGroups:   collext.Pick(req.TagGroups, func(t api.TagGroup) int32{return int32(t)}),
+		TagTypes:    collext.Pick(req.TagTypes, func(t api.TagType) int32{return int32(t)}),
+	}
+}
+
+type GetTagListResult struct {
+	Tags []*mysql.Tag
+}
+
+func (r *GetTagListResult) Resp() *api.GetTagListResp {
+	return &api.GetTagListResp{
+		Code:    util.BaseCodeOK,
+		Message: util.BaseMsgOK,
+		Tags:    collext.Pick(r.Tags, getter.TagToDetail),
 	}
 }
