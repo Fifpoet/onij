@@ -58,7 +58,7 @@
     </div>
 
     <!-- music列表 -->
-    <MusicList v-if="showMusicList && !showSongDetail" @play-music="playMusic" />
+    <MusicListComponent v-if="showMusicList && !showSongDetail" @play-music="playMusic" />
   </div>
 </template>
 
@@ -66,7 +66,7 @@
 <script lang="ts" setup>
 
 import { computed, onMounted, ref } from 'vue';
-import MusicList from './MusicList.vue';
+import MusicListComponent from './MusicList.vue';
 import { useMusicStore } from "@/store/music.ts";
 import type { SelectOption } from 'naive-ui'
 import {
@@ -161,7 +161,11 @@ const toggleMusicList = () => {
 };
 
 const toggleMusicLike = () => {
-  musicStore.setMidShowWhat(MidShowWhat.ShowMusicLike)
+  if (musicStore.midShowWhat == MidShowWhat.ShowMusicLike) {
+    musicStore.setMidShowWhat(MidShowWhat.ShowMusicDetail)
+  } else {
+    musicStore.setMidShowWhat(MidShowWhat.ShowMusicLike)
+  }
 };
 
 

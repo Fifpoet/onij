@@ -4,6 +4,7 @@ import PageHeader from './components/layout/PageHeader.vue'
 // import lbAudio from './components/audio/index.vue';
 import AudioContainer from "@/components/music/AudioContainer.vue";
 import MusicDetail from "@/components/music/MusicDetail.vue";
+import MusicLike from "@/components/music/MusicLike.vue";
 import {NMessageProvider} from "naive-ui"
 
 </script>
@@ -22,7 +23,9 @@ import {NMessageProvider} from "naive-ui"
 <!--    </article>-->
 
   <n-message-provider>
-  <MusicDetail />
+  
+    <MusicDetail />
+    <MusicLike />
   <AudioContainer></AudioContainer>
   <!-- <img src="https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=gQGY8DwAAAAAAAAAAS5odHRwOi8vd2VpeGluLnFxLmNvbS9xLzAyRVMydjVzLXBmeEgxYlNxSnhFMTIAAgTmjC1oAwQQDgAA" alt="QR Code" class="mx-auto my-2"> -->
 <!--  <lbAudio class="music-player" :musicList="musicList" :index="8" :lyrics="true">-->

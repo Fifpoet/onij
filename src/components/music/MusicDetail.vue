@@ -67,7 +67,6 @@ import { useMusicStore } from "@/store/music.ts";
 import { watch, ref, onMounted, onUnmounted } from 'vue';
 
 const musicStore = useMusicStore();
-const show = ref(false);
 const lyrics = ref<{ time: number; text: string }[]>([]);
 const currentLyricIndex = ref(-1);
 const lyricsContainerRef = ref<HTMLElement | null>(null);
@@ -205,9 +204,7 @@ watch(
   }
 );
 
-const handleClose = () => {
-  show.value = false;
-}
+
 </script>
 
 <style scoped>

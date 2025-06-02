@@ -56,6 +56,7 @@ export const useMusicStore = defineStore('music', () => {
         current,
         musicListPage,
         musicListContinue,
+        midShowWhat,
         count,
         currentMusicName,
         currentMusicArtistName,
