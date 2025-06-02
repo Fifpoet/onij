@@ -1,6 +1,13 @@
 // src/api/types/tag.ts
 import { SelectGroupOption } from 'naive-ui';
 
+export enum ResourceType {
+  RT_Unknown = 0,
+  RT_Artist = 1,
+  RT_Music = 2,
+  RT_Album = 3,
+}
+
 export enum TagBiz {
   TB_Unknown = 0,
   TB_Music = 1,

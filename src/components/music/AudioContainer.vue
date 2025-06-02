@@ -16,11 +16,15 @@
     <div class="audio-content flex-grow pl-5 group relative">
       <div v-if="musicStore.current.detail" class="flex items-center">
         <div class="hidden group-hover:flex justify-center items-center">
-          <button @click="playPrevious" class="w-[30px] h-[30px] rounded-full bg-gray-300 mr-2">⬅️</button>
-          <button @click="startOrPause" class="w-[30px] h-[30px] rounded-full bg-gray-300 mx-2">
-            {{ isPlaying ? '⏸️' : '▶️' }}
-          </button>
-          <button @click="playNext" class="w-[30px] h-[30px] rounded-full bg-gray-300 ml-2">➡️</button>
+          <NButton text @click="playPrevious" class="w-[30px] h-[30px] rounded-full mr-2">
+            <NIcon :component="PlaySkipBackOutline" size="18" />
+          </NButton>
+          <NButton text @click="startOrPause" class="w-[30px] h-[30px] rounded-full mx-2">
+            <NIcon :component="isPlaying ? PauseCircleOutline : PlayCircleOutline" size="18" />
+          </NButton>
+          <NButton text @click="playNext" class="w-[30px] h-[30px] rounded-full ml-2">
+            <NIcon :component="PlaySkipForwardOutline" size="18" />
+          </NButton>
         </div>
         <span class="transition-all duration-300 group-hover:hidden">{{ musicStore.currentMusicName }} - {{
           musicStore.currentMusicArtistName }}</span>
@@ -33,9 +37,9 @@
     <!-- 音量按钮 -->
     <div class="volume-control p-2 cursor-pointer relative" @mouseenter="showVolumeSlider = true"
       @mouseleave="showVolumeSlider = false">
-      <div @click="toggleMute">
-        {{ isMuted ? '🔇' : volume > 50 ? '🔊' : volume > 0 ? '🔉' : '🔇' }}
-      </div>
+      <NButton text @click="toggleMute">
+        <NIcon :component="isMuted ? VolumeMuteOutline : (volume > 50 ? VolumeHighOutline : (volume > 0 ? VolumeLowOutline : VolumeMuteOutline))" size="18" />
+      </NButton>
 
       <!-- 音量滑块 -->
       <div v-if="showVolumeSlider"
@@ -45,10 +49,10 @@
       </div>
     </div>
     <div class="like-toggle p-2 cursor-pointer" @click="toggleMusicLike">
-      ❤️
+      <NIcon :component="HeartOutline" size="18" />
     </div>
     <div class="music-list-toggle p-2 cursor-pointer" @click="toggleMusicList">
-      🎵
+      <NIcon :component="MusicalNoteOutline" size="18" />
     </div>
     <!-- 进度条 -->
     <div class="absolute bottom-[-1px] left-0 w-full p-0 m-0 flex items-center">
@@ -68,24 +72,24 @@
 import { computed, onMounted, ref } from 'vue';
 import MusicListComponent from './MusicList.vue';
 import { useMusicStore } from "@/store/music.ts";
-import type { SelectOption } from 'naive-ui'
 import {
   NButton,
-  NForm,
-  NFormItem,
-  NInput,
-  NList,
-  NListItem,
-  NSelect,
-  NSpace,
-  NTag,
-  NThing,
-  NUpload,
-  useMessage
+  useMessage,
+  NIcon // 引入 NIcon
 } from "naive-ui"
-import { performTypeOptions } from "@/util/enum.ts";
-import { GetMusicDetail, GetMusicList } from '@/api';
-import { GetMusicListReq, MusicSortType, MusicDetail, MidShowWhat } from '@/api/types';
+import {
+  PlayCircleOutline,
+  PauseCircleOutline,
+  PlaySkipBackOutline,
+  PlaySkipForwardOutline,
+  VolumeHighOutline,
+  VolumeLowOutline,
+  VolumeMuteOutline,
+  HeartOutline,
+  MusicalNoteOutline
+} from '@vicons/ionicons5'; // 引入图标
+import { GetMusicDetail } from '@/api';
+import { MidShowWhat } from '@/api/types';
 import { formatTime } from '@/util/time';
 
 const message = useMessage()
