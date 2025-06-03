@@ -53,7 +53,7 @@ export const tagOpts: SelectGroupOption[] = [
   {
     type: 'group',
     label: '主题',
-    key: 'theme',
+    key: TagGroup.TG_MusicTheme,
     children: [{
       label: "第三者",
       value: JSON.stringify({tag_type: 124325}),
