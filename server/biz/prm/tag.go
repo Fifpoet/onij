@@ -69,3 +69,21 @@ func (r *GetTagListResult) Resp() *api.GetTagListResp {
 		Tags:    collext.Pick(r.Tags, getter.TagToDetail),
 	}
 }
+
+type DeleteTagParam struct {
+	ResourceId   int64
+	TagType       int32
+}
+func NewDeleteTagParam(req *api.DeleteTagReq) *DeleteTagParam {
+	return &DeleteTagParam{
+		ResourceId:   req.ResourceId,
+		TagType:       int32(req.TagType),
+	}
+}
+type DeleteTagResult struct {}
+func (r *DeleteTagResult) Resp() *api.DeleteTagResp {
+	return &api.DeleteTagResp{
+		Code:    util.BaseCodeOK,
+		Message: util.BaseMsgOK,
+	}
+}

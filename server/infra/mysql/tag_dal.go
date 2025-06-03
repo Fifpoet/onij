@@ -15,6 +15,7 @@ type TagDal interface {
 	GetByResourceAndGroupType(tagGroup, tagType []int32, ids ...int64) ([]*Tag, error)
 	Save(tags ...*Tag) error
 	DelById(id int) error
+	Delete(resourceId int64, tagType int32) error
 }
 
 type tagDal struct {
@@ -39,6 +40,15 @@ type Tag struct {
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
 	DeletedAt  gorm.DeletedAt `json:"deleted_at"`
+}
+
+func (t *tagDal) Delete(resourceId int64, tagType int32) error {
+	err := t.db.Where("resource_id =? and tag_type =?", resourceId, tagType).Delete(&Tag{}).Error
+	if err!= nil {
+		log.Printf("Delete, delete tag failed: err = %v \n", err)
+		return err
+	}
+	return nil
 }
 
 func (t *tagDal) GetByResourceAndGroupType(tagGroups, tagTypes []int32, ids...int64) ([]*Tag, error) {

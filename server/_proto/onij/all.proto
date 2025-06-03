@@ -139,6 +139,15 @@ message SearchArtistResp {
   repeated ArtistProfile artists = 10;
 }
 
+message DeleteTagReq {
+  int64 resource_id = 1;
+  TagType tag_type = 2;
+}
+message DeleteTagResp {
+  int32 code = 1;
+  string message = 2;
+}
+
 service AllService {
   // 上传文件
   rpc UploadFile(UploadFileReq) returns (UploadFileResp) {
@@ -179,5 +188,9 @@ service AllService {
   // 搜索艺术家
   rpc SearchArtist(SearchArtistReq) returns (SearchArtistResp) {
     option (api.post) = "/artist/search";
+  }
+  // 删除标签
+  rpc DeleteTag(DeleteTagReq) returns (DeleteTagResp) {
+    option (api.post) = "/tag/delete";
   }
 }

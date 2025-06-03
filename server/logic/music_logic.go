@@ -82,7 +82,7 @@ func (l *musicLogic) GetDetail(ctx context.Context, param *prm.GetMusicDetailPar
 	if err != nil {
 		return nil, err
 	}
-	tags, err := l.TagDal.GetByResource(music.Id)
+	tags, err := l.TagDal.GetByResource(append(collext.Pick(artists, getter.ArtistId), music.Id)...)
 	if err != nil {
 		return nil, err
 	}

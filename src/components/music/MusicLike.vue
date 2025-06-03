@@ -2,8 +2,6 @@
   <Transition name="fade">
     <div v-if="musicStore.midShowWhat == MidShowWhat.ShowMusicLike" class="music-like-container p-8">
       <div class="music-like-content w-full max-w-4xl mx-auto">
-        <h2 class="text-2xl font-bold mb-6 text-center">加星收藏</h2>
-
         <!-- 歌手列表 -->
         <div class="mb-6">
           <h3 class="text-lg font-semibold mb-3">歌手</h3>

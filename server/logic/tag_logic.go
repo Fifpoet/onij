@@ -12,6 +12,7 @@ import (
 type TagLogic interface {
 	Upload(ctx context.Context, prm *prm.UploadTagParam) (*prm.UploadTagResult, error)
 	GetList(ctx context.Context, prm *prm.GetTagListParam) (*prm.GetTagListResult, error)
+	Delete(ctx context.Context, prm *prm.DeleteTagParam) (*prm.DeleteTagResult, error)
 }
 
 type tagLogic struct {
@@ -22,6 +23,14 @@ func NewTagLogic(i *infra.AllInfra) TagLogic {
 	return &tagLogic{
 		AllInfra: i,
 	}
+}
+
+func (l *tagLogic) Delete(ctx context.Context, param *prm.DeleteTagParam) (*prm.DeleteTagResult, error) {
+	err := l.TagDal.Delete(param.ResourceId, param.TagType)
+	if err!= nil {
+		return nil, err
+	}
+	return &prm.DeleteTagResult{}, nil
 }
 
 func (l *tagLogic) GetList(ctx context.Context, param *prm.GetTagListParam) (*prm.GetTagListResult, error) {
