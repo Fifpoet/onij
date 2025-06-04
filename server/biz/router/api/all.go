@@ -40,7 +40,6 @@ func Register(r *server.Hertz) {
 	{
 		_tag := root.Group("/tag", _tagMw()...)
 		_tag.POST("/delete", append(_deletetagMw(), handler.DeleteTag)...)
-		_tag.POST("/list", append(_gettaglistMw(), handler.GetTagList)...)
 		_tag.POST("/upload", append(_uploadtagMw(), handler.UploadTag)...)
 	}
 }

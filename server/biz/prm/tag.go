@@ -1,11 +1,8 @@
 package prm
 
 import (
-	"onij/biz/getter"
-	"onij/infra/mysql"
 	"onij/model/api"
 	"onij/util"
-	"onij/util/boost/collection/collext"
 )
 
 type UploadTagParam struct {
@@ -44,43 +41,20 @@ func (r *UploadTagResult) Resp() *api.UploadTagResp {
 	}
 }
 
-type GetTagListParam struct {
-	ResourceIds []int64
-	TagGroups   []int32
-	TagTypes    []int32
-}
-
-func NewGetTagListParam(req *api.GetTagListReq) *GetTagListParam {
-	return &GetTagListParam{
-		ResourceIds: req.ResourceIds,
-		TagGroups:   collext.Pick(req.TagGroups, func(t api.TagGroup) int32{return int32(t)}),
-		TagTypes:    collext.Pick(req.TagTypes, func(t api.TagType) int32{return int32(t)}),
-	}
-}
-
-type GetTagListResult struct {
-	Tags []*mysql.Tag
-}
-
-func (r *GetTagListResult) Resp() *api.GetTagListResp {
-	return &api.GetTagListResp{
-		Code:    util.BaseCodeOK,
-		Message: util.BaseMsgOK,
-		Tags:    collext.Pick(r.Tags, getter.TagToDetail),
-	}
-}
-
 type DeleteTagParam struct {
-	ResourceId   int64
-	TagType       int32
+	ResourceId int64
+	TagType    int32
 }
+
 func NewDeleteTagParam(req *api.DeleteTagReq) *DeleteTagParam {
 	return &DeleteTagParam{
-		ResourceId:   req.ResourceId,
-		TagType:       int32(req.TagType),
+		ResourceId: req.ResourceId,
+		TagType:    int32(req.TagType),
 	}
 }
-type DeleteTagResult struct {}
+
+type DeleteTagResult struct{}
+
 func (r *DeleteTagResult) Resp() *api.DeleteTagResp {
 	return &api.DeleteTagResp{
 		Code:    util.BaseCodeOK,

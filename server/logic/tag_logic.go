@@ -11,7 +11,6 @@ import (
 
 type TagLogic interface {
 	Upload(ctx context.Context, prm *prm.UploadTagParam) (*prm.UploadTagResult, error)
-	GetList(ctx context.Context, prm *prm.GetTagListParam) (*prm.GetTagListResult, error)
 	Delete(ctx context.Context, prm *prm.DeleteTagParam) (*prm.DeleteTagResult, error)
 }
 
@@ -33,15 +32,6 @@ func (l *tagLogic) Delete(ctx context.Context, param *prm.DeleteTagParam) (*prm.
 	return &prm.DeleteTagResult{}, nil
 }
 
-func (l *tagLogic) GetList(ctx context.Context, param *prm.GetTagListParam) (*prm.GetTagListResult, error) {
-	tags, err := l.TagDal.GetByResourceAndGroupType(param.TagGroups, param.TagTypes, param.ResourceIds...)
-	if err != nil {
-		return nil, err
-	}
-	return &prm.GetTagListResult{
-		Tags: tags,
-	}, nil
-}
 
 func (l *tagLogic) Upload(ctx context.Context, param *prm.UploadTagParam) (*prm.UploadTagResult, error) {
 	err := l.TagDal.Save(&mysql.Tag{
