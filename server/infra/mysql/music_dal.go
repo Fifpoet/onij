@@ -153,6 +153,7 @@ func (m *musicDal) SearchByArtistAndNameAndTag(artistIds, writerIds, composeIds 
 	err := db.
 		Offset(pageInfo.OffsetNum()).
 		Limit(pageInfo.LimitNum()).
+		Order("created_at DESC").
 		Find(&musics).Error
 
 	if err != nil {

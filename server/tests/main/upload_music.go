@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/dhowden/tag"
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"golang.org/x/text/transform"
 	"gorm.io/gorm"
@@ -24,8 +23,8 @@ import (
 	"unicode/utf8"
 )
 
-const targetDir = "C:\\KwDownload\\song"
-const fileSuffix = ".mp3"
+const targetDir = "C:\\KwDownload\\song\\tmp"
+const fileSuffix = ".flac"
 const lyricsSuffix = ".lrc"
 
 var allInfra *infra.AllInfra
@@ -231,15 +230,15 @@ func parseArtistFromLyr(path string) (string, string) {
 
 func findMP3Files(root string) ([]string, error) {
 	var mp3Files []string
-
+	var regex = fmt.Sprintf(`^.+-.+\%s$`, fileSuffix)
 	// 定义正则表达式，用于匹配 "singer-name" 的文件名结构
-	re := regexp.MustCompile(`^.+-.+\.mp3$`)
+	re := regexp.MustCompile(regex)
 
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-		if !info.IsDir() && filepath.Ext(info.Name()) == ".mp3" {
+		if !info.IsDir() && filepath.Ext(info.Name()) == fileSuffix {
 			// 使用正则表达式匹配文件名是否符合 "singer-name" 的结构
 			if re.MatchString(info.Name()) {
-				mp3Files = append(mp3Files, path[:len(path)-4])
+				mp3Files = append(mp3Files, path[:len(path)-len(fileSuffix)])
 			}
 		}
 		return nil
@@ -249,18 +248,4 @@ func findMP3Files(root string) ([]string, error) {
 	}
 
 	return mp3Files, err
-}
-
-func getMp3Meta(file *os.File) int {
-	meta, err := tag.ReadFrom(file)
-	if err != nil {
-		fmt.Println("Error reading tags:", err)
-		return 0
-	}
-	sec := meta.Raw()["length"]
-	if sec == nil {
-		fmt.Println("No file second found")
-		return 0
-	}
-	return sec.(int)
 }
