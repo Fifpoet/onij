@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import type { CurrentMusicState, MusicDetail, MusicProfile } from '@/api/types/music';
 import { ref, computed } from 'vue';
 import { loadEnv } from 'vite';
-import { MidShowWhat } from '@/api/types';
+import { MidShowWhat, TagGroup } from '@/api/types';
 
 export const useMusicStore = defineStore('music', () => {
     // 定义状态
@@ -25,6 +25,21 @@ export const useMusicStore = defineStore('music', () => {
         if (!current.value.detail) return '';
         const artists = current.value.detail.artist_names || [];
         return Array.isArray(artists) ? artists.join(' & ') : '';
+    });
+    const likeMap = computed(() => {
+        if (!current.value.detail) return false;
+        const mp = new Map<number, boolean>();
+        for (const tag of current.value.detail.tag_details || []) {
+            switch (tag.tag_group) {
+                case TagGroup.TG_ArtistStar:
+                    mp.set(tag.resource_id, true);
+                    break;
+                default:
+                    mp.set(tag.tag_type, true)
+                    break;
+            }
+        }
+        return mp;
     });
 
     // 方法
@@ -57,6 +72,7 @@ export const useMusicStore = defineStore('music', () => {
         musicListPage,
         musicListContinue,
         midShowWhat,
+        likeMap,
         count,
         currentMusicName,
         currentMusicArtistName,

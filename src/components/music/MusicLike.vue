@@ -9,7 +9,8 @@
             <div v-for="(artistName, index) in musicStore.current.detail?.artist_names" :key="artistName"
               class="flex items-center bg-gray-100 px-3 py-1 rounded-full text-sm">
               <span>{{ artistName }}</span>
-              <NIcon :component="HeartOutline" class="ml-2 cursor-pointer hover:text-red-500" @click="toggleArtistLike(musicStore.current.detail?.artist_ids[index], artistName)" />
+              <NIcon :component="musicStore.likeMap[musicStore.current.detail?.artist_ids[index]] ? Heart : HeartOutline" 
+              class="ml-2 cursor-pointer hover:text-red-500" @click="toggleArtistLike(musicStore.current.detail?.artist_ids[index], artistName)" />
             </div>
           </div>
         </div>
@@ -21,7 +22,7 @@
             <div v-for="tag in group.children" :key="tag.value"
               class="flex items-center bg-gray-100 px-3 py-1 rounded-full text-sm">
               <span>{{ tag.label }}</span>
-              <NIcon :component="HeartOutline" class="ml-2 cursor-pointer hover:text-red-500"
+              <NIcon :component="musicStore.likeMap[tag.label] ? Heart: HeartOutline" class="ml-2 cursor-pointer hover:text-red-500"
                 @click="toggleTagLike(group, tag)" />
             </div>
           </div>
@@ -37,9 +38,10 @@ import { useMusicStore } from '@/store/music';
 import { tagOpts } from '@/api/types';
 import { ResourceType, SelectTagExtra, TagBiz, TagDetail, TagGroup, TagType } from '@/api/types/tag';
 import { NButton, NIcon, SelectGroupOption } from 'naive-ui';
-import { HeartOutline } from '@vicons/ionicons5';
+import { HeartOutline, Heart } from '@vicons/ionicons5';
 import { UploadTag } from "@/api";
 import { SelectBaseOption } from "naive-ui/es/select/src/interface";
+import { onMounted, ref } from "vue";
 
 const musicStore = useMusicStore();
 
@@ -86,6 +88,13 @@ const toggleArtistLike = async (artistId: number | undefined, artistName: string
     console.error(`收藏艺术家 ${artistName} 失败`, error);
   }
 };
+
+onMounted(() => {
+  setInterval (() => {
+    console.log('111'); // 3000ms 后输出
+    console.log(musicStore.likeMap); // 3000ms 后输出
+  }, 3000);
+});
 
 </script>
 
