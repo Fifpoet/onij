@@ -97,7 +97,7 @@ func (t *tagDal) GetByGroupType(tagGroup, tagType *int32) ([]*Tag, error) {
 
 func (t *tagDal) GetByResource(ids ...int64) ([]*Tag, error) {
 	var tags []*Tag
-	err := t.db.First(&tags, "id in ?", ids).Error
+	err := t.db.Find(&tags, "resource_id in ?", ids).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
 	} else if err != nil {
