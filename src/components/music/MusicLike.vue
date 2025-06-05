@@ -6,11 +6,11 @@
         <div class="mb-6">
           <h3 class="text-lg font-semibold mb-3">歌手</h3>
           <div class="flex flex-wrap gap-2">
-            <div v-for="(artistName, index) in musicStore.current.detail?.artist_names" :key="artistName"
+            <div v-for="(id, index) in musicStore.current.detail?.artist_ids" :key="id"
               class="flex items-center bg-gray-100 px-3 py-1 rounded-full text-sm">
-              <span>{{ artistName }}</span>
-              <NIcon :component="musicStore.likeMap[musicStore.current.detail?.artist_ids[index]] ? Heart : HeartOutline" 
-              class="ml-2 cursor-pointer hover:text-red-500" @click="toggleArtistLike(musicStore.current.detail?.artist_ids[index], artistName)" />
+              <span>{{ musicStore.current.detail?.artist_names[index]}}</span>
+              <NIcon :component="musicStore.likeMap.get(id) ? Heart : HeartOutline" 
+              class="ml-2 cursor-pointer hover:text-red-500" @click="toggleArtistLike(id, musicStore.current.detail?.artist_names[index])" />
             </div>
           </div>
         </div>
@@ -91,8 +91,9 @@ const toggleArtistLike = async (artistId: number | undefined, artistName: string
 
 onMounted(() => {
   setInterval (() => {
-    console.log('111'); // 3000ms 后输出
-    console.log(musicStore.likeMap); // 3000ms 后输出
+    console.log(musicStore.current.detail?.artist_ids[0]); 
+    console.log(musicStore.likeMap); 
+    console.log(); 
   }, 3000);
 });
 
