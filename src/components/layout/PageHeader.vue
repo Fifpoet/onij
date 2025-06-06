@@ -1,65 +1,3 @@
-<script setup lang="ts">
-import {ref} from 'vue'
-import {Icon} from '@iconify/vue';
-import {useAppStore} from '@/store';
-import {RouterLink} from 'vue-router';
-import {NButton, NDropdown} from 'naive-ui'
-import {renderIcon} from "@/util/icon.ts";
-// import MobileSideBar from './MobileSideBar.vue';
-
-const appStore = useAppStore()
-
-const navClass = ref('nav')
-const barShow = ref(true)
-
-
-
-
-
-const options = {
-  "mbox": [
-    {
-      label: 'relay',
-      icon: renderIcon('mdi:archive'),
-    },
-    {
-      label: 'trending', // to replace the info stream
-      icon: renderIcon('mdi:archive'),
-    },
-    {
-      label: 'footprint',
-      icon: renderIcon('mdi:archive'),
-    },
-  ],
-  "goroutine": [
-    {
-      label: 'weekly', // recipe; training; music
-      icon: renderIcon('mdi:archive'),
-    },
-    {
-      label: 'record', // relate some doc
-      icon: renderIcon('mdi:archive'),
-    }
-  ],
-  "recall": [
-    {
-      label: 'album',
-      icon: renderIcon('mdi:archive'),
-    },
-    {
-      label: 'poem',
-      icon: renderIcon('mdi:archive'),
-    },
-    {
-      label: 'treasure', // from network
-      icon: renderIcon('mdi:archive'),
-    }
-  ]
-}
-
-
-</script>
-
 
 <template>
   <!-- 移动端顶部导航栏 -->
@@ -104,5 +42,78 @@ const options = {
   </Transition>
 </template>
 
+
+<script setup lang="ts">
+import {ref} from 'vue'
+import {Icon} from '@iconify/vue';
+import {useAppStore, useMusicStore} from '@/store';
+import {RouterLink} from 'vue-router';
+import {NButton, NDropdown} from 'naive-ui'
+import {renderIcon} from "@/util/icon.ts";
+import { MidShowWhat } from '@/api/types';
+// import MobileSideBar from './MobileSideBar.vue';
+
+const appStore = useAppStore()
+const musicStore = useMusicStore()
+
+const navClass = ref('nav')
+const barShow = ref(true)
+
+
+
+
+
+const options = {
+  "mbox": [
+    {
+      label: 'relay',
+      icon: renderIcon('mdi:archive'),
+    },
+    {
+      label: 'trending', // to replace the info stream
+      icon: renderIcon('mdi:archive'),
+    },
+    {
+      label: 'footprint',
+      icon: renderIcon('mdi:archive'),
+    },
+  ],
+  "goroutine": [
+    {
+      label: 'weekly', // recipe; training; music
+      icon: renderIcon('mdi:archive'),
+    },
+    {
+      label: 'record', // relate some doc
+      icon: renderIcon('mdi:archive'),
+    }
+  ],
+  "recall": [
+    {
+      label: 'memo',
+      icon: renderIcon('mdi:archive'),
+      props: {
+            onClick: () => {
+              handleMenuAlbum()
+            }
+          }
+    },
+    {
+      label: 'poem',
+      icon: renderIcon('mdi:archive'),
+    },
+    {
+      label: 'treasure', // from network
+      icon: renderIcon('mdi:archive'),
+    }
+  ]
+}
+
+const handleMenuAlbum = () => {
+  musicStore.setMidShowWhat(MidShowWhat.ShowMemoList)
+}
+
+
+</script>
 
 <style scoped></style>

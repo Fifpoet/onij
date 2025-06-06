@@ -9,3 +9,4 @@ pinia.use(piniaPluginPersistedstate)
 
 export * from './app'
 export * from './user'
+export * from './music'
