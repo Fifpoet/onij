@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 
-const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://127.0.0.1:8888/";
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://127.0.0.1:8889/";
 
 const apiClient = axios.create({
     baseURL: SERVER_URL,

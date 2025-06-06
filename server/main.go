@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	h := server.Default()
+	h := server.Default(server.WithHostPorts(":8889"))
 
 	h.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://onij.fun", "http://localhost:18968"},
@@ -20,6 +20,7 @@ func main() {
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
+	
 
 	handler.InitApp()
 	register(h)
