@@ -10,6 +10,8 @@ import (
 	_ "image/png"  // 必须导入
 	"log"
 	"mime/multipart"
+	"onij/model/api"
+	"onij/util/boost/tool"
 	"os"
 	"strings"
 	"time"
@@ -46,6 +48,34 @@ func getQiniuMac() *qbox.Mac {
 		panic("sk is empty")
 	}
 	return qbox.NewMac(ak, sk)
+}
+
+func ListFiles(ctx context.Context) ([]*api.DriverInfo, error) {
+	bucketManager := getManager()
+	files, pre, _, _, err := bucketManager.ListFiles(bk, "music/", "/", "", 10)
+	if err != nil {
+		return nil, err
+	}
+	println(tool.ToJson(files))
+	println(tool.ToJson(pre))
+	return []*api.DriverInfo{}, nil
+}
+
+func GetFiles(ctx context.Context, key string) ([]byte, error) {
+	bucketManager := getManager()
+
+	var res []byte
+	r, err := bucketManager.Get(bk, key, nil)
+	if err != nil {
+		log.Printf("GetFiles, get file failed: err = %v \n", err)
+		return nil, err
+	}
+	_, err = r.Body.Read(res)
+	if err != nil {
+		log.Printf("GetFiles, read file failed: err = %v \n", err)
+		return nil, err
+	}
+	return res, nil
 }
 
 func UploadFile(ctx context.Context, info UploadInfo) (string, error) {
@@ -91,13 +121,7 @@ func DownloadFile(key string) string {
 }
 
 func DeleteFile(key string) error {
-	mac := getQiniuMac()
-	cfg := storage.Config{
-		Zone:          &storage.ZoneHuadong,
-		UseHTTPS:      false,
-		UseCdnDomains: false,
-	}
-	bucketManager := storage.NewBucketManager(mac, &cfg)
+	bucketManager := getManager()
 
 	err := bucketManager.Delete(bk, key)
 	if err != nil {
@@ -106,4 +130,16 @@ func DeleteFile(key string) error {
 	}
 	fmt.Println("File deleted successfully.")
 	return nil
+}
+
+func getManager() *storage.BucketManager {
+	mac := getQiniuMac()
+	cfg := storage.Config{
+		Zone:          &storage.ZoneHuadong,
+		UseHTTPS:      false,
+		UseCdnDomains: false,
+	}
+	bucketManager := storage.NewBucketManager(mac, &cfg)
+
+	return bucketManager
 }

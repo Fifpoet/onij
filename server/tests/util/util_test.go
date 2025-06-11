@@ -42,3 +42,20 @@ func TestMd5(t *testing.T) {
 func TestGetFileName(t *testing.T) {
 	t.Log(util.IdGen.Generate())
 }
+
+func TestGetList(t *testing.T) {
+	files, err := util.GetFiles(nil, "music/a")
+	if err != nil {
+		t.Fatalf("get file list failed %v", err)
+		return
+	}
+	t.Log(files)
+}
+
+func TestList(t *testing.T) {
+	files, err := util.ListFiles(nil)
+	if err != nil {
+		return
+	}
+	t.Log(files)
+}

@@ -71,3 +71,9 @@ message ArtistProfile {
   string name = 2;
   ArtistType artist_type = 3;
 }
+
+message DriverInfo {
+  string name = 1;
+  int64 size = 2;
+  bool is_dir = 3;
+}

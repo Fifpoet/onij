@@ -584,6 +584,69 @@ func (x *ArtistProfile) GetArtistType() ArtistType {
 	return ArtistType_AT_Unknown
 }
 
+type DriverInfo struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Name  string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty" form:"name" query:"name"`
+	Size  int64  `protobuf:"varint,2,opt,name=size,proto3" json:"size,omitempty" form:"size" query:"size"`
+	IsDir bool   `protobuf:"varint,3,opt,name=is_dir,json=isDir,proto3" json:"is_dir,omitempty" form:"is_dir" query:"is_dir"`
+}
+
+func (x *DriverInfo) Reset() {
+	*x = DriverInfo{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_all_model_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *DriverInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DriverInfo) ProtoMessage() {}
+
+func (x *DriverInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_all_model_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DriverInfo.ProtoReflect.Descriptor instead.
+func (*DriverInfo) Descriptor() ([]byte, []int) {
+	return file_all_model_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *DriverInfo) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *DriverInfo) GetSize() int64 {
+	if x != nil {
+		return x.Size
+	}
+	return 0
+}
+
+func (x *DriverInfo) GetIsDir() bool {
+	if x != nil {
+		return x.IsDir
+	}
+	return false
+}
+
 var File_all_model_proto protoreflect.FileDescriptor
 
 var file_all_model_proto_rawDesc = []byte{
@@ -682,9 +745,13 @@ var file_all_model_proto_rawDesc = []byte{
 	0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x31, 0x0a, 0x0b, 0x61, 0x72, 0x74, 0x69, 0x73, 0x74,
 	0x5f, 0x74, 0x79, 0x70, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x10, 0x2e, 0x6f, 0x6e,
 	0x69, 0x6a, 0x2e, 0x41, 0x72, 0x74, 0x69, 0x73, 0x74, 0x54, 0x79, 0x70, 0x65, 0x52, 0x0a, 0x61,
-	0x72, 0x74, 0x69, 0x73, 0x74, 0x54, 0x79, 0x70, 0x65, 0x42, 0x10, 0x5a, 0x0e, 0x6f, 0x6e, 0x69,
-	0x6a, 0x2f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x2f, 0x61, 0x70, 0x69, 0x62, 0x06, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x33,
+	0x72, 0x74, 0x69, 0x73, 0x74, 0x54, 0x79, 0x70, 0x65, 0x22, 0x4b, 0x0a, 0x0a, 0x44, 0x72, 0x69,
+	0x76, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x73,
+	0x69, 0x7a, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x04, 0x73, 0x69, 0x7a, 0x65, 0x12,
+	0x15, 0x0a, 0x06, 0x69, 0x73, 0x5f, 0x64, 0x69, 0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x08, 0x52,
+	0x05, 0x69, 0x73, 0x44, 0x69, 0x72, 0x42, 0x10, 0x5a, 0x0e, 0x6f, 0x6e, 0x69, 0x6a, 0x2f, 0x6d,
+	0x6f, 0x64, 0x65, 0x6c, 0x2f, 0x61, 0x70, 0x69, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -699,7 +766,7 @@ func file_all_model_proto_rawDescGZIP() []byte {
 	return file_all_model_proto_rawDescData
 }
 
-var file_all_model_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_all_model_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_all_model_proto_goTypes = []interface{}{
 	(*MusicDetail)(nil),   // 0: onij.MusicDetail
 	(*TagDetail)(nil),     // 1: onij.TagDetail
@@ -707,23 +774,24 @@ var file_all_model_proto_goTypes = []interface{}{
 	(*AlbumProfile)(nil),  // 3: onij.AlbumProfile
 	(*MusicProfile)(nil),  // 4: onij.MusicProfile
 	(*ArtistProfile)(nil), // 5: onij.ArtistProfile
-	(ResourceType)(0),     // 6: onij.ResourceType
-	(TagBiz)(0),           // 7: onij.TagBiz
-	(TagGroup)(0),         // 8: onij.TagGroup
-	(TagType)(0),          // 9: onij.TagType
-	(ArtistType)(0),       // 10: onij.ArtistType
+	(*DriverInfo)(nil),    // 6: onij.DriverInfo
+	(ResourceType)(0),     // 7: onij.ResourceType
+	(TagBiz)(0),           // 8: onij.TagBiz
+	(TagGroup)(0),         // 9: onij.TagGroup
+	(TagType)(0),          // 10: onij.TagType
+	(ArtistType)(0),       // 11: onij.ArtistType
 }
 var file_all_model_proto_depIdxs = []int32{
 	3,  // 0: onij.MusicDetail.album_profile:type_name -> onij.AlbumProfile
 	1,  // 1: onij.MusicDetail.tag_details:type_name -> onij.TagDetail
-	6,  // 2: onij.TagDetail.resource_type:type_name -> onij.ResourceType
-	7,  // 3: onij.TagDetail.tag_biz:type_name -> onij.TagBiz
-	8,  // 4: onij.TagDetail.tag_group:type_name -> onij.TagGroup
-	9,  // 5: onij.TagDetail.tag_type:type_name -> onij.TagType
+	7,  // 2: onij.TagDetail.resource_type:type_name -> onij.ResourceType
+	8,  // 3: onij.TagDetail.tag_biz:type_name -> onij.TagBiz
+	9,  // 4: onij.TagDetail.tag_group:type_name -> onij.TagGroup
+	10, // 5: onij.TagDetail.tag_type:type_name -> onij.TagType
 	4,  // 6: onij.AlbumDetail.related_musics:type_name -> onij.MusicProfile
 	5,  // 7: onij.MusicProfile.singer_profiles:type_name -> onij.ArtistProfile
 	1,  // 8: onij.MusicProfile.tags:type_name -> onij.TagDetail
-	10, // 9: onij.ArtistProfile.artist_type:type_name -> onij.ArtistType
+	11, // 9: onij.ArtistProfile.artist_type:type_name -> onij.ArtistType
 	10, // [10:10] is the sub-list for method output_type
 	10, // [10:10] is the sub-list for method input_type
 	10, // [10:10] is the sub-list for extension type_name
@@ -811,6 +879,18 @@ func file_all_model_proto_init() {
 				return nil
 			}
 		}
+		file_all_model_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DriverInfo); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	file_all_model_proto_msgTypes[1].OneofWrappers = []interface{}{}
 	type x struct{}
@@ -819,7 +899,7 @@ func file_all_model_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_all_model_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
