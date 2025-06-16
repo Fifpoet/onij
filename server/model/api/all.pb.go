@@ -1197,6 +1197,7 @@ type GetFileListResp struct {
 	Code    int32         `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty" form:"code" query:"code"`
 	Message string        `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty" form:"message" query:"message"`
 	Files   []*FileDetail `protobuf:"bytes,10,rep,name=files,proto3" json:"files,omitempty" form:"files" query:"files"`
+	Total   int32         `protobuf:"varint,11,opt,name=total,proto3" json:"total,omitempty" form:"total" query:"total"`
 }
 
 func (x *GetFileListResp) Reset() {
@@ -1250,6 +1251,13 @@ func (x *GetFileListResp) GetFiles() []*FileDetail {
 		return x.Files
 	}
 	return nil
+}
+
+func (x *GetFileListResp) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
 }
 
 // 下载文件

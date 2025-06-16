@@ -1,61 +1,90 @@
 <template>
   <Transition name="fade">
     <div v-if="musicStore.midShowWhat == MidShowWhat.ShowFileList" class="p-5">
-      <n-card title="文件列表" class="w-full max-w-4xl mx-auto">
-        <n-list hoverable>
-          <n-list-item 
-            v-for="file in fileList" 
-            :key="file.id" 
-            class="border-b border-gray-100 cursor-pointer transition-colors duration-200 hover:bg-gray-50 last:border-b-0"
-            clickable
-            @click="handleFileClick(file)"
-          >
-            <template #prefix>
-              <n-icon size="24" class="text-gray-500">
-                <component :is="getFileIcon(file.format)" />
-              </n-icon>
-            </template>
-            
-            <n-thing :title="file.name" content-style="margin-top: 4px;">
-              <template #description>
-                <div class="flex gap-4 text-gray-500 text-xs">
-                  <span class="min-w-15">{{ getFileSize(file.format) }}</span>
-                  <span class="min-w-30">{{ formatTime(file.origin_at) }}</span>
-                </div>
+      <!-- 文件列表 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div 
+          v-for="file in fileList" 
+          :key="file.id" 
+          class="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:border-gray-300"
+          @click="handleFileClick(file)"
+        >
+          <!-- 文件图标 -->
+          <div class="flex justify-center mb-3">
+            <n-icon size="48" class="text-gray-500">
+              <component :is="getFileIcon(file.format)" />
+            </n-icon>
+          </div>
+          
+          <!-- 文件名称 -->
+          <div class="text-center mb-2">
+            <h3 class="text-sm font-medium text-gray-900 truncate" :title="file.name">
+              {{ file.name }}
+            </h3>
+          </div>
+          
+          <!-- 文件信息 -->
+          <div class="text-center text-xs text-gray-500 space-y-1">
+            <div v-if="file.format !== FileType.FT_Folder">{{ getFileSize(file.format) }}</div>
+            <div v-if="file.format !== FileType.FT_Folder">{{ formatTime(file.origin_at) }}</div>
+          </div>
+          
+          <!-- 操作按钮 -->
+          <div v-if="file.format !== FileType.FT_Folder" class="flex justify-center mt-3 space-x-2" @click.stop>
+            <n-button size="tiny" type="primary" @click="downloadFile(file)">
+              <template #icon>
+                <n-icon>
+                  <DownloadOutline />
+                </n-icon>
               </template>
-            </n-thing>
-            
-            <template #suffix>
-              <div v-if="file.format !== FileType.FT_Folder" class="flex items-center" @click.stop>
-                <n-button size="small" type="primary" @click="downloadFile(file)">
-                  <template #icon>
-                    <n-icon>
-                      <DownloadOutline />
-                    </n-icon>
-                  </template>
-                  下载
-                </n-button>
-                <n-button size="small" type="error" @click="deleteFile(file)" class="ml-2">
-                  <template #icon>
-                    <n-icon>
-                      <TrashOutline />
-                    </n-icon>
-                  </template>
-                  删除
-                </n-button>
-              </div>
-            </template>
-          </n-list-item>
-        </n-list>
-        
-        <div v-if="loading" class="flex justify-center py-5">
-          <n-spin size="large" />
+              下载
+            </n-button>
+            <n-button size="tiny" type="error" @click="deleteFile(file)">
+              <template #icon>
+                <n-icon>
+                  <TrashOutline />
+                </n-icon>
+              </template>
+              删除
+            </n-button>
+          </div>
         </div>
-        
-        <div v-if="fileList.length === 0 && !loading" class="py-10">
-          <n-empty description="暂无文件" />
+      </div>
+      
+      <!-- 加载状态 -->
+      <div v-if="loading" class="flex justify-center py-8">
+        <n-spin size="large" />
+      </div>
+      
+      <!-- 空状态 -->
+      <div v-if="fileList.length === 0 && !loading" class="flex justify-center py-16">
+        <n-empty description="暂无文件" />
+      </div>
+      
+      <!-- 分页 -->
+      <div v-if="fileList.length > 0" class="flex justify-center mt-6">
+        <div class="flex flex-col items-center space-y-2">
+          <!-- 分页信息 -->
+          <!-- <div class="text-sm text-gray-600">
+            共 {{ totalCount }} 个文件，
+            第 {{ currentPage }} 页，
+            每页 {{ pageSize }} 个，
+            <span v-if="isLastPage">本页 {{ fileList.length }} 个</span>
+            <span v-else>本页 {{ pageSize }} 个</span>
+          </div> -->
+          
+          <!-- 分页控件 -->
+          <n-pagination
+            v-model:page="currentPage"
+            :page-count="totalPages"
+            :page-sizes="[12, 24, 48, 96]"
+            :page-size="pageSize"
+            show-size-picker
+            @update:page="handlePageChange"
+            @update:page-size="handlePageSizeChange"
+          />
         </div>
-      </n-card>
+      </div>
     </div>
   </Transition>
 </template>
@@ -63,14 +92,11 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { 
-  NCard, 
-  NList, 
-  NListItem, 
-  NThing, 
   NIcon, 
   NButton, 
   NSpin, 
   NEmpty,
+  NPagination,
   useMessage
 } from 'naive-ui';
 import { 
@@ -107,8 +133,11 @@ const emit = defineEmits<{
 const fileList = ref<FileDetail[]>([]);
 const loading = ref(false);
 const currentPage = ref(1);
-const pageSize = ref(20);
+const pageSize = ref(12);
 const hasMore = ref(true);
+const totalCount = ref(0);
+const totalPages = ref(0);
+const isLastPage = ref(false);
 
 // 消息提示
 const message = useMessage();
@@ -127,7 +156,8 @@ const fetchFileList = async (page: number = 1, append: boolean = false) => {
     
     const response = await GetFileList(req);
     
-    if (response.code === 0 && response.files) {
+    // 直接处理数据，不检查code
+    if (response.files) {
       if (append) {
         fileList.value.push(...response.files);
       } else {
@@ -136,12 +166,25 @@ const fetchFileList = async (page: number = 1, append: boolean = false) => {
       
       hasMore.value = response.files.length === pageSize.value;
       currentPage.value = page;
+      totalCount.value = response.total || 0;
+      totalPages.value = Math.ceil(totalCount.value / pageSize.value);
+      isLastPage.value = currentPage.value >= totalPages.value;
     } else {
-      message.error(response.message || '获取文件列表失败');
+      // 如果没有files字段，清空列表
+      fileList.value = [];
+      hasMore.value = false;
+      totalCount.value = 0;
+      totalPages.value = 0;
+      isLastPage.value = true;
     }
   } catch (error) {
     console.error('获取文件列表失败:', error);
-    message.error('获取文件列表失败');
+    // 出错时清空列表
+    fileList.value = [];
+    hasMore.value = false;
+    totalCount.value = 0;
+    totalPages.value = 0;
+    isLastPage.value = true;
   } finally {
     loading.value = false;
   }
@@ -186,7 +229,18 @@ const getFileSize = (fileType: FileType): string => {
 
 // 格式化时间
 const formatTime = (timestamp: number): string => {
+  // 检查时间戳是否有效
+  if (timestamp <= 0 || timestamp === -62135596800) {
+    return '未知时间';
+  }
+  
   const date = new Date(timestamp * 1000);
+  
+  // 检查日期是否有效
+  if (isNaN(date.getTime())) {
+    return '未知时间';
+  }
+  
   return date.toLocaleString('zh-CN', {
     year: 'numeric',
     month: '2-digit',
@@ -201,12 +255,25 @@ const handleFileClick = (file: FileDetail) => {
   emit('fileClick', file);
 };
 
+// 处理页码变化
+const handlePageChange = (page: number) => {
+  currentPage.value = page;
+  fetchFileList(page);
+};
+
+// 处理每页数量变化
+const handlePageSizeChange = (size: number) => {
+  pageSize.value = size;
+  currentPage.value = 1;
+  fetchFileList(1);
+};
+
 // 下载文件
 const downloadFile = async (file: FileDetail) => {
   try {
     const response = await DownloadFile({ file_ids: [file.id] });
     
-    if (response.code === 0 && response.urls && response.urls.length > 0) {
+    if (response.urls && response.urls.length > 0) {
       // 创建下载链接
       const link = document.createElement('a');
       link.href = response.urls[0];
@@ -214,13 +281,8 @@ const downloadFile = async (file: FileDetail) => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
-      message.success('开始下载文件');
-    } else {
-      message.error(response.message || '下载失败');
     }
   } catch (error) {
-    console.error('下载文件失败:', error);
     message.error('下载文件失败');
   }
 };
@@ -228,7 +290,7 @@ const downloadFile = async (file: FileDetail) => {
 // 删除文件
 const deleteFile = async (file: FileDetail) => {
   // TODO: 实现删除文件接口
-  message.warning('删除功能待实现');
+  console.log('删除文件:', file.name);
 };
 
 // 暴露刷新方法
@@ -240,57 +302,3 @@ defineExpose({
   refresh
 });
 </script>
-
-<style scoped>
-.file-list-container {
-  padding: 20px;
-}
-
-.file-item {
-  border-bottom: 1px solid #f0f0f0;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.file-item:hover {
-  background-color: #f8f9fa;
-}
-
-.file-item:last-child {
-  border-bottom: none;
-}
-
-.file-icon {
-  color: #666;
-}
-
-.file-info {
-  display: flex;
-  gap: 16px;
-  color: #999;
-  font-size: 12px;
-}
-
-.file-size {
-  min-width: 60px;
-}
-
-.file-time {
-  min-width: 120px;
-}
-
-.file-actions {
-  display: flex;
-  align-items: center;
-}
-
-.loading-container {
-  display: flex;
-  justify-content: center;
-  padding: 20px;
-}
-
-.empty-container {
-  padding: 40px;
-}
-</style>

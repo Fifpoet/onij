@@ -38,7 +38,7 @@ func (r *UploadFileResult) Resp() *api.UploadFileResp {
 
 type GetFileListParam struct {
 	ParentId int64
-	Page util.Page
+	Page     util.Page
 }
 
 func NewGetFileListParam(req *api.GetFileListReq) *GetFileListParam {
@@ -53,15 +53,22 @@ func NewGetFileListParam(req *api.GetFileListReq) *GetFileListParam {
 
 type GetFileListResult struct {
 	Files []*mysql.File
+	Total int32
 }
+
 func (r *GetFileListResult) Resp() *api.GetFileListResp {
 	res := collext.Pick(r.Files, func(f *mysql.File) *api.FileDetail {
+		var originAt int64 = 0
+		if f.OriginAt != nil {
+			originAt = f.OriginAt.Unix()
+		}
+
 		return &api.FileDetail{
-			Id: f.Id,
-			Name: f.Name,
-			Format: api.FileType(f.Format),
-			ParentId: f.ParentId,
-			OriginAt: f.OriginAt.Unix(),
+			Id:        f.Id,
+			Name:      f.Name,
+			Format:    api.FileType(f.Format),
+			ParentId:  f.ParentId,
+			OriginAt:  originAt,
 			CreatedAt: f.CreatedAt.Unix(),
 			UpdatedAt: f.UpdatedAt.Unix(),
 		}
@@ -73,12 +80,14 @@ func (r *GetFileListResult) Resp() *api.GetFileListResp {
 		Code:    util.BaseCodeOK,
 		Message: util.BaseMsgOK,
 		Files:   res,
+		Total:   r.Total,
 	}
 }
 
 type DownloadFileParam struct {
 	FileIds []int64
 }
+
 func NewDownloadFileParam(req *api.DownloadFileReq) *DownloadFileParam {
 	return &DownloadFileParam{
 		FileIds: req.FileIds,

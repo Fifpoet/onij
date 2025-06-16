@@ -16,7 +16,6 @@ type FileLogic interface {
 	DownloadByIds(ctx context.Context, param *prm.DownloadFileParam) (*prm.DownloadFileResult, error)
 }
 
-
 type fileLogic struct {
 	*infra.AllInfra
 }
@@ -44,8 +43,16 @@ func (f *fileLogic) GetList(ctx context.Context, param *prm.GetFileListParam) (*
 	if err != nil {
 		return nil, err
 	}
+
+	// 获取总数
+	total, err := f.FileDal.CountByParentId(param.ParentId)
+	if err != nil {
+		return nil, err
+	}
+
 	return &prm.GetFileListResult{
 		Files: files,
+		Total: total,
 	}, nil
 }
 

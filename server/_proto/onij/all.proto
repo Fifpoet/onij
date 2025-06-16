@@ -124,6 +124,7 @@ message GetFileListResp {
   int32 code = 1;
   string message = 2;
   repeated FileDetail files = 10;
+  int32 total = 11;
 }
 
 // 下载文件

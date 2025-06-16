@@ -42,6 +42,7 @@ export interface GetFileListResp {
   code: number;
   message: string;
   files: FileDetail[];
+  total: number;
 }
 
 /* 文件详情 */

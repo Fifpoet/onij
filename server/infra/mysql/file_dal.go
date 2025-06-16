@@ -18,6 +18,7 @@ type FileDal interface {
 	GetByHash(key string) (*File, error)
 	GetByIds(ids ...int64) ([]*File, error)
 	GetByParentId(parentId int64, page util.Page) ([]*File, error)
+	CountByParentId(parentId int64) (int32, error)
 }
 type fileDal struct {
 	db *gorm.DB
@@ -35,7 +36,7 @@ type File struct {
 	Hash     string `json:"hash" gorm:"not null;uniqueIndex:uk_hash"`
 	ParentId int64  `json:"parent_id"`
 
-	OriginAt time.Time `json:"origin_at"`
+	OriginAt  *time.Time     `json:"origin_at"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `json:"deleted_at"`
@@ -102,4 +103,14 @@ func (f *fileDal) GetByIds(ids ...int64) ([]*File, error) {
 		return nil, err
 	}
 	return res, nil
+}
+
+func (f *fileDal) CountByParentId(parentId int64) (int32, error) {
+	var count int64
+	err := f.db.Model(&File{}).Where("parent_id = ?", parentId).Count(&count).Error
+	if err != nil {
+		log.Printf("CountByParentId, get file count failed: err = %v \n", err)
+		return 0, err
+	}
+	return int32(count), nil
 }
