@@ -80,8 +80,13 @@ const options = {
   ],
   "goroutine": [
     {
-      label: 'weekly', // recipe; training; music
+      label: 'file',
       icon: renderIcon('mdi:archive'),
+      props: {
+            onClick: () => {
+              handleChangeMidShowWhat(MidShowWhat.ShowFileList)
+            }
+          }
     },
     {
       label: 'record', // relate some doc
@@ -94,7 +99,7 @@ const options = {
       icon: renderIcon('mdi:archive'),
       props: {
             onClick: () => {
-              handleMenuAlbum()
+              handleChangeMidShowWhat(MidShowWhat.ShowMemoList)
             }
           }
     },
@@ -109,8 +114,8 @@ const options = {
   ]
 }
 
-const handleMenuAlbum = () => {
-  musicStore.setMidShowWhat(MidShowWhat.ShowMemoList)
+const handleChangeMidShowWhat = (what: MidShowWhat) => {
+  musicStore.setMidShowWhat(what)
 }
 
 

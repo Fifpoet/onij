@@ -1,65 +1,67 @@
 <template>
-  <div class="p-5">
-    <n-card title="文件列表" class="w-full max-w-4xl mx-auto">
-      <n-list hoverable>
-        <n-list-item 
-          v-for="file in fileList" 
-          :key="file.id" 
-          class="border-b border-gray-100 cursor-pointer transition-colors duration-200 hover:bg-gray-50 last:border-b-0"
-          clickable
-          @click="handleFileClick(file)"
-        >
-          <template #prefix>
-            <n-icon size="24" class="text-gray-500">
-              <component :is="getFileIcon(file.format)" />
-            </n-icon>
-          </template>
-          
-          <n-thing :title="file.name" content-style="margin-top: 4px;">
-            <template #description>
-              <div class="flex gap-4 text-gray-500 text-xs">
-                <span class="min-w-15">{{ getFileSize(file.format) }}</span>
-                <span class="min-w-30">{{ formatTime(file.origin_at) }}</span>
+  <Transition name="fade">
+    <div v-if="musicStore.midShowWhat == MidShowWhat.ShowFileList" class="p-5">
+      <n-card title="文件列表" class="w-full max-w-4xl mx-auto">
+        <n-list hoverable>
+          <n-list-item 
+            v-for="file in fileList" 
+            :key="file.id" 
+            class="border-b border-gray-100 cursor-pointer transition-colors duration-200 hover:bg-gray-50 last:border-b-0"
+            clickable
+            @click="handleFileClick(file)"
+          >
+            <template #prefix>
+              <n-icon size="24" class="text-gray-500">
+                <component :is="getFileIcon(file.format)" />
+              </n-icon>
+            </template>
+            
+            <n-thing :title="file.name" content-style="margin-top: 4px;">
+              <template #description>
+                <div class="flex gap-4 text-gray-500 text-xs">
+                  <span class="min-w-15">{{ getFileSize(file.format) }}</span>
+                  <span class="min-w-30">{{ formatTime(file.origin_at) }}</span>
+                </div>
+              </template>
+            </n-thing>
+            
+            <template #suffix>
+              <div v-if="file.format !== FileType.FT_Folder" class="flex items-center" @click.stop>
+                <n-button size="small" type="primary" @click="downloadFile(file)">
+                  <template #icon>
+                    <n-icon>
+                      <DownloadOutline />
+                    </n-icon>
+                  </template>
+                  下载
+                </n-button>
+                <n-button size="small" type="error" @click="deleteFile(file)" class="ml-2">
+                  <template #icon>
+                    <n-icon>
+                      <TrashOutline />
+                    </n-icon>
+                  </template>
+                  删除
+                </n-button>
               </div>
             </template>
-          </n-thing>
-          
-          <template #suffix>
-            <div v-if="file.format !== FileType.FT_Folder" class="flex items-center" @click.stop>
-              <n-button size="small" type="primary" @click="downloadFile(file)">
-                <template #icon>
-                  <n-icon>
-                    <DownloadOutline />
-                  </n-icon>
-                </template>
-                下载
-              </n-button>
-              <n-button size="small" type="error" @click="deleteFile(file)" class="ml-2">
-                <template #icon>
-                  <n-icon>
-                    <TrashOutline />
-                  </n-icon>
-                </template>
-                删除
-              </n-button>
-            </div>
-          </template>
-        </n-list-item>
-      </n-list>
-      
-      <div v-if="loading" class="flex justify-center py-5">
-        <n-spin size="large" />
-      </div>
-      
-      <div v-if="fileList.length === 0 && !loading" class="py-10">
-        <n-empty description="暂无文件" />
-      </div>
-    </n-card>
-  </div>
+          </n-list-item>
+        </n-list>
+        
+        <div v-if="loading" class="flex justify-center py-5">
+          <n-spin size="large" />
+        </div>
+        
+        <div v-if="fileList.length === 0 && !loading" class="py-10">
+          <n-empty description="暂无文件" />
+        </div>
+      </n-card>
+    </div>
+  </Transition>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, watch } from 'vue';
 import { 
   NCard, 
   NList, 
@@ -81,6 +83,11 @@ import {
 } from '@vicons/ionicons5';
 import { GetFileList, DownloadFile } from '@/api';
 import { FileType, FileDetail, GetFileListReq } from '@/api/types/file';
+import { MidShowWhat } from '@/api/types';
+import { useMusicStore } from '@/store/music';
+
+// 使用全局状态
+const musicStore = useMusicStore();
 
 // Props
 interface Props {

@@ -1,6 +1,8 @@
 // src/api/types/music.ts
 
-import { TagType } from "./tag";
+import { TagType, TagDetail } from "./tag";
+import { ArtistProfile } from "./artist";
+import { AlbumProfile } from "./album";
 
 /* 请求参数类型 */
 export interface GetMusicListReq {
@@ -97,33 +99,6 @@ export interface MusicProfile {
   name: string;
   singer_profiles: ArtistProfile[];
   tags: TagDetail[];
-}
-
-// 专辑信息
-export interface AlbumProfile {
-  id: number;
-  name: string;
-  cover_file_url: string;
-}
-
-// 艺术家信息
-export interface ArtistProfile {
-  id: number;
-  name: string;
-  artist_type: number;
-}
-
-// 标签详情
-export interface TagDetail {
-  resource_id: number;
-  resource_type: number;
-  tag_biz: number;
-  tag_group: number;
-  tag_type: number;
-  target_id?: number;
-  target_type?: number;
-  extra: string;
-  list_show: boolean;
 }
 
 // ********* 自定model
