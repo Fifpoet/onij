@@ -584,18 +584,22 @@ func (x *ArtistProfile) GetArtistType() ArtistType {
 	return ArtistType_AT_Unknown
 }
 
-type DriverInfo struct {
+type FileDetail struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Name  string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty" form:"name" query:"name"`
-	Size  int64  `protobuf:"varint,2,opt,name=size,proto3" json:"size,omitempty" form:"size" query:"size"`
-	IsDir bool   `protobuf:"varint,3,opt,name=is_dir,json=isDir,proto3" json:"is_dir,omitempty" form:"is_dir" query:"is_dir"`
+	Id        int64    `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty" form:"id" query:"id"`
+	Name      string   `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty" form:"name" query:"name"`
+	Format    FileType `protobuf:"varint,3,opt,name=format,proto3,enum=onij.FileType" json:"format,omitempty" form:"format" query:"format"`
+	ParentId  int64    `protobuf:"varint,4,opt,name=parent_id,json=parentId,proto3" json:"parent_id,omitempty" form:"parent_id" query:"parent_id"`
+	OriginAt  int64    `protobuf:"varint,5,opt,name=origin_at,json=originAt,proto3" json:"origin_at,omitempty" form:"origin_at" query:"origin_at"`
+	CreatedAt int64    `protobuf:"varint,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty" form:"created_at" query:"created_at"`
+	UpdatedAt int64    `protobuf:"varint,7,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty" form:"updated_at" query:"updated_at"`
 }
 
-func (x *DriverInfo) Reset() {
-	*x = DriverInfo{}
+func (x *FileDetail) Reset() {
+	*x = FileDetail{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_all_model_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -603,13 +607,13 @@ func (x *DriverInfo) Reset() {
 	}
 }
 
-func (x *DriverInfo) String() string {
+func (x *FileDetail) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*DriverInfo) ProtoMessage() {}
+func (*FileDetail) ProtoMessage() {}
 
-func (x *DriverInfo) ProtoReflect() protoreflect.Message {
+func (x *FileDetail) ProtoReflect() protoreflect.Message {
 	mi := &file_all_model_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -621,30 +625,58 @@ func (x *DriverInfo) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use DriverInfo.ProtoReflect.Descriptor instead.
-func (*DriverInfo) Descriptor() ([]byte, []int) {
+// Deprecated: Use FileDetail.ProtoReflect.Descriptor instead.
+func (*FileDetail) Descriptor() ([]byte, []int) {
 	return file_all_model_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *DriverInfo) GetName() string {
+func (x *FileDetail) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *FileDetail) GetName() string {
 	if x != nil {
 		return x.Name
 	}
 	return ""
 }
 
-func (x *DriverInfo) GetSize() int64 {
+func (x *FileDetail) GetFormat() FileType {
 	if x != nil {
-		return x.Size
+		return x.Format
+	}
+	return FileType_FT_Unknown
+}
+
+func (x *FileDetail) GetParentId() int64 {
+	if x != nil {
+		return x.ParentId
 	}
 	return 0
 }
 
-func (x *DriverInfo) GetIsDir() bool {
+func (x *FileDetail) GetOriginAt() int64 {
 	if x != nil {
-		return x.IsDir
+		return x.OriginAt
 	}
-	return false
+	return 0
+}
+
+func (x *FileDetail) GetCreatedAt() int64 {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return 0
+}
+
+func (x *FileDetail) GetUpdatedAt() int64 {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return 0
 }
 
 var File_all_model_proto protoreflect.FileDescriptor
@@ -745,13 +777,22 @@ var file_all_model_proto_rawDesc = []byte{
 	0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x31, 0x0a, 0x0b, 0x61, 0x72, 0x74, 0x69, 0x73, 0x74,
 	0x5f, 0x74, 0x79, 0x70, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x10, 0x2e, 0x6f, 0x6e,
 	0x69, 0x6a, 0x2e, 0x41, 0x72, 0x74, 0x69, 0x73, 0x74, 0x54, 0x79, 0x70, 0x65, 0x52, 0x0a, 0x61,
-	0x72, 0x74, 0x69, 0x73, 0x74, 0x54, 0x79, 0x70, 0x65, 0x22, 0x4b, 0x0a, 0x0a, 0x44, 0x72, 0x69,
-	0x76, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x73,
-	0x69, 0x7a, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x04, 0x73, 0x69, 0x7a, 0x65, 0x12,
-	0x15, 0x0a, 0x06, 0x69, 0x73, 0x5f, 0x64, 0x69, 0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x08, 0x52,
-	0x05, 0x69, 0x73, 0x44, 0x69, 0x72, 0x42, 0x10, 0x5a, 0x0e, 0x6f, 0x6e, 0x69, 0x6a, 0x2f, 0x6d,
-	0x6f, 0x64, 0x65, 0x6c, 0x2f, 0x61, 0x70, 0x69, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x72, 0x74, 0x69, 0x73, 0x74, 0x54, 0x79, 0x70, 0x65, 0x22, 0xd0, 0x01, 0x0a, 0x0a, 0x46, 0x69,
+	0x6c, 0x65, 0x44, 0x65, 0x74, 0x61, 0x69, 0x6c, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x03, 0x52, 0x02, 0x69, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x26, 0x0a, 0x06,
+	0x66, 0x6f, 0x72, 0x6d, 0x61, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x0e, 0x2e, 0x6f,
+	0x6e, 0x69, 0x6a, 0x2e, 0x46, 0x69, 0x6c, 0x65, 0x54, 0x79, 0x70, 0x65, 0x52, 0x06, 0x66, 0x6f,
+	0x72, 0x6d, 0x61, 0x74, 0x12, 0x1b, 0x0a, 0x09, 0x70, 0x61, 0x72, 0x65, 0x6e, 0x74, 0x5f, 0x69,
+	0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x03, 0x52, 0x08, 0x70, 0x61, 0x72, 0x65, 0x6e, 0x74, 0x49,
+	0x64, 0x12, 0x1b, 0x0a, 0x09, 0x6f, 0x72, 0x69, 0x67, 0x69, 0x6e, 0x5f, 0x61, 0x74, 0x18, 0x05,
+	0x20, 0x01, 0x28, 0x03, 0x52, 0x08, 0x6f, 0x72, 0x69, 0x67, 0x69, 0x6e, 0x41, 0x74, 0x12, 0x1d,
+	0x0a, 0x0a, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x5f, 0x61, 0x74, 0x18, 0x06, 0x20, 0x01,
+	0x28, 0x03, 0x52, 0x09, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x41, 0x74, 0x12, 0x1d, 0x0a,
+	0x0a, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x5f, 0x61, 0x74, 0x18, 0x07, 0x20, 0x01, 0x28,
+	0x03, 0x52, 0x09, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x41, 0x74, 0x42, 0x10, 0x5a, 0x0e,
+	0x6f, 0x6e, 0x69, 0x6a, 0x2f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x2f, 0x61, 0x70, 0x69, 0x62, 0x06,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -774,12 +815,13 @@ var file_all_model_proto_goTypes = []interface{}{
 	(*AlbumProfile)(nil),  // 3: onij.AlbumProfile
 	(*MusicProfile)(nil),  // 4: onij.MusicProfile
 	(*ArtistProfile)(nil), // 5: onij.ArtistProfile
-	(*DriverInfo)(nil),    // 6: onij.DriverInfo
+	(*FileDetail)(nil),    // 6: onij.FileDetail
 	(ResourceType)(0),     // 7: onij.ResourceType
 	(TagBiz)(0),           // 8: onij.TagBiz
 	(TagGroup)(0),         // 9: onij.TagGroup
 	(TagType)(0),          // 10: onij.TagType
 	(ArtistType)(0),       // 11: onij.ArtistType
+	(FileType)(0),         // 12: onij.FileType
 }
 var file_all_model_proto_depIdxs = []int32{
 	3,  // 0: onij.MusicDetail.album_profile:type_name -> onij.AlbumProfile
@@ -792,11 +834,12 @@ var file_all_model_proto_depIdxs = []int32{
 	5,  // 7: onij.MusicProfile.singer_profiles:type_name -> onij.ArtistProfile
 	1,  // 8: onij.MusicProfile.tags:type_name -> onij.TagDetail
 	11, // 9: onij.ArtistProfile.artist_type:type_name -> onij.ArtistType
-	10, // [10:10] is the sub-list for method output_type
-	10, // [10:10] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	12, // 10: onij.FileDetail.format:type_name -> onij.FileType
+	11, // [11:11] is the sub-list for method output_type
+	11, // [11:11] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_all_model_proto_init() }
@@ -880,7 +923,7 @@ func file_all_model_proto_init() {
 			}
 		}
 		file_all_model_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DriverInfo); i {
+			switch v := v.(*FileDetail); i {
 			case 0:
 				return &v.state
 			case 1:

@@ -90,3 +90,13 @@ func _deletetagMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _downloadfileMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getfilelistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

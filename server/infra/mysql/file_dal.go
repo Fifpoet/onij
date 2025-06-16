@@ -2,10 +2,12 @@ package mysql
 
 import (
 	"errors"
+	"log"
+	"onij/util"
+	"time"
+
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	"log"
-	"time"
 )
 
 type FileDal interface {
@@ -15,6 +17,7 @@ type FileDal interface {
 
 	GetByHash(key string) (*File, error)
 	GetByIds(ids ...int64) ([]*File, error)
+	GetByParentId(parentId int64, page util.Page) ([]*File, error)
 }
 type fileDal struct {
 	db *gorm.DB
@@ -30,10 +33,22 @@ type File struct {
 	Format   int32  `json:"format"`
 	StoreKey string `json:"store_key"`
 	Hash     string `json:"hash" gorm:"not null;uniqueIndex:uk_hash"`
+	ParentId int64  `json:"parent_id"`
 
+	OriginAt time.Time `json:"origin_at"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `json:"deleted_at"`
+}
+
+func (f *fileDal) GetByParentId(parentId int64, page util.Page) ([]*File, error) {
+	var res []*File
+	err := f.db.Where("parent_id = ?", parentId).Offset(page.OffsetNum()).Limit(page.LimitNum()).Find(&res).Error
+	if err != nil {
+		log.Printf("GetByParentId, get file failed: err = %v \n", err)
+		return nil, err
+	}
+	return res, nil
 }
 
 func (f *fileDal) Save(file *File) error {

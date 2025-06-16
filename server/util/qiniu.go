@@ -10,8 +10,6 @@ import (
 	_ "image/png"  // 必须导入
 	"log"
 	"mime/multipart"
-	"onij/model/api"
-	"onij/util/boost/tool"
 	"os"
 	"strings"
 	"time"
@@ -48,17 +46,6 @@ func getQiniuMac() *qbox.Mac {
 		panic("sk is empty")
 	}
 	return qbox.NewMac(ak, sk)
-}
-
-func ListFiles(ctx context.Context) ([]*api.DriverInfo, error) {
-	bucketManager := getManager()
-	files, pre, _, _, err := bucketManager.ListFiles(bk, "music/", "/", "", 10)
-	if err != nil {
-		return nil, err
-	}
-	println(tool.ToJson(files))
-	println(tool.ToJson(pre))
-	return []*api.DriverInfo{}, nil
 }
 
 func GetFiles(ctx context.Context, key string) ([]byte, error) {
