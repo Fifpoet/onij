@@ -113,6 +113,40 @@ const hasMore = ref(true);
 // 消息提示
 const message = useMessage();
 
+// 获取文件列表
+const fetchFileList = async (page: number = 1, append: boolean = false) => {
+  if (loading.value) return;
+  
+  loading.value = true;
+  try {
+    const req: GetFileListReq = {
+      parent_id: props.parentId,
+      page,
+      limit: pageSize.value
+    };
+    
+    const response = await GetFileList(req);
+    
+    if (response.code === 0 && response.files) {
+      if (append) {
+        fileList.value.push(...response.files);
+      } else {
+        fileList.value = response.files;
+      }
+      
+      hasMore.value = response.files.length === pageSize.value;
+      currentPage.value = page;
+    } else {
+      message.error(response.message || '获取文件列表失败');
+    }
+  } catch (error) {
+    console.error('获取文件列表失败:', error);
+    message.error('获取文件列表失败');
+  } finally {
+    loading.value = false;
+  }
+};
+
 // 监听parentId变化
 watch(() => props.parentId, () => {
   fetchFileList();
@@ -165,40 +199,6 @@ const formatTime = (timestamp: number): string => {
 // 处理文件点击
 const handleFileClick = (file: FileDetail) => {
   emit('fileClick', file);
-};
-
-// 获取文件列表
-const fetchFileList = async (page: number = 1, append: boolean = false) => {
-  if (loading.value) return;
-  
-  loading.value = true;
-  try {
-    const req: GetFileListReq = {
-      parent_id: props.parentId,
-      page,
-      limit: pageSize.value
-    };
-    
-    const response = await GetFileList(req);
-    
-    if (response.code === 0 && response.files) {
-      if (append) {
-        fileList.value.push(...response.files);
-      } else {
-        fileList.value = response.files;
-      }
-      
-      hasMore.value = response.files.length === pageSize.value;
-      currentPage.value = page;
-    } else {
-      message.error(response.message || '获取文件列表失败');
-    }
-  } catch (error) {
-    console.error('获取文件列表失败:', error);
-    message.error('获取文件列表失败');
-  } finally {
-    loading.value = false;
-  }
 };
 
 // 下载文件
