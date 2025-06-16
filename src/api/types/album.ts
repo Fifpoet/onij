@@ -41,3 +41,9 @@ export interface AlbumDetail {
   
   related_musics: MusicProfile[];
 }
+
+export interface AlbumProfile {
+  id: number;
+  name: string;
+  cover_file_url: string;
+}

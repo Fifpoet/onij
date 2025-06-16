@@ -22,11 +22,6 @@ export interface GetMusicListResp {
     musics: MusicProfile[];
 }
 
-export interface MusicProfile {
-    id: number;
-    name: string;
-}
-
 export enum MusicSortType {
     MST_Unknown = 0,
     MST_Created_At_Desc = 1,
@@ -91,45 +86,44 @@ export interface MusicDetail {
   mp3_file_url: string;
   lyrics_file_url: string;
 
-  // 更新专辑信息结构
-  album_profile: {
-    id: number;
-    name: string;
-    cover_file_url: string;
-  };
-  // 添加标签信息
-  tag_details: Array<{
-    resource_id: number;
-    resource_type: number;
-    tag_biz: number;
-    tag_group: number;
-    tag_type: number;
-    target_id?: number;
-    target_type?: number;
-    extra: string;
-    list_show: boolean;
-  }>;
+  // 专辑信息
+  album_profile: AlbumProfile;
+  // 标签信息
+  tag_details: TagDetail[];
 }
 
 export interface MusicProfile {
   id: number;
   name: string;
-  singer_profiles: Array<{
-    id: number;
-    name: string;
-    artist_type: number;
-  }>;
-  tags: Array<{
-    resource_id: number;
-    resource_type: number;
-    tag_biz: number;
-    tag_group: number;
-    tag_type: number;
-    target_id?: number;
-    target_type?: number;
-    extra: string;
-    list_show: boolean;
-  }>;
+  singer_profiles: ArtistProfile[];
+  tags: TagDetail[];
+}
+
+// 专辑信息
+export interface AlbumProfile {
+  id: number;
+  name: string;
+  cover_file_url: string;
+}
+
+// 艺术家信息
+export interface ArtistProfile {
+  id: number;
+  name: string;
+  artist_type: number;
+}
+
+// 标签详情
+export interface TagDetail {
+  resource_id: number;
+  resource_type: number;
+  tag_biz: number;
+  tag_group: number;
+  tag_type: number;
+  target_id?: number;
+  target_type?: number;
+  extra: string;
+  list_show: boolean;
 }
 
 // ********* 自定model

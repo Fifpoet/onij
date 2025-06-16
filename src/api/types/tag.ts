@@ -31,7 +31,7 @@ export enum TagType {
 
 export interface TagDetail {
   resource_id: number;
-  resource_type: number;
+  resource_type: ResourceType;
   tag_biz: TagBiz;
   tag_group: TagGroup;
   tag_type: TagType;
@@ -107,6 +107,16 @@ export interface UploadTagReq {
 }
 
 export interface UploadTagResp {
+  code: number;
+  message: string;
+}
+
+export interface DeleteTagReq {
+  resource_id: number;
+  tag_type: TagType;
+}
+
+export interface DeleteTagResp {
   code: number;
   message: string;
 }

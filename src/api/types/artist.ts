@@ -34,9 +34,12 @@ export interface SearchArtistReq {
 export interface SearchArtistResp {
   code: number;
   message: string;
-  artists: Array<{
-    id: number;
-    name: string;
-    artist_type: ArtistType;
-  }>;
+  artists: ArtistProfile[];
+}
+
+/* 艺术家信息 */
+export interface ArtistProfile {
+  id: number;
+  name: string;
+  artist_type: ArtistType;
 }
