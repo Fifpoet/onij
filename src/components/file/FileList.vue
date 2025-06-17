@@ -1,83 +1,91 @@
 <template>
   <Transition name="fade">
-    <div v-if="musicStore.midShowWhat == MidShowWhat.ShowFileList" class="p-5">
-      <!-- 文件列表 -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        <div 
-          v-for="file in fileList" 
-          :key="file.id" 
-          class="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:border-gray-300"
-          @click="handleFileClick(file)"
-        >
-          <!-- 文件图标 -->
-          <div class="flex justify-center mb-3">
-            <n-icon size="48" class="text-gray-500">
-              <component :is="getFileIcon(file.format)" />
-            </n-icon>
+    <div v-if="musicStore.midShowWhat == MidShowWhat.ShowFileList">
+      <!-- 文件列表区域 -->
+      <div class="p-5" style="width: 100%; min-width: 900px; margin: 0 auto; position: relative;">
+        <!-- 文件网格 -->
+        <div class="grid gap-4" style="grid-template-columns: repeat(auto-fit, minmax(200px, 200px));">
+          <div 
+            v-for="file in fileList" 
+            :key="file.id" 
+            class="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:border-gray-300 h-48 flex flex-col min-w-0 max-w-full"
+            style="width: 100%; box-sizing: border-box;"
+            @click="handleFileClick(file)"
+          >
+            <!-- 文件图标 -->
+            <div class="flex justify-center mb-3 flex-shrink-0">
+              <n-icon size="48" class="text-gray-500">
+                <component :is="getFileIcon(file.format)" />
+              </n-icon>
+            </div>
+            
+            <!-- 文件名称 - 固定高度，最多两行 -->
+            <div class="text-center mb-2 flex-1 flex flex-col justify-center min-h-0 min-w-0 overflow-hidden">
+              <n-ellipsis 
+                :line-clamp="2" 
+                class="text-sm font-medium text-gray-900 w-full"
+                :title="file.name"
+              >
+                {{ file.name }}
+              </n-ellipsis>
+            </div>
+            
+            <!-- 文件信息 -->
+            <div class="text-center text-xs text-gray-500 space-y-1 flex-shrink-0 overflow-hidden">
+              <div v-if="file.format !== FileType.FT_Folder" class="truncate px-1">{{ getFileSize(file.format) }}</div>
+              <div v-if="file.format !== FileType.FT_Folder" class="truncate px-1">{{ formatTime(file.origin_at) }}</div>
+            </div>
+            
+            <!-- 操作按钮 -->
+            <div v-if="file.format !== FileType.FT_Folder" class="flex justify-center mt-3 space-x-2 flex-shrink-0" @click.stop>
+              <n-button size="tiny" type="primary" @click="downloadFile(file)">
+                <template #icon>
+                  <n-icon>
+                    <DownloadOutline />
+                  </n-icon>
+                </template>
+                下载
+              </n-button>
+              <n-button size="tiny" type="error" @click="deleteFile(file)">
+                <template #icon>
+                  <n-icon>
+                    <TrashOutline />
+                  </n-icon>
+                </template>
+                删除
+              </n-button>
+            </div>
           </div>
-          
-          <!-- 文件名称 -->
-          <div class="text-center mb-2">
-            <h3 class="text-sm font-medium text-gray-900 truncate" :title="file.name">
-              {{ file.name }}
-            </h3>
-          </div>
-          
-          <!-- 文件信息 -->
-          <div class="text-center text-xs text-gray-500 space-y-1">
-            <div v-if="file.format !== FileType.FT_Folder">{{ getFileSize(file.format) }}</div>
-            <div v-if="file.format !== FileType.FT_Folder">{{ formatTime(file.origin_at) }}</div>
-          </div>
-          
-          <!-- 操作按钮 -->
-          <div v-if="file.format !== FileType.FT_Folder" class="flex justify-center mt-3 space-x-2" @click.stop>
-            <n-button size="tiny" type="primary" @click="downloadFile(file)">
-              <template #icon>
-                <n-icon>
-                  <DownloadOutline />
-                </n-icon>
-              </template>
-              下载
-            </n-button>
-            <n-button size="tiny" type="error" @click="deleteFile(file)">
-              <template #icon>
-                <n-icon>
-                  <TrashOutline />
-                </n-icon>
-              </template>
-              删除
-            </n-button>
-          </div>
+        </div>
+        
+        <!-- 加载状态 - 覆盖在网格上方 -->
+        <div v-if="loading" class="absolute inset-0 bg-white bg-opacity-80 flex justify-center items-center z-10">
+          <n-spin size="large" />
+        </div>
+        
+        <!-- 空状态 -->
+        <div v-if="fileList.length === 0 && !loading" class="flex justify-center py-16">
+          <n-empty description="暂无文件" />
         </div>
       </div>
       
-      <!-- 加载状态 -->
-      <div v-if="loading" class="flex justify-center py-8">
-        <n-spin size="large" />
-      </div>
-      
-      <!-- 空状态 -->
-      <div v-if="fileList.length === 0 && !loading" class="flex justify-center py-16">
-        <n-empty description="暂无文件" />
-      </div>
-      
-      <!-- 分页 -->
-      <div v-if="fileList.length > 0" class="flex justify-center mt-6">
+      <!-- 分页控件 -->
+      <div v-if="fileList.length > 0" class="border-t border-gray-200 bg-white p-4">
         <div class="flex flex-col items-center space-y-2">
           <!-- 分页信息 -->
-          <!-- <div class="text-sm text-gray-600">
+          <div class="text-sm text-gray-600">
             共 {{ totalCount }} 个文件，
             第 {{ currentPage }} 页，
             每页 {{ pageSize }} 个，
             <span v-if="isLastPage">本页 {{ fileList.length }} 个</span>
             <span v-else>本页 {{ pageSize }} 个</span>
-          </div> -->
+          </div>
           
           <!-- 分页控件 -->
           <n-pagination
             v-model:page="currentPage"
             :page-count="totalPages"
-            :page-sizes="[12, 24, 48, 96]"
+            :page-sizes="[10, 20, 50, 100]"
             :page-size="pageSize"
             show-size-picker
             @update:page="handlePageChange"
@@ -97,6 +105,7 @@ import {
   NSpin, 
   NEmpty,
   NPagination,
+  NEllipsis,
   useMessage
 } from 'naive-ui';
 import { 
@@ -133,7 +142,7 @@ const emit = defineEmits<{
 const fileList = ref<FileDetail[]>([]);
 const loading = ref(false);
 const currentPage = ref(1);
-const pageSize = ref(12);
+const pageSize = ref(10);
 const hasMore = ref(true);
 const totalCount = ref(0);
 const totalPages = ref(0);
@@ -229,16 +238,10 @@ const getFileSize = (fileType: FileType): string => {
 
 // 格式化时间
 const formatTime = (timestamp: number): string => {
-  // 检查时间戳是否有效
-  if (timestamp <= 0 || timestamp === -62135596800) {
-    return '未知时间';
-  }
-  
   const date = new Date(timestamp * 1000);
-  
   // 检查日期是否有效
   if (isNaN(date.getTime())) {
-    return '未知时间';
+    return '';
   }
   
   return date.toLocaleString('zh-CN', {
