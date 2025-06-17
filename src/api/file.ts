@@ -23,6 +23,11 @@ export const UploadFile = async (params: UploadFileReq): Promise<UploadFileResp>
   
   formData.append('file', params.file);
   
+  // 添加原始文件时间
+  if (params.origin_at !== undefined) {
+    formData.append('origin_at', params.origin_at.toString());
+  }
+  
   return (await post<UploadFileResp>('/file/upload', formData)).data;
 };
 

@@ -14,21 +14,24 @@ export enum FileType {
   FT_Folder = 99,
 }
 
-/* 请求参数类型 */
-export interface UploadFileReq {
-  filename: string;       // 原始文件名（不含路径）
-  parent_id: number;      // 父级文件夹id
-  folders?: string[];     // 自定义文件夹
+/* 文件信息 */
+export interface FileInfo {
+  filename: string;       // 文件名
   file: File | Blob;      // 文件内容
   origin_at?: number;     // 原始文件时间
+}
+
+/* 请求参数类型 */
+export interface UploadFileReq {
+  parent_id: number;      // 父级文件夹id
+  files: FileInfo[];      // 文件列表
 }
 
 /* 响应数据类型 */
 export interface UploadFileResp {
   code: number;
   message: string;
-  file_id: number;
-  file_url: string;
+  file_ids: number[];
 }
 
 /* 获取文件列表请求参数 */
