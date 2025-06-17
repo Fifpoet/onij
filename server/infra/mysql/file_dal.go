@@ -15,10 +15,11 @@ type FileDal interface {
 
 	DelByIds(id []int64) ([]*File, error)
 
-	GetByHash(key string) (*File, error)
+	GetByParentAndHash(parentId int64, keys ...string) ([]*File, error)
 	GetByIds(ids ...int64) ([]*File, error)
 	GetByParentId(parentId int64, page util.Page) ([]*File, error)
 	CountByParentId(parentId int64) (int32, error)
+	GetFolderPathByParentId(parentId int64) ([]string, error)
 }
 type fileDal struct {
 	db *gorm.DB
@@ -28,19 +29,36 @@ func NewFileDal(db *gorm.DB) FileDal {
 	return &fileDal{db: db}
 }
 
+// File 同一个文件夹下的hash去重
 type File struct {
 	Id       int64  `json:"id" gorm:"primaryKey;autoIncrement"`
 	Name     string `json:"name"`
 	Format   int32  `json:"format"`
 	StoreKey string `json:"store_key"`
 	Hash     string `json:"hash" gorm:"not null;uniqueIndex:uk_hash"`
-	ParentId int64  `json:"parent_id"`
+	ParentId int64  `json:"parent_id" gorm:"not null;uniqueIndex:uk_hash"`
 
 	OriginAt  *time.Time     `json:"origin_at"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `json:"deleted_at"`
 }
+
+func (f *fileDal) GetFolderPathByParentId(parentId int64) ([]string, error) {
+	// 递归查询file, 直到parentId为0
+	folders := []string{}
+	for parentId != 0 {
+		var file File
+		err := f.db.Where("id = ?", parentId).First(&file).Error
+		if err != nil {
+			return nil, err
+		}
+		parentId = file.ParentId
+		folders = append([]string{file.Name}, folders...)
+	}
+	return folders, nil
+}
+
 
 func (f *fileDal) GetByParentId(parentId int64, page util.Page) ([]*File, error) {
 	var res []*File
@@ -79,9 +97,9 @@ func (f *fileDal) DelByIds(ids []int64) ([]*File, error) {
 	return res, nil
 }
 
-func (f *fileDal) GetByHash(hash string) (*File, error) {
-	res := &File{}
-	err := f.db.Where("hash = ?", hash).First(res).Error
+func (f *fileDal) GetByParentAndHash(parentId int64, keys ...string) ([]*File, error) {
+	res := []*File{}
+	err := f.db.Where("parent_id = ? AND hash IN (?)", parentId, keys).Find(&res).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}

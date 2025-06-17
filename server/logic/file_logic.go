@@ -2,11 +2,14 @@ package logic
 
 import (
 	"context"
+	"onij/biz/getter"
 	"onij/biz/prm"
 	"onij/infra"
 	"onij/infra/mysql"
+	"onij/model/api"
 	"onij/util"
 	"onij/util/boost/collection/collext"
+	"onij/util/boost/concurrent"
 	"onij/util/boost/crypto"
 	"onij/util/boost/exp"
 	"time"
@@ -59,40 +62,69 @@ func (f *fileLogic) GetList(ctx context.Context, param *prm.GetFileListParam) (*
 }
 
 func (l *fileLogic) Upload(ctx context.Context, param *prm.UploadFileParam) (*prm.UploadFileResult, error) {
+	if len(param.Files) == 1 && len(param.Files[0].File) == 0 {
+		// upload folder
+		id := util.IdGen.Generate()
+		err := l.FileDal.Save(&mysql.File{
+			Id:        id,
+			Name:      param.Files[0].Filename,
+			Format:    int32(api.FileType_FT_Folder),
+			Hash:      crypto.Md5([]byte(param.Files[0].Filename)),
+			ParentId:  param.ParentId,
+			OriginAt:  exp.Ptr(time.Unix(param.Files[0].OriginAt, 0)),
+		})
+		if err != nil {
+			return nil, err
+		}
+		return &prm.UploadFileResult{
+			FileIds:  []int64{id},
+		}, nil
+	}
 	// check hash
-	fi, err := l.FileDal.GetByHash(crypto.Md5(param.File))
+	fis, err := l.FileDal.GetByParentAndHash(param.ParentId, collext.Pick(param.Files, func(f *api.UploadFileReq_FileInfo) string {
+		return crypto.Md5(f.File)
+	})...)
 	if err != nil {
 		return nil, err
 	}
-	if fi != nil {
-		return &prm.UploadFileResult{
-			FileId:  fi.Id,
-			FileUrl: util.DownloadFile(fi.StoreKey),
-		}, nil
+	hashFileMap := collext.Map(fis, getter.FileHash)
+	// 获取文件夹路径, 提取不存在的文件并上传
+	folders, err := l.FileDal.GetFolderPathByParentId(param.ParentId)
+	if err != nil {
+		return nil, err
 	}
-
-	key, err := util.UploadFile(ctx, util.UploadInfo{
-		Name:      param.Filename,
-		Bytes:     param.File,
-		OssFolder: param.Folders,
+	toUploads := collext.Select(param.Files, func(f *api.UploadFileReq_FileInfo) (*api.UploadFileReq_FileInfo, bool) {
+		return f, hashFileMap[crypto.Md5(f.File)] == nil
+	})
+	resIds, err := concurrent.Go(ctx, toUploads, func(ctx context.Context, f *api.UploadFileReq_FileInfo) (int64, error) {
+		key, err := util.UploadFile(ctx, util.UploadInfo{
+			Name:      f.Filename,
+			Bytes:     f.File,
+			OssFolder: folders,
+		})
+		if err != nil {
+			return 0, err
+		}
+		fi := &mysql.File{
+			Id:       util.IdGen.Generate(),
+			Name:     f.Filename,
+			Format:   int32(util.GetFileType(f.Filename)),
+			StoreKey: key,
+			ParentId: param.ParentId,
+			Hash:     crypto.Md5(f.File),
+			OriginAt: exp.Ptr(time.Unix(f.OriginAt, 0)),
+		}
+		err = l.FileDal.Save(fi)
+		if err != nil {
+			return 0, err
+		}
+		return fi.Id, nil
 	})
 	if err != nil {
 		return nil, err
 	}
-	fi = &mysql.File{
-		Id:       util.IdGen.Generate(),
-		Name:     param.Filename,
-		Format:   int32(util.GetFileType(param.Filename)),
-		StoreKey: key,
-		Hash:     crypto.Md5(param.File),
-		OriginAt: exp.Ptr(time.Unix(param.OriginAt, 0)),
-	}
-	err = l.FileDal.Save(fi)
-	if err != nil {
-		return nil, err
-	}
+	resIds = append(resIds, collext.Pick(fis, getter.FileId)...)
 	return &prm.UploadFileResult{
-		FileId:  fi.Id,
-		FileUrl: util.DownloadFile(fi.StoreKey),
+		FileIds:  resIds,
 	}, nil
 }

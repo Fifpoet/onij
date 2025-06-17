@@ -25,7 +25,7 @@ func TestSaveUpdateAll(t *testing.T) {
 func TestFirst(t *testing.T) {
 	db := NewMysqlCli()
 	dal := NewFileDal(db)
-	res, err := dal.GetByHash("aaa")
+	res, err := dal.GetByParentAndHash(0, "aaa")
 	if err != nil {
 		t.Error(err)
 	}

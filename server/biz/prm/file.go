@@ -9,32 +9,26 @@ import (
 )
 
 type UploadFileParam struct {
-	Filename string
-	Folders  []string
-	File     []byte
-	OriginAt int64
+	ParentId int64
+	Files    []*api.UploadFileReq_FileInfo
 }
 
 func NewUploadFileParam(req *api.UploadFileReq) *UploadFileParam {
 	return &UploadFileParam{
-		Filename: req.Filename,
-		Folders:  req.Folders,
-		File:     req.File,
-		OriginAt: req.OriginAt,
+		ParentId: req.ParentId,
+		Files:    req.Files,
 	}
 }
 
 type UploadFileResult struct {
-	FileId  int64
-	FileUrl string
+	FileIds  []int64
 }
 
 func (r *UploadFileResult) Resp() *api.UploadFileResp {
 	return &api.UploadFileResp{
 		Code:    util.BaseCodeOK,
 		Message: util.BaseMsgOK,
-		FileId:  r.FileId,
-		FileUrl: r.FileUrl,
+		FileIds: r.FileIds,
 	}
 }
 

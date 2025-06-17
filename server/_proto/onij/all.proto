@@ -10,17 +10,18 @@ import "all_model.proto";
 
 // 上传文件
 message UploadFileReq {
-  string filename = 1;         // 原始文件名
-  int64 parent_id = 2;         // 父级文件夹id
-  repeated string folders = 3; // 自定义文件夹(oss文件夹)
-  bytes file = 4;              // 文件内容
-  int64 origin_at = 5;         // 原始文件时间
+  message FileInfo {
+    string filename = 1;
+    bytes file = 2;
+    int64 origin_at = 3;
+  }
+  int64 parent_id = 1;         // 父级文件夹id
+  repeated FileInfo files = 2; // 文件列表
 }
 message UploadFileResp {
   int32 code = 1;
   string message = 2;
-  int64 file_id = 3;
-  string file_url = 4;
+  repeated int64 file_ids = 3;
 }
 
 // 上传音乐
