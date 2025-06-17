@@ -5,7 +5,6 @@ go 1.23.0
 require (
 	github.com/cespare/xxhash/v2 v2.3.0
 	github.com/cloudwego/hertz v0.9.6
-	github.com/dhowden/tag v0.0.0-20240417053706-3d75831295e8
 	github.com/golang/protobuf v1.5.0
 	github.com/google/uuid v1.6.0
 	github.com/google/wire v0.6.0

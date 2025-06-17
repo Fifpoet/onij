@@ -1605,7 +1605,7 @@ type UploadFileReq_FileInfo struct {
 	unknownFields protoimpl.UnknownFields
 
 	Filename string `protobuf:"bytes,1,opt,name=filename,proto3" json:"filename,omitempty" form:"filename" query:"filename"`
-	File     []byte `protobuf:"bytes,2,opt,name=file,proto3" json:"file,omitempty" form:"file" query:"file"`
+	File     string `protobuf:"bytes,2,opt,name=file,proto3" json:"file,omitempty" form:"file" query:"file"`
 	OriginAt int64  `protobuf:"varint,3,opt,name=origin_at,json=originAt,proto3" json:"origin_at,omitempty" form:"origin_at" query:"origin_at"`
 }
 
@@ -1648,11 +1648,11 @@ func (x *UploadFileReq_FileInfo) GetFilename() string {
 	return ""
 }
 
-func (x *UploadFileReq_FileInfo) GetFile() []byte {
+func (x *UploadFileReq_FileInfo) GetFile() string {
 	if x != nil {
 		return x.File
 	}
-	return nil
+	return ""
 }
 
 func (x *UploadFileReq_FileInfo) GetOriginAt() int64 {

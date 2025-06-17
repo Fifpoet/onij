@@ -499,13 +499,29 @@ const downloadFile = async (file: FileDetail) => {
     const response = await DownloadFile({ file_ids: [file.id] });
     
     if (response.urls && response.urls.length > 0) {
-      // 创建下载链接
+      const fileUrl = response.urls[0];
+      const fileName = file.name;
+      
+      // 创建一个隐藏的iframe来强制下载
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = fileUrl;
+      document.body.appendChild(iframe);
+      
+      // 同时创建一个下载链接作为备用方案
       const link = document.createElement('a');
-      link.href = response.urls[0];
-      link.download = file.name;
+      link.href = fileUrl;
+      link.download = fileName;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      
+      // 延迟移除iframe
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+      }, 1000);
     }
   } catch (error) {
     message.error('下载文件失败');
@@ -581,14 +597,15 @@ const handleCreateFolder = async () => {
       parent_id: props.parentId,
       files: [{
         filename: folderForm.value.filename,
-        file: new Blob([], { type: 'application/octet-stream' }), // 空文件表示创建文件夹
+        file: new File([], folderForm.value.filename, { type: 'application/octet-stream' }), // 空文件表示创建文件夹
         origin_at: Math.floor(Date.now() / 1000)
       }]
     };
     
     const response = await UploadFile(folderData);
-    
-    if (response.code === 0) {
+    console.log(response);
+
+    if (response.file_ids.length > 0) {
       message.success('文件夹创建成功');
       showFolderModal.value = false;
       handleFolderReset();
