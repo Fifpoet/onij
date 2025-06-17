@@ -1,6 +1,33 @@
 <template>
   <Transition name="fade">
     <div v-if="musicStore.midShowWhat == MidShowWhat.ShowFileList">
+      <!-- 面包屑导航 -->
+      <div class="px-5 pt-5 pb-3">
+        <div v-if="parentId !== 0" class="flex items-center space-x-3">
+          <n-button 
+            size="small" 
+            type="primary" 
+            ghost 
+            @click="goBack"
+            class="flex items-center"
+          >
+            <template #icon>
+              <n-icon>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m15 18-6-6 6-6"/>
+                </svg>
+              </n-icon>
+            </template>
+            返回上级
+          </n-button>
+          <span class="text-gray-400">|</span>
+          <span class="text-sm text-gray-600">{{ currentFolderName }}</span>
+        </div>
+        <div v-else class="h-8 flex items-center">
+          <span class="text-sm text-gray-600">根目录</span>
+        </div>
+      </div>
+
       <!-- 文件列表区域 -->
       <div class="p-5" style="width: 100%; min-width: 900px; margin: 0 auto; position: relative;">
         <!-- 文件网格 -->
@@ -148,6 +175,11 @@ const totalCount = ref(0);
 const totalPages = ref(0);
 const isLastPage = ref(false);
 
+// 面包屑导航相关
+const currentFolderName = ref('根目录');
+const folderHistory = ref<number[]>([0]);
+const folderNameHistory = ref<string[]>(['根目录']);
+
 // 消息提示
 const message = useMessage();
 
@@ -255,7 +287,32 @@ const formatTime = (timestamp: number): string => {
 
 // 处理文件点击
 const handleFileClick = (file: FileDetail) => {
+  if (file.format === FileType.FT_Folder) {
+    // 进入文件夹
+    folderHistory.value.push(file.id);
+    folderNameHistory.value.push(file.name);
+    currentFolderName.value = file.name;
+    console.log('进入文件夹:', file.name, 'ID:', file.id);
+  }
   emit('fileClick', file);
+};
+
+// 返回上级文件夹
+const goBack = () => {
+  if (folderHistory.value.length > 1) {
+    folderHistory.value.pop();
+    folderNameHistory.value.pop();
+    const newParentId = folderHistory.value[folderHistory.value.length - 1];
+    const newFolderName = folderNameHistory.value[folderNameHistory.value.length - 1];
+    currentFolderName.value = newFolderName;
+    
+    // 通知父组件更新parentId
+    emit('fileClick', { 
+      id: newParentId, 
+      format: FileType.FT_Folder, 
+      name: newFolderName 
+    } as FileDetail);
+  }
 };
 
 // 处理页码变化
