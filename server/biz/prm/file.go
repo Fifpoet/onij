@@ -12,6 +12,7 @@ type UploadFileParam struct {
 	Filename string
 	Folders  []string
 	File     []byte
+	OriginAt int64
 }
 
 func NewUploadFileParam(req *api.UploadFileReq) *UploadFileParam {
@@ -19,6 +20,7 @@ func NewUploadFileParam(req *api.UploadFileReq) *UploadFileParam {
 		Filename: req.Filename,
 		Folders:  req.Folders,
 		File:     req.File,
+		OriginAt: req.OriginAt,
 	}
 }
 

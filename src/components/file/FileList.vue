@@ -59,12 +59,12 @@
             
             <!-- 文件信息 -->
             <div class="text-center text-xs text-gray-500 space-y-1 flex-shrink-0 overflow-hidden">
-              <div v-if="file.format !== FileType.FT_Folder" class="truncate px-1">{{ getFileSize(file.format) }}</div>
-              <div v-if="file.format !== FileType.FT_Folder" class="truncate px-1">{{ formatTime(file.origin_at) }}</div>
+              <div v-if="!isFolder(file.format)" class="truncate px-1">{{ getFileSize(file.format) }}</div>
+              <div v-if="!isFolder(file.format)" class="truncate px-1">{{ formatFileTime(file.origin_at) }}</div>
             </div>
             
             <!-- 操作按钮 -->
-            <div v-if="file.format !== FileType.FT_Folder" class="flex justify-center mt-3 space-x-2 flex-shrink-0" @click.stop>
+            <div v-if="!isFolder(file.format)" class="flex justify-center mt-3 space-x-2 flex-shrink-0" @click.stop>
               <n-button size="tiny" type="primary" @click="downloadFile(file)">
                 <template #icon>
                   <n-icon>
@@ -136,10 +136,6 @@ import {
   useMessage
 } from 'naive-ui';
 import { 
-  FolderOutline, 
-  MusicalNoteOutline, 
-  DocumentTextOutline, 
-  ImageOutline,
   DownloadOutline,
   TrashOutline
 } from '@vicons/ionicons5';
@@ -147,6 +143,12 @@ import { GetFileList, DownloadFile } from '@/api';
 import { FileType, FileDetail, GetFileListReq } from '@/api/types/file';
 import { MidShowWhat } from '@/api/types';
 import { useMusicStore } from '@/store/music';
+import { 
+  getFileIcon, 
+  getFileSize, 
+  formatFileTime, 
+  isFolder 
+} from '@/util';
 
 // 使用全局状态
 const musicStore = useMusicStore();
@@ -236,58 +238,9 @@ watch(() => props.parentId, () => {
   fetchFileList();
 }, { immediate: true });
 
-// 获取文件图标
-const getFileIcon = (fileType: FileType) => {
-  switch (fileType) {
-    case FileType.FT_Folder:
-      return FolderOutline;
-    case FileType.FT_Mp3:
-      return MusicalNoteOutline;
-    case FileType.FT_Lyrics:
-      return DocumentTextOutline;
-    case FileType.FT_Png:
-      return ImageOutline;
-    default:
-      return DocumentTextOutline;
-  }
-};
-
-// 获取文件大小（暂时写死）
-const getFileSize = (fileType: FileType): string => {
-  if (fileType === FileType.FT_Folder) {
-    return '';
-  }
-  
-  // 暂时写死的大小，后续接口返回后可以替换
-  const sizeMap = {
-    [FileType.FT_Mp3]: '3.2 MB',
-    [FileType.FT_Lyrics]: '0.1 MB',
-    [FileType.FT_Png]: '1.5 MB',
-  };
-  
-  return sizeMap[fileType] || '0.1 MB';
-};
-
-// 格式化时间
-const formatTime = (timestamp: number): string => {
-  const date = new Date(timestamp * 1000);
-  // 检查日期是否有效
-  if (isNaN(date.getTime())) {
-    return '';
-  }
-  
-  return date.toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-};
-
 // 处理文件点击
 const handleFileClick = (file: FileDetail) => {
-  if (file.format === FileType.FT_Folder) {
+  if (isFolder(file.format)) {
     // 进入文件夹
     folderHistory.value.push(file.id);
     folderNameHistory.value.push(file.name);

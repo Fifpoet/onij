@@ -8,6 +8,8 @@ import (
 	"onij/util"
 	"onij/util/boost/collection/collext"
 	"onij/util/boost/crypto"
+	"onij/util/boost/exp"
+	"time"
 )
 
 type FileLogic interface {
@@ -83,6 +85,7 @@ func (l *fileLogic) Upload(ctx context.Context, param *prm.UploadFileParam) (*pr
 		Format:   int32(util.GetFileType(param.Filename)),
 		StoreKey: key,
 		Hash:     crypto.Md5(param.File),
+		OriginAt: exp.Ptr(time.Unix(param.OriginAt, 0)),
 	}
 	err = l.FileDal.Save(fi)
 	if err != nil {

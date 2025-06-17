@@ -20,6 +20,7 @@ export interface UploadFileReq {
   parent_id: number;      // 父级文件夹id
   folders?: string[];     // 自定义文件夹
   file: File | Blob;      // 文件内容
+  origin_at?: number;     // 原始文件时间
 }
 
 /* 响应数据类型 */

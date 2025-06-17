@@ -14,6 +14,7 @@ message UploadFileReq {
   int64 parent_id = 2;         // 父级文件夹id
   repeated string folders = 3; // 自定义文件夹(oss文件夹)
   bytes file = 4;              // 文件内容
+  int64 origin_at = 5;         // 原始文件时间
 }
 message UploadFileResp {
   int32 code = 1;
