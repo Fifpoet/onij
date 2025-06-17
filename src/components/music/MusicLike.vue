@@ -91,9 +91,7 @@ const toggleArtistLike = async (artistId: number | undefined, artistName: string
 
 onMounted(() => {
   setInterval (() => {
-    console.log(musicStore.current.detail?.artist_ids[0]); 
-    console.log(musicStore.likeMap); 
-    console.log(); 
+    //TODO
   }, 3000);
 });
 

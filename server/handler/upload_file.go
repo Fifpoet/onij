@@ -4,10 +4,12 @@ package handler
 
 import (
 	"context"
-	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"onij/biz/prm"
 	api "onij/model/api"
+	"strconv"
+
+	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/cloudwego/hertz/pkg/protocol/consts"
 )
 
 // UploadFile .
@@ -15,11 +17,14 @@ import (
 func UploadFile(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req api.UploadFileReq
-	err = c.BindAndValidate(&req)
+
+	// 手动解析multipart/form-data格式的数据
+	err = parseUploadFileRequest(c, &req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
+
 	if err = checkUploadFileReq(&req); err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
@@ -31,6 +36,99 @@ func UploadFile(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 	c.JSON(consts.StatusOK, resp.Resp())
+}
+
+// parseUploadFileRequest 手动解析multipart/form-data格式的上传文件请求
+func parseUploadFileRequest(c *app.RequestContext, req *api.UploadFileReq) error {
+	// 解析parent_id
+	parentIdBytes := c.FormValue("parent_id")
+	if len(parentIdBytes) > 0 {
+		parentIdStr := string(parentIdBytes)
+		parentId, err := strconv.ParseInt(parentIdStr, 10, 64)
+		if err != nil {
+			return err
+		}
+		req.ParentId = parentId
+	}
+
+	// 解析文件列表
+	form, err := c.MultipartForm()
+	if err != nil {
+		return err
+	}
+
+	// 获取所有文件
+	files := form.File
+	var fileInfos []*api.UploadFileReq_FileInfo
+
+	// 遍历所有文件字段，找到最大的索引
+	maxIndex := -1
+	for fieldName := range files {
+		if len(fieldName) > 5 && fieldName[:5] == "file_" {
+			indexStr := fieldName[5:]
+			if index, err := strconv.Atoi(indexStr); err == nil && index > maxIndex {
+				maxIndex = index
+			}
+		}
+	}
+
+	// 初始化文件信息数组
+	for i := 0; i <= maxIndex; i++ {
+		fileInfos = append(fileInfos, &api.UploadFileReq_FileInfo{})
+	}
+
+	// 解析文件内容
+	for fieldName, fileHeaders := range files {
+		if len(fieldName) > 5 && fieldName[:5] == "file_" {
+			indexStr := fieldName[5:]
+			if index, err := strconv.Atoi(indexStr); err == nil && index <= maxIndex {
+				if len(fileHeaders) > 0 {
+					file := fileHeaders[0]
+					fileContent, err := file.Open()
+					if err != nil {
+						return err
+					}
+					defer fileContent.Close()
+
+					// 读取文件字节
+					fileBytes := make([]byte, file.Size)
+					_, err = fileContent.Read(fileBytes)
+					if err != nil {
+						return err
+					}
+
+					fileInfos[index].File = fileBytes
+				}
+			}
+		}
+	}
+
+	// 解析文件名和时间戳
+	for key, values := range form.Value {
+		if len(values) > 0 {
+			// 解析文件名 (格式: filename_index)
+			if len(key) > 10 && key[:10] == "filename_" {
+				indexStr := key[10:]
+				if index, err := strconv.Atoi(indexStr); err == nil && index <= maxIndex {
+					fileInfos[index].Filename = values[0]
+				}
+			}
+
+			// 解析时间戳 (格式: origin_at_index)
+			if len(key) > 10 && key[:10] == "origin_at_" {
+				indexStr := key[10:]
+				if index, err := strconv.Atoi(indexStr); err == nil && index <= maxIndex {
+					originAt, err := strconv.ParseInt(values[0], 10, 64)
+					if err == nil {
+						fileInfos[index].OriginAt = originAt
+					}
+				}
+			}
+		}
+	}
+
+	req.Files = fileInfos
+	return nil
 }
 
 func checkUploadFileReq(req *api.UploadFileReq) error {

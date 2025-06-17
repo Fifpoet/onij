@@ -16,7 +16,7 @@ export enum FileType {
 
 /* 文件信息 */
 export interface FileInfo {
-  filename: string;       // 文件名
+  filename?: string;       // 文件名
   file: File | Blob;      // 文件内容
   origin_at?: number;     // 原始文件时间
 }

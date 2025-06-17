@@ -1,5 +1,5 @@
 // src/api/file.ts
-import { post } from '../util/http';
+import { post, uploadFile } from '../util/http';
 import { 
   UploadFileReq, 
   UploadFileResp, 
@@ -12,23 +12,18 @@ import {
 // 上传文件
 export const UploadFile = async (params: UploadFileReq): Promise<UploadFileResp> => {
   const formData = new FormData();
-  formData.append('filename', params.filename);
   formData.append('parent_id', params.parent_id.toString());
   
-  if (params.folders && params.folders.length > 0) {
-    params.folders.forEach((folder, index) => {
-      formData.append(`folders[${index}]`, folder);
-    });
-  }
+  // 使用简单的字段名格式
+  params.files.forEach((fileInfo, index) => {
+    formData.append(`filename_${index}`, fileInfo.filename || '');
+    formData.append(`file_${index}`, fileInfo.file);
+    if (fileInfo.origin_at !== undefined) {
+      formData.append(`origin_at_${index}`, fileInfo.origin_at.toString());
+    }
+  });
   
-  formData.append('file', params.file);
-  
-  // 添加原始文件时间
-  if (params.origin_at !== undefined) {
-    formData.append('origin_at', params.origin_at.toString());
-  }
-  
-  return (await post<UploadFileResp>('/file/upload', formData)).data;
+  return (await uploadFile<UploadFileResp>('/file/upload', formData));
 };
 
 // 获取文件列表

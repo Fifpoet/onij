@@ -65,7 +65,7 @@ export const uploadFile = <T>(url: string, formData: FormData, config?: AxiosReq
         },
         ...config,
     };
-    return apiClient.post(url, formData, uploadConfig);
+    return apiClient.post(url, formData, uploadConfig).then(response => response.data);
 };
 
 export default apiClient;

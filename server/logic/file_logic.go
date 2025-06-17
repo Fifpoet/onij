@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"log"
 	"onij/biz/getter"
 	"onij/biz/prm"
 	"onij/infra"
@@ -62,6 +63,7 @@ func (f *fileLogic) GetList(ctx context.Context, param *prm.GetFileListParam) (*
 }
 
 func (l *fileLogic) Upload(ctx context.Context, param *prm.UploadFileParam) (*prm.UploadFileResult, error) {
+	log.Printf("UploadFileParam: %+v\n", param)
 	if len(param.Files) == 1 && len(param.Files[0].File) == 0 {
 		// upload folder
 		id := util.IdGen.Generate()

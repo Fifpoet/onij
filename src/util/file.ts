@@ -149,3 +149,41 @@ export function formatFileSize(bytes: number): string {
   
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
+
+/**
+ * 根据文件类型字符串获取FileType枚举值
+ * @param fileType 文件类型字符串（MIME类型或扩展名）
+ * @returns FileType枚举值
+ */
+export function getFileTypeFromString(fileType: string): FileType {
+  const lowerType = fileType.toLowerCase();
+  
+  // 根据MIME类型判断
+  if (lowerType.startsWith('audio/') || lowerType === 'mp3') {
+    return FileType.FT_Mp3;
+  }
+  if (lowerType.startsWith('image/') || lowerType === 'png' || lowerType === 'jpg' || lowerType === 'jpeg') {
+    return FileType.FT_Png;
+  }
+  if (lowerType.startsWith('text/') || lowerType === 'txt' || lowerType === 'lrc') {
+    return FileType.FT_Lyrics;
+  }
+  
+  // 根据扩展名判断
+  const extension = getFileExtension(fileType);
+  switch (extension) {
+    case 'mp3':
+      return FileType.FT_Mp3;
+    case 'png':
+    case 'jpg':
+    case 'jpeg':
+    case 'gif':
+    case 'bmp':
+      return FileType.FT_Png;
+    case 'txt':
+    case 'lrc':
+      return FileType.FT_Lyrics;
+    default:
+      return FileType.FT_Unknown;
+  }
+}
