@@ -39,7 +39,7 @@ export interface SearchArtistResp {
 
 /* 艺术家信息 */
 export interface ArtistProfile {
-  id: number;
-  name: string;
-  artist_type: ArtistType;
+    id: number;
+    name: string;
+    artist_type: ArtistType;
 }
