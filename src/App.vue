@@ -35,7 +35,7 @@ const handleFileClick = (file: FileDetail) => {
       <MemoList />
       
       <!-- 文件管理区域 -->
-      <div class="min-h-screen pt-[60px]">
+      <div class="h-full pt-[60px]">
         <!-- 文件列表 -->
         <FileList 
           :parent-id="currentFolderId"

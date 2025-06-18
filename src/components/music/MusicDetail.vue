@@ -19,29 +19,39 @@
           <div class="flex-1 flex flex-col min-w-0 h-full">
             <!-- 标题区域 -->
             <div class="mb-3 flex-shrink-0">
-              <h1 class="text-xl font-bold truncate">{{ musicStore.current.detail?.name }}</h1>
-              <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">{{ musicStore.current.detail?.album_name }}</p>
-            </div>
-
-            <!-- 创作者信息 -->
-            <div class="space-y-1 mb-4 flex-shrink-0">
-              <div class="flex items-center gap-2 text-sm">
-                <span class="text-gray-600 dark:text-gray-400">作词：</span>
-                <router-link 
-                  :to="`/artist/${musicStore.current.detail?.writer_id}`"
-                  class="text-primary hover:text-primary-600 transition-colors"
-                >
-                  {{ musicStore.current.detail?.writer_name }}
-                </router-link>
+              <div class="flex items-end justify-between">
+                <h1 class="text-xl font-bold truncate flex-1 leading-none m-0">{{ musicStore.current.detail?.name }}</h1>
+                <div class="flex items-center gap-1 text-sm ml-2">
+                  <template v-for="(name, index) in musicStore.current.detail?.artist_names || []" :key="index">
+                    <router-link 
+                      :to="`/artist/${musicStore.current.detail?.artist_ids[index]}`"
+                      class="text-primary hover:text-primary-600 transition-colors"
+                    >
+                      {{ name }}
+                    </router-link>
+                    <span v-if="index < (musicStore.current.detail?.artist_names.length || 0) - 1" class="text-gray-400">/</span>
+                  </template>
+                </div>
               </div>
-              <div class="flex items-center gap-2 text-sm">
-                <span class="text-gray-600 dark:text-gray-400">作曲：</span>
-                <router-link 
-                  :to="`/artist/${musicStore.current.detail?.composer_id}`"
-                  class="text-primary hover:text-primary-600 transition-colors"
-                >
-                  {{ musicStore.current.detail?.composer_name }}
-                </router-link>
+              <div class="flex justify-end items-center gap-4 mt-1 text-sm text-gray-500">
+                <div class="flex items-center gap-1">
+                  <span>词:</span>
+                  <router-link 
+                    :to="`/artist/${musicStore.current.detail?.writer_id}`"
+                    class="text-primary hover:text-primary-600 transition-colors"
+                  >
+                    {{ musicStore.current.detail?.writer_name }}
+                  </router-link>
+                </div>
+                <div class="flex items-center gap-1">
+                  <span>曲:</span>
+                  <router-link 
+                    :to="`/artist/${musicStore.current.detail?.composer_id}`"
+                    class="text-primary hover:text-primary-600 transition-colors"
+                  >
+                    {{ musicStore.current.detail?.composer_name }}
+                  </router-link>
+                </div>
               </div>
             </div>
 

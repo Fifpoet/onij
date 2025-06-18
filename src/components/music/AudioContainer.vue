@@ -217,14 +217,21 @@ const handleMp3 = () => {
   };
   audio.value.onloadedmetadata = () => {
     duration.value = audio.value!.duration;
+    // 设置之前的播放进度
+    if (musicStore.current.progress > 0) {
+      audio.value!.currentTime = (musicStore.current.progress / 100) * audio.value!.duration;
+    }
   };
   audio.value.onended = () => {
     isPlaying.value = false;
     playNext();
   };
 
-  audio.value.play();
-  isPlaying.value = true;
+  // 只有在之前是播放状态时才自动播放
+  if (musicStore.current.isPlaying) {
+    audio.value.play();
+    isPlaying.value = true;
+  }
 };
 
 // 开始播放或暂停
@@ -339,7 +346,10 @@ const drag = (e: MouseEvent) => {
 
 
 onMounted(async () => {
-
+  // 如果 store 中存在音乐详情，说明之前在播放，需要恢复播放状态
+  if (musicStore.current.detail) {
+    await handleMp3();
+  }
 });
 
 </script>
