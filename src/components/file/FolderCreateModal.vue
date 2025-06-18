@@ -1,60 +1,37 @@
 <template>
-  <n-modal 
-    v-model:show="props.show" 
-    preset="card" 
-    title="新建文件夹" 
+  <n-modal
+    :show="show"
+    @update:show="handleClose"
+    preset="card"
+    title="新建文件夹"
     style="width: 400px;"
     :z-index="1000"
     transform-origin="center"
   >
-    <n-form
-      ref="folderFormRef"
-      :model="folderForm"
-      :rules="folderRules"
-      label-placement="left"
-      label-width="auto"
-      require-mark-placement="right-hanging"
-      size="medium"
-    >
-      <n-form-item label="文件夹名称" path="filename">
-        <n-input
-          v-model:value="folderForm.filename"
-          placeholder="请输入文件夹名称"
-          clearable
-        />
-      </n-form-item>
-      <n-form-item>
-        <n-space>
-          <n-button
-            type="primary"
-            :loading="creatingFolder"
-            :disabled="!folderForm.filename"
-            @click="handleCreateFolder"
-          >
-            {{ creatingFolder ? '创建中...' : '创建文件夹' }}
-          </n-button>
-          <n-button @click="handleFolderReset">重置</n-button>
-          <n-button @click="close">取消</n-button>
-        </n-space>
-      </n-form-item>
-    </n-form>
+    <n-spin :show="loading">
+      <n-form>
+        <n-form-item label="文件夹名称">
+          <n-input v-model:value="folderName" placeholder="请输入文件夹名称" />
+        </n-form-item>
+
+        <n-form-item>
+          <n-space justify="end">
+            <n-button :loading="loading" type="primary" @click="handleCreate" :disabled="!folderName">
+              {{ loading ? '创建中...' : '创建' }}
+            </n-button>
+            <n-button @click="handleClose">取消</n-button>
+          </n-space>
+        </n-form-item>
+      </n-form>
+    </n-spin>
   </n-modal>
 </template>
 
 <script setup lang="ts">
-import { ref, defineProps, defineEmits } from 'vue';
-import { 
-  NModal,
-  NForm, 
-  NFormItem, 
-  NInput, 
-  NButton, 
-  NSpace, 
-  useMessage, 
-  type FormInst 
-} from 'naive-ui';
+import { ref } from 'vue';
+import { NModal, NInput, NButton, NIcon, NSpin, NSpace, NForm, NFormItem, useMessage } from 'naive-ui';
 import { UploadFile } from '@/api';
-import { FileType, UploadFileReq } from '@/api/types/file';
+import { FileType } from '@/api/types/file';
 
 const props = defineProps<{
   show: boolean;
@@ -66,56 +43,45 @@ const emit = defineEmits<{
   'created': [];
 }>();
 
-const folderFormRef = ref<FormInst | null>(null);
-const folderForm = ref({ filename: '' });
-const creatingFolder = ref(false);
-const folderRules = {
-  filename: {
-    required: true,
-    message: '请输入文件夹名称',
-    trigger: 'blur'
-  }
-};
-
 const message = useMessage();
+const loading = ref(false);
+const folderName = ref('');
 
-const handleCreateFolder = async () => {
-  if (!folderFormRef.value) return;
+// 处理创建
+const handleCreate = async () => {
+  if (!folderName.value) return;
+  
+  loading.value = true;
   try {
-    await folderFormRef.value.validate();
-    creatingFolder.value = true;
-    const folderData: UploadFileReq = {
+    const response = await UploadFile({
       parent_id: props.parentId,
       files: [{
-        filename: folderForm.value.filename,
+        filename: folderName.value,
         store_key: '',
-        hash: `folder_${Date.now()}_${folderForm.value.filename}`,
+        hash: '',
         format: FileType.FT_Folder,
-        origin_at: Math.floor(Date.now() / 1000)
+        origin_at: 0
       }]
-    };
-    const response = await UploadFile(folderData);
-    if (response.file_ids && response.file_ids.length > 0) {
+    });
+
+    if (response.code === 0) {
       message.success('文件夹创建成功');
-      emit('update:show', false);
       emit('created');
-      handleFolderReset();
+      handleClose();
     } else {
-      message.error(response.message || '创建文件夹失败');
+      message.error(response.message || '创建失败');
     }
   } catch (error) {
-    message.error('创建文件夹失败');
+    console.error('创建失败:', error);
+    message.error('创建失败');
   } finally {
-    creatingFolder.value = false;
+    loading.value = false;
   }
 };
 
-const handleFolderReset = () => {
-  folderForm.value.filename = '';
-};
-
-const close = () => {
+// 处理关闭
+const handleClose = () => {
   emit('update:show', false);
-  handleFolderReset();
+  folderName.value = '';
 };
 </script> 
