@@ -2,69 +2,62 @@
   <Transition name="fade-scale" mode="out-in">
     <div 
       v-if="musicStore.midShowWhat == MidShowWhat.ShowMusicDetail" 
-      class="fixed inset-0 z-0 flex items-center justify-center pb-20"
+      class="fixed inset-x-0 top-1/2 -translate-y-1/2 bg-white dark:bg-dark-800 z-0"
     >
-      <div class="bg-white dark:bg-dark-800 max-w-4xl w-full mx-4 p-6 flex gap-6">
-        <!-- 封面 -->
-        <div class="w-200px h-200px flex-shrink-0">
-          <img 
-            :src="musicStore.current.detail?.cover_url" 
-            :alt="musicStore.current.detail?.name" 
-            class="w-full h-full object-cover rounded-lg"
-          >
-        </div>
-
-        <!-- 信息区域 -->
-        <div class="flex-grow flex flex-col min-w-0">
-          <!-- 标题区域 -->
-          <div class="mb-3">
-            <h1 class="text-xl font-bold truncate">{{ musicStore.current.detail?.name }}</h1>
-            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">{{ musicStore.current.detail?.album_name }}</p>
-          </div>
-
-          <!-- 创作者信息 -->
-          <div class="space-y-1 mb-4">
-            <div class="flex items-center gap-2 text-sm">
-              <span class="text-gray-600 dark:text-gray-400">作词：</span>
-              <router-link 
-                :to="`/artist/${musicStore.current.detail?.writer_id}`"
-                class="text-primary hover:text-primary-600 transition-colors"
-              >
-                {{ musicStore.current.detail?.writer_name }}
-              </router-link>
-            </div>
-            <div class="flex items-center gap-2 text-sm">
-              <span class="text-gray-600 dark:text-gray-400">作曲：</span>
-              <router-link 
-                :to="`/artist/${musicStore.current.detail?.composer_id}`"
-                class="text-primary hover:text-primary-600 transition-colors"
-              >
-                {{ musicStore.current.detail?.composer_name }}
-              </router-link>
-            </div>
-          </div>
-
-          <!-- 歌词容器 -->
-          <div 
-            ref="lyricsContainerRef"
-            class="flex-grow h-200px overflow-hidden relative"
-          >
-            <div 
-              class="absolute inset-0 overflow-y-auto scrollbar-hide"
-              :style="{ transform: `translateY(${scrollOffset}px)` }"
+      <div class="max-w-4xl mx-auto p-6">
+        <div class="flex gap-6 h-[300px]">
+          <!-- 封面 -->
+          <div class="w-[300px] h-[300px] flex-shrink-0">
+            <img 
+              :src="musicStore.current.detail?.cover_url" 
+              :alt="musicStore.current.detail?.name" 
+              class="w-full h-full object-cover rounded-lg"
             >
+          </div>
+
+          <!-- 信息区域 -->
+          <div class="flex-1 flex flex-col min-w-0 h-full">
+            <!-- 标题区域 -->
+            <div class="mb-3 flex-shrink-0">
+              <h1 class="text-xl font-bold truncate">{{ musicStore.current.detail?.name }}</h1>
+              <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">{{ musicStore.current.detail?.album_name }}</p>
+            </div>
+
+            <!-- 创作者信息 -->
+            <div class="space-y-1 mb-4 flex-shrink-0">
+              <div class="flex items-center gap-2 text-sm">
+                <span class="text-gray-600 dark:text-gray-400">作词：</span>
+                <router-link 
+                  :to="`/artist/${musicStore.current.detail?.writer_id}`"
+                  class="text-primary hover:text-primary-600 transition-colors"
+                >
+                  {{ musicStore.current.detail?.writer_name }}
+                </router-link>
+              </div>
+              <div class="flex items-center gap-2 text-sm">
+                <span class="text-gray-600 dark:text-gray-400">作曲：</span>
+                <router-link 
+                  :to="`/artist/${musicStore.current.detail?.composer_id}`"
+                  class="text-primary hover:text-primary-600 transition-colors"
+                >
+                  {{ musicStore.current.detail?.composer_name }}
+                </router-link>
+              </div>
+            </div>
+
+            <!-- 歌词容器 -->
+            <div class="flex-1 flex flex-col justify-center items-center space-y-2">
               <div 
-                v-for="(line, index) in lyrics" 
-                :key="index"
-                :ref="el => { if (index === currentLyricIndex) activeLyricRef = el as HTMLElement }"
+                v-for="lyric in displayLyrics" 
+                :key="lyric.index"
                 :class="[
-                  'py-1 transition-all duration-300 text-center text-sm',
-                  currentLyricIndex === index 
-                    ? 'text-primary text-base font-medium' 
-                    : 'text-gray-500 dark:text-gray-400'
+                  'transition-all duration-300 text-center',
+                  lyric.index === currentLyricIndex 
+                    ? 'text-primary text-base font-medium'
+                    : 'text-gray-500 dark:text-gray-400 text-sm'
                 ]"
               >
-                {{ line.text }}
+                {{ lyric.text }}
               </div>
             </div>
           </div>
@@ -77,114 +70,86 @@
 <script setup lang="ts">
 import { MidShowWhat } from "@/api/types";
 import { useMusicStore } from "@/store/music";
-import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
+import { ref, watch, computed } from 'vue';
 
 const musicStore = useMusicStore();
 const lyrics = ref<{ time: number; text: string }[]>([]);
 const currentLyricIndex = ref(-1);
-const lyricsContainerRef = ref<HTMLElement | null>(null);
-const activeLyricRef = ref<HTMLElement | null>(null);
-const scrollOffset = ref(0);
 
-// 解析歌词
-const parseLyrics = (lyricsText: string) => {
-  const lines = lyricsText.split('\n');
-  const timeRegex = /\[(\d{2}):(\d{2})\.(\d{1,3})\](.*)/;
+// 计算要显示的歌词
+const displayLyrics = computed(() => {
+  if (lyrics.value.length === 0) return [];
   
-  return lines
-    .map(line => {
-      const match = line.match(timeRegex);
-      if (!match) return null;
-      
-      const [, minutes, seconds, milliseconds] = match;
-      const timeInMs = (parseInt(minutes) * 60 + parseInt(seconds)) * 1000 + parseInt(milliseconds);
-      const text = match[4].trim();
-      
-      return { time: timeInMs, text };
-    })
-    .filter((item): item is { time: number; text: string } => item !== null)
-    .sort((a, b) => a.time - b.time);
-};
-
-// 获取歌词
-const fetchLyrics = async (url: string) => {
-  try {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error('Failed to fetch lyrics');
-    const text = await response.text();
-    lyrics.value = parseLyrics(text);
-  } catch (error) {
-    console.error('Error fetching lyrics:', error);
-    lyrics.value = [];
+  const index = currentLyricIndex.value;
+  const total = lyrics.value.length;
+  const count = 5; // 显示的歌词数量
+  
+  let indices: number[];
+  if (index < 0) {
+    indices = [0, 1, 2, 3, 4];
+  } else if (index < 2) {
+    indices = [0, 1, 2, 3, 4];
+  } else if (index > total - 3) {
+    indices = [total - 5, total - 4, total - 3, total - 2, total - 1];
+  } else {
+    indices = [index - 2, index - 1, index, index + 1, index + 2];
   }
-};
-
-// 计算当前歌词
-const updateCurrentLyric = () => {
-  if (!musicStore.current.detail || lyrics.value.length === 0) return;
   
-  const currentTimeMs = (musicStore.current.progress / 100) * getDuration();
-  
-  const newIndex = lyrics.value.findIndex((lyric, index) => {
-    const nextLyric = lyrics.value[index + 1];
-    return lyric.time <= currentTimeMs && (!nextLyric || nextLyric.time > currentTimeMs);
-  });
-
-  if (currentLyricIndex.value !== newIndex) {
-    currentLyricIndex.value = newIndex;
-    updateScroll();
-  }
-};
-
-// 获取歌曲时长
-const getDuration = () => {
-  return musicStore.current.detail?.duration || 240000; // 默认4分钟
-};
-
-// 更新滚动位置
-const updateScroll = () => {
-  if (!lyricsContainerRef.value || !activeLyricRef.value) return;
-  
-  const containerHeight = lyricsContainerRef.value.clientHeight;
-  const lyricHeight = activeLyricRef.value.clientHeight;
-  
-  // 计算目标偏移量，使当前歌词位于容器中央
-  const targetOffset = -(activeLyricRef.value.offsetTop - (containerHeight / 2) + (lyricHeight / 2));
-  
-  // 使用动画平滑滚动
-  scrollOffset.value = targetOffset;
-};
-
-// 设置定时器
-let updateInterval: number | null = null;
-
-onMounted(() => {
-  updateInterval = window.setInterval(updateCurrentLyric, 100);
+  return indices
+    .filter(i => i >= 0 && i < total)
+    .slice(0, count)
+    .map(i => ({
+      index: i,
+      text: lyrics.value[i].text
+    }));
 });
 
-onUnmounted(() => {
-  if (updateInterval !== null) {
-    clearInterval(updateInterval);
+// 更新当前歌词
+watch(() => musicStore.current.progress, () => {
+  if (!lyrics.value.length) return;
+  
+  const currentTime = musicStore.current.progress / 100 * (document.querySelector('audio')?.duration || 240) * 1000;
+  
+  const index = lyrics.value.findIndex((lyric, i) => {
+    const nextTime = lyrics.value[i + 1]?.time ?? Infinity;
+    return lyric.time <= currentTime && currentTime < nextTime;
+  });
+  
+  if (index !== currentLyricIndex.value) {
+    currentLyricIndex.value = index;
   }
 });
 
 // 监听歌曲变化
-watch(
-  () => musicStore.current.detail,
-  async (newVal) => {
-    if (newVal?.lyrics_file_url) {
-      await fetchLyrics(newVal.lyrics_file_url);
-      currentLyricIndex.value = -1;
-      scrollOffset.value = 0;
-    } else {
-      lyrics.value = [];
-    }
-  },
-  { immediate: true }
-);
-
-// 监听进度变化
-watch(() => musicStore.current.progress, updateCurrentLyric);
+watch(() => musicStore.current.detail?.lyrics_file_url, async (url) => {
+  if (!url) {
+    lyrics.value = [];
+    return;
+  }
+  
+  try {
+    const text = await fetch(url).then(r => r.text());
+    lyrics.value = text
+      .split('\n')
+      .map(line => {
+        const match = line.match(/\[(\d{2}):(\d{2})\.(\d{1,3})\](.*)/);
+        if (!match) return null;
+        
+        const [, min, sec, ms] = match;
+        return {
+          time: (parseInt(min) * 60 + parseInt(sec)) * 1000 + parseInt(ms),
+          text: match[4].trim()
+        };
+      })
+      .filter((item): item is { time: number; text: string } => item !== null)
+      .sort((a, b) => a.time - b.time);
+    
+    currentLyricIndex.value = -1;
+  } catch (error) {
+    console.error('加载歌词失败:', error);
+    lyrics.value = [];
+  }
+}, { immediate: true });
 </script>
 
 <style scoped>
