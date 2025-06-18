@@ -31,6 +31,62 @@
           </n-upload>
         </n-form-item>
 
+        <!-- 文件信息设置 -->
+        <div v-if="uploadFileList.length > 0">
+          <n-divider title-placement="left">
+            <n-text type="primary" style="font-size: 14px;">文件信息设置</n-text>
+          </n-divider>
+          
+          <n-space vertical size="small">
+            <n-card 
+              v-for="fileInfo in uploadFileList" 
+              :key="fileInfo.id"
+              size="small"
+              :bordered="false"
+              style="background-color: #f9fafb;"
+            >
+              <n-space vertical size="small">
+                <n-space align="center" size="small">
+                  <n-icon size="16" class="text-gray-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                      <polyline points="14,2 14,8 20,8"/>
+                    </svg>
+                  </n-icon>
+                  <n-text style="font-weight: 500; color: #374151;">{{ fileInfo.name }}</n-text>
+                  <n-text depth="3" style="font-size: 12px;">{{ formatFileSize(fileInfo.file?.size || 0) }}</n-text>
+                </n-space>
+                
+                <n-space size="small" align="center">
+                  <n-input
+                    v-model:value="fileInfo.customName"
+                    :placeholder="fileInfo.name"
+                    size="small"
+                    style="width: 200px;"
+                  >
+                    <template #prefix>
+                      <n-text depth="3" style="font-size: 12px;">文件名</n-text>
+                    </template>
+                  </n-input>
+                  
+                  <n-date-picker
+                    v-model:value="fileInfo.customDate"
+                    type="datetime"
+                    placeholder="选择时间"
+                    size="small"
+                    style="width: 180px;"
+                    clearable
+                  >
+                    <template #prefix>
+                      <n-text depth="3" style="font-size: 12px;">创建时间</n-text>
+                    </template>
+                  </n-date-picker>
+                </n-space>
+              </n-space>
+            </n-card>
+          </n-space>
+        </div>
+
         <n-form-item>
           <n-space justify="end">
             <n-button :loading="loading" type="primary" @click="handleUpload" :disabled="uploadFileList.length === 0">
@@ -47,7 +103,10 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { NModal, NUpload, NButton, NIcon, NSpin, NSpace, NForm, NFormItem, useMessage } from 'naive-ui';
+import { 
+  NModal, NUpload, NButton, NIcon, NSpin, NSpace, NForm, NFormItem, 
+  NInput, NDatePicker, NDivider, NText, NCard, useMessage 
+} from 'naive-ui';
 import type { UploadFileInfo, UploadInst } from 'naive-ui';
 import { UploadFile } from '@/api';
 import { uploadToQiniu, getFileTypeFromFile } from '@/util/qiniu';
@@ -66,11 +125,15 @@ const emit = defineEmits<{
 const message = useMessage();
 const loading = ref(false);
 const uploadRef = ref<UploadInst | null>(null);
-const uploadFileList = ref<UploadFileInfo[]>([]);
+const uploadFileList = ref<(UploadFileInfo & { customName?: string; customDate?: number })[]>([]);
 
 // 处理文件选择
 const handleFileChange = (options: { fileList: UploadFileInfo[] }) => {
-  uploadFileList.value = options.fileList;
+  uploadFileList.value = options.fileList.map(file => ({
+    ...file,
+    customName: undefined,
+    customDate: undefined
+  }));
 };
 
 // 处理上传
@@ -89,11 +152,11 @@ const handleUpload = async () => {
       const response = await UploadFile({
         parent_id: props.parentId,
         files: [{
-          filename: fileInfo.name,
+          filename: fileInfo.customName || fileInfo.name,
           store_key: result.key,
           hash: result.hash,
           format: getFileTypeFromFile(fileInfo.file),
-          origin_at: 0
+          origin_at: fileInfo.customDate ? Math.floor(fileInfo.customDate / 1000) : 0
         }]
       });
 
@@ -146,4 +209,4 @@ const handleClose = () => {
 .upload-trigger:hover {
   border-color: #3b82f6;
 }
-</style> 
+</style>
