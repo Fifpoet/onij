@@ -38,7 +38,9 @@
     <div class="volume-control p-2 cursor-pointer relative" @mouseenter="showVolumeSlider = true"
       @mouseleave="showVolumeSlider = false">
       <NButton text @click="toggleMute">
-        <NIcon :component="isMuted ? VolumeMuteOutline : (volume > 50 ? VolumeHighOutline : (volume > 0 ? VolumeLowOutline : VolumeMuteOutline))" size="18" />
+        <NIcon
+          :component="isMuted ? VolumeMuteOutline : (volume > 50 ? VolumeHighOutline : (volume > 0 ? VolumeLowOutline : VolumeMuteOutline))"
+          size="18" />
       </NButton>
 
       <!-- 音量滑块 -->
@@ -153,6 +155,8 @@ const playMusic = async (id: number) => {
     const response = await GetMusicDetail({ music_id: id });
     // 直接判断返回的detail对象
     if (response?.detail) {
+      // 切换新歌曲时重置进度
+      musicStore.current.progress = 0;
       musicStore.setCurrentMusic(response.detail)
       musicStore.setMidShowWhat(MidShowWhat.ShowMusicDetail)
       handleMp3()
@@ -216,10 +220,11 @@ const handleMp3 = () => {
     currentTime.value = audio.value!.currentTime;
   };
   audio.value.onloadedmetadata = () => {
-    duration.value = audio.value!.duration;
-    // 设置之前的播放进度
+    if (!audio.value) return;
+    duration.value = audio.value.duration;
+    // 页面刷新时会自动使用store中保存的进度
     if (musicStore.current.progress > 0) {
-      audio.value!.currentTime = (musicStore.current.progress / 100) * audio.value!.duration;
+      audio.value.currentTime = (musicStore.current.progress / 100) * audio.value.duration;
     }
   };
   audio.value.onended = () => {
@@ -227,11 +232,9 @@ const handleMp3 = () => {
     playNext();
   };
 
-  // 只有在之前是播放状态时才自动播放
-  if (musicStore.current.isPlaying) {
-    audio.value.play();
-    isPlaying.value = true;
-  }
+  audio.value.play();
+  isPlaying.value = true;
+
 };
 
 // 开始播放或暂停
