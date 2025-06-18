@@ -22,6 +22,7 @@ type FileLogic interface {
 	Upload(ctx context.Context, prm *prm.UploadFileParam) (*prm.UploadFileResult, error)
 	GetList(ctx context.Context, param *prm.GetFileListParam) (*prm.GetFileListResult, error)
 	DownloadByIds(ctx context.Context, param *prm.DownloadFileParam) (*prm.DownloadFileResult, error)
+	Delete(ctx context.Context, param *prm.DeleteFileParam) (*prm.DeleteFileResult, error)
 }
 
 type fileLogic struct {
@@ -32,6 +33,14 @@ func NewFileLogic(i *infra.AllInfra) FileLogic {
 	return &fileLogic{
 		AllInfra: i,
 	}
+}
+
+func (f *fileLogic) Delete(ctx context.Context, param *prm.DeleteFileParam) (*prm.DeleteFileResult, error) {
+	err := f.FileDal.Delete(param.FileId)
+	if err != nil {
+		return nil, err
+	}
+	return &prm.DeleteFileResult{}, nil
 }
 
 func (f *fileLogic) DownloadByIds(ctx context.Context, param *prm.DownloadFileParam) (*prm.DownloadFileResult, error) {

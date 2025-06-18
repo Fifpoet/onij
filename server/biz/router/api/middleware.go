@@ -100,3 +100,8 @@ func _getfilelistMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _deletefileMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

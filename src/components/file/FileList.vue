@@ -153,13 +153,12 @@
     <n-form
       ref="uploadFormRef"
       :model="uploadForm"
-      :rules="uploadRules"
       label-placement="left"
       label-width="auto"
       require-mark-placement="right-hanging"
       size="medium"
     >
-      <n-form-item label="文件选择" path="files">
+      <n-form-item label="文件选择">
         <n-upload
           ref="uploadRef"
           :max="10"
@@ -379,11 +378,7 @@ const folderForm = ref({
 
 // 表单验证规则
 const uploadRules = {
-  files: {
-    required: true,
-    message: '请选择文件',
-    trigger: 'change'
-  }
+  // 移除files验证规则，因为我们直接检查uploadFileList
 };
 
 const folderRules = {
@@ -457,7 +452,6 @@ const handleFileClick = (file: FileDetail) => {
     folderHistory.value.push(file.id);
     folderNameHistory.value.push(file.name);
     currentFolderName.value = file.name;
-    console.log('进入文件夹:', file.name, 'ID:', file.id);
   }
   emit('fileClick', file);
 };
@@ -549,11 +543,12 @@ const handleFileChange = (options: any) => {
 
 // 处理文件上传
 const handleUpload = async () => {
-  if (!uploadFormRef.value || uploadFileList.value.length === 0) return;
+  if (uploadFileList.value.length === 0) {
+    message.error('请选择文件');
+    return;
+  }
   
   try {
-    await uploadFormRef.value.validate();
-    
     uploading.value = true;
     
     const files: FileInfo[] = uploadFileList.value.map(file => ({
@@ -569,16 +564,15 @@ const handleUpload = async () => {
     
     const response = await UploadFile(uploadData);
     
-    if (response.code === 0) {
+    if (response.file_ids.length > 0) {
       message.success(`成功上传 ${response.file_ids.length} 个文件`);
       showUploadModal.value = false;
       handleUploadReset();
-      fetchFileList(); // 刷新文件列表
+      fetchFileList();
     } else {
       message.error(response.message || '上传失败');
     }
   } catch (error) {
-    console.error('上传失败:', error);
     message.error('上传失败');
   } finally {
     uploading.value = false;
@@ -592,24 +586,23 @@ const handleCreateFolder = async () => {
   try {
     await folderFormRef.value.validate();
     creatingFolder.value = true;
-    // 使用UploadFile接口创建文件夹
+    
     const folderData: UploadFileReq = {
       parent_id: props.parentId,
       files: [{
         filename: folderForm.value.filename,
-        file: new File([], folderForm.value.filename, { type: 'application/octet-stream' }), // 空文件表示创建文件夹
+        file: new File([], folderForm.value.filename, { type: 'application/octet-stream' }),
         origin_at: Math.floor(Date.now() / 1000)
       }]
     };
     
     const response = await UploadFile(folderData);
-    console.log(response);
 
     if (response.file_ids.length > 0) {
       message.success('文件夹创建成功');
       showFolderModal.value = false;
       handleFolderReset();
-      fetchFileList(); // 刷新文件列表
+      fetchFileList();
     } else {
       message.error(response.message || '创建文件夹失败');
     }

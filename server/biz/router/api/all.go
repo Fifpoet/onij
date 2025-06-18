@@ -29,6 +29,7 @@ func Register(r *server.Hertz) {
 	}
 	{
 		_file := root.Group("/file", _fileMw()...)
+		_file.POST("/delete", append(_deletefileMw(), handler.DeleteFile)...)
 		_file.POST("/download", append(_downloadfileMw(), handler.DownloadFile)...)
 		_file.POST("/list", append(_getfilelistMw(), handler.GetFileList)...)
 		_file.POST("/upload", append(_uploadfileMw(), handler.UploadFile)...)

@@ -101,3 +101,23 @@ func (r *DownloadFileResult) Resp() *api.DownloadFileResp {
 		Urls:    r.Urls,
 	}
 }
+
+type DeleteFileParam struct {
+	FileId int64
+}
+
+func NewDeleteFileParam(req *api.DeleteFileReq) *DeleteFileParam {
+	return &DeleteFileParam{
+		FileId: req.FileId,
+	}
+}
+
+type DeleteFileResult struct {
+}
+
+func (r *DeleteFileResult) Resp() *api.DeleteFileResp {
+	return &api.DeleteFileResp{
+		Code:    util.BaseCodeOK,
+		Message: util.BaseMsgOK,
+	}
+}

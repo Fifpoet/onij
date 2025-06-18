@@ -20,6 +20,7 @@ type FileDal interface {
 	GetByParentId(parentId int64, page util.Page) ([]*File, error)
 	CountByParentId(parentId int64) (int32, error)
 	GetFolderPathByParentId(parentId int64) ([]string, error)
+	Delete(id int64) error
 }
 type fileDal struct {
 	db *gorm.DB
@@ -42,6 +43,10 @@ type File struct {
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `json:"deleted_at"`
+}
+
+func (f *fileDal) Delete(id int64) error {
+	return f.db.Delete(&File{}, "id = ?", id).Error
 }
 
 func (f *fileDal) GetFolderPathByParentId(parentId int64) ([]string, error) {

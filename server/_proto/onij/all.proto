@@ -160,6 +160,12 @@ message DeleteTagResp {
   string message = 2;
 }
 
+message DeleteFileReq { int64 file_id = 1; }
+message DeleteFileResp {
+  int32 code = 1;
+  string message = 2;
+}
+
 service AllService {
   // 上传文件
   rpc UploadFile(UploadFileReq) returns (UploadFileResp) {
@@ -208,5 +214,9 @@ service AllService {
   // 删除标签
   rpc DeleteTag(DeleteTagReq) returns (DeleteTagResp) {
     option (api.post) = "/tag/delete";
+  }
+  // 删除文件
+  rpc DeleteFile(DeleteFileReq) returns (DeleteFileResp) {
+    option (api.post) = "/file/delete";
   }
 }
