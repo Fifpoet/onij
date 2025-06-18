@@ -1,34 +1,32 @@
 <template>
   <div @scroll="handleScroll"
-    class="music-list absolute bg-white shadow-lg rounded-lg p-4 w-[400px] bottom-[70px] left-0 max-h-[300px] overflow-y-auto text-sm">
-    <!-- 新增选择器 -->
-    <div class="mt-4">
-      <n-select  v-model:value="selectedTag" :options="tagOptions" :render-label="renderLabel" tag filterable multiple
+    class="music-list absolute bg-white shadow-lg rounded-lg w-[400px] bottom-[70px] left-0 max-h-[300px] overflow-y-auto text-xs">
+    <!-- 选择器 -->
+    <div class="sticky top-0 z-10 bg-white p-4 pb-2">
+      <n-select v-model:value="selectedTag" :options="tagOptions" :render-label="renderLabel" tag filterable multiple
         clearable @update:value="handleTagSearch" placeholder="选择标签" />
     </div>
-    <n-list hoverable clickable>
-      <div v-for="music in musicStore.musicList" :key="music?.id" class="mb-0.5 cursor-pointer"
-        @dblclick="playMusic(music?.id)">
-        <n-list-item>
-          <n-thing :title="music?.name" content-style="margin-top: 1px;">
-            <template #description>
-              <n-space size="small" style="margin-top: 1px">
-                <n-tag :bordered="false" type="info" size="small">
-                  暑夜
-                </n-tag>
-                <n-tag :bordered="false" type="info" size="small">
-                  晚春
-                </n-tag>
-              </n-space>
-            </template>
-            <template #header-extra>
-              {{ music?.artist }}
-            </template>
-          </n-thing>
-        </n-list-item>
-      </div>
-    </n-list>
-
+    <div class="px-4 pb-4">
+      <n-list hoverable clickable>
+        <div v-for="music in musicStore.musicList" :key="music?.id" class="cursor-pointer hover:bg-gray-50 py-1.5 px-2 rounded"
+          @dblclick="playMusic(music?.id)">
+          <div class="flex flex-col gap-0.5">
+            <div class="flex justify-between items-start">
+              <span class="text-sm font-normal select-none text-left flex-1">{{ music?.name }}</span>
+              <span class="text-xs text-gray-500 select-none ml-2">{{ music?.artist }}</span>
+            </div>
+            <n-space size="small">
+              <n-tag :bordered="false" type="info" size="tiny" class="text-[10px]">
+                暑夜
+              </n-tag>
+              <n-tag :bordered="false" type="info" size="tiny" class="text-[10px]">
+                晚春
+              </n-tag>
+            </n-space>
+          </div>
+        </div>
+      </n-list>
+    </div>
   </div>
 
 </template>
