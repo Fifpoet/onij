@@ -5,8 +5,7 @@ import { GetUploadToken } from '@/api/file';
 // 七牛云配置
 const QINIU_CONFIG = {
   bucket: 'onij',
-  domain: 'http://cloud.onij.fun',
-  zone: 'huadong' as const
+  domain: 'http://cloud.onij.fun'
 };
 
 // 获取上传token
@@ -54,6 +53,16 @@ function generateUniqueFileName(originalName: string): string {
   return `${nameWithoutExt}_${timestamp}_${randomStr}${extension ? '.' + extension : ''}`;
 }
 
+// 将 File 对象转换为 ArrayBuffer
+async function fileToArrayBuffer(file: File): Promise<ArrayBuffer> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as ArrayBuffer);
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(file);
+  });
+}
+
 // 上传文件到七牛云
 export async function uploadToQiniu(
   file: File, 
@@ -71,11 +80,12 @@ export async function uploadToQiniu(
       // 创建上传配置
       const config = {
         useCdnDomain: false,
-        region: qiniu.region[QINIU_CONFIG.zone]
+        region: qiniu.region.z0 // 华东区域
       };
       
       // 创建上传对象
-      const observable = qiniu.upload(file, key, token, {}, config);
+      // @ts-ignore
+      const observable = qiniu.upload(file, key, token, config);
       
       // 监听上传进度
       observable.subscribe({

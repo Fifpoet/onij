@@ -11,7 +11,7 @@ import (
 )
 
 type FileDal interface {
-	Save(file *File) error
+	Save(files ...*File) error
 
 	DelByIds(id []int64) ([]*File, error)
 
@@ -39,7 +39,7 @@ type File struct {
 	Hash     string `json:"hash" gorm:"not null;uniqueIndex:uk_hash"`
 	ParentId int64  `json:"parent_id" gorm:"not null;uniqueIndex:uk_hash"`
 
-	OriginAt  *time.Time     `json:"origin_at"`
+	OriginAt  int64          `json:"origin_at"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `json:"deleted_at"`
@@ -64,7 +64,6 @@ func (f *fileDal) GetFolderPathByParentId(parentId int64) ([]string, error) {
 	return folders, nil
 }
 
-
 func (f *fileDal) GetByParentId(parentId int64, page util.Page) ([]*File, error) {
 	var res []*File
 	err := f.db.Where("parent_id = ?", parentId).Offset(page.OffsetNum()).Limit(page.LimitNum()).Find(&res).Error
@@ -75,10 +74,10 @@ func (f *fileDal) GetByParentId(parentId int64, page util.Page) ([]*File, error)
 	return res, nil
 }
 
-func (f *fileDal) Save(file *File) error {
+func (f *fileDal) Save(files ...*File) error {
 	err := f.db.Clauses(clause.OnConflict{
 		UpdateAll: true,
-	}).Create(file).Error
+	}).Create(files).Error
 	if err != nil {
 		log.Printf("save file failed: err = %v \n", err)
 		return err

@@ -10,10 +10,6 @@ import (
 	"onij/model/api"
 	"onij/util"
 	"onij/util/boost/collection/collext"
-	"onij/util/boost/concurrent"
-	"onij/util/boost/crypto"
-	"onij/util/boost/exp"
-	"time"
 )
 
 type FileLogic interface {
@@ -92,9 +88,9 @@ func (l *fileLogic) Upload(ctx context.Context, param *prm.UploadFileParam) (*pr
 			Id:       id,
 			Name:     param.Files[0].Filename,
 			Format:   int32(api.FileType_FT_Folder),
-			Hash:     crypto.Md5([]byte(param.Files[0].Filename)),
+			Hash:     param.Files[0].Hash,
 			ParentId: param.ParentId,
-			OriginAt: exp.Ptr(time.Unix(param.Files[0].OriginAt, 0)),
+			OriginAt: param.Files[0].OriginAt,
 		})
 		if err != nil {
 			return nil, err
@@ -104,41 +100,23 @@ func (l *fileLogic) Upload(ctx context.Context, param *prm.UploadFileParam) (*pr
 		}, nil
 	}
 
-	// 检查文件是否已存在（基于hash）
-	fis, err := l.FileDal.GetByParentAndHash(param.ParentId, collext.Pick(param.Files, func(f *api.UploadFileReq_FileInfo) string {
-		return f.Hash
-	})...)
-	if err != nil {
-		return nil, err
-	}
-	hashFileMap := collext.Map(fis, getter.FileHash)
-
-	// 过滤出不存在的文件
-	toUploads := collext.Select(param.Files, func(f *api.UploadFileReq_FileInfo) (*api.UploadFileReq_FileInfo, bool) {
-		return f, hashFileMap[f.Hash] == nil
-	})
-
-	// 保存文件信息到数据库
-	resIds, err := concurrent.Go(ctx, toUploads, func(ctx context.Context, f *api.UploadFileReq_FileInfo) (int64, error) {
-		id := util.IdGen.Generate()
-		err := l.FileDal.Save(&mysql.File{
-			Id:       id,
+	fis := collext.Pick(param.Files, func(f *api.UploadFileReq_FileInfo) *mysql.File {
+		return &mysql.File{
+			Id:       util.IdGen.Generate(),
 			Name:     f.Filename,
 			Format:   int32(f.Format),
 			StoreKey: f.StoreKey,
 			ParentId: param.ParentId,
 			Hash:     f.Hash,
-			OriginAt: exp.Ptr(time.Unix(f.OriginAt, 0)),
-		})
-		if err != nil {
-			return 0, err
+			OriginAt: f.OriginAt,
 		}
-		return id, nil
 	})
+	err := l.FileDal.Save(fis...)
 	if err != nil {
 		return nil, err
 	}
+
 	return &prm.UploadFileResult{
-		FileIds: resIds,
+		FileIds: collext.Pick(fis, getter.FileId),
 	}, nil
 }

@@ -21,7 +21,7 @@ func NewUploadFileParam(req *api.UploadFileReq) *UploadFileParam {
 }
 
 type UploadFileResult struct {
-	FileIds  []int64
+	FileIds []int64
 }
 
 func (r *UploadFileResult) Resp() *api.UploadFileResp {
@@ -54,17 +54,12 @@ type GetFileListResult struct {
 
 func (r *GetFileListResult) Resp() *api.GetFileListResp {
 	res := collext.Pick(r.Files, func(f *mysql.File) *api.FileDetail {
-		var originAt int64 = 0
-		if f.OriginAt != nil {
-			originAt = f.OriginAt.Unix()
-		}
-
 		return &api.FileDetail{
 			Id:        f.Id,
 			Name:      f.Name,
 			Format:    api.FileType(f.Format),
 			ParentId:  f.ParentId,
-			OriginAt:  originAt,
+			OriginAt:  f.OriginAt,
 			CreatedAt: f.CreatedAt.Unix(),
 			UpdatedAt: f.UpdatedAt.Unix(),
 		}

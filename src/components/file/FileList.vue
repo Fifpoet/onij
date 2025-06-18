@@ -149,131 +149,10 @@
   </Transition>
 
   <!-- 文件上传弹框 -->
-  <n-modal v-model:show="showUploadModal" preset="card" title="上传文件" style="width: 600px">
-    <n-form
-      ref="uploadFormRef"
-      :model="uploadForm"
-      label-placement="left"
-      label-width="auto"
-      require-mark-placement="right-hanging"
-      size="medium"
-    >
-      <n-form-item label="文件选择">
-        <n-upload
-          ref="uploadRef"
-          :max="10"
-          :show-file-list="true"
-          accept="*/*"
-          list-type="image-card"
-          @change="handleFileChange"
-        >
-          <div class="upload-trigger">
-            <n-icon size="48" class="text-gray-400">
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="7,10 12,15 17,10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
-              </svg>
-            </n-icon>
-            <p class="text-sm text-gray-500 mt-2">点击上传文件</p>
-          </div>
-        </n-upload>
-      </n-form-item>
-
-      <!-- 文件信息编辑区域 -->
-      <div v-if="uploadFileList.length > 0" class="mt-4">
-        <h4 class="text-sm font-medium mb-3">文件信息设置</h4>
-        <div class="space-y-3">
-          <div 
-            v-for="(file, index) in uploadFileList" 
-            :key="index"
-            class="border border-gray-200 rounded-lg p-3"
-          >
-            <div class="flex items-center space-x-3">
-              <div class="flex-shrink-0">
-                <n-icon size="32" class="text-gray-500">
-                  <component :is="getFileIcon(getFileTypeFromString(file.type))" />
-                </n-icon>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-gray-900 truncate">{{ file.name }}</p>
-                <p class="text-xs text-gray-500">{{ formatFileSize(file.size) }}</p>
-              </div>
-            </div>
-            
-            <div class="mt-3 grid grid-cols-2 gap-3">
-              <n-form-item :label="`文件名 ${index + 1}`" :path="`fileNames.${index}`">
-                <n-input
-                  v-model:value="uploadFileList[index].customName"
-                  :placeholder="file.name"
-                  clearable
-                />
-              </n-form-item>
-              <n-form-item :label="`创建时间 ${index + 1}`" :path="`fileDates.${index}`">
-                <n-date-picker
-                  v-model:value="uploadFileList[index].customDate"
-                  type="datetime"
-                  placeholder="选择时间"
-                  clearable
-                />
-              </n-form-item>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <n-form-item>
-        <n-space>
-          <n-button
-            type="primary"
-            :loading="uploading"
-            :disabled="uploadFileList.length === 0"
-            @click="handleUpload"
-          >
-            {{ uploading ? '上传中...' : '开始上传' }}
-          </n-button>
-          <n-button @click="handleUploadReset">重置</n-button>
-          <n-button @click="showUploadModal = false">取消</n-button>
-        </n-space>
-      </n-form-item>
-    </n-form>
-  </n-modal>
+  <FileUploadModal v-model:show="showUploadModal" :parent-id="props.parentId" @uploaded="fetchFileList" />
 
   <!-- 新建文件夹弹框 -->
-  <n-modal v-model:show="showFolderModal" preset="card" title="新建文件夹" style="width: 400px">
-    <n-form
-      ref="folderFormRef"
-      :model="folderForm"
-      :rules="folderRules"
-      label-placement="left"
-      label-width="auto"
-      require-mark-placement="right-hanging"
-      size="medium"
-    >
-      <n-form-item label="文件夹名称" path="filename">
-        <n-input
-          v-model:value="folderForm.filename"
-          placeholder="请输入文件夹名称"
-          clearable
-        />
-      </n-form-item>
-
-      <n-form-item>
-        <n-space>
-          <n-button
-            type="primary"
-            :loading="creatingFolder"
-            :disabled="!folderForm.filename"
-            @click="handleCreateFolder"
-          >
-            {{ creatingFolder ? '创建中...' : '创建文件夹' }}
-          </n-button>
-          <n-button @click="handleFolderReset">重置</n-button>
-          <n-button @click="showFolderModal = false">取消</n-button>
-        </n-space>
-      </n-form-item>
-    </n-form>
-  </n-modal>
+  <FolderCreateModal v-model:show="showFolderModal" :parent-id="props.parentId" @created="fetchFileList" />
 </template>
 
 <script setup lang="ts">
@@ -285,33 +164,22 @@ import {
   NEmpty,
   NPagination,
   NEllipsis,
-  NModal,
-  NForm,
-  NFormItem,
-  NInput,
-  NDatePicker,
-  NUpload,
-  NSpace,
-  useMessage,
-  type FormInst,
-  type UploadInst
-} from 'naive-ui';
+  useMessage} from 'naive-ui';
 import { 
   DownloadOutline,
   TrashOutline
 } from '@vicons/ionicons5';
-import { GetFileList, DownloadFile, UploadFile, DeleteFileById } from '@/api';
-import { FileType, FileDetail, GetFileListReq, UploadFileReq, FileInfo, DeleteFileReq } from '@/api/types/file';
+import { GetFileList, DownloadFile, DeleteFileById } from '@/api';
+import { FileType, FileDetail, GetFileListReq, DeleteFileReq } from '@/api/types/file';
 import { MidShowWhat } from '@/api/types';
 import { useMusicStore } from '@/store/music';
 import { 
   getFileIcon, 
   getFileSize, 
   formatFileTime, 
-  isFolder,
-  getFileTypeFromString,
-  formatFileSize
-} from '@/util';
+  isFolder} from '@/util';
+import FileUploadModal from './FileUploadModal.vue';
+import FolderCreateModal from './FolderCreateModal.vue';
 
 // 使用全局状态
 const musicStore = useMusicStore();
@@ -348,49 +216,6 @@ const folderNameHistory = ref<string[]>(['根目录']);
 // 弹框相关状态
 const showUploadModal = ref(false);
 const showFolderModal = ref(false);
-const uploading = ref(false);
-const creatingFolder = ref(false);
-
-// 表单引用
-const uploadFormRef = ref<FormInst | null>(null);
-const folderFormRef = ref<FormInst | null>(null);
-const uploadRef = ref<UploadInst | null>(null);
-
-// 文件列表（用于上传）
-const uploadFileList = ref<Array<{
-  file: File;
-  name: string;
-  size: number;
-  type: string;
-  customName?: string;
-  customDate?: number;
-}>>([]);
-
-// 上传表单
-const uploadForm = ref({
-  files: []
-});
-
-// 文件夹表单
-const folderForm = ref({
-  filename: ''
-});
-
-// 表单验证规则
-const uploadRules = {
-  // 移除files验证规则，因为我们直接检查uploadFileList
-};
-
-const folderRules = {
-  filename: {
-    required: true,
-    message: '请输入文件夹名称',
-    trigger: 'blur'
-  }
-};
-
-// 消息提示
-const message = useMessage();
 
 // 获取文件列表
 const fetchFileList = async (page: number = 1, append: boolean = false) => {
@@ -552,134 +377,16 @@ const deleteFile = async (file: FileDetail) => {
   }
 };
 
-// 处理文件选择
-const handleFileChange = (options: any) => {
-  const { fileList: newFileList } = options;
-  uploadFileList.value = newFileList.map((item: any) => ({
-    file: item.file,
-    name: item.file.name,
-    size: item.file.size,
-    type: item.file.type,
-    customName: undefined,
-    customDate: undefined
-  }));
-};
-
-// 处理文件上传
-const handleUpload = async () => {
-  if (uploadFileList.value.length === 0) {
-    message.error('请选择文件');
-    return;
-  }
-  
-  try {
-    uploading.value = true;
-    
-    // 使用真实的七牛云上传
-    const { batchUploadToQiniu, getFileTypeFromFile } = await import('@/util/qiniu');
-    
-    // 获取当前文件夹路径（这里需要根据实际情况获取）
-    const folderPath: string[] = [];
-    
-    // 批量上传文件到七牛云
-    const uploadResults = await batchUploadToQiniu(
-      uploadFileList.value.map(item => item.file),
-      folderPath
-    );
-    
-    // 构建文件信息
-    const files: FileInfo[] = uploadResults.map((result, index) => {
-      const fileInfo = uploadFileList.value[index];
-      return {
-        filename: fileInfo.customName || fileInfo.name,
-        store_key: result.key,
-        hash: result.hash,
-        format: getFileTypeFromFile(fileInfo.file),
-        origin_at: fileInfo.customDate ? Math.floor(fileInfo.customDate / 1000) : Math.floor(Date.now() / 1000)
-      };
-    });
-    
-    const uploadData: UploadFileReq = {
-      parent_id: props.parentId,
-      files
-    };
-    
-    const response = await UploadFile(uploadData);
-    
-    // 直接判断返回的file_ids数组
-    if (response.file_ids && response.file_ids.length > 0) {
-      message.success(`成功上传 ${response.file_ids.length} 个文件`);
-      showUploadModal.value = false;
-      handleUploadReset();
-      fetchFileList();
-    } else {
-      message.error(response.message || '上传失败');
-    }
-  } catch (error) {
-    console.error('Upload error:', error);
-    message.error('上传失败: ' + (error instanceof Error ? error.message : '未知错误'));
-  } finally {
-    uploading.value = false;
-  }
-};
-
-// 处理创建文件夹
-const handleCreateFolder = async () => {
-  if (!folderFormRef.value) return;
-  
-  try {
-    await folderFormRef.value.validate();
-    creatingFolder.value = true;
-    
-    const folderData: UploadFileReq = {
-      parent_id: props.parentId,
-      files: [{
-        filename: folderForm.value.filename,
-        store_key: '', // 文件夹不需要store_key
-        hash: `folder_${Date.now()}_${folderForm.value.filename}`,
-        format: FileType.FT_Folder,
-        origin_at: Math.floor(Date.now() / 1000)
-      }]
-    };
-    
-    const response = await UploadFile(folderData);
-
-    // 直接判断返回的file_ids数组
-    if (response.file_ids && response.file_ids.length > 0) {
-      message.success('文件夹创建成功');
-      showFolderModal.value = false;
-      handleFolderReset();
-      fetchFileList();
-    } else {
-      message.error(response.message || '创建文件夹失败');
-    }
-  } catch (error) {
-    message.error('创建文件夹失败');
-  } finally {
-    creatingFolder.value = false;
-  }
-};
-
-// 重置上传表单
-const handleUploadReset = () => {
-  uploadFileList.value = [];
-  if (uploadRef.value) {
-    uploadRef.value.clear();
-  }
-};
-
-// 重置文件夹表单
-const handleFolderReset = () => {
-  folderForm.value.filename = '';
-};
-
-// 暴露刷新方法
-const refresh = () => {
-  fetchFileList();
-};
+const message = useMessage();
 
 defineExpose({
-  refresh
+  fetchFileList,
+  handleFileClick,
+  goBack,
+  handlePageChange,
+  handlePageSizeChange,
+  downloadFile,
+  deleteFile
 });
 </script>
 

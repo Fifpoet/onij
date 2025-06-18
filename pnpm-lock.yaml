@@ -21,8 +21,8 @@ dependencies:
     specifier: ^3.2.1
     version: 3.2.1(pinia@2.0.0-rc.10)
   qiniu-js:
-    specifier: 4.0.0-beta.6
-    version: 4.0.0-beta.6
+    specifier: 3.4.1
+    version: 3.4.1
   rollup-plugin-visualizer:
     specifier: ^5.12.0
     version: 5.12.0
@@ -392,6 +392,12 @@ packages:
     transitivePeerDependencies:
       - supports-color
     dev: true
+
+  /@babel/runtime-corejs2@7.27.6:
+    resolution: {integrity: sha512-WgvlQpGnm1rmvgrm+H+cVcAckEPlwURUCvv1ZVSFr9J9yixgFbNlu7+CjVKKAd4xQtMijPwxwcSi5SFFHKlmDw==}
+    engines: {node: '>=6.9.0'}
+    dependencies:
+      core-js: 2.6.12
 
   /@babel/runtime@7.24.7:
     resolution: {integrity: sha512-UwgBRMjJP+xv857DCngvqXI3Iq6J4v0wXmwc6sapg+zyhbwmQX67LUEFrkK5tbyJ30jGuG3ZvWpBiB9LCy1kWw==}
@@ -885,7 +891,7 @@ packages:
     resolution: {integrity: sha512-CfWbsS+hgAqrTOtaLY+DJ5l+gQeFwT3B8Cp5nhCdrHd9os/nQ7p/ANE9Q1ghxUzrX0jhRRPmGfzXa8zyHpaCew==}
     deprecated: This is a stub types definition. qiniu-js provides its own type definitions, so you do not need this installed.
     dependencies:
-      qiniu-js: 4.0.0-beta.6
+      qiniu-js: 3.4.1
     dev: true
 
   /@unocss/astro@0.60.4(vite@5.3.3):
@@ -1418,6 +1424,11 @@ packages:
   /convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
     dev: true
+
+  /core-js@2.6.12:
+    resolution: {integrity: sha512-Kb2wC0fvsWfQrgk8HU5lW6U/Lcs8+9aaYcy4ZFc6DDlo4nZ7n70dEgE5rtR0oG6ufKDUnrwfWL1mXR5ljDatrQ==}
+    deprecated: core-js@<3.23.3 is no longer maintained and not recommended for usage due to the number of issues. Because of the V8 engine whims, feature detection in old core-js versions could cause a slowdown up to 100x even if nothing is polyfilled. Some versions have web compatibility issues. Please, upgrade your dependencies to the actual version of core-js.
+    requiresBuild: true
 
   /cross-spawn@7.0.3:
     resolution: {integrity: sha512-iRDPJKUPVEND7dHPO8rkbOnPpyDygcDFtWjpeWNCgy8WP2rXcxXL8TskReQl6OrB2G7+UJrags1q15Fudc7G6w==}
@@ -2054,8 +2065,17 @@ packages:
     resolution: {integrity: sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg==}
     dev: false
 
-  /qiniu-js@4.0.0-beta.6:
-    resolution: {integrity: sha512-XNNlgwiEq7wERK+Xew9L+Q7ql0PHV8F4LbW99BWnRSP94IlAP0GQxKiIhgrG7qhDNyjKJop3mYdlWOqbtPxKew==}
+  /qiniu-js@3.4.1:
+    resolution: {integrity: sha512-8vxrLqDPlJUk3fUAaTozh3TAT3ww9B5KqGogmGuTiFHnewXDoMxTCSY5z8Ab5UNdrCo6ZxDM07G/o++CICRUFw==}
+    dependencies:
+      '@babel/runtime-corejs2': 7.27.6
+      querystring: 0.2.1
+      spark-md5: 3.0.2
+
+  /querystring@0.2.1:
+    resolution: {integrity: sha512-wkvS7mL/JMugcup3/rMitHmd9ecIGd2lhFhK9N3UUQ450h66d1r3Y9nvXzQAW1Lq+wyx61k/1pfKS5KuKiyEbg==}
+    engines: {node: '>=0.4.x'}
+    deprecated: The querystring API is considered Legacy. new code should use the URLSearchParams API instead.
 
   /queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
@@ -2185,6 +2205,9 @@ packages:
     resolution: {integrity: sha512-l3BikUxvPOcn5E74dZiq5BGsTb5yEwhaTSzccU6t4sDOH8NWJCstKO5QT2CvtFoK6F0saL7p9xHAqHOlCPJygA==}
     engines: {node: '>= 8'}
     dev: false
+
+  /spark-md5@3.0.2:
+    resolution: {integrity: sha512-wcFzz9cDfbuqe0FZzfi2or1sgyIrsDwmPwfZC4hiNidPdPINjeUwNfv5kldczoEAcjl9Y1L3SM7Uz2PUEQzxQw==}
 
   /string-width@4.2.3:
     resolution: {integrity: sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==}
