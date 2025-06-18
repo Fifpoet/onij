@@ -300,8 +300,8 @@ import {
   DownloadOutline,
   TrashOutline
 } from '@vicons/ionicons5';
-import { GetFileList, DownloadFile, UploadFile } from '@/api';
-import { FileType, FileDetail, GetFileListReq, UploadFileReq, FileInfo } from '@/api/types/file';
+import { GetFileList, DownloadFile, UploadFile, DeleteFileById } from '@/api';
+import { FileType, FileDetail, GetFileListReq, UploadFileReq, FileInfo, DeleteFileReq } from '@/api/types/file';
 import { MidShowWhat } from '@/api/types';
 import { useMusicStore } from '@/store/music';
 import { 
@@ -406,7 +406,7 @@ const fetchFileList = async (page: number = 1, append: boolean = false) => {
     
     const response = await GetFileList(req);
     
-    // 直接处理数据，不检查code
+    // 直接判断返回的files数组
     if (response.files) {
       if (append) {
         fileList.value.push(...response.files);
@@ -492,6 +492,7 @@ const downloadFile = async (file: FileDetail) => {
   try {
     const response = await DownloadFile({ file_ids: [file.id] });
     
+    // 直接判断返回的urls数组
     if (response.urls && response.urls.length > 0) {
       const fileUrl = response.urls[0];
       const fileName = file.name;
@@ -516,6 +517,8 @@ const downloadFile = async (file: FileDetail) => {
       setTimeout(() => {
         document.body.removeChild(iframe);
       }, 1000);
+    } else {
+      message.error('下载链接获取失败');
     }
   } catch (error) {
     message.error('下载文件失败');
@@ -524,8 +527,29 @@ const downloadFile = async (file: FileDetail) => {
 
 // 删除文件
 const deleteFile = async (file: FileDetail) => {
-  // TODO: 实现删除文件接口
-  console.log('删除文件:', file.name);
+  try {
+    // 显示确认对话框
+    const confirmed = window.confirm(`确定要删除文件 "${file.name}" 吗？此操作不可恢复。`);
+    if (!confirmed) {
+      return;
+    }
+
+    const deleteData: DeleteFileReq = {
+      file_id: file.id
+    };
+
+    const response = await DeleteFileById(deleteData);
+
+    // 直接判断返回数据，不依赖状态码
+    if (response.message === 'ok') {
+      message.success('文件删除成功');
+      fetchFileList(); // 刷新文件列表
+    } else {
+      message.error(response.message || '删除文件失败');
+    }
+  } catch (error) {
+    message.error('删除文件失败');
+  }
 };
 
 // 处理文件选择
@@ -551,11 +575,29 @@ const handleUpload = async () => {
   try {
     uploading.value = true;
     
-    const files: FileInfo[] = uploadFileList.value.map(file => ({
-      filename: file.customName || file.name,
-      file: file.file,
-      origin_at: file.customDate ? Math.floor(file.customDate / 1000) : undefined
-    }));
+    // 使用真实的七牛云上传
+    const { batchUploadToQiniu, getFileTypeFromFile } = await import('@/util/qiniu');
+    
+    // 获取当前文件夹路径（这里需要根据实际情况获取）
+    const folderPath: string[] = [];
+    
+    // 批量上传文件到七牛云
+    const uploadResults = await batchUploadToQiniu(
+      uploadFileList.value.map(item => item.file),
+      folderPath
+    );
+    
+    // 构建文件信息
+    const files: FileInfo[] = uploadResults.map((result, index) => {
+      const fileInfo = uploadFileList.value[index];
+      return {
+        filename: fileInfo.customName || fileInfo.name,
+        store_key: result.key,
+        hash: result.hash,
+        format: getFileTypeFromFile(fileInfo.file),
+        origin_at: fileInfo.customDate ? Math.floor(fileInfo.customDate / 1000) : Math.floor(Date.now() / 1000)
+      };
+    });
     
     const uploadData: UploadFileReq = {
       parent_id: props.parentId,
@@ -564,7 +606,8 @@ const handleUpload = async () => {
     
     const response = await UploadFile(uploadData);
     
-    if (response.file_ids.length > 0) {
+    // 直接判断返回的file_ids数组
+    if (response.file_ids && response.file_ids.length > 0) {
       message.success(`成功上传 ${response.file_ids.length} 个文件`);
       showUploadModal.value = false;
       handleUploadReset();
@@ -573,7 +616,8 @@ const handleUpload = async () => {
       message.error(response.message || '上传失败');
     }
   } catch (error) {
-    message.error('上传失败');
+    console.error('Upload error:', error);
+    message.error('上传失败: ' + (error instanceof Error ? error.message : '未知错误'));
   } finally {
     uploading.value = false;
   }
@@ -591,14 +635,17 @@ const handleCreateFolder = async () => {
       parent_id: props.parentId,
       files: [{
         filename: folderForm.value.filename,
-        file: new File([], folderForm.value.filename, { type: 'application/octet-stream' }),
+        store_key: '', // 文件夹不需要store_key
+        hash: `folder_${Date.now()}_${folderForm.value.filename}`,
+        format: FileType.FT_Folder,
         origin_at: Math.floor(Date.now() / 1000)
       }]
     };
     
     const response = await UploadFile(folderData);
 
-    if (response.file_ids.length > 0) {
+    // 直接判断返回的file_ids数组
+    if (response.file_ids && response.file_ids.length > 0) {
       message.success('文件夹创建成功');
       showFolderModal.value = false;
       handleFolderReset();

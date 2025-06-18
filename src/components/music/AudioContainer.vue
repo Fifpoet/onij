@@ -151,11 +151,17 @@ const formattedCurrentTime = computed(() => {
 const playMusic = async (id: number) => {
   try {
     const response = await GetMusicDetail({ music_id: id });
-    musicStore.setCurrentMusic(response.detail)
-    musicStore.setMidShowWhat(MidShowWhat.ShowMusicDetail)
-    handleMp3()
+    // 直接判断返回的detail对象
+    if (response?.detail) {
+      musicStore.setCurrentMusic(response.detail)
+      musicStore.setMidShowWhat(MidShowWhat.ShowMusicDetail)
+      handleMp3()
+    } else {
+      message.error('获取音乐详情失败');
+    }
   } catch (error) {
     console.error('获取音乐详情失败', error);
+    message.error('获取音乐详情失败');
   }
 };
 

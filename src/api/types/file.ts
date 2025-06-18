@@ -14,11 +14,13 @@ export enum FileType {
   FT_Folder = 99,
 }
 
-/* 文件信息 */
+/* 文件信息类型 */
 export interface FileInfo {
-  filename?: string;       // 文件名
-  file: File;             // 文件内容
-  origin_at?: number;     // 原始文件时间
+  filename: string;    // 文件名
+  store_key: string;   // 七牛存储key
+  hash: string;        // 文件hash值
+  format: FileType;    // 文件类型
+  origin_at: number;   // 原始文件时间
 }
 
 /* 请求参数类型 */
@@ -70,4 +72,23 @@ export interface DownloadFileResp {
   code: number;
   message: string;
   urls: string[];
+}
+
+/* 删除文件请求参数 */
+export interface DeleteFileReq {
+  file_id: number;
+}
+
+/* 删除文件响应数据 */
+export interface DeleteFileResp {
+  code: number;
+  message: string;
+}
+
+/* 获取上传token响应数据 */
+export interface GetUploadTokenResp {
+  code: number;
+  message: string;
+  upload_token: string;
+  domain: string;
 }

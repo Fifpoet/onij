@@ -130,3 +130,10 @@ func getManager() *storage.BucketManager {
 
 	return bucketManager
 }
+
+// 获取上传token
+func GetUploadToken() string {
+	putPolicy := storage.PutPolicy{Scope: bk}
+	upToken := putPolicy.UploadToken(getQiniuMac())
+	return upToken
+}

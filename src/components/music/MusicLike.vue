@@ -60,6 +60,11 @@ const toggleTagLike = async ( group: SelectGroupOption, tag: SelectBaseOption) =
   }
   try {
     const response = await UploadTag({ tag_detail: tagDetail });
+    if (response?.message === 'ok') {
+      console.log('收藏成功');
+    } else {
+      console.error('收藏失败:', response?.message);
+    }
   } catch (error) {
     console.error('收藏失败', error);
   }
@@ -84,6 +89,11 @@ const toggleArtistLike = async (artistId: number | undefined, artistName: string
   };
   try {
     const response = await UploadTag({ tag_detail: tagDetail });
+    if (response?.message === 'ok') {
+      console.log(`收藏艺术家 ${artistName} 成功`);
+    } else {
+      console.error(`收藏艺术家 ${artistName} 失败:`, response?.message);
+    }
   } catch (error) {
     console.error(`收藏艺术家 ${artistName} 失败`, error);
   }

@@ -11,9 +11,11 @@ import "all_model.proto";
 // 上传文件
 message UploadFileReq {
   message FileInfo {
-    string filename = 1;
-    string file = 2;
-    int64 origin_at = 3;
+    string filename = 1;  // 文件名
+    string store_key = 2; // 七牛存储key
+    string hash = 3;      // 文件hash值
+    FileType format = 4;  // 文件类型
+    int64 origin_at = 5;  // 原始文件时间
   }
   int64 parent_id = 1;         // 父级文件夹id
   repeated FileInfo files = 2; // 文件列表
@@ -166,6 +168,15 @@ message DeleteFileResp {
   string message = 2;
 }
 
+// 获取上传token
+message GetUploadTokenReq {}
+message GetUploadTokenResp {
+  int32 code = 1;
+  string message = 2;
+  string upload_token = 3;
+  string domain = 4;
+}
+
 service AllService {
   // 上传文件
   rpc UploadFile(UploadFileReq) returns (UploadFileResp) {
@@ -218,5 +229,9 @@ service AllService {
   // 删除文件
   rpc DeleteFile(DeleteFileReq) returns (DeleteFileResp) {
     option (api.post) = "/file/delete";
+  }
+  // 获取上传token
+  rpc GetUploadToken(GetUploadTokenReq) returns (GetUploadTokenResp) {
+    option (api.post) = "/file/upload_token";
   }
 }

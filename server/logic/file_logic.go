@@ -2,9 +2,7 @@ package logic
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
-	"log"
 	"onij/biz/getter"
 	"onij/biz/prm"
 	"onij/infra"
@@ -36,7 +34,19 @@ func NewFileLogic(i *infra.AllInfra) FileLogic {
 }
 
 func (f *fileLogic) Delete(ctx context.Context, param *prm.DeleteFileParam) (*prm.DeleteFileResult, error) {
-	err := f.FileDal.Delete(param.FileId)
+	fis, err := f.FileDal.GetByIds(param.FileId)
+	if err != nil {
+		return nil, err
+	}
+	if len(fis) == 0 {
+		return nil, fmt.Errorf("file not found")
+	}
+	fi := fis[0]
+	err = f.FileDal.Delete(param.FileId)
+	if err != nil {
+		return nil, err
+	}
+	err = util.DeleteFile(fi.StoreKey)
 	if err != nil {
 		return nil, err
 	}
@@ -74,10 +84,8 @@ func (f *fileLogic) GetList(ctx context.Context, param *prm.GetFileListParam) (*
 }
 
 func (l *fileLogic) Upload(ctx context.Context, param *prm.UploadFileParam) (*prm.UploadFileResult, error) {
-	log.Printf("UploadFileParam: %+v\n", param)
-
 	// 处理文件夹创建（空文件表示创建文件夹）
-	if len(param.Files) == 1 && len(param.Files[0].File) == 0 {
+	if len(param.Files) == 1 && len(param.Files[0].StoreKey) == 0 {
 		// upload folder
 		id := util.IdGen.Generate()
 		err := l.FileDal.Save(&mysql.File{
@@ -96,57 +104,30 @@ func (l *fileLogic) Upload(ctx context.Context, param *prm.UploadFileParam) (*pr
 		}, nil
 	}
 
-	// 对每个文件进行base64解码
-	decodedFiles := make([]*api.UploadFileReq_FileInfo, len(param.Files))
-	for i, fileInfo := range param.Files {
-		// 解码base64字符串为原始字节数组
-		fileBytes, err := base64.StdEncoding.DecodeString(fileInfo.File)
-		if err != nil {
-			return nil, fmt.Errorf("base64 decode failed for file %s: %v", fileInfo.Filename, err)
-		}
-
-		decodedFile := &api.UploadFileReq_FileInfo{
-			Filename: fileInfo.Filename,
-			File:     string(fileBytes), // 现在是原始字节数组
-			OriginAt: fileInfo.OriginAt,
-		}
-		decodedFiles[i] = decodedFile
-	}
-
-	// check hash
-	fis, err := l.FileDal.GetByParentAndHash(param.ParentId, collext.Pick(decodedFiles, func(f *api.UploadFileReq_FileInfo) string {
-		return crypto.Md5([]byte(f.File))
+	// 检查文件是否已存在（基于hash）
+	fis, err := l.FileDal.GetByParentAndHash(param.ParentId, collext.Pick(param.Files, func(f *api.UploadFileReq_FileInfo) string {
+		return f.Hash
 	})...)
 	if err != nil {
 		return nil, err
 	}
 	hashFileMap := collext.Map(fis, getter.FileHash)
 
-	// 获取文件夹路径, 提取不存在的文件并上传
-	folders, err := l.FileDal.GetFolderPathByParentId(param.ParentId)
-	if err != nil {
-		return nil, err
-	}
-	toUploads := collext.Select(decodedFiles, func(f *api.UploadFileReq_FileInfo) (*api.UploadFileReq_FileInfo, bool) {
-		return f, hashFileMap[crypto.Md5([]byte(f.File))] == nil
+	// 过滤出不存在的文件
+	toUploads := collext.Select(param.Files, func(f *api.UploadFileReq_FileInfo) (*api.UploadFileReq_FileInfo, bool) {
+		return f, hashFileMap[f.Hash] == nil
 	})
+
+	// 保存文件信息到数据库
 	resIds, err := concurrent.Go(ctx, toUploads, func(ctx context.Context, f *api.UploadFileReq_FileInfo) (int64, error) {
-		key, err := util.UploadFile(ctx, util.UploadInfo{
-			Name:      f.Filename,
-			Bytes:     []byte(f.File),
-			OssFolder: folders,
-		})
-		if err != nil {
-			return 0, err
-		}
 		id := util.IdGen.Generate()
-		err = l.FileDal.Save(&mysql.File{
+		err := l.FileDal.Save(&mysql.File{
 			Id:       id,
 			Name:     f.Filename,
-			Format:   int32(util.GetFileType(f.Filename)),
-			StoreKey: key,
+			Format:   int32(f.Format),
+			StoreKey: f.StoreKey,
 			ParentId: param.ParentId,
-			Hash:     crypto.Md5([]byte(f.File)),
+			Hash:     f.Hash,
 			OriginAt: exp.Ptr(time.Unix(f.OriginAt, 0)),
 		})
 		if err != nil {

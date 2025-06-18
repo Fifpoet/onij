@@ -114,7 +114,9 @@ const handleTagSearch = async () => {
   const req = buildGetMusicListReq()
   try {
     const response = await GetMusicList(req);
-    musicStore.resetMusicList(response.musics);
+    if (response?.musics) {
+      musicStore.resetMusicList(response.musics);
+    }
   } catch (error) {
     console.error("条件获取音乐失败:", error);
   }
@@ -170,6 +172,7 @@ onMounted(async () => {
       page: 1,
       limit: 50
     });
+    // 直接判断返回的artists数组
     if (response?.artists) {
       // 艺术家tag
       tagOptions.value.push({
