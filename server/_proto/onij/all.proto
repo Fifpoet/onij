@@ -67,6 +67,36 @@ message UploadTagResp {
   string message = 2;
 }
 
+message UploadMemoReq {
+  string title = 1;
+  string content = 2;
+  int64 origin_at = 3;
+  int64 cover_file_id = 4;
+  string profile_content = 5;
+}
+message UploadMemoResp {
+  int32 code = 1;
+  string message = 2;
+  int64 memo_id = 3;
+}
+
+message GetMemoDetailReq { int64 memo_id = 1; }
+message GetMemoDetailResp {
+  int32 code = 1;
+  string message = 2;
+  MemoDetail memo_detail = 3;
+}
+
+message GetMemoListReq {
+  string keyword = 1;
+  int32 page = 10;
+  int32 limit = 11;
+}
+message GetMemoListResp {
+  int32 code = 1;
+  string message = 2;
+  repeated MemoProfile memos = 3;
+}
 // 上传专辑
 message UploadAlbumReq {
   string name = 1;
@@ -198,6 +228,18 @@ service AllService {
   // 上传标签
   rpc UploadTag(UploadTagReq) returns (UploadTagResp) {
     option (api.post) = "/tag/upload";
+  }
+  // 上传Memo
+  rpc UploadMemo(UploadMemoReq) returns (UploadMemoResp) {
+    option (api.post) = "/memo/upload";
+  }
+  // 获取Memo详情
+  rpc GetMemoDetail(GetMemoDetailReq) returns (GetMemoDetailResp) {
+    option (api.post) = "/memo/detail";
+  }
+  // 获取Memo列表
+  rpc GetMemoList(GetMemoListReq) returns (GetMemoListResp) {
+    option (api.post) = "/memo/list";
   }
   // 获取音乐详情
   rpc GetMusicDetail(GetMusicDetailReq) returns (GetMusicDetailResp) {

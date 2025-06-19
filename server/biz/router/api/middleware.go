@@ -110,3 +110,23 @@ func _getuploadtokenMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _memoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getmemodetailMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getmemolistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _uploadmemoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

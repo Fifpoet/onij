@@ -36,6 +36,12 @@ func Register(r *server.Hertz) {
 		_file.POST("/upload_token", append(_getuploadtokenMw(), handler.GetUploadToken)...)
 	}
 	{
+		_memo := root.Group("/memo", _memoMw()...)
+		_memo.POST("/detail", append(_getmemodetailMw(), handler.GetMemoDetail)...)
+		_memo.POST("/list", append(_getmemolistMw(), handler.GetMemoList)...)
+		_memo.POST("/upload", append(_uploadmemoMw(), handler.UploadMemo)...)
+	}
+	{
 		_music := root.Group("/music", _musicMw()...)
 		_music.POST("/detail", append(_getmusicdetailMw(), handler.GetMusicDetail)...)
 		_music.POST("/list", append(_getmusiclistMw(), handler.GetMusicList)...)

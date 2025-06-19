@@ -81,3 +81,22 @@ message FileDetail {
   int64 created_at = 6;
   int64 updated_at = 7;
 }
+
+message MemoDetail {
+  int64 id = 1;
+  string title = 2;
+  string content = 3;
+  int64 origin_at = 4;
+  string cover_url = 5;
+  string profile_content = 6;
+}
+
+message MemoProfile {
+  int64 id = 1;
+  string title = 2;
+  string cover_url = 3;
+  string profile_content = 4;
+  int64 created_at = 5;
+  int64 updated_at = 6;
+  int64 origin_at = 7;
+}

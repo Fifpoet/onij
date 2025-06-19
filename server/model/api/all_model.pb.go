@@ -679,6 +679,188 @@ func (x *FileDetail) GetUpdatedAt() int64 {
 	return 0
 }
 
+type MemoDetail struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id             int64  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty" form:"id" query:"id"`
+	Title          string `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty" form:"title" query:"title"`
+	Content        string `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty" form:"content" query:"content"`
+	OriginAt       int64  `protobuf:"varint,4,opt,name=origin_at,json=originAt,proto3" json:"origin_at,omitempty" form:"origin_at" query:"origin_at"`
+	CoverUrl       string `protobuf:"bytes,5,opt,name=cover_url,json=coverUrl,proto3" json:"cover_url,omitempty" form:"cover_url" query:"cover_url"`
+	ProfileContent string `protobuf:"bytes,6,opt,name=profile_content,json=profileContent,proto3" json:"profile_content,omitempty" form:"profile_content" query:"profile_content"`
+}
+
+func (x *MemoDetail) Reset() {
+	*x = MemoDetail{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_all_model_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *MemoDetail) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MemoDetail) ProtoMessage() {}
+
+func (x *MemoDetail) ProtoReflect() protoreflect.Message {
+	mi := &file_all_model_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MemoDetail.ProtoReflect.Descriptor instead.
+func (*MemoDetail) Descriptor() ([]byte, []int) {
+	return file_all_model_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *MemoDetail) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *MemoDetail) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *MemoDetail) GetContent() string {
+	if x != nil {
+		return x.Content
+	}
+	return ""
+}
+
+func (x *MemoDetail) GetOriginAt() int64 {
+	if x != nil {
+		return x.OriginAt
+	}
+	return 0
+}
+
+func (x *MemoDetail) GetCoverUrl() string {
+	if x != nil {
+		return x.CoverUrl
+	}
+	return ""
+}
+
+func (x *MemoDetail) GetProfileContent() string {
+	if x != nil {
+		return x.ProfileContent
+	}
+	return ""
+}
+
+type MemoProfile struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id             int64  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty" form:"id" query:"id"`
+	Title          string `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty" form:"title" query:"title"`
+	CoverUrl       string `protobuf:"bytes,3,opt,name=cover_url,json=coverUrl,proto3" json:"cover_url,omitempty" form:"cover_url" query:"cover_url"`
+	ProfileContent string `protobuf:"bytes,4,opt,name=profile_content,json=profileContent,proto3" json:"profile_content,omitempty" form:"profile_content" query:"profile_content"`
+	CreatedAt      int64  `protobuf:"varint,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty" form:"created_at" query:"created_at"`
+	UpdatedAt      int64  `protobuf:"varint,6,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty" form:"updated_at" query:"updated_at"`
+	OriginAt       int64  `protobuf:"varint,7,opt,name=origin_at,json=originAt,proto3" json:"origin_at,omitempty" form:"origin_at" query:"origin_at"`
+}
+
+func (x *MemoProfile) Reset() {
+	*x = MemoProfile{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_all_model_proto_msgTypes[8]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *MemoProfile) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MemoProfile) ProtoMessage() {}
+
+func (x *MemoProfile) ProtoReflect() protoreflect.Message {
+	mi := &file_all_model_proto_msgTypes[8]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MemoProfile.ProtoReflect.Descriptor instead.
+func (*MemoProfile) Descriptor() ([]byte, []int) {
+	return file_all_model_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *MemoProfile) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *MemoProfile) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *MemoProfile) GetCoverUrl() string {
+	if x != nil {
+		return x.CoverUrl
+	}
+	return ""
+}
+
+func (x *MemoProfile) GetProfileContent() string {
+	if x != nil {
+		return x.ProfileContent
+	}
+	return ""
+}
+
+func (x *MemoProfile) GetCreatedAt() int64 {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return 0
+}
+
+func (x *MemoProfile) GetUpdatedAt() int64 {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return 0
+}
+
+func (x *MemoProfile) GetOriginAt() int64 {
+	if x != nil {
+		return x.OriginAt
+	}
+	return 0
+}
+
 var File_all_model_proto protoreflect.FileDescriptor
 
 var file_all_model_proto_rawDesc = []byte{
@@ -790,9 +972,33 @@ var file_all_model_proto_rawDesc = []byte{
 	0x0a, 0x0a, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x5f, 0x61, 0x74, 0x18, 0x06, 0x20, 0x01,
 	0x28, 0x03, 0x52, 0x09, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x41, 0x74, 0x12, 0x1d, 0x0a,
 	0x0a, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x5f, 0x61, 0x74, 0x18, 0x07, 0x20, 0x01, 0x28,
-	0x03, 0x52, 0x09, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x41, 0x74, 0x42, 0x10, 0x5a, 0x0e,
-	0x6f, 0x6e, 0x69, 0x6a, 0x2f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x2f, 0x61, 0x70, 0x69, 0x62, 0x06,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x03, 0x52, 0x09, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x41, 0x74, 0x22, 0xaf, 0x01, 0x0a,
+	0x0a, 0x4d, 0x65, 0x6d, 0x6f, 0x44, 0x65, 0x74, 0x61, 0x69, 0x6c, 0x12, 0x0e, 0x0a, 0x02, 0x69,
+	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x02, 0x69, 0x64, 0x12, 0x14, 0x0a, 0x05, 0x74,
+	0x69, 0x74, 0x6c, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x74, 0x69, 0x74, 0x6c,
+	0x65, 0x12, 0x18, 0x0a, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x18, 0x03, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x12, 0x1b, 0x0a, 0x09, 0x6f,
+	0x72, 0x69, 0x67, 0x69, 0x6e, 0x5f, 0x61, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x03, 0x52, 0x08,
+	0x6f, 0x72, 0x69, 0x67, 0x69, 0x6e, 0x41, 0x74, 0x12, 0x1b, 0x0a, 0x09, 0x63, 0x6f, 0x76, 0x65,
+	0x72, 0x5f, 0x75, 0x72, 0x6c, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x63, 0x6f, 0x76,
+	0x65, 0x72, 0x55, 0x72, 0x6c, 0x12, 0x27, 0x0a, 0x0f, 0x70, 0x72, 0x6f, 0x66, 0x69, 0x6c, 0x65,
+	0x5f, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0e,
+	0x70, 0x72, 0x6f, 0x66, 0x69, 0x6c, 0x65, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x22, 0xd4,
+	0x01, 0x0a, 0x0b, 0x4d, 0x65, 0x6d, 0x6f, 0x50, 0x72, 0x6f, 0x66, 0x69, 0x6c, 0x65, 0x12, 0x0e,
+	0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x02, 0x69, 0x64, 0x12, 0x14,
+	0x0a, 0x05, 0x74, 0x69, 0x74, 0x6c, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x74,
+	0x69, 0x74, 0x6c, 0x65, 0x12, 0x1b, 0x0a, 0x09, 0x63, 0x6f, 0x76, 0x65, 0x72, 0x5f, 0x75, 0x72,
+	0x6c, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x63, 0x6f, 0x76, 0x65, 0x72, 0x55, 0x72,
+	0x6c, 0x12, 0x27, 0x0a, 0x0f, 0x70, 0x72, 0x6f, 0x66, 0x69, 0x6c, 0x65, 0x5f, 0x63, 0x6f, 0x6e,
+	0x74, 0x65, 0x6e, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0e, 0x70, 0x72, 0x6f, 0x66,
+	0x69, 0x6c, 0x65, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x12, 0x1d, 0x0a, 0x0a, 0x63, 0x72,
+	0x65, 0x61, 0x74, 0x65, 0x64, 0x5f, 0x61, 0x74, 0x18, 0x05, 0x20, 0x01, 0x28, 0x03, 0x52, 0x09,
+	0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x41, 0x74, 0x12, 0x1d, 0x0a, 0x0a, 0x75, 0x70, 0x64,
+	0x61, 0x74, 0x65, 0x64, 0x5f, 0x61, 0x74, 0x18, 0x06, 0x20, 0x01, 0x28, 0x03, 0x52, 0x09, 0x75,
+	0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x41, 0x74, 0x12, 0x1b, 0x0a, 0x09, 0x6f, 0x72, 0x69, 0x67,
+	0x69, 0x6e, 0x5f, 0x61, 0x74, 0x18, 0x07, 0x20, 0x01, 0x28, 0x03, 0x52, 0x08, 0x6f, 0x72, 0x69,
+	0x67, 0x69, 0x6e, 0x41, 0x74, 0x42, 0x10, 0x5a, 0x0e, 0x6f, 0x6e, 0x69, 0x6a, 0x2f, 0x6d, 0x6f,
+	0x64, 0x65, 0x6c, 0x2f, 0x61, 0x70, 0x69, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -807,7 +1013,7 @@ func file_all_model_proto_rawDescGZIP() []byte {
 	return file_all_model_proto_rawDescData
 }
 
-var file_all_model_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_all_model_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_all_model_proto_goTypes = []interface{}{
 	(*MusicDetail)(nil),   // 0: onij.MusicDetail
 	(*TagDetail)(nil),     // 1: onij.TagDetail
@@ -816,25 +1022,27 @@ var file_all_model_proto_goTypes = []interface{}{
 	(*MusicProfile)(nil),  // 4: onij.MusicProfile
 	(*ArtistProfile)(nil), // 5: onij.ArtistProfile
 	(*FileDetail)(nil),    // 6: onij.FileDetail
-	(ResourceType)(0),     // 7: onij.ResourceType
-	(TagBiz)(0),           // 8: onij.TagBiz
-	(TagGroup)(0),         // 9: onij.TagGroup
-	(TagType)(0),          // 10: onij.TagType
-	(ArtistType)(0),       // 11: onij.ArtistType
-	(FileType)(0),         // 12: onij.FileType
+	(*MemoDetail)(nil),    // 7: onij.MemoDetail
+	(*MemoProfile)(nil),   // 8: onij.MemoProfile
+	(ResourceType)(0),     // 9: onij.ResourceType
+	(TagBiz)(0),           // 10: onij.TagBiz
+	(TagGroup)(0),         // 11: onij.TagGroup
+	(TagType)(0),          // 12: onij.TagType
+	(ArtistType)(0),       // 13: onij.ArtistType
+	(FileType)(0),         // 14: onij.FileType
 }
 var file_all_model_proto_depIdxs = []int32{
 	3,  // 0: onij.MusicDetail.album_profile:type_name -> onij.AlbumProfile
 	1,  // 1: onij.MusicDetail.tag_details:type_name -> onij.TagDetail
-	7,  // 2: onij.TagDetail.resource_type:type_name -> onij.ResourceType
-	8,  // 3: onij.TagDetail.tag_biz:type_name -> onij.TagBiz
-	9,  // 4: onij.TagDetail.tag_group:type_name -> onij.TagGroup
-	10, // 5: onij.TagDetail.tag_type:type_name -> onij.TagType
+	9,  // 2: onij.TagDetail.resource_type:type_name -> onij.ResourceType
+	10, // 3: onij.TagDetail.tag_biz:type_name -> onij.TagBiz
+	11, // 4: onij.TagDetail.tag_group:type_name -> onij.TagGroup
+	12, // 5: onij.TagDetail.tag_type:type_name -> onij.TagType
 	4,  // 6: onij.AlbumDetail.related_musics:type_name -> onij.MusicProfile
 	5,  // 7: onij.MusicProfile.singer_profiles:type_name -> onij.ArtistProfile
 	1,  // 8: onij.MusicProfile.tags:type_name -> onij.TagDetail
-	11, // 9: onij.ArtistProfile.artist_type:type_name -> onij.ArtistType
-	12, // 10: onij.FileDetail.format:type_name -> onij.FileType
+	13, // 9: onij.ArtistProfile.artist_type:type_name -> onij.ArtistType
+	14, // 10: onij.FileDetail.format:type_name -> onij.FileType
 	11, // [11:11] is the sub-list for method output_type
 	11, // [11:11] is the sub-list for method input_type
 	11, // [11:11] is the sub-list for extension type_name
@@ -934,6 +1142,30 @@ func file_all_model_proto_init() {
 				return nil
 			}
 		}
+		file_all_model_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*MemoDetail); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_all_model_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*MemoProfile); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	file_all_model_proto_msgTypes[1].OneofWrappers = []interface{}{}
 	type x struct{}
@@ -942,7 +1174,7 @@ func file_all_model_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_all_model_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
