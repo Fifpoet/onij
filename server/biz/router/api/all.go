@@ -33,6 +33,7 @@ func Register(r *server.Hertz) {
 		_file.POST("/download", append(_downloadfileMw(), handler.DownloadFile)...)
 		_file.POST("/list", append(_getfilelistMw(), handler.GetFileList)...)
 		_file.POST("/upload", append(_uploadfileMw(), handler.UploadFile)...)
+		_file.POST("/upload_token", append(_getuploadtokenMw(), handler.GetUploadToken)...)
 	}
 	{
 		_music := root.Group("/music", _musicMw()...)

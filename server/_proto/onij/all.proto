@@ -121,6 +121,7 @@ message GetMusicListResp {
 // 获取文件列表
 message GetFileListReq {
   int64 parent_id = 1;
+  string keyword = 2;
   int32 page = 10;
   int32 limit = 11;
 }

@@ -13,14 +13,11 @@
           <div class="flex flex-col gap-0.5">
             <div class="flex justify-between items-start">
               <span class="text-sm font-normal select-none text-left flex-1">{{ music?.name }}</span>
-              <span class="text-xs text-gray-500 select-none ml-2">{{ music?.artist }}</span>
+              <span class="text-xs text-gray-500 select-none ml-2">{{ music.singer_profiles?.map(singer => singer.name).join(' & ') }}</span>
             </div>
             <n-space size="small">
-              <n-tag :bordered="false" type="info" size="tiny" class="text-[10px]">
-                暑夜
-              </n-tag>
-              <n-tag :bordered="false" type="info" size="tiny" class="text-[10px]">
-                晚春
+              <n-tag v-for="tag in music.tags" :key="tag.id" :bordered="false" type="info" size="tiny" class="text-[10px]">
+                {{ tag.name }}
               </n-tag>
             </n-space>
           </div>

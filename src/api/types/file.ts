@@ -41,6 +41,7 @@ export interface GetFileListReq {
   parent_id: number;
   page: number;
   limit: number;
+  keyword?: string;  // 添加关键词搜索字段
 }
 
 /* 获取文件列表响应数据 */

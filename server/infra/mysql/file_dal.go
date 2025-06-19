@@ -17,8 +17,7 @@ type FileDal interface {
 
 	GetByParentAndHash(parentId int64, keys ...string) ([]*File, error)
 	GetByIds(ids ...int64) ([]*File, error)
-	GetByParentId(parentId int64, page util.Page) ([]*File, error)
-	CountByParentId(parentId int64) (int32, error)
+	GetListByParentIdAndKeyword(parentId int64, keyword string, page util.Page) ([]*File, int32, error)
 	GetFolderPathByParentId(parentId int64) ([]string, error)
 	Delete(id int64) error
 }
@@ -64,14 +63,23 @@ func (f *fileDal) GetFolderPathByParentId(parentId int64) ([]string, error) {
 	return folders, nil
 }
 
-func (f *fileDal) GetByParentId(parentId int64, page util.Page) ([]*File, error) {
+func (f *fileDal) GetListByParentIdAndKeyword(parentId int64, keyword string, page util.Page) ([]*File, int32, error) {
 	var res []*File
-	err := f.db.Where("parent_id = ?", parentId).Offset(page.OffsetNum()).Limit(page.LimitNum()).Find(&res).Error
+	tx := f.db.Where("parent_id = ? AND name LIKE ?", parentId, "%"+keyword+"%").
+		Offset(page.OffsetNum()).
+		Limit(page.LimitNum())
+	err := tx.Find(&res).Error
 	if err != nil {
-		log.Printf("GetByParentId, get file failed: err = %v \n", err)
-		return nil, err
+		log.Printf("GetByParentId, find file failed: err = %v \n", err)
+		return nil, 0, err
 	}
-	return res, nil
+	count := int64(0)
+	err = tx.Count(&count).Error
+	if err != nil {
+		log.Printf("GetByParentId, count file failed: err = %v \n", err)
+		return nil, 0, err
+	}
+	return res, int32(count), nil
 }
 
 func (f *fileDal) Save(files ...*File) error {
@@ -125,14 +133,4 @@ func (f *fileDal) GetByIds(ids ...int64) ([]*File, error) {
 		return nil, err
 	}
 	return res, nil
-}
-
-func (f *fileDal) CountByParentId(parentId int64) (int32, error) {
-	var count int64
-	err := f.db.Model(&File{}).Where("parent_id = ?", parentId).Count(&count).Error
-	if err != nil {
-		log.Printf("CountByParentId, get file count failed: err = %v \n", err)
-		return 0, err
-	}
-	return int32(count), nil
 }

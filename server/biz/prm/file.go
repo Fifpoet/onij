@@ -34,12 +34,14 @@ func (r *UploadFileResult) Resp() *api.UploadFileResp {
 
 type GetFileListParam struct {
 	ParentId int64
+	Keyword  string
 	Page     util.Page
 }
 
 func NewGetFileListParam(req *api.GetFileListReq) *GetFileListParam {
 	return &GetFileListParam{
 		ParentId: req.ParentId,
+		Keyword:  req.Keyword,
 		Page: util.Page{
 			Page:  req.Page,
 			Limit: req.Limit,
@@ -65,6 +67,10 @@ func (r *GetFileListResult) Resp() *api.GetFileListResp {
 		}
 	})
 	slices.SortFunc(res, func(a, b *api.FileDetail) int {
+		if (a.Format == api.FileType_FT_Folder || b.Format == api.FileType_FT_Folder) &&
+			a.Format != b.Format {
+			return int(b.Format - a.Format) // format大的在前面
+		}
 		return int(b.OriginAt - a.OriginAt)
 	})
 	return &api.GetFileListResp{

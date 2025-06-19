@@ -62,13 +62,7 @@ func (f *fileLogic) DownloadByIds(ctx context.Context, param *prm.DownloadFilePa
 }
 
 func (f *fileLogic) GetList(ctx context.Context, param *prm.GetFileListParam) (*prm.GetFileListResult, error) {
-	files, err := f.FileDal.GetByParentId(param.ParentId, param.Page)
-	if err != nil {
-		return nil, err
-	}
-
-	// 获取总数
-	total, err := f.FileDal.CountByParentId(param.ParentId)
+	files, total, err := f.FileDal.GetListByParentIdAndKeyword(param.ParentId, param.Keyword, param.Page)
 	if err != nil {
 		return nil, err
 	}

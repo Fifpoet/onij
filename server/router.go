@@ -11,9 +11,5 @@ import (
 // customizeRegister registers customize routers.
 func customizedRegister(r *server.Hertz) {
 	r.GET("/ping", handler.Ping)
-
-	// 添加获取上传token的路由
-	r.POST("/file/upload_token", handler.GetUploadToken)
-
 	// your code ...
 }

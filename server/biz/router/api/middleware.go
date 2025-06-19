@@ -105,3 +105,8 @@ func _deletefileMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _getuploadtokenMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
