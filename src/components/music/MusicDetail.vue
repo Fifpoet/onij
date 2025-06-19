@@ -8,12 +8,12 @@
         <div class="flex gap-6 h-[300px]">
           <!-- 封面 -->
           <div class="w-[300px] h-[300px] flex-shrink-0">
-            <img 
+          <img 
               :src="musicStore.current.detail?.cover_url" 
               :alt="musicStore.current.detail?.name" 
               class="w-full h-full object-cover rounded-lg"
-            >
-          </div>
+          >
+        </div>
 
           <!-- 信息区域 -->
           <div class="flex-1 flex flex-col min-w-0 h-full">
@@ -32,30 +32,30 @@
                     <span v-if="index < (musicStore.current.detail?.artist_names.length || 0) - 1" class="text-gray-400">/</span>
                   </template>
                 </div>
-              </div>
+          </div>
               <div class="flex justify-end items-center gap-4 mt-1 text-sm text-gray-500">
                 <div class="flex items-center gap-1">
                   <span>词:</span>
-                  <router-link 
-                    :to="`/artist/${musicStore.current.detail?.writer_id}`"
+            <router-link 
+              :to="`/artist/${musicStore.current.detail?.writer_id}`"
                     class="text-primary hover:text-primary-600 transition-colors"
-                  >
-                    {{ musicStore.current.detail?.writer_name }}
-                  </router-link>
+            >
+              {{ musicStore.current.detail?.writer_name }}
+            </router-link>
                 </div>
                 <div class="flex items-center gap-1">
                   <span>曲:</span>
-                  <router-link 
-                    :to="`/artist/${musicStore.current.detail?.composer_id}`"
+            <router-link 
+              :to="`/artist/${musicStore.current.detail?.composer_id}`"
                     class="text-primary hover:text-primary-600 transition-colors"
-                  >
-                    {{ musicStore.current.detail?.composer_name }}
-                  </router-link>
+            >
+              {{ musicStore.current.detail?.composer_name }}
+            </router-link>
                 </div>
               </div>
-            </div>
+          </div>
 
-            <!-- 歌词容器 -->
+          <!-- 歌词容器 -->
             <div class="flex-1 flex flex-col justify-center items-center space-y-2">
               <div 
                 v-for="lyric in displayLyrics" 
@@ -112,8 +112,8 @@ const displayLyrics = computed(() => {
       index: i,
       text: lyrics.value[i].text
     }));
-});
-
+  });
+  
 // 更新当前歌词
 watch(() => musicStore.current.progress, () => {
   if (!lyrics.value.length) return;
@@ -157,8 +157,8 @@ watch(() => musicStore.current.detail?.lyrics_file_url, async (url) => {
     currentLyricIndex.value = -1;
   } catch (error) {
     console.error('加载歌词失败:', error);
-    lyrics.value = [];
-  }
+        lyrics.value = [];
+      }
 }, { immediate: true });
 </script>
 

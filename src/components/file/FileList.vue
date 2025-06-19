@@ -2,8 +2,8 @@
   <Transition name="fade">
     <div v-if="musicStore.midShowWhat == MidShowWhat.ShowFileList">
       <!-- 面包屑导航 -->
-      <div class="px-5 pt-5 pb-3">
-        <div v-if="parentId !== 0" class="flex items-center space-x-3">
+      <div class="px-5 pt-5 pb-3 flex items-center">
+        <div v-if="parentId !== 0" class="flex items-center space-x-3 shrink-0">
           <n-button 
             size="small" 
             type="primary" 
@@ -20,12 +20,31 @@
             </template>
             返回上级
           </n-button>
-          <span class="text-gray-400">|</span>
-          <span class="text-sm text-gray-600">{{ currentFolderName }}</span>
+          <span class="text-gray-400 shrink-0">|</span>
+          <span class="text-sm text-gray-600 whitespace-nowrap">{{ currentFolderName }}</span>
         </div>
-        <div v-else class="h-8 flex items-center">
-          <span class="text-sm text-gray-600">根目录</span>
+        <div v-else class="h-8 flex items-center shrink-0">
+          <span class="text-sm text-gray-600 whitespace-nowrap">根目录</span>
         </div>
+        
+
+        <n-input
+          v-model:value="searchKeyword"
+          type="text"
+          placeholder="搜索文件..."
+          @keydown.enter="handleSearch"
+          class="w-12 ml-2"
+          size="small"
+        >
+          <template #prefix>
+            <n-icon>
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+            </n-icon>
+          </template>
+        </n-input>
       </div>
 
       <!-- 文件列表区域 -->
@@ -164,7 +183,8 @@ import {
   NEmpty,
   NPagination,
   NEllipsis,
-  useMessage} from 'naive-ui';
+  useMessage,
+  NInput} from 'naive-ui';
 import { 
   DownloadOutline,
   TrashOutline
@@ -207,6 +227,7 @@ const hasMore = ref(true);
 const totalCount = ref(0);
 const totalPages = ref(0);
 const isLastPage = ref(false);
+const searchKeyword = ref('');
 
 // 面包屑导航相关
 const currentFolderName = ref('根目录');
@@ -226,7 +247,8 @@ const fetchFileList = async (page: number = 1, append: boolean = false) => {
     const req: GetFileListReq = {
       parent_id: props.parentId,
       page,
-      limit: pageSize.value
+      limit: pageSize.value,
+      keyword: searchKeyword.value.trim()
     };
     
     const response = await GetFileList(req);
@@ -297,6 +319,12 @@ const goBack = () => {
       name: newFolderName 
     } as FileDetail);
   }
+};
+
+// 新增搜索处理
+const handleSearch = () => {
+  currentPage.value = 1;
+  fetchFileList(1);
 };
 
 // 处理页码变化
