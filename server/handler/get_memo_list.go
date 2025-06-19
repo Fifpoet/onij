@@ -7,6 +7,7 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
+	"onij/biz/prm"
 	api "onij/model/api"
 )
 
@@ -21,7 +22,19 @@ func GetMemoList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(api.GetMemoListResp)
+	if err = checkGetMemoListReq(&req); err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
 
-	c.JSON(consts.StatusOK, resp)
+	resp, err := ser.MemoLogic.GetList(ctx, prm.NewGetMemoListParam(&req))
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
+	c.JSON(consts.StatusOK, resp.Resp())
+}
+
+func checkGetMemoListReq(req *api.GetMemoListReq) error {
+	return nil
 }

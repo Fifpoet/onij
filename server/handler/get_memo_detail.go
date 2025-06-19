@@ -5,9 +5,11 @@ package handler
 import (
 	"context"
 
+	"onij/biz/prm"
+	api "onij/model/api"
+
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
-	api "onij/model/api"
 )
 
 // GetMemoDetail .
@@ -21,7 +23,19 @@ func GetMemoDetail(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(api.GetMemoDetailResp)
+	if err = checkGetMemoDetailReq(&req); err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
 
-	c.JSON(consts.StatusOK, resp)
+	resp, err := ser.MemoLogic.GetDetail(ctx, prm.NewGetMemoDetailParam(&req))
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
+	c.JSON(consts.StatusOK, resp.Resp())
+}
+
+func checkGetMemoDetailReq(req *api.GetMemoDetailReq) error {
+	return nil
 }

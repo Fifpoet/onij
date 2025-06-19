@@ -22,12 +22,14 @@ func InitDalForTest() *infra.AllInfra {
 	musicDal := mysql.NewMusicDal(db)
 	albumDal := mysql.NewAlbumDal(db)
 	artistDal := mysql.NewArtistDal(db)
+	memoDal := mysql.NewMemoDal(db)
 	allInfra := &infra.AllInfra{
 		TagDal:    tagDal,
 		FileDal:   fileDal,
 		MusicDal:  musicDal,
 		AlbumDal:  albumDal,
 		ArtistDal: artistDal,
+		MemoDal:   memoDal,
 	}
 	return allInfra
 }
@@ -39,24 +41,28 @@ func InitLogicForTest() *logic.AllLogic {
 	musicDal := mysql.NewMusicDal(db)
 	albumDal := mysql.NewAlbumDal(db)
 	artistDal := mysql.NewArtistDal(db)
+	memoDal := mysql.NewMemoDal(db)
 	allInfra := &infra.AllInfra{
 		TagDal:    tagDal,
 		FileDal:   fileDal,
 		MusicDal:  musicDal,
 		AlbumDal:  albumDal,
 		ArtistDal: artistDal,
+		MemoDal:   memoDal,
 	}
 	musicLogic := logic.NewMusicLogic(allInfra)
 	fileLogic := logic.NewFileLogic(allInfra)
 	albumLogic := logic.NewAlbumLogic(allInfra)
 	artistLogic := logic.NewArtistLogic(allInfra)
 	tagLogic := logic.NewTagLogic(allInfra)
+	memoLogic := logic.NewMemoLogic(allInfra)
 	allLogic := &logic.AllLogic{
 		MusicLogic:  musicLogic,
 		FileLogic:   fileLogic,
 		AlbumLogic:  albumLogic,
 		ArtistLogic: artistLogic,
 		TagLogic:    tagLogic,
+		MemoLogic:   memoLogic,
 	}
 	return allLogic
 }
@@ -68,24 +74,28 @@ func InitializeApp() *App {
 	musicDal := mysql.NewMusicDal(db)
 	albumDal := mysql.NewAlbumDal(db)
 	artistDal := mysql.NewArtistDal(db)
+	memoDal := mysql.NewMemoDal(db)
 	allInfra := &infra.AllInfra{
 		TagDal:    tagDal,
 		FileDal:   fileDal,
 		MusicDal:  musicDal,
 		AlbumDal:  albumDal,
 		ArtistDal: artistDal,
+		MemoDal:   memoDal,
 	}
 	musicLogic := logic.NewMusicLogic(allInfra)
 	fileLogic := logic.NewFileLogic(allInfra)
 	albumLogic := logic.NewAlbumLogic(allInfra)
 	artistLogic := logic.NewArtistLogic(allInfra)
 	tagLogic := logic.NewTagLogic(allInfra)
+	memoLogic := logic.NewMemoLogic(allInfra)
 	allLogic := &logic.AllLogic{
 		MusicLogic:  musicLogic,
 		FileLogic:   fileLogic,
 		AlbumLogic:  albumLogic,
 		ArtistLogic: artistLogic,
 		TagLogic:    tagLogic,
+		MemoLogic:   memoLogic,
 	}
 	app := &App{
 		AllInfra: allInfra,
@@ -96,9 +106,9 @@ func InitializeApp() *App {
 
 // wire.go:
 
-var infraSet = wire.NewSet(mysql.NewMysqlCli, mysql.NewTagDal, mysql.NewFileDal, mysql.NewMusicDal, mysql.NewAlbumDal, mysql.NewArtistDal, wire.Struct(new(infra.AllInfra), "*"))
+var infraSet = wire.NewSet(mysql.NewMysqlCli, mysql.NewTagDal, mysql.NewFileDal, mysql.NewMusicDal, mysql.NewAlbumDal, mysql.NewArtistDal, mysql.NewMemoDal, wire.Struct(new(infra.AllInfra), "*"))
 
-var logicSet = wire.NewSet(logic.NewMusicLogic, logic.NewFileLogic, logic.NewAlbumLogic, logic.NewArtistLogic, logic.NewTagLogic, wire.Struct(new(logic.AllLogic), "*"))
+var logicSet = wire.NewSet(logic.NewMusicLogic, logic.NewFileLogic, logic.NewAlbumLogic, logic.NewArtistLogic, logic.NewTagLogic, logic.NewMemoLogic, wire.Struct(new(logic.AllLogic), "*"))
 
 var allSet = wire.NewSet(
 	infraSet,
