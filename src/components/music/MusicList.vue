@@ -8,11 +8,20 @@
     </div>
     <div class="px-4 pb-4">
       <n-list hoverable clickable>
-        <div v-for="music in musicStore.musicList" :key="music?.id" class="cursor-pointer hover:bg-gray-50 py-1.5 px-2 rounded"
+        <div v-for="music in musicStore.musicList" :key="music?.id" 
+          class="cursor-pointer hover:bg-gray-50 py-1.5 px-2 rounded"
+          :class="{
+            'bg-blue-50 border-l-4 border-blue-500': musicStore.currentMusicId === music.id
+          }"
           @dblclick="playMusic(music?.id)">
           <div class="flex flex-col gap-0.5">
             <div class="flex justify-between items-start">
-              <span class="text-sm font-normal select-none text-left flex-1">{{ music?.name }}</span>
+              <span class="text-sm font-normal select-none text-left flex-1 flex items-center gap-1">
+                <n-icon v-if="musicStore.currentMusicId === music.id" class="text-blue-500" :size="16">
+                  <PlayCircleOutline />
+                </n-icon>
+                {{ music?.name }}
+              </span>
               <span class="text-xs text-gray-500 select-none ml-2">{{ music.singer_profiles?.map(singer => singer.name).join(' & ') }}</span>
             </div>
             <n-space size="small">
@@ -35,6 +44,7 @@ import { useMusicStore } from "@/store/music.ts";
 import { GetMusicDetail, GetMusicList, SearchArtist } from '@/api';
 import { MusicSortType, tagOpts, TagType, SelectTagExtra, ArtistType } from '@/api/types';
 import { MusicalNote as MusicIcon } from '@vicons/ionicons5';
+import { PlayCircleOutline } from '@vicons/ionicons5';
 import type { SelectOption } from 'naive-ui';
 
 // 直接使用 musicStore 而不通过 props 传递

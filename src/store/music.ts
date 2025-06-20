@@ -20,6 +20,7 @@ export const useMusicStore = defineStore('music', () => {
 
     // 计算属性
     const count = computed(() => musicList.value.length);
+    const currentMusicId = computed(() => current.value.detail?.id || 0);
     const currentMusicName = computed(() => current.value.detail?.name || '');
     const currentMusicArtistName = computed(() => {
         if (!current.value.detail) return '';
@@ -74,6 +75,7 @@ export const useMusicStore = defineStore('music', () => {
         midShowWhat,
         likeMap,
         count,
+        currentMusicId,
         currentMusicName,
         currentMusicArtistName,
         append,
