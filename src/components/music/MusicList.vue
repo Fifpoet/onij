@@ -1,6 +1,11 @@
 <template>
   <div @scroll="handleScroll"
-    class="music-list absolute bg-white shadow-lg rounded-lg w-[400px] bottom-[70px] left-0 max-h-[300px] overflow-y-auto text-xs">
+    class="music-list absolute bg-white shadow-lg rounded-lg 
+    // 移动端样式：宽度100%，左右对齐
+    w-full left-0 right-0 bottom-[80px] 
+    // 桌面端样式：固定宽度，左对齐
+    md:w-[400px] md:left-0 md:right-auto md:bottom-[70px]
+    max-h-[300px] overflow-y-auto text-xs">
     <!-- 选择器 -->
     <div class="sticky top-0 z-10 bg-white p-4 pb-2">
       <n-select v-model:value="selectedTag" :options="tagOptions" :render-label="renderLabel" tag filterable multiple
@@ -9,11 +14,12 @@
     <div class="px-4 pb-4">
       <n-list hoverable clickable>
         <div v-for="music in musicStore.musicList" :key="music?.id" 
-          class="cursor-pointer hover:bg-gray-50 py-1.5 px-2 rounded"
+          class="cursor-pointer hover:bg-gray-50 py-1.5 px-2 rounded touch-manipulation"
           :class="{
             'bg-blue-50 border-l-4 border-blue-500': musicStore.currentMusicId === music.id
           }"
-          @dblclick="playMusic(music?.id)">
+          @dblclick="playMusic(music?.id)"
+          @click="handleMusicClick(music?.id)">
           <div class="flex flex-col gap-0.5">
             <div class="flex justify-between items-start">
               <span class="text-sm font-normal select-none text-left flex-1 flex items-center gap-1">
@@ -59,6 +65,14 @@ const fetching = ref(false);
 // 播放音乐
 const playMusic = async (id: number) => {
   emit('play-music', id);
+};
+
+// 处理音乐点击事件（移动端用）
+const handleMusicClick = (id: number) => {
+  // 在移动端，使用单击替代双击
+  if (window.innerWidth < 768) {
+    playMusic(id);
+  }
 };
 
 // 处理滚动事件

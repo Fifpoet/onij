@@ -1,9 +1,13 @@
 <template>
   <div ref="audioContainer"
-    class="audio-container fixed bg-[rgb(245,245,245)] flex items-center bottom-5 left-5 w-[300px] h-[60px]">
+    class="audio-container fixed bg-[rgb(245,245,245)] flex items-center 
+    // 移动端样式：底部固定，宽度100%，左对齐
+    bottom-0 left-0 right-0 w-full h-[80px]
+    // 桌面端还原原样式
+    md:bottom-5 md:left-5 md:right-auto md:w-[300px] md:h-[60px]">
 
-    <!-- 拖拽手柄 -->
-    <div class="drag-handle flex justify-between p-2 cursor-grab" @mousedown="startDragging">
+    <!-- 拖拽手柄 - 移动端隐藏 -->
+    <div class="hidden md:flex drag-handle justify-between p-2 cursor-grab" @mousedown="startDragging">
       <div class="flex flex-col">
         <div class="dot w-[3px] h-[3px] bg-gray-500 rounded-full mb-1" v-for="n in 4" :key="'left' + n"></div>
       </div>
@@ -12,50 +16,73 @@
       </div>
     </div>
 
-    <!-- 音乐播放器主体，显示当前播放的音乐 -->
-    <div class="audio-content flex-grow pl-5 group relative">
-      <div v-if="musicStore.current.detail" class="flex items-center">
-        <div class="hidden group-hover:flex justify-center items-center">
-          <NButton text @click="playPrevious" class="w-[30px] h-[30px] rounded-full mr-2">
-            <NIcon :component="PlaySkipBackOutline" size="18" />
-          </NButton>
-          <NButton text @click="startOrPause" class="w-[30px] h-[30px] rounded-full mx-2">
-            <NIcon :component="isPlaying ? PauseCircleOutline : PlayCircleOutline" size="18" />
-          </NButton>
-          <NButton text @click="playNext" class="w-[30px] h-[30px] rounded-full ml-2">
-            <NIcon :component="PlaySkipForwardOutline" size="18" />
-          </NButton>
+    <!-- 音乐播放器主体 -->
+    <div class="audio-content flex-grow px-2 md:px-5 group relative">
+      <div v-if="musicStore.current.detail" class="flex items-center justify-between w-full">
+        <!-- 左侧：播放控制和歌曲信息 -->
+        <div class="flex items-center flex-1 min-w-0 mr-2">
+          <!-- 控制按钮 - 移动端常驻显示，桌面端hover显示 -->
+          <div class="flex md:hidden justify-center items-center shrink-0">
+            <NButton text @click="playPrevious" class="w-[30px] h-[30px] rounded-full mr-1">
+              <NIcon :component="PlaySkipBackOutline" size="18" />
+            </NButton>
+            <NButton text @click="startOrPause" class="w-[30px] h-[30px] rounded-full mx-1">
+              <NIcon :component="isPlaying ? PauseCircleOutline : PlayCircleOutline" size="18" />
+            </NButton>
+            <NButton text @click="playNext" class="w-[30px] h-[30px] rounded-full ml-1">
+              <NIcon :component="PlaySkipForwardOutline" size="18" />
+            </NButton>
+          </div>
+          <div class="hidden md:group-hover:flex justify-center items-center shrink-0">
+            <NButton text @click="playPrevious" class="w-[30px] h-[30px] rounded-full mr-1">
+              <NIcon :component="PlaySkipBackOutline" size="18" />
+            </NButton>
+            <NButton text @click="startOrPause" class="w-[30px] h-[30px] rounded-full mx-1">
+              <NIcon :component="isPlaying ? PauseCircleOutline : PlayCircleOutline" size="18" />
+            </NButton>
+            <NButton text @click="playNext" class="w-[30px] h-[30px] rounded-full ml-1">
+              <NIcon :component="PlaySkipForwardOutline" size="18" />
+            </NButton>
+          </div>
+          <!-- 歌曲信息 - 移动端常驻显示，桌面端hover隐藏 -->
+          <span class="truncate md:transition-all md:duration-300 md:group-hover:hidden ml-2">
+            {{ musicStore.currentMusicName }} - {{ musicStore.currentMusicArtistName }}
+          </span>
         </div>
-        <span class="transition-all duration-300 group-hover:hidden">{{ musicStore.currentMusicName }} - {{
-          musicStore.currentMusicArtistName }}</span>
+
+        <!-- 右侧：音量和操作按钮 -->
+        <div class="flex items-center shrink-0">
+          <!-- 音量按钮 - 移动端隐藏 -->
+          <div class="hidden md:block volume-control cursor-pointer relative" @mouseenter="showVolumeSlider = true"
+            @mouseleave="showVolumeSlider = false">
+            <NButton text @click="toggleMute">
+              <NIcon
+                :component="isMuted ? VolumeMuteOutline : (volume > 50 ? VolumeHighOutline : (volume > 0 ? VolumeLowOutline : VolumeMuteOutline))"
+                size="18" />
+            </NButton>
+
+            <!-- 音量滑块 -->
+            <div v-if="showVolumeSlider"
+              class="volume-slider absolute bottom-[40px] left-0 bg-white shadow-lg rounded-lg p-2 flex flex-col items-center">
+              <input type="range" class="h-[80px] w-[20px] bg-gray-300 outline-none appearance-none" min="0" max="100"
+                v-model="volume" @input="adjustVolume" orient="vertical" />
+            </div>
+          </div>
+
+          <!-- 操作按钮 -->
+          <div class="like-toggle cursor-pointer px-2" @click="toggleMusicLike">
+            <NIcon :component="HeartOutline" size="18" />
+          </div>
+          <div class="music-list-toggle cursor-pointer px-2" @click="toggleMusicList">
+            <NIcon :component="MusicalNoteOutline" size="18" />
+          </div>
+        </div>
       </div>
       <div v-else>
         <p>请选择一首音乐播放</p>
       </div>
     </div>
 
-    <!-- 音量按钮 -->
-    <div class="volume-control p-2 cursor-pointer relative" @mouseenter="showVolumeSlider = true"
-      @mouseleave="showVolumeSlider = false">
-      <NButton text @click="toggleMute">
-        <NIcon
-          :component="isMuted ? VolumeMuteOutline : (volume > 50 ? VolumeHighOutline : (volume > 0 ? VolumeLowOutline : VolumeMuteOutline))"
-          size="18" />
-      </NButton>
-
-      <!-- 音量滑块 -->
-      <div v-if="showVolumeSlider"
-        class="volume-slider absolute bottom-[40px] left-0 bg-white shadow-lg rounded-lg p-2 flex flex-col items-center">
-        <input type="range" class="h-[80px] w-[20px] bg-gray-300 outline-none appearance-none" min="0" max="100"
-          v-model="volume" @input="adjustVolume" orient="vertical" />
-      </div>
-    </div>
-    <div class="like-toggle p-2 cursor-pointer" @click="toggleMusicLike">
-      <NIcon :component="HeartOutline" size="18" />
-    </div>
-    <div class="music-list-toggle p-2 cursor-pointer" @click="toggleMusicList">
-      <NIcon :component="MusicalNoteOutline" size="18" />
-    </div>
     <!-- 进度条 -->
     <div class="absolute bottom-[-1px] left-0 w-full p-0 m-0 flex items-center">
       <span class="text-xs text-gray-500 ml-2">{{ formattedCurrentTime }}</span>
