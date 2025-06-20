@@ -2,7 +2,7 @@
   <Transition name="fade-scale" mode="out-in">
     <div 
       v-if="musicStore.midShowWhat == MidShowWhat.ShowMusicDetail" 
-      class="fixed inset-x-0 top-1/2 -translate-y-1/2 bg-white dark:bg-dark-800 z-0"
+      class="fixed inset-x-0 top-1/2 -translate-y-1/2 bg-white dark:bg-dark-800 z-0 hidden lg:block"
     >
       <div class="max-w-4xl mx-auto p-6">
         <div class="flex gap-6 h-[300px]">

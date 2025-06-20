@@ -5,6 +5,7 @@ import PageHeader from './components/layout/PageHeader.vue'
 // import lbAudio from './components/audio/index.vue';
 import AudioContainer from "@/components/music/AudioContainer.vue";
 import MusicDetail from "@/components/music/MusicDetail.vue";
+import MusicDetailMobile from "@/components/music/MusicDetailMobile.vue";
 import MusicLike from "@/components/music/MusicLike.vue";
 import {NMessageProvider} from "naive-ui"
 import MemoList from './components/memo/MemoList.vue';
@@ -31,6 +32,7 @@ const handleFileClick = (file: FileDetail) => {
     
     <n-message-provider>
       <MusicDetail />
+      <MusicDetailMobile />
       <MusicLike />
       <MemoList />
       
