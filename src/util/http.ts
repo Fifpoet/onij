@@ -69,3 +69,4 @@ export const uploadFile = <T>(url: string, formData: FormData, config?: AxiosReq
 };
 
 export default apiClient;
+

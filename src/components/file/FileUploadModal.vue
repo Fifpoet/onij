@@ -160,8 +160,7 @@ const handleUpload = async () => {
         }]
       });
 
-      if (response.code === 0) {
-        message.success('上传成功');
+      if (response.file_ids.length > 0) {
         emit('uploaded');
       } else {
         message.error(response.message || '上传失败');
@@ -171,7 +170,6 @@ const handleUpload = async () => {
     // 上传完成后关闭弹窗
     handleClose();
   } catch (error) {
-    console.error('上传失败:', error);
     message.error('上传失败');
   } finally {
     loading.value = false;

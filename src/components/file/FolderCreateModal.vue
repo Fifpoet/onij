@@ -64,15 +64,13 @@ const handleCreate = async () => {
       }]
     });
 
-    if (response.code === 0) {
-      message.success('文件夹创建成功');
+    if (response.file_ids.length > 0 ) {
       emit('created');
       handleClose();
     } else {
       message.error(response.message || '创建失败');
     }
   } catch (error) {
-    console.error('创建失败:', error);
     message.error('创建失败');
   } finally {
     loading.value = false;
