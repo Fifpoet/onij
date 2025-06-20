@@ -101,7 +101,14 @@ export function isFolder(fileType: FileType): boolean {
  * @returns 是否为图片文件
  */
 export function isImage(fileType: FileType): boolean {
-  return fileType === FileType.FT_Png;
+  return [
+    // FileType.FT_Jpg,
+    // FileType.FT_Jpeg,
+    FileType.FT_Png,
+    // FileType.FT_Gif,
+    // FileType.FT_Webp,
+    // FileType.FT_Bmp
+  ].includes(fileType);
 }
 
 /**

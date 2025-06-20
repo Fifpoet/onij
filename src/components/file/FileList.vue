@@ -48,7 +48,7 @@
       </div>
 
       <!-- 文件列表区域 -->
-      <div class="p-5" style="width: 100%; min-width: 900px; margin: 0 auto; position: relative;">
+      <div class="p-5" style="width: 100%; min-width: 900px; min-height: 720px; margin: 0 auto; position: relative;">
         <!-- 操作按钮区域 -->
         <div class="flex justify-end space-x-2 mb-4">
           <n-button type="primary" @click="showUploadModal = true">
@@ -83,11 +83,23 @@
             style="width: 100%; box-sizing: border-box;"
             @click="handleFileClick(file)"
           >
-            <!-- 文件图标 -->
-            <div class="flex justify-center mb-3 flex-shrink-0">
-              <n-icon size="48" class="text-gray-500">
-                <component :is="getFileIcon(file.format)" />
-              </n-icon>
+            <!-- 文件图标或图片预览 -->
+            <div 
+              class="flex justify-center mb-3 flex-shrink-0"
+              :class="{ 'h-24 -mx-4 -mt-4 mb-2': isImage(file.format) }"
+            >
+              <template v-if="isImage(file.format)">
+                <img 
+                  :src="file.preview_url || file.url" 
+                  :alt="file.name"
+                  class="w-full h-full object-cover rounded-t-lg"
+                />
+              </template>
+              <template v-else>
+                <n-icon size="48" class="text-gray-500">
+                  <component :is="getFileIcon(file.format)" />
+                </n-icon>
+              </template>
             </div>
             
             <!-- 文件名称 - 固定高度，最多两行 -->
@@ -197,7 +209,8 @@ import {
   getFileIcon, 
   getFileSize, 
   formatFileTime, 
-  isFolder} from '@/util';
+  isFolder,
+  isImage } from '@/util';
 import FileUploadModal from './FileUploadModal.vue';
 import FolderCreateModal from './FolderCreateModal.vue';
 
