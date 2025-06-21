@@ -65,18 +65,16 @@ func (f *fileDal) GetFolderPathByParentId(parentId int64) ([]string, error) {
 
 func (f *fileDal) GetListByParentIdAndKeyword(parentId int64, keyword string, page util.Page) ([]*File, int32, error) {
 	var res []*File
-	tx := f.db.Where("parent_id = ? AND name LIKE ?", parentId, "%"+keyword+"%").
-		Offset(page.OffsetNum()).
-		Limit(page.LimitNum())
-	err := tx.Find(&res).Error
-	if err != nil {
-		log.Printf("GetByParentId, find file failed: err = %v \n", err)
-		return nil, 0, err
-	}
+	tx := f.db.Where("parent_id = ? AND name LIKE ?", parentId, "%"+keyword+"%").Model(&File{})
 	count := int64(0)
-	err = tx.Count(&count).Error
+	err := tx.Count(&count).Error
 	if err != nil {
 		log.Printf("GetByParentId, count file failed: err = %v \n", err)
+		return nil, 0, err
+	}
+	err = tx.Offset(page.OffsetNum()).Limit(page.LimitNum()).Find(&res).Error
+	if err != nil {
+		log.Printf("GetByParentId, find file failed: err = %v \n", err)
 		return nil, 0, err
 	}
 	return res, int32(count), nil

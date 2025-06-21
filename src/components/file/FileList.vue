@@ -2,67 +2,33 @@
   <Transition name="fade">
     <div v-if="musicStore.midShowWhat == MidShowWhat.ShowFileList">
       <!-- 面包屑导航 -->
-      <div class="px-5 pt-5 pb-3 flex items-center">
-        <div v-if="parentId !== 0" class="flex items-center space-x-3 shrink-0">
-          <n-button 
-            size="small" 
-            type="primary" 
-            ghost 
-            @click="goBack"
-            class="flex items-center"
-          >
-            <template #icon>
-              <n-icon>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="m15 18-6-6 6-6"/>
-                </svg>
-              </n-icon>
-            </template>
-            返回上级
-          </n-button>
-          <span class="text-gray-400 shrink-0">|</span>
-          <span class="text-sm text-gray-600 whitespace-nowrap">{{ currentFolderName }}</span>
-        </div>
-        <div v-else class="h-8 flex items-center shrink-0">
-          <span class="text-sm text-gray-600 whitespace-nowrap">根目录</span>
-        </div>
-        
-
-        <n-input
-          v-model:value="searchKeyword"
-          type="text"
-          placeholder="搜索文件..."
-          @keydown.enter="handleSearch"
-          class="w-12 ml-2"
-          size="small"
+      <div class="px-5 pt-5 pb-3 flex items-center space-x-3">
+        <!-- 返回按钮 -->
+        <n-button 
+          size="small" 
+          quaternary
+          :disabled="parentId === 0"
+          @click="goBack"
+          class="flex items-center h-8 min-w-[90px] justify-center"
         >
-          <template #prefix>
+          <template #icon>
             <n-icon>
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="11" cy="11" r="8"/>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m15 18-6-6 6-6"/>
               </svg>
             </n-icon>
           </template>
-        </n-input>
-      </div>
+          返回上级
+        </n-button>
 
-      <!-- 文件列表区域 -->
-      <div class="p-5" style="width: 100%; min-width: 900px; min-height: 720px; margin: 0 auto; position: relative;">
-        <!-- 操作按钮区域 -->
-        <div class="flex justify-end space-x-2 mb-4">
-          <n-button type="primary" @click="showUploadModal = true">
-            <template #icon>
-              <n-icon>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
-                  <polyline points="14,2 14,8 20,8"/>
-                </svg>
-              </n-icon>
-            </template>
-            上传文件
-          </n-button>
-          <n-button type="info" @click="showFolderModal = true">
+        <!-- 分隔符和当前目录 -->
+        <div class="flex items-center space-x-3 shrink-0">
+          <span class="text-gray-300">|</span>
+          <n-button
+            size="small"
+            text
+            class="px-2 !text-gray-600"
+          >
             <template #icon>
               <n-icon>
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -70,12 +36,91 @@
                 </svg>
               </n-icon>
             </template>
-            新建文件夹
+            {{ currentFolderName }}
           </n-button>
         </div>
 
+        <!-- 搜索框 -->
+        <div class="flex-1 flex justify-end">
+          <n-input
+            v-model:value="searchKeyword"
+            type="text"
+            placeholder="搜索文件..."
+            @keydown.enter="handleSearch"
+            class="max-w-[200px]"
+            size="small"
+          >
+            <template #prefix>
+              <n-icon>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"/>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+              </n-icon>
+            </template>
+          </n-input>
+        </div>
+      </div>
+
+      <!-- 操作按钮区域 -->
+      <div class="flex justify-end space-x-3 mb-4">
+        <n-button 
+          quaternary
+          size="small"
+          class="h-8 w-8 flex items-center justify-center"
+          @click="toggleViewMode"
+          :type="viewMode === 'grid' ? 'default' : 'primary'"
+        >
+          <n-icon>
+            <svg v-if="viewMode === 'grid'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7"/>
+              <rect x="14" y="3" width="7" height="7"/>
+              <rect x="14" y="14" width="7" height="7"/>
+              <rect x="3" y="14" width="7" height="7"/>
+            </svg>
+          </n-icon>
+        </n-button>
+        <n-button 
+          size="small"
+          quaternary
+          class="h-8 flex items-center space-x-1 px-3"
+          @click="showUploadModal = true"
+        >
+          <n-icon>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </n-icon>
+          <span>上传文件</span>
+        </n-button>
+        <n-button 
+          size="small"
+          quaternary
+          class="h-8 flex items-center space-x-1 px-3"
+          @click="showFolderModal = true"
+        >
+          <n-icon>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/>
+              <line x1="12" y1="10" x2="12" y2="16"/>
+              <line x1="9" y1="13" x2="15" y2="13"/>
+            </svg>
+          </n-icon>
+          <span>新建文件夹</span>
+        </n-button>
+      </div>
+
+      <!-- 文件列表区域 -->
+      <div class="p-5" style="width: 100%; min-width: 900px; min-height: 720px; margin: 0 auto; position: relative;">
         <!-- 文件网格 -->
-        <div class="grid gap-4" style="grid-template-columns: repeat(auto-fit, minmax(200px, 200px));">
+        <div v-if="viewMode === 'grid'" class="grid gap-4" style="grid-template-columns: repeat(auto-fit, minmax(200px, 200px));">
           <div 
             v-for="file in fileList" 
             :key="file.id" 
@@ -109,6 +154,59 @@
             
             <!-- 操作按钮 -->
             <div v-if="!isFolder(file.format)" class="flex justify-center mt-3 space-x-2 flex-shrink-0" @click.stop>
+              <n-button size="tiny" type="primary" @click="downloadFile(file)">
+                <template #icon>
+                  <n-icon>
+                    <DownloadOutline />
+                  </n-icon>
+                </template>
+                下载
+              </n-button>
+              <n-button size="tiny" type="error" @click="deleteFile(file)">
+                <template #icon>
+                  <n-icon>
+                    <TrashOutline />
+                  </n-icon>
+                </template>
+                删除
+              </n-button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 文件列表 -->
+        <div v-else class="space-y-2">
+          <div 
+            v-for="file in fileList" 
+            :key="file.id" 
+            class="bg-white rounded-lg border border-gray-200 px-4 py-3 cursor-pointer transition-all duration-200 hover:shadow-md hover:border-gray-300 flex items-center space-x-4"
+            @click="handleFileClick(file)"
+          >
+            <!-- 文件图标 -->
+            <n-icon size="24" class="text-gray-500 flex-shrink-0">
+              <component :is="getFileIcon(file.format)" />
+            </n-icon>
+            
+            <!-- 文件名称 -->
+            <div class="flex-1 min-w-0">
+              <n-ellipsis 
+                class="text-sm font-medium text-gray-900"
+                :title="file.name"
+              >
+                {{ file.name }}
+              </n-ellipsis>
+            </div>
+            
+            <!-- 文件信息 -->
+            <div v-if="!isFolder(file.format)" class="text-sm text-gray-500 flex-shrink-0 w-32 text-right">
+              {{ getFileSize(file.format) }}
+            </div>
+            <div v-if="!isFolder(file.format)" class="text-sm text-gray-500 flex-shrink-0 w-48 text-right">
+              {{ formatFileTime(file.origin_at) }}
+            </div>
+            
+            <!-- 操作按钮 -->
+            <div v-if="!isFolder(file.format)" class="flex space-x-2 flex-shrink-0" @click.stop>
               <n-button size="tiny" type="primary" @click="downloadFile(file)">
                 <template #icon>
                   <n-icon>
@@ -237,6 +335,9 @@ const folderNameHistory = ref<string[]>(['根目录']);
 // 弹框相关状态
 const showUploadModal = ref(false);
 const showFolderModal = ref(false);
+
+// 视图模式
+const viewMode = ref<'grid' | 'list'>('grid');
 
 // 获取文件列表
 const fetchFileList = async (page: number = 1, append: boolean = false) => {
@@ -403,6 +504,11 @@ const deleteFile = async (file: FileDetail) => {
   } catch (error) {
     message.error('删除文件失败');
   }
+};
+
+// 切换视图模式
+const toggleViewMode = () => {
+  viewMode.value = viewMode.value === 'grid' ? 'list' : 'grid';
 };
 
 const message = useMessage();
