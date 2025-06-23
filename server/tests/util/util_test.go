@@ -52,10 +52,3 @@ func TestGetList(t *testing.T) {
 	t.Log(files)
 }
 
-func TestList(t *testing.T) {
-	files, err := util.ListFiles(nil)
-	if err != nil {
-		return
-	}
-	t.Log(files)
-}

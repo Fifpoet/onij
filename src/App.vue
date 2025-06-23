@@ -28,13 +28,13 @@ const handleFileClick = (file: FileDetail) => {
 <template>
   <div>
     <!-- 顶部导航栏 -->
-    <PageHeader />
-    
-    <n-message-provider>
-      <MusicDetail />
+  <PageHeader />
+
+  <n-message-provider>
+    <MusicDetail />
       <MusicDetailMobile />
-      <MusicLike />
-      <MemoList />
+    <MusicLike />
+    <MemoList />
       
       <!-- 文件管理区域 -->
       <div class="h-full pt-[60px]">
@@ -45,8 +45,8 @@ const handleFileClick = (file: FileDetail) => {
         />
       </div>
       
-      <AudioContainer></AudioContainer>
-    </n-message-provider>
+  <AudioContainer></AudioContainer>
+  </n-message-provider>
   </div>
 </template>
 
