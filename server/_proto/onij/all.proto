@@ -208,6 +208,17 @@ message GetUploadTokenResp {
   string domain = 4;
 }
 
+message AiChatReq {
+  string prompt = 1;
+  string model = 2;
+  string image_url = 3;
+}
+message AiChatResp {
+  int32 code = 1;
+  string message = 2;
+  string answer = 3;
+}
+
 service AllService {
   // 上传文件
   rpc UploadFile(UploadFileReq) returns (UploadFileResp) {
@@ -277,4 +288,6 @@ service AllService {
   rpc GetUploadToken(GetUploadTokenReq) returns (GetUploadTokenResp) {
     option (api.post) = "/file/upload_token";
   }
+  // AI聊天
+  rpc AiChat(AiChatReq) returns (AiChatResp) { option (api.post) = "/ai/chat"; }
 }

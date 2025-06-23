@@ -130,3 +130,13 @@ func _uploadmemoMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _aiMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _aichatMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
