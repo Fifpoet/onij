@@ -2,13 +2,18 @@ package logic
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"onij/biz/prm"
 	"onij/infra"
-	"onij/util"
+	"onij/util/boost/collection/collext"
 	"os"
 
-	ark "github.com/sashabaranov/go-openai"
+	"github.com/volcengine/volcengine-go-sdk/service/arkruntime"
+	"github.com/volcengine/volcengine-go-sdk/service/arkruntime/model"
+	"github.com/volcengine/volcengine-go-sdk/service/arkruntime/utils"
+	"github.com/volcengine/volcengine-go-sdk/volcengine"
 )
 
 type AiLogic interface {
@@ -26,43 +31,85 @@ func NewAiLogic(i *infra.AllInfra) AiLogic {
 }
 
 func (l *aiLogic) Chat(ctx context.Context, param *prm.AiChatParam) (*prm.AiChatResult, error) {
-	config := ark.DefaultConfig(os.Getenv("ark"))
-	config.BaseURL = "https://ark.cn-beijing.volces.com/api/v3"
-	client := ark.NewClientWithConfig(config)
+	client := arkruntime.NewClientWithApiKey(os.Getenv("ark"))
 
-	fmt.Println("----- image input -----")
-	req := ark.ChatCompletionRequest{
-		Model: "doubao-seed-1-6-250615",
-		Messages: []ark.ChatCompletionMessage{
-			{
-				Role: ark.ChatMessageRoleUser,
-				MultiContent: []ark.ChatMessagePart{
-					{
-						Type: ark.ChatMessagePartTypeImageURL,
-						ImageURL: &ark.ChatMessageImageURL{
-							URL: param.ImageURL,
-						},
-					},
-					{
+	msgs := []*model.ChatCompletionMessageContentPart{}
+	if param.Prompt != "" {
+		msgs = append(msgs, &model.ChatCompletionMessageContentPart{
+			Type: model.ChatCompletionMessageContentPartTypeText,
+			Text: param.Prompt,
+		})
+	}
+	msgs = append(msgs, collext.Pick(param.ImageURLs, func(url string) *model.ChatCompletionMessageContentPart {
+		return &model.ChatCompletionMessageContentPart{
+			Type: model.ChatCompletionMessageContentPartTypeImageURL,
+			ImageURL: &model.ChatMessageImageURL{
+				URL: url,
+				Detail: model.ImageURLDetailAuto, // 图片处理质量
+			},
+		}
+	})...)
+	msgs = append(msgs, collext.Pick(param.VideoURLs, func(url string) *model.ChatCompletionMessageContentPart {
+		return &model.ChatCompletionMessageContentPart{
+			Type: model.ChatCompletionMessageContentPartTypeVideoURL,
+			VideoURL: &model.ChatMessageVideoURL{
+				URL: url,
+			},
+		}
+	})...)
 
-						Type: ark.ChatMessagePartTypeText,
-						Text: param.Prompt,
-					},
-				},
+	modelMsgs := []*model.ChatCompletionMessage{
+		{
+			Role: model.ChatMessageRoleSystem,
+			Content: &model.ChatCompletionMessageContent{
+				StringValue: volcengine.String("你是豆包，是由字节跳动开发的 AI 人工智能助手"),
+			},
+		},
+		{
+			Role: model.ChatMessageRoleUser,
+			Content: &model.ChatCompletionMessageContent{
+				ListValue: msgs,
 			},
 		},
 	}
 
-	resp, err := client.CreateChatCompletion(context.Background(), req)
+	var stream *utils.ChatCompletionStreamReader
+	var err error
+	if param.SearchWeb {
+		client.CreateBotChatCompletionStream(ctx, model.BotChatCompletionRequest{
+			Model: "doubao-seed-1-6-250615",
+			Messages: modelMsgs,
+			Stream: true,
+			
+		})
+	} else {
+		stream, err = client.CreateChatCompletionStream(ctx, model.CreateChatCompletionRequest{
+			Model: "doubao-seed-1-6-250615",
+			Messages: modelMsgs,
+			Stream: volcengine.Bool(true),
+			Thinking: &model.Thinking{	
+				Type: model.ThinkingType(param.ThinkingType),
+			},
+		})
+	}
 	if err != nil {
-		fmt.Printf("ChatCompletion error: %v", err)
+		fmt.Printf("stream chat error: %v\n", err)
 		return nil, err
 	}
-	fmt.Println(resp.Choices[0].Message.Content)
+	
+	defer stream.Close()
 
-	return &prm.AiChatResult{
-		Code:    util.BaseCodeOK,
-		Message: util.BaseMsgOK,
-		Answer:  resp.Choices[0].Message.Content,
-	}, nil
+	for {
+		recv, err := stream.Recv()
+		if err == io.EOF {
+			return nil, errors.New("stream closed")
+		}
+		if err != nil {
+			fmt.Printf("Stream chat error: %v\n", err)
+			return nil, err
+		}
+		if len(recv.Choices) > 0 {
+			fmt.Print(recv.Choices[0].Delta.Content)
+		}
+	}
 }

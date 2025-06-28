@@ -35,7 +35,8 @@ import {
   RecordingOutline,
   DocumentTextOutline,
   BookOutline,
-  DiamondOutline
+  DiamondOutline,
+  ChatboxOutline
 } from '@vicons/ionicons5'
 
 const appStore = useAppStore()
@@ -62,6 +63,12 @@ const menuItems: Record<string, MenuItem[]> = {
       onClick: () => musicStore.setMidShowWhat(MidShowWhat.ShowFileList)
     },
     { key: 'record', label: 'record', icon: RecordingOutline },
+    { 
+      key: 'chat', 
+      label: 'chat', 
+      icon: ChatboxOutline,
+      onClick: () => musicStore.setMidShowWhat(MidShowWhat.ShowChatWindow)
+    },
   ],
   "recall": [
     { 

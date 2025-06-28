@@ -5,13 +5,30 @@ import "onij/model/api"
 
 type AiChatParam struct {
 	Prompt    string
-	ImageURL  string
+	ImageURLs  []string
+	VideoURLs  []string
+	ThinkingType string
+	SearchWeb bool
 }
 
 func NewAiChatParam(req *api.AiChatReq) *AiChatParam {
+	tk := "disabled"
+	switch req.Think {
+	case api.ThinkingType_THT_Disabled:
+		tk = "disabled"
+	case api.ThinkingType_THT_Enabled:
+		tk = "enabled"
+	case api.ThinkingType_THT_Auto:
+		tk = "auto"
+	default:
+		tk = "disabled"
+	}
 	return &AiChatParam{
 		Prompt:    req.Prompt,
-		ImageURL:  req.ImageUrl,
+		ImageURLs:  req.ImageUrls,
+		VideoURLs:  req.VideoUrls,
+		ThinkingType: tk,
+		SearchWeb: req.SearchWeb,
 	}
 }
 

@@ -28,6 +28,7 @@ var logicSet = wire.NewSet(
 	logic.NewArtistLogic,
 	logic.NewTagLogic,
 	logic.NewMemoLogic,
+	logic.NewAiLogic,
 	wire.Struct(new(logic.AllLogic), "*"),
 )
 

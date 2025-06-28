@@ -68,3 +68,10 @@ enum ResourceType {
   RT_Music = 2;
   RT_Album = 3;
 }
+
+enum ThinkingType {
+  THT_Unknown = 0;
+  THT_Disabled = 1;
+  THT_Enabled = 2;
+  THT_Auto = 3;
+}

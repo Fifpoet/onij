@@ -7,6 +7,7 @@ import AudioContainer from "@/components/music/AudioContainer.vue";
 import MusicDetail from "@/components/music/MusicDetail.vue";
 import MusicDetailMobile from "@/components/music/MusicDetailMobile.vue";
 import MusicLike from "@/components/music/MusicLike.vue";
+import ChatWindow from "@/components/chat/ChatWindow.vue";
 import {NMessageProvider} from "naive-ui"
 import MemoList from './components/memo/MemoList.vue';
 import FileList from './components/file/FileList.vue';
@@ -35,6 +36,7 @@ const handleFileClick = (file: FileDetail) => {
       <MusicDetailMobile />
     <MusicLike />
     <MemoList />
+    <ChatWindow />
       
       <!-- 文件管理区域 -->
       <div class="h-full pt-[60px]">

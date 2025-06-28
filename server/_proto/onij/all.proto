@@ -211,7 +211,10 @@ message GetUploadTokenResp {
 message AiChatReq {
   string prompt = 1;
   string model = 2;
-  string image_url = 3;
+  repeated string image_urls = 3;
+  repeated string video_urls = 4;
+  ThinkingType think = 5;
+  bool search_web = 6;
 }
 message AiChatResp {
   int32 code = 1;
