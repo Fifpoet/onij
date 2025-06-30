@@ -128,7 +128,7 @@ const showSongDetail = ref(false);
 const musicStore = useMusicStore(); // 获取 Pinia store
 
 // 音量控制相关
-const volume = ref(80); // 音量值，范围0-100
+const volume = ref(30); // 音量值，范围0-100
 const isMuted = ref(false); // 是否静音
 const showVolumeSlider = ref(false); // 是否显示音量滑块
 const previousVolume = ref(100); // 存储静音前的音量值
