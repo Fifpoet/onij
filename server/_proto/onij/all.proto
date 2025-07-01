@@ -16,6 +16,7 @@ message UploadFileReq {
     string hash = 3;      // 文件hash值
     FileType format = 4;  // 文件类型
     int64 origin_at = 5;  // 原始文件时间
+    int64 size = 6;       // 文件大小
   }
   int64 parent_id = 1;         // 父级文件夹id
   repeated FileInfo files = 2; // 文件列表

@@ -85,6 +85,7 @@ func (l *fileLogic) Upload(ctx context.Context, param *prm.UploadFileParam) (*pr
 			Hash:     param.Files[0].Hash,
 			ParentId: param.ParentId,
 			OriginAt: param.Files[0].OriginAt,
+			Size:     param.Files[0].Size,
 		})
 		if err != nil {
 			return nil, err
@@ -103,6 +104,7 @@ func (l *fileLogic) Upload(ctx context.Context, param *prm.UploadFileParam) (*pr
 			ParentId: param.ParentId,
 			Hash:     f.Hash,
 			OriginAt: f.OriginAt,
+			Size:     f.Size,
 		}
 	})
 	err := l.FileDal.Save(fis...)

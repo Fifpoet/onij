@@ -37,6 +37,7 @@ type File struct {
 	StoreKey string `json:"store_key"`
 	Hash     string `json:"hash" gorm:"not null;uniqueIndex:uk_hash"`
 	ParentId int64  `json:"parent_id" gorm:"not null;uniqueIndex:uk_hash"`
+	Size     int64  `json:"size"`
 
 	OriginAt  int64          `json:"origin_at"`
 	CreatedAt time.Time      `json:"created_at"`
