@@ -18,58 +18,64 @@
 
     <!-- 音乐播放器主体 -->
     <div class="audio-content flex-grow px-2 md:px-5 group relative">
-      <div v-if="musicStore.current.detail" class="flex items-center justify-between w-full">
+      <div class="flex items-center justify-between w-full">
         <!-- 左侧：播放控制和歌曲信息 -->
         <div class="flex items-center flex-1 min-w-0 mr-2">
-          <!-- 控制按钮 - 移动端常驻显示，桌面端hover显示 -->
-          <div class="flex md:hidden justify-center items-center shrink-0">
-            <NButton text @click="playPrevious" class="w-[30px] h-[30px] rounded-full mr-1">
-              <NIcon :component="PlaySkipBackOutline" size="18" />
-            </NButton>
-            <NButton text @click="startOrPause" class="w-[30px] h-[30px] rounded-full mx-1">
-              <NIcon :component="isPlaying ? PauseCircleOutline : PlayCircleOutline" size="18" />
-            </NButton>
-            <NButton text @click="playNext" class="w-[30px] h-[30px] rounded-full ml-1">
-              <NIcon :component="PlaySkipForwardOutline" size="18" />
-            </NButton>
-          </div>
-          <div class="hidden md:group-hover:flex justify-center items-center shrink-0">
-            <NButton text @click="playPrevious" class="w-[30px] h-[30px] rounded-full mr-1">
-              <NIcon :component="PlaySkipBackOutline" size="18" />
-            </NButton>
-            <NButton text @click="startOrPause" class="w-[30px] h-[30px] rounded-full mx-1">
-              <NIcon :component="isPlaying ? PauseCircleOutline : PlayCircleOutline" size="18" />
-            </NButton>
-            <NButton text @click="playNext" class="w-[30px] h-[30px] rounded-full ml-1">
-              <NIcon :component="PlaySkipForwardOutline" size="18" />
-            </NButton>
-          </div>
-          <!-- 歌曲信息 - 移动端常驻显示，桌面端hover隐藏 -->
-          <span class="truncate md:transition-all md:duration-300 md:group-hover:hidden ml-2">
-            {{ musicStore.currentMusicName }} - {{ musicStore.currentMusicArtistName }}
+          <!-- 有音乐时才显示控制按钮 -->
+          <template v-if="musicStore.current.detail">
+            <!-- 移动端控制按钮 -->
+            <div class="flex md:hidden justify-center items-center shrink-0">
+              <NButton text @click="playPrevious" class="w-[30px] h-[30px] rounded-full mr-1">
+                <NIcon :component="PlaySkipBackOutline" size="18" />
+              </NButton>
+              <NButton text @click="startOrPause" class="w-[30px] h-[30px] rounded-full mx-1">
+                <NIcon :component="isPlaying ? PauseCircleOutline : PlayCircleOutline" size="18" />
+              </NButton>
+              <NButton text @click="playNext" class="w-[30px] h-[30px] rounded-full ml-1">
+                <NIcon :component="PlaySkipForwardOutline" size="18" />
+              </NButton>
+            </div>
+            
+            <!-- 桌面端悬浮控制按钮 -->
+            <div class="hidden md:group-hover:flex justify-center items-center shrink-0">
+              <NButton text @click="playPrevious" class="w-[30px] h-[30px] rounded-full mr-1">
+                <NIcon :component="PlaySkipBackOutline" size="18" />
+              </NButton>
+              <NButton text @click="startOrPause" class="w-[30px] h-[30px] rounded-full mx-1">
+                <NIcon :component="isPlaying ? PauseCircleOutline : PlayCircleOutline" size="18" />
+              </NButton>
+              <NButton text @click="playNext" class="w-[30px] h-[30px] rounded-full ml-1">
+                <NIcon :component="PlaySkipForwardOutline" size="18" />
+              </NButton>
+            </div>
+            
+            <!-- 有音乐时的歌曲信息 -->
+            <span class="truncate md:transition-all md:duration-300 md:group-hover:hidden ml-2">
+              {{ musicStore.currentMusicName }} - {{ musicStore.currentMusicArtistName }}
+            </span>
+          </template>
+          
+          <!-- 无音乐时只显示提示文本 -->
+          <span v-else class="truncate">
+            请选择一首音乐播放
           </span>
         </div>
-
-        <!-- 右侧：音量和操作按钮 -->
+        
+        <!-- 右侧：音量和操作按钮 - 始终显示 -->
         <div class="flex items-center shrink-0">
-          <!-- 音量按钮 - 移动端隐藏 -->
-          <div class="hidden md:block volume-control cursor-pointer relative" @mouseenter="showVolumeSlider = true"
-            @mouseleave="showVolumeSlider = false">
+          <!-- 音量按钮 - 仅桌面端显示 -->
+          <div class="hidden md:block volume-control cursor-pointer relative">
+            <!-- 音量按钮内容 -->
             <NButton text @click="toggleMute">
-              <NIcon
-                :component="isMuted ? VolumeMuteOutline : (volume > 50 ? VolumeHighOutline : (volume > 0 ? VolumeLowOutline : VolumeMuteOutline))"
-                size="18" />
+              <NIcon :component="isMuted ? VolumeMuteOutline : (volume > 50 ? VolumeHighOutline : (volume > 0 ? VolumeLowOutline : VolumeMuteOutline))" size="18" />
             </NButton>
-
             <!-- 音量滑块 -->
-            <div v-if="showVolumeSlider"
-              class="volume-slider absolute bottom-[40px] left-0 bg-white shadow-lg rounded-lg p-2 flex flex-col items-center">
-              <input type="range" class="h-[80px] w-[20px] bg-gray-300 outline-none appearance-none" min="0" max="100"
-                v-model="volume" @input="adjustVolume" orient="vertical" />
+            <div v-if="showVolumeSlider" class="volume-slider absolute bottom-[40px] left-1/2 transform -translate-x-1/2 bg-white shadow-lg rounded-lg p-2 flex flex-col items-center z-50">
+              <input type="range" class="h-[80px] w-[20px] bg-gray-300 outline-none appearance-none" min="0" max="100" v-model="volume" @input="adjustVolume" orient="vertical" />
             </div>
           </div>
 
-          <!-- 操作按钮 -->
+          <!-- 操作按钮 - 始终显示 -->
           <div class="like-toggle cursor-pointer px-2" @click="toggleMusicLike">
             <NIcon :component="HeartOutline" size="18" />
           </div>
@@ -77,9 +83,6 @@
             <NIcon :component="MusicalNoteOutline" size="18" />
           </div>
         </div>
-      </div>
-      <div v-else>
-        <p>请选择一首音乐播放</p>
       </div>
     </div>
 

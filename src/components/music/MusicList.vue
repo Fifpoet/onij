@@ -205,6 +205,13 @@ onMounted(async () => {
         }))
       });
     }
+    // 获取音乐列表
+    if (!fetching.value && musicStore.musicListContinue) {
+      fetching.value = true; // 设置为正在加载状态
+      fetchMusicList().finally(() => {
+        fetching.value = false; // 重置加载状态
+      });
+    }
   } catch (error) {
     console.error("加载艺术家列表失败:", error);
   }
