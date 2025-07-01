@@ -32,12 +32,12 @@ func NewFileDal(db *gorm.DB) FileDal {
 // File 同一个文件夹下的hash去重
 type File struct {
 	Id       int64  `json:"id" gorm:"primaryKey;autoIncrement"`
-	Name     string `json:"name"`
+	Name     string `json:"name" gorm:"not null;uniqueIndex:uk_parent_name"`
 	Format   int32  `json:"format"`
-	StoreKey string `json:"store_key"`
-	Hash     string `json:"hash" gorm:"not null;uniqueIndex:uk_hash"`
-	ParentId int64  `json:"parent_id" gorm:"not null;uniqueIndex:uk_hash"`
 	Size     int64  `json:"size"`
+	StoreKey string `json:"store_key"`
+	Hash     string `json:"hash" gorm:"not null"`
+	ParentId int64  `json:"parent_id" gorm:"not null;uniqueIndex:uk_parent_name"`
 
 	OriginAt  int64          `json:"origin_at"`
 	CreatedAt time.Time      `json:"created_at"`

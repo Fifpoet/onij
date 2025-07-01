@@ -155,6 +155,7 @@ const handleUpload = async () => {
           filename: fileInfo.customName || fileInfo.name,
           store_key: result.key,
           hash: result.hash,
+          size: fileInfo.file.size,
           format: getFileTypeFromFile(fileInfo.file),
           origin_at: fileInfo.customDate ? Math.floor(fileInfo.customDate / 1000) : 0
         }]

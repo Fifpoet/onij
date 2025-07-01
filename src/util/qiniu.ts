@@ -53,16 +53,6 @@ function generateUniqueFileName(originalName: string): string {
   return `${nameWithoutExt}_${timestamp}_${randomStr}${extension ? '.' + extension : ''}`;
 }
 
-// 将 File 对象转换为 ArrayBuffer
-async function fileToArrayBuffer(file: File): Promise<ArrayBuffer> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as ArrayBuffer);
-    reader.onerror = reject;
-    reader.readAsArrayBuffer(file);
-  });
-}
-
 // 上传文件到七牛云
 export async function uploadToQiniu(
   file: File, 
@@ -74,16 +64,13 @@ export async function uploadToQiniu(
       const uniqueFileName = generateUniqueFileName(file.name);
       const key = folderPath.length > 0 ? `${folderPath.join('/')}/${uniqueFileName}` : uniqueFileName;
       
-      // 从后端获取上传token
       const token = await getUploadToken();
       
-      // 创建上传配置
       const config = {
         useCdnDomain: false,
         region: qiniu.region.z0 // 华东区域
       };
       
-      // 创建上传对象
       // @ts-ignore
       const observable = qiniu.upload(file, key, token, config);
       

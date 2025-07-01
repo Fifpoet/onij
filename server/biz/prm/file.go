@@ -71,7 +71,10 @@ func (r *GetFileListResult) Resp() *api.GetFileListResp {
 			a.Format != b.Format {
 			return int(b.Format - a.Format) // format大的在前面
 		}
-		return int(b.OriginAt - a.OriginAt)
+		if a.OriginAt == b.OriginAt {
+			return int(a.CreatedAt - b.CreatedAt)
+		}
+		return int(a.OriginAt - b.OriginAt)
 	})
 	return &api.GetFileListResp{
 		Code:    util.BaseCodeOK,

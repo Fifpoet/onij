@@ -18,6 +18,7 @@ export enum FileType {
 export interface FileInfo {
   filename: string;    // 文件名
   store_key: string;   // 七牛存储key
+  size: number;        // 文件大小
   hash: string;        // 文件hash值
   format: FileType;    // 文件类型
   origin_at: number;   // 原始文件时间
