@@ -80,6 +80,7 @@ message FileDetail {
   int64 origin_at = 5;
   int64 created_at = 6;
   int64 updated_at = 7;
+  string url = 10; // 下载链接
 }
 
 message MemoDetail {

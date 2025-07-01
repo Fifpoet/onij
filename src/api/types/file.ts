@@ -62,6 +62,7 @@ export interface FileDetail {
   origin_at: number;
   created_at: number;
   updated_at: number;
+  url: string;
 }
 
 /* 下载文件请求参数 */

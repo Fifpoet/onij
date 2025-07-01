@@ -64,6 +64,7 @@ func (r *GetFileListResult) Resp() *api.GetFileListResp {
 			OriginAt:  f.OriginAt,
 			CreatedAt: f.CreatedAt.Unix(),
 			UpdatedAt: f.UpdatedAt.Unix(),
+			Url:       util.DownloadFile(f.StoreKey),
 		}
 	})
 	slices.SortFunc(res, func(a, b *api.FileDetail) int {
