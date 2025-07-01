@@ -101,64 +101,52 @@
       <div class="p-5" style="width: 100%; min-width: 900px; min-height: 720px; margin: 0 auto; position: relative;">
         <!-- 文件网格 -->
         <div v-if="viewMode === 'grid'" class="grid gap-4"
-          style="grid-template-columns: repeat(auto-fit, minmax(200px, 200px));">
+          style="grid-template-columns: repeat(auto-fit, minmax(160px, 120px));">
           <div v-for="file in fileList" :key="file.id"
-            class="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:border-gray-300 h-52 flex flex-col min-w-0 max-w-full"
-            style="width: 100%; box-sizing: border-box;" @click="handleFileClick(file)">
-            <!-- 文件图标或图片预览区域 - 减小固定高度 -->
-            <div class="h-[60px] mb-3 flex-shrink-0">
-              <!-- 文件图标 -->
+            class="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:border-gray-300 flex flex-col min-w-0 max-w-full"
+            style="width: 100%; aspect-ratio: 1/1.2; box-sizing: border-box;" @click="handleFileClick(file)">
+            
+            <!-- 预览区域 - 30% -->
+            <div class="w-full mb-3" style="height: 50%;">
+              <!-- 文件图标或图片 -->
               <div v-if="showFileIcon(file.format)" class="flex justify-center items-center h-full">
                 <n-icon size="40" class="text-gray-500">
                   <component :is="getFileIcon(file.format)" />
                 </n-icon>
               </div>
-              <!-- 图片预览 - 铺满预览区 -->
               <div v-else class="w-full h-full overflow-hidden">
                 <img :src="file.url" :alt="file.name" class="w-full h-full object-cover">
               </div>
             </div>
             
-            <!-- 文件名称 - 固定高度，最多两行 -->
-            <div class="text-center mb-2 flex-1 flex flex-col justify-center min-h-[40px] min-w-0 overflow-hidden">
+            <!-- 文件名称 - 25% -->
+            <div class="text-center mb-2 flex flex-col justify-center" style="height: 15%;">
               <n-ellipsis :line-clamp="2" class="text-sm font-medium text-gray-900 w-full" :title="file.name">
                 {{ file.name }}
               </n-ellipsis>
             </div>
 
-            <!-- 文件信息 - 固定高度 -->
-            <div class="text-center text-xs text-gray-500 space-y-1 flex-shrink-0 h-[20px] overflow-hidden">
-              <div v-if="!isFolder(file.format)" class="truncate px-1">{{ getFileSize(file.format) }}</div>
-              <div v-else class="truncate px-1">&nbsp;</div>
-            </div>
-            
-            <!-- 日期信息 - 固定高度 -->
-            <div class="text-center text-xs text-gray-500 space-y-1 flex-shrink-0 h-[20px] mb-2 overflow-hidden">
-              <div v-if="!isFolder(file.format)" class="truncate px-1">{{ formatFileTime(file.origin_at) }}</div>
-              <div v-else class="truncate px-1">&nbsp;</div>
+            <!-- 文件信息 - 20% -->
+            <div class="text-center text-xs text-gray-500 mb-2" style="height: 10%;">
+              <template v-if="!isFolder(file.format)">
+                <div class="truncate">{{ getFileSize(file.format) }}</div>
+                <div class="truncate">{{ formatFileTime(file.origin_at) }}</div>
+              </template>
             </div>
 
-            <!-- 操作按钮 - 底部固定位置 -->
-            <div v-if="!isFolder(file.format)" class="flex justify-center mt-auto space-x-2 flex-shrink-0" @click.stop>
-              <n-button size="tiny" type="primary" @click="downloadFile(file)">
-                <template #icon>
-                  <n-icon>
-                    <DownloadOutline />
-                  </n-icon>
-                </template>
-                下载
-              </n-button>
-              <n-button size="tiny" type="error" @click="deleteFile(file)">
-                <template #icon>
-                  <n-icon>
-                    <TrashOutline />
-                  </n-icon>
-                </template>
-                删除
-              </n-button>
+            <!-- 操作按钮 - 25% -->
+            <div class="flex justify-center items-end mt-auto" style="height: 15%;" @click.stop>
+              <template v-if="!isFolder(file.format)">
+                <n-button size="tiny" type="primary" class="mx-1" @click="downloadFile(file)">
+                  <template #icon><n-icon><DownloadOutline /></n-icon></template>
+                  下载
+                </n-button>
+                <n-button size="tiny" type="error" class="mx-1" @click="deleteFile(file)">
+                  <template #icon><n-icon><TrashOutline /></n-icon></template>
+                  删除
+                </n-button>
+              </template>
             </div>
-            <!-- 占位空白 - 文件夹类型 -->
-            <div v-else class="h-[28px]"></div>
           </div>
         </div>
 
