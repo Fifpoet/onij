@@ -29,11 +29,14 @@ export function formatFileTime(timestamp: number): string {
   });
 }
 
-/**
- * 根据文件类型获取对应的图标组件
- * @param fileType 文件类型
- * @returns 图标组件
- */
+export function showFileIcon(fileType: FileType): boolean {
+  // 无法预览展示图标
+  return ![
+    FileType.FT_Png,
+  ].includes(fileType);
+}
+
+
 export function getFileIcon(fileType: FileType) {
   switch (fileType) {
     case FileType.FT_Folder:
