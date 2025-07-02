@@ -98,7 +98,7 @@
       </div>
 
       <!-- 文件列表区域 -->
-      <div class="p-5" style="width: 100%; min-width: 900px; min-height: 720px; margin: 0 auto; position: relative;">
+      <div class="p-5" style="width: 100%; min-width: 900px; min-height: 520px; margin: 0 auto; position: relative;">
         <!-- 文件网格 -->
         <div v-if="viewMode === 'grid'" class="grid gap-4"
           style="grid-template-columns: repeat(auto-fit, minmax(160px, 120px));">
@@ -135,7 +135,7 @@
             </div>
 
             <!-- 操作按钮 - 25% -->
-            <div class="flex justify-center items-end mt-auto" style="height: 15%;" @click.stop>
+            <div class="flex justify-center items-end mt-auto" style="height: 25%;" @click.stop>
               <template v-if="!isFolder(file.format)">
                 <n-button size="tiny" type="primary" class="mx-1" @click="downloadFile(file)">
                   <template #icon><n-icon><DownloadOutline /></n-icon></template>
@@ -234,10 +234,50 @@
 
   <!-- 新建文件夹弹框 -->
   <FolderCreateModal v-model:show="showFolderModal" :parent-id="props.parentId" @created="fetchFileList" />
+
+  <!-- 图片预览弹窗 -->
+  <div v-if="previewVisible" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75" @click="closePreview">
+    <div class="relative w-full h-full flex items-center justify-center overflow-hidden" @wheel="handleZoom" @click.stop>
+      <img 
+        :src="previewImage" 
+        class="max-w-full max-h-full object-contain transition-transform duration-200"
+        :style="{ transform: `scale(${zoomLevel})` }"
+        ref="previewImageRef"
+      />
+      <button @click.stop="closePreview" class="absolute top-5 right-5 bg-white bg-opacity-75 rounded-full p-2 hover:bg-opacity-100 transition-all duration-200">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      
+      <!-- 左右切换按钮 -->
+      <button 
+        @click.stop="prevImage" 
+        class="absolute left-5 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-75 rounded-full p-3 hover:bg-opacity-100 transition-all duration-200"
+        :class="{ 'opacity-50 cursor-not-allowed': !hasPrevImage }"
+        :disabled="!hasPrevImage"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+      <button 
+        @click.stop="nextImage" 
+        class="absolute right-5 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-75 rounded-full p-3 hover:bg-opacity-100 transition-all duration-200"
+        :class="{ 'opacity-50 cursor-not-allowed': !hasNextImage }"
+        :disabled="!hasNextImage"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import {
   NIcon,
   NButton,
@@ -261,7 +301,8 @@ import {
   getFileSize,
   formatFileTime,
   isFolder,
-  showFileIcon
+  showFileIcon,
+  isImage
 } from '@/util';
 import FileUploadModal from './FileUploadModal.vue';
 import FolderCreateModal from './FolderCreateModal.vue';
@@ -305,6 +346,44 @@ const showFolderModal = ref(false);
 
 // 视图模式
 const viewMode = ref<'grid' | 'list'>('grid');
+
+// 图片预览相关状态
+const previewVisible = ref(false);
+const previewImage = ref('');
+const zoomLevel = ref(1);
+const previewImageRef = ref<HTMLImageElement | null>(null);
+const currentPreviewIndex = ref(-1);
+
+// 获取当前页的所有图片
+const imageFiles = computed(() => {
+  return fileList.value.filter(file => isImage(file.format) && file.url);
+});
+
+// 是否有上一张图片
+const hasPrevImage = computed(() => {
+  return currentPreviewIndex.value > 0;
+});
+
+// 是否有下一张图片
+const hasNextImage = computed(() => {
+  return currentPreviewIndex.value < imageFiles.value.length - 1;
+});
+
+// 切换到上一张图片
+const prevImage = () => {
+  if (!hasPrevImage.value) return;
+  currentPreviewIndex.value--;
+  previewImage.value = imageFiles.value[currentPreviewIndex.value].url;
+  zoomLevel.value = 1; // 重置缩放级别
+};
+
+// 切换到下一张图片
+const nextImage = () => {
+  if (!hasNextImage.value) return;
+  currentPreviewIndex.value++;
+  previewImage.value = imageFiles.value[currentPreviewIndex.value].url;
+  zoomLevel.value = 1; // 重置缩放级别
+};
 
 // 获取文件列表
 const fetchFileList = async (page: number = 1, append: boolean = false) => {
@@ -367,8 +446,18 @@ const handleFileClick = (file: FileDetail) => {
     folderHistory.value.push(file.id);
     folderNameHistory.value.push(file.name);
     currentFolderName.value = file.name;
+    emit('fileClick', file);
+  } else if (isImage(file.format) && file.url) {
+    // 如果是图片类型，则打开预览
+    previewImage.value = file.url;
+    previewVisible.value = true;
+    zoomLevel.value = 1; // 重置缩放级别
+    
+    // 找到当前图片在图片列表中的索引
+    currentPreviewIndex.value = imageFiles.value.findIndex(img => img.id === file.id);
+  } else {
+    emit('fileClick', file);
   }
-  emit('fileClick', file);
 };
 
 // 返回上级文件夹
@@ -461,6 +550,25 @@ const deleteFile = async (file: FileDetail) => {
 // 切换视图模式
 const toggleViewMode = () => {
   viewMode.value = viewMode.value === 'grid' ? 'list' : 'grid';
+};
+
+// 关闭图片预览
+const closePreview = () => {
+  previewVisible.value = false;
+  previewImage.value = '';
+  currentPreviewIndex.value = -1;
+};
+
+// 处理图片缩放
+const handleZoom = (e: WheelEvent) => {
+  e.preventDefault();
+  
+  // 向上滚动放大，向下滚动缩小
+  if (e.deltaY < 0) {
+    zoomLevel.value = Math.min(zoomLevel.value + 0.1, 3); // 最大放大3倍
+  } else {
+    zoomLevel.value = Math.max(zoomLevel.value - 0.1, 0.5); // 最小缩小到0.5倍
+  }
 };
 
 const message = useMessage();

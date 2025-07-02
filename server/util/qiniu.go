@@ -103,7 +103,6 @@ func DownloadFile(key string) string {
 	deadline := time.Now().Add(time.Hour).Unix()
 
 	privateAccessURL := storage.MakePrivateURL(getQiniuMac(), dm, key, deadline)
-	fmt.Printf("Download URL: %s\n", privateAccessURL)
 	return privateAccessURL
 }
 
