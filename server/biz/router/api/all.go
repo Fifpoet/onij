@@ -18,10 +18,6 @@ func Register(r *server.Hertz) {
 
 	root := r.Group("/", rootMw()...)
 	{
-		_ai := root.Group("/ai", _aiMw()...)
-		_ai.POST("/chat", append(_aichatMw(), handler.AiChat)...)
-	}
-	{
 		_album := root.Group("/album", _albumMw()...)
 		_album.POST("/detail", append(_getalbumdetailMw(), handler.GetAlbumDetail)...)
 		_album.POST("/upload", append(_uploadalbumMw(), handler.UploadAlbum)...)
