@@ -5,7 +5,6 @@ export * from './artist';
 export * from './album';
 export * from './tag';
 export * from './memo';
-export * from './ai';
 
 export enum MidShowWhat {
     ShowMusicDetail = 1,

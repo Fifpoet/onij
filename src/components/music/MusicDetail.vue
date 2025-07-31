@@ -8,12 +8,33 @@
         <div class="flex gap-6 h-[300px]">
           <!-- 封面 -->
           <div class="w-[300px] h-[300px] flex-shrink-0">
-          <img 
-              :src="musicStore.current.detail?.cover_url" 
+            <img 
+              v-if="musicStore.current.detail?.album_profile?.cover_file_url" 
+              :src="musicStore.current.detail?.album_profile?.cover_file_url" 
               :alt="musicStore.current.detail?.name" 
               class="w-full h-full object-cover rounded-lg"
-          >
-        </div>
+            >
+            <n-card 
+              v-else
+              @click="showAlbumUpload = true"
+              class="w-full h-full cursor-pointer hover:shadow-lg transition-all duration-300 border-dashed border-2 border-gray-300 dark:border-gray-600 hover:border-primary"
+              :class="{ 'hover:scale-105': true }"
+            >
+              <div class="flex flex-col items-center justify-center h-full">
+                <n-icon size="48" class="text-gray-400 mb-4">
+                  <i class="icon-album"></i>
+                </n-icon>
+                <div class="text-center">
+                  <div class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    暂无专辑封面
+                  </div>
+                  <div class="text-xs text-gray-500 dark:text-gray-500">
+                    点击上传专辑封面
+                  </div>
+                </div>
+              </div>
+            </n-card>
+          </div>
 
           <!-- 信息区域 -->
           <div class="flex-1 flex flex-col min-w-0 h-full">
@@ -32,30 +53,30 @@
                     <span v-if="index < (musicStore.current.detail?.artist_names.length || 0) - 1" class="text-gray-400">/</span>
                   </template>
                 </div>
-          </div>
+              </div>
               <div class="flex justify-end items-center gap-4 mt-1 text-sm text-gray-500">
                 <div class="flex items-center gap-1">
                   <span>词:</span>
-            <router-link 
-              :to="`/artist/${musicStore.current.detail?.writer_id}`"
+                  <router-link 
+                    :to="`/artist/${musicStore.current.detail?.writer_id}`"
                     class="text-primary hover:text-primary-600 transition-colors"
-            >
-              {{ musicStore.current.detail?.writer_name }}
-            </router-link>
+                  >
+                    {{ musicStore.current.detail?.writer_name }}
+                  </router-link>
                 </div>
                 <div class="flex items-center gap-1">
                   <span>曲:</span>
-            <router-link 
-              :to="`/artist/${musicStore.current.detail?.composer_id}`"
+                  <router-link 
+                    :to="`/artist/${musicStore.current.detail?.composer_id}`"
                     class="text-primary hover:text-primary-600 transition-colors"
-            >
-              {{ musicStore.current.detail?.composer_name }}
-            </router-link>
+                  >
+                    {{ musicStore.current.detail?.composer_name }}
+                  </router-link>
                 </div>
               </div>
-          </div>
+            </div>
 
-          <!-- 歌词容器 -->
+            <!-- 歌词容器 -->
             <div class="flex-1 flex flex-col justify-center items-center space-y-2">
               <div 
                 v-for="lyric in displayLyrics" 
@@ -75,16 +96,28 @@
       </div>
     </div>
   </Transition>
+
+  <!-- 专辑上传弹窗 -->
+  <AlbumUploadModal
+    :visible="showAlbumUpload"
+    :artist-id="musicStore.current.detail?.artist_ids[0] || 0"
+    :music-id="musicStore.current.detail?.id || 0"
+    @close="showAlbumUpload = false"
+    @success="handleAlbumSuccess"
+  />
 </template>
 
 <script setup lang="ts">
 import { MidShowWhat } from "@/api/types";
 import { useMusicStore } from "@/store/music";
 import { ref, watch, computed } from 'vue';
+import { NCard, NIcon } from 'naive-ui';
+import AlbumUploadModal from './AlbumUploadModal.vue';
 
 const musicStore = useMusicStore();
 const lyrics = ref<{ time: number; text: string }[]>([]);
 const currentLyricIndex = ref(-1);
+const showAlbumUpload = ref(false);
 
 // 计算要显示的歌词
 const displayLyrics = computed(() => {
@@ -112,7 +145,7 @@ const displayLyrics = computed(() => {
       index: i,
       text: lyrics.value[i].text
     }));
-  });
+});
   
 // 更新当前歌词
 watch(() => musicStore.current.progress, () => {
@@ -157,9 +190,18 @@ watch(() => musicStore.current.detail?.lyrics_file_url, async (url) => {
     currentLyricIndex.value = -1;
   } catch (error) {
     console.error('加载歌词失败:', error);
-        lyrics.value = [];
-      }
+    lyrics.value = [];
+  }
 }, { immediate: true });
+
+// 处理专辑上传成功
+const handleAlbumSuccess = async (albumId: number) => {
+  // 重新加载音乐详情以获取新的专辑信息
+  if (musicStore.current.detail?.id) {
+    // 这里需要调用重新获取音乐详情的API
+    // await musicStore.loadMusicDetail(musicStore.current.detail.id);
+  }
+};
 </script>
 
 <style scoped>

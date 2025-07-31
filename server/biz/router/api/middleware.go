@@ -140,3 +140,8 @@ func _aichatMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _searchalbumMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

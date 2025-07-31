@@ -29,6 +29,19 @@ export interface GetAlbumDetailResp {
   detail: AlbumDetail;
 }
 
+export interface SearchAlbumReq {
+  keyword: string;
+  artist_id?: number;
+  page: number;
+  limit: number;
+}
+
+export interface SearchAlbumResp {
+  code: number;
+  message: string;
+  albums: AlbumProfile[];
+}
+
 export interface AlbumDetail {
   id: number;
   name: string;
