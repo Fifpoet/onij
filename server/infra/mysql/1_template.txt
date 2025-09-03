@@ -1,0 +1,26 @@
+package mysql
+
+import (
+	"onij/util/cdb"
+	"gorm.io/gorm"
+)
+
+func NewTemplateDal(db *gorm.DB) TemplateDal {
+	return &TemplateDalImpl{
+		Dal: cdb.NewDal[model.Template, model.TemplateQuerier, model.TemplateUpdater](proxy),
+	}
+}
+
+type TemplateDal interface {
+	cdb.Interface[TemplateDal]
+}
+
+type TemplateDalImpl struct {
+	*cdb.Dal[model.Template, model.TemplateQuerier, model.TemplateUpdater]
+}
+
+func (d *TemplateDalImpl) With(tx *gorm.DB) TemplateDal {
+	return &TemplateDalImpl{
+		Dal: d.Dal.With(tx),
+	}
+}
