@@ -2,19 +2,16 @@ package mysql
 
 import (
 	"fmt"
-	"gorm.io/gorm/logger"
 	"log"
 	"os"
 	"time"
+
+	"gorm.io/gorm/logger"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 )
-
-var allModel = []any{
-	&Tag{}, &Album{}, &File{}, &Music{}, &Artist{},
-}
 
 func NewMysqlCli() *gorm.DB {
 	ip := os.Getenv("ip")
@@ -41,13 +38,5 @@ func NewMysqlCli() *gorm.DB {
 	if err != nil {
 		log.Fatalf("failed to connect database: %v", err)
 	}
-
-	// 库表自动迁移
-	err = Db.AutoMigrate(allModel...)
-	if err != nil {
-		log.Fatalf("failed to migrate: %v", err)
-	}
 	return Db
 }
-
-func GenModel()

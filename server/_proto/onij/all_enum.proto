@@ -4,8 +4,6 @@ package onij;
 
 option go_package = "api";
 
-import "api.proto";
-
 enum FileType {
   FT_Unknown = 0;
   FT_Mp3 = 1;
@@ -14,13 +12,25 @@ enum FileType {
   FT_Folder = 99;
 }
 
-enum ArtistType {
-  AT_Unknown = 0;
-  AT_Singer = 1;
-  AT_Writer = 2;
-  AT_Composer = 3;
+// 专辑类型
+enum AlbumType {
+  ALT_Unknown = 0;
+  ALT_Studio = 1; // 录音室专辑
+  ALT_Live = 2;   // 现场专辑
+  ALT_OST = 3;    // 原声带专辑
+  ALT_Cover = 4;  // 翻唱专辑
+  ALT_Other = 99;
 }
 
+// 艺术家类型
+enum ArtistType {
+  ART_Unknown = 0;
+  ART_Singer = 1;
+  ART_Writer = 2;
+  ART_Composer = 3;
+}
+
+// 音乐排序类型
 enum MusicSortType {
   MST_Unknown = 0;
   MST_Created_At_Desc = 1;
@@ -29,11 +39,13 @@ enum MusicSortType {
   MST_Issue_Time_Asc = 4;
 }
 
+// 标签业务
 enum TagBiz {
   TB_Unknown = 0;
   TB_Music = 1;
 }
 
+// 标签组
 enum TagGroup {
   TG_Unknown = 0;
   TG_MusicTheme = 101;
@@ -45,6 +57,7 @@ enum TagGroup {
   TG_ArtistStar = 120;
 }
 
+// 标签类型
 enum TagType {
   TT_Unknown = 0;
   // 10101
@@ -62,6 +75,7 @@ enum TagType {
   TT_Star = 12001;
 }
 
+// 资源类型
 enum ResourceType {
   RT_Unknown = 0;
   RT_Artist = 1;
