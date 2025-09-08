@@ -581,7 +581,7 @@ func (x *ArtistProfile) GetArtistType() ArtistType {
 	if x != nil {
 		return x.ArtistType
 	}
-	return ArtistType_AT_Unknown
+	return ArtistType_ART_Unknown
 }
 
 type FileDetail struct {

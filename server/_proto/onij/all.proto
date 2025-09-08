@@ -15,7 +15,7 @@ message UploadFileReq {
     string store_key = 2; // 七牛存储key
     string hash = 3;      // 文件hash值
     FileType format = 4;  // 文件类型
-    int64 origin_at = 5;  // 原始文件时间
+    string exif = 5;      // 扩展
     int64 size = 6;       // 文件大小
   }
   int64 parent_id = 1;         // 父级文件夹id

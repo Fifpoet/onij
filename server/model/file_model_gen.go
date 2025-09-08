@@ -17,7 +17,8 @@ const (
 	File_Size      = "size"
 	File_StoreKey  = "store_key"
 	File_Hash      = "hash"
-	File_OriginAt  = "origin_at"
+	File_ParentId  = "parent_id"
+	File_Extra     = "extra"
 	File_CreatedAt = "created_at"
 	File_UpdatedAt = "updated_at"
 	File_DeletedAt = "deleted_at"
@@ -33,7 +34,8 @@ type File struct {
 	Size      int64          `gorm:"column:size" json:"size"`             // 文件大小
 	StoreKey  string         `gorm:"column:store_key" json:"store_key"`   // 文件存储key
 	Hash      string         `gorm:"column:hash" json:"hash"`             // 文件hash
-	OriginAt  int64          `gorm:"column:origin_at" json:"origin_at"`   // 原始时间
+	ParentId  int64          `gorm:"column:parent_id" json:"parent_id"`   // 父级id
+	Extra     string         `gorm:"column:extra" json:"extra"`           // 额外信息
 	CreatedAt time.Time      `gorm:"column:created_at" json:"created_at"` // 创建时间
 	UpdatedAt time.Time      `gorm:"column:updated_at" json:"updated_at"` // 更新时间
 	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"` // 删除时间
@@ -54,7 +56,8 @@ func (File) UpdatableColumns() []string {
 		File_Size,
 		File_StoreKey,
 		File_Hash,
-		File_OriginAt,
+		File_ParentId,
+		File_Extra,
 		File_CreatedAt,
 		File_UpdatedAt,
 		File_DeletedAt,
@@ -124,8 +127,13 @@ func (q FileQuerier) Hash(v any) FileQuerier {
 	return q
 }
 
-func (q FileQuerier) OriginAt(v any) FileQuerier {
-	q.super().Add(File_OriginAt, v)
+func (q FileQuerier) ParentId(v any) FileQuerier {
+	q.super().Add(File_ParentId, v)
+	return q
+}
+
+func (q FileQuerier) Extra(v any) FileQuerier {
+	q.super().Add(File_Extra, v)
 	return q
 }
 
@@ -181,8 +189,13 @@ func (u FileUpdater) Hash(v string) FileUpdater {
 	return u
 }
 
-func (u FileUpdater) OriginAt(v int64) FileUpdater {
-	u.super().Add(File_OriginAt, v)
+func (u FileUpdater) ParentId(v int64) FileUpdater {
+	u.super().Add(File_ParentId, v)
+	return u
+}
+
+func (u FileUpdater) Extra(v string) FileUpdater {
+	u.super().Add(File_Extra, v)
 	return u
 }
 

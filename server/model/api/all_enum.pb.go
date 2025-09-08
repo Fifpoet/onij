@@ -75,28 +75,88 @@ func (FileType) EnumDescriptor() ([]byte, []int) {
 	return file_all_enum_proto_rawDescGZIP(), []int{0}
 }
 
+// 专辑类型
+type AlbumType int32
+
+const (
+	AlbumType_ALT_Unknown AlbumType = 0
+	AlbumType_ALT_Studio  AlbumType = 1 // 录音室专辑
+	AlbumType_ALT_Live    AlbumType = 2 // 现场专辑
+	AlbumType_ALT_OST     AlbumType = 3 // 原声带专辑
+	AlbumType_ALT_Cover   AlbumType = 4 // 翻唱专辑
+	AlbumType_ALT_Other   AlbumType = 99
+)
+
+// Enum value maps for AlbumType.
+var (
+	AlbumType_name = map[int32]string{
+		0:  "ALT_Unknown",
+		1:  "ALT_Studio",
+		2:  "ALT_Live",
+		3:  "ALT_OST",
+		4:  "ALT_Cover",
+		99: "ALT_Other",
+	}
+	AlbumType_value = map[string]int32{
+		"ALT_Unknown": 0,
+		"ALT_Studio":  1,
+		"ALT_Live":    2,
+		"ALT_OST":     3,
+		"ALT_Cover":   4,
+		"ALT_Other":   99,
+	}
+)
+
+func (x AlbumType) Enum() *AlbumType {
+	p := new(AlbumType)
+	*p = x
+	return p
+}
+
+func (x AlbumType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (AlbumType) Descriptor() protoreflect.EnumDescriptor {
+	return file_all_enum_proto_enumTypes[1].Descriptor()
+}
+
+func (AlbumType) Type() protoreflect.EnumType {
+	return &file_all_enum_proto_enumTypes[1]
+}
+
+func (x AlbumType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use AlbumType.Descriptor instead.
+func (AlbumType) EnumDescriptor() ([]byte, []int) {
+	return file_all_enum_proto_rawDescGZIP(), []int{1}
+}
+
+// 艺术家类型
 type ArtistType int32
 
 const (
-	ArtistType_AT_Unknown  ArtistType = 0
-	ArtistType_AT_Singer   ArtistType = 1
-	ArtistType_AT_Writer   ArtistType = 2
-	ArtistType_AT_Composer ArtistType = 3
+	ArtistType_ART_Unknown  ArtistType = 0
+	ArtistType_ART_Singer   ArtistType = 1
+	ArtistType_ART_Writer   ArtistType = 2
+	ArtistType_ART_Composer ArtistType = 3
 )
 
 // Enum value maps for ArtistType.
 var (
 	ArtistType_name = map[int32]string{
-		0: "AT_Unknown",
-		1: "AT_Singer",
-		2: "AT_Writer",
-		3: "AT_Composer",
+		0: "ART_Unknown",
+		1: "ART_Singer",
+		2: "ART_Writer",
+		3: "ART_Composer",
 	}
 	ArtistType_value = map[string]int32{
-		"AT_Unknown":  0,
-		"AT_Singer":   1,
-		"AT_Writer":   2,
-		"AT_Composer": 3,
+		"ART_Unknown":  0,
+		"ART_Singer":   1,
+		"ART_Writer":   2,
+		"ART_Composer": 3,
 	}
 )
 
@@ -111,11 +171,11 @@ func (x ArtistType) String() string {
 }
 
 func (ArtistType) Descriptor() protoreflect.EnumDescriptor {
-	return file_all_enum_proto_enumTypes[1].Descriptor()
+	return file_all_enum_proto_enumTypes[2].Descriptor()
 }
 
 func (ArtistType) Type() protoreflect.EnumType {
-	return &file_all_enum_proto_enumTypes[1]
+	return &file_all_enum_proto_enumTypes[2]
 }
 
 func (x ArtistType) Number() protoreflect.EnumNumber {
@@ -124,9 +184,10 @@ func (x ArtistType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ArtistType.Descriptor instead.
 func (ArtistType) EnumDescriptor() ([]byte, []int) {
-	return file_all_enum_proto_rawDescGZIP(), []int{1}
+	return file_all_enum_proto_rawDescGZIP(), []int{2}
 }
 
+// 音乐排序类型
 type MusicSortType int32
 
 const (
@@ -166,11 +227,11 @@ func (x MusicSortType) String() string {
 }
 
 func (MusicSortType) Descriptor() protoreflect.EnumDescriptor {
-	return file_all_enum_proto_enumTypes[2].Descriptor()
+	return file_all_enum_proto_enumTypes[3].Descriptor()
 }
 
 func (MusicSortType) Type() protoreflect.EnumType {
-	return &file_all_enum_proto_enumTypes[2]
+	return &file_all_enum_proto_enumTypes[3]
 }
 
 func (x MusicSortType) Number() protoreflect.EnumNumber {
@@ -179,9 +240,10 @@ func (x MusicSortType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use MusicSortType.Descriptor instead.
 func (MusicSortType) EnumDescriptor() ([]byte, []int) {
-	return file_all_enum_proto_rawDescGZIP(), []int{2}
+	return file_all_enum_proto_rawDescGZIP(), []int{3}
 }
 
+// 标签业务
 type TagBiz int32
 
 const (
@@ -212,11 +274,11 @@ func (x TagBiz) String() string {
 }
 
 func (TagBiz) Descriptor() protoreflect.EnumDescriptor {
-	return file_all_enum_proto_enumTypes[3].Descriptor()
+	return file_all_enum_proto_enumTypes[4].Descriptor()
 }
 
 func (TagBiz) Type() protoreflect.EnumType {
-	return &file_all_enum_proto_enumTypes[3]
+	return &file_all_enum_proto_enumTypes[4]
 }
 
 func (x TagBiz) Number() protoreflect.EnumNumber {
@@ -225,9 +287,10 @@ func (x TagBiz) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use TagBiz.Descriptor instead.
 func (TagBiz) EnumDescriptor() ([]byte, []int) {
-	return file_all_enum_proto_rawDescGZIP(), []int{3}
+	return file_all_enum_proto_rawDescGZIP(), []int{4}
 }
 
+// 标签组
 type TagGroup int32
 
 const (
@@ -273,11 +336,11 @@ func (x TagGroup) String() string {
 }
 
 func (TagGroup) Descriptor() protoreflect.EnumDescriptor {
-	return file_all_enum_proto_enumTypes[4].Descriptor()
+	return file_all_enum_proto_enumTypes[5].Descriptor()
 }
 
 func (TagGroup) Type() protoreflect.EnumType {
-	return &file_all_enum_proto_enumTypes[4]
+	return &file_all_enum_proto_enumTypes[5]
 }
 
 func (x TagGroup) Number() protoreflect.EnumNumber {
@@ -286,9 +349,10 @@ func (x TagGroup) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use TagGroup.Descriptor instead.
 func (TagGroup) EnumDescriptor() ([]byte, []int) {
-	return file_all_enum_proto_rawDescGZIP(), []int{4}
+	return file_all_enum_proto_rawDescGZIP(), []int{5}
 }
 
+// 标签类型
 type TagType int32
 
 const (
@@ -324,11 +388,11 @@ func (x TagType) String() string {
 }
 
 func (TagType) Descriptor() protoreflect.EnumDescriptor {
-	return file_all_enum_proto_enumTypes[5].Descriptor()
+	return file_all_enum_proto_enumTypes[6].Descriptor()
 }
 
 func (TagType) Type() protoreflect.EnumType {
-	return &file_all_enum_proto_enumTypes[5]
+	return &file_all_enum_proto_enumTypes[6]
 }
 
 func (x TagType) Number() protoreflect.EnumNumber {
@@ -337,9 +401,10 @@ func (x TagType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use TagType.Descriptor instead.
 func (TagType) EnumDescriptor() ([]byte, []int) {
-	return file_all_enum_proto_rawDescGZIP(), []int{5}
+	return file_all_enum_proto_rawDescGZIP(), []int{6}
 }
 
+// 资源类型
 type ResourceType int32
 
 const (
@@ -376,11 +441,11 @@ func (x ResourceType) String() string {
 }
 
 func (ResourceType) Descriptor() protoreflect.EnumDescriptor {
-	return file_all_enum_proto_enumTypes[6].Descriptor()
+	return file_all_enum_proto_enumTypes[7].Descriptor()
 }
 
 func (ResourceType) Type() protoreflect.EnumType {
-	return &file_all_enum_proto_enumTypes[6]
+	return &file_all_enum_proto_enumTypes[7]
 }
 
 func (x ResourceType) Number() protoreflect.EnumNumber {
@@ -389,24 +454,30 @@ func (x ResourceType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ResourceType.Descriptor instead.
 func (ResourceType) EnumDescriptor() ([]byte, []int) {
-	return file_all_enum_proto_rawDescGZIP(), []int{6}
+	return file_all_enum_proto_rawDescGZIP(), []int{7}
 }
 
 var File_all_enum_proto protoreflect.FileDescriptor
 
 var file_all_enum_proto_rawDesc = []byte{
 	0x0a, 0x0e, 0x61, 0x6c, 0x6c, 0x5f, 0x65, 0x6e, 0x75, 0x6d, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x12, 0x04, 0x6f, 0x6e, 0x69, 0x6a, 0x1a, 0x09, 0x61, 0x70, 0x69, 0x2e, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x2a, 0x50, 0x0a, 0x08, 0x46, 0x69, 0x6c, 0x65, 0x54, 0x79, 0x70, 0x65, 0x12, 0x0e, 0x0a,
-	0x0a, 0x46, 0x54, 0x5f, 0x55, 0x6e, 0x6b, 0x6e, 0x6f, 0x77, 0x6e, 0x10, 0x00, 0x12, 0x0a, 0x0a,
-	0x06, 0x46, 0x54, 0x5f, 0x4d, 0x70, 0x33, 0x10, 0x01, 0x12, 0x0d, 0x0a, 0x09, 0x46, 0x54, 0x5f,
-	0x4c, 0x79, 0x72, 0x69, 0x63, 0x73, 0x10, 0x02, 0x12, 0x0a, 0x0a, 0x06, 0x46, 0x54, 0x5f, 0x50,
-	0x6e, 0x67, 0x10, 0x03, 0x12, 0x0d, 0x0a, 0x09, 0x46, 0x54, 0x5f, 0x46, 0x6f, 0x6c, 0x64, 0x65,
-	0x72, 0x10, 0x63, 0x2a, 0x4b, 0x0a, 0x0a, 0x41, 0x72, 0x74, 0x69, 0x73, 0x74, 0x54, 0x79, 0x70,
-	0x65, 0x12, 0x0e, 0x0a, 0x0a, 0x41, 0x54, 0x5f, 0x55, 0x6e, 0x6b, 0x6e, 0x6f, 0x77, 0x6e, 0x10,
-	0x00, 0x12, 0x0d, 0x0a, 0x09, 0x41, 0x54, 0x5f, 0x53, 0x69, 0x6e, 0x67, 0x65, 0x72, 0x10, 0x01,
-	0x12, 0x0d, 0x0a, 0x09, 0x41, 0x54, 0x5f, 0x57, 0x72, 0x69, 0x74, 0x65, 0x72, 0x10, 0x02, 0x12,
-	0x0f, 0x0a, 0x0b, 0x41, 0x54, 0x5f, 0x43, 0x6f, 0x6d, 0x70, 0x6f, 0x73, 0x65, 0x72, 0x10, 0x03,
+	0x12, 0x04, 0x6f, 0x6e, 0x69, 0x6a, 0x2a, 0x50, 0x0a, 0x08, 0x46, 0x69, 0x6c, 0x65, 0x54, 0x79,
+	0x70, 0x65, 0x12, 0x0e, 0x0a, 0x0a, 0x46, 0x54, 0x5f, 0x55, 0x6e, 0x6b, 0x6e, 0x6f, 0x77, 0x6e,
+	0x10, 0x00, 0x12, 0x0a, 0x0a, 0x06, 0x46, 0x54, 0x5f, 0x4d, 0x70, 0x33, 0x10, 0x01, 0x12, 0x0d,
+	0x0a, 0x09, 0x46, 0x54, 0x5f, 0x4c, 0x79, 0x72, 0x69, 0x63, 0x73, 0x10, 0x02, 0x12, 0x0a, 0x0a,
+	0x06, 0x46, 0x54, 0x5f, 0x50, 0x6e, 0x67, 0x10, 0x03, 0x12, 0x0d, 0x0a, 0x09, 0x46, 0x54, 0x5f,
+	0x46, 0x6f, 0x6c, 0x64, 0x65, 0x72, 0x10, 0x63, 0x2a, 0x65, 0x0a, 0x09, 0x41, 0x6c, 0x62, 0x75,
+	0x6d, 0x54, 0x79, 0x70, 0x65, 0x12, 0x0f, 0x0a, 0x0b, 0x41, 0x4c, 0x54, 0x5f, 0x55, 0x6e, 0x6b,
+	0x6e, 0x6f, 0x77, 0x6e, 0x10, 0x00, 0x12, 0x0e, 0x0a, 0x0a, 0x41, 0x4c, 0x54, 0x5f, 0x53, 0x74,
+	0x75, 0x64, 0x69, 0x6f, 0x10, 0x01, 0x12, 0x0c, 0x0a, 0x08, 0x41, 0x4c, 0x54, 0x5f, 0x4c, 0x69,
+	0x76, 0x65, 0x10, 0x02, 0x12, 0x0b, 0x0a, 0x07, 0x41, 0x4c, 0x54, 0x5f, 0x4f, 0x53, 0x54, 0x10,
+	0x03, 0x12, 0x0d, 0x0a, 0x09, 0x41, 0x4c, 0x54, 0x5f, 0x43, 0x6f, 0x76, 0x65, 0x72, 0x10, 0x04,
+	0x12, 0x0d, 0x0a, 0x09, 0x41, 0x4c, 0x54, 0x5f, 0x4f, 0x74, 0x68, 0x65, 0x72, 0x10, 0x63, 0x2a,
+	0x4f, 0x0a, 0x0a, 0x41, 0x72, 0x74, 0x69, 0x73, 0x74, 0x54, 0x79, 0x70, 0x65, 0x12, 0x0f, 0x0a,
+	0x0b, 0x41, 0x52, 0x54, 0x5f, 0x55, 0x6e, 0x6b, 0x6e, 0x6f, 0x77, 0x6e, 0x10, 0x00, 0x12, 0x0e,
+	0x0a, 0x0a, 0x41, 0x52, 0x54, 0x5f, 0x53, 0x69, 0x6e, 0x67, 0x65, 0x72, 0x10, 0x01, 0x12, 0x0e,
+	0x0a, 0x0a, 0x41, 0x52, 0x54, 0x5f, 0x57, 0x72, 0x69, 0x74, 0x65, 0x72, 0x10, 0x02, 0x12, 0x10,
+	0x0a, 0x0c, 0x41, 0x52, 0x54, 0x5f, 0x43, 0x6f, 0x6d, 0x70, 0x6f, 0x73, 0x65, 0x72, 0x10, 0x03,
 	0x2a, 0x82, 0x01, 0x0a, 0x0d, 0x4d, 0x75, 0x73, 0x69, 0x63, 0x53, 0x6f, 0x72, 0x74, 0x54, 0x79,
 	0x70, 0x65, 0x12, 0x0f, 0x0a, 0x0b, 0x4d, 0x53, 0x54, 0x5f, 0x55, 0x6e, 0x6b, 0x6e, 0x6f, 0x77,
 	0x6e, 0x10, 0x00, 0x12, 0x17, 0x0a, 0x13, 0x4d, 0x53, 0x54, 0x5f, 0x43, 0x72, 0x65, 0x61, 0x74,
@@ -452,15 +523,16 @@ func file_all_enum_proto_rawDescGZIP() []byte {
 	return file_all_enum_proto_rawDescData
 }
 
-var file_all_enum_proto_enumTypes = make([]protoimpl.EnumInfo, 7)
+var file_all_enum_proto_enumTypes = make([]protoimpl.EnumInfo, 8)
 var file_all_enum_proto_goTypes = []interface{}{
 	(FileType)(0),      // 0: onij.FileType
-	(ArtistType)(0),    // 1: onij.ArtistType
-	(MusicSortType)(0), // 2: onij.MusicSortType
-	(TagBiz)(0),        // 3: onij.TagBiz
-	(TagGroup)(0),      // 4: onij.TagGroup
-	(TagType)(0),       // 5: onij.TagType
-	(ResourceType)(0),  // 6: onij.ResourceType
+	(AlbumType)(0),     // 1: onij.AlbumType
+	(ArtistType)(0),    // 2: onij.ArtistType
+	(MusicSortType)(0), // 3: onij.MusicSortType
+	(TagBiz)(0),        // 4: onij.TagBiz
+	(TagGroup)(0),      // 5: onij.TagGroup
+	(TagType)(0),       // 6: onij.TagType
+	(ResourceType)(0),  // 7: onij.ResourceType
 }
 var file_all_enum_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -475,13 +547,12 @@ func file_all_enum_proto_init() {
 	if File_all_enum_proto != nil {
 		return
 	}
-	file_api_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_all_enum_proto_rawDesc,
-			NumEnums:      7,
+			NumEnums:      8,
 			NumMessages:   0,
 			NumExtensions: 0,
 			NumServices:   0,
