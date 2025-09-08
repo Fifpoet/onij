@@ -1,4 +1,4 @@
-package mysql
+package dal
 
 import (
 	"errors"
@@ -27,31 +27,31 @@ func NewTagDal(db *gorm.DB) TagDal {
 }
 
 type Tag struct {
-	Id         int64       `json:"id" gorm:"primaryKey;autoIncrement"`
-	ResourceId     int64       `json:"origin" gorm:"index:uk_resource_biz_group_type_target,unique"`
-	ResourceType int32       `json:"origin_type"`
-	TagBiz     int32       `json:"tag_biz" gorm:"index:uk_resource_biz_group_type_target,unique"`
-	TagGroup   int32       `json:"tag_group" gorm:"index:uk_resource_biz_group_type_target,unique"`
-	TagType    int32       `json:"tag_type" gorm:"index:uk_resource_biz_group_type_target,unique"`
-	TargetId     int64       `json:"target" gorm:"index:uk_resource_biz_group_type_target,unique"`
-	TargetType int32       `json:"target_type"`
-	ListShow bool 			`json:"list_show"`
-	Extra      string    `json:"extra"`
-	CreatedAt  time.Time `json:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at"`
-	DeletedAt  gorm.DeletedAt `json:"deleted_at"`
+	Id           int64          `json:"id" gorm:"primaryKey;autoIncrement"`
+	ResourceId   int64          `json:"origin" gorm:"index:uk_resource_biz_group_type_target,unique"`
+	ResourceType int32          `json:"origin_type"`
+	TagBiz       int32          `json:"tag_biz" gorm:"index:uk_resource_biz_group_type_target,unique"`
+	TagGroup     int32          `json:"tag_group" gorm:"index:uk_resource_biz_group_type_target,unique"`
+	TagType      int32          `json:"tag_type" gorm:"index:uk_resource_biz_group_type_target,unique"`
+	TargetId     int64          `json:"target" gorm:"index:uk_resource_biz_group_type_target,unique"`
+	TargetType   int32          `json:"target_type"`
+	ListShow     bool           `json:"list_show"`
+	Extra        string         `json:"extra"`
+	CreatedAt    time.Time      `json:"created_at"`
+	UpdatedAt    time.Time      `json:"updated_at"`
+	DeletedAt    gorm.DeletedAt `json:"deleted_at"`
 }
 
 func (t *tagDal) Delete(resourceId int64, tagType int32) error {
 	err := t.db.Where("resource_id =? and tag_type =?", resourceId, tagType).Delete(&Tag{}).Error
-	if err!= nil {
+	if err != nil {
 		log.Printf("Delete, delete tag failed: err = %v \n", err)
 		return err
 	}
 	return nil
 }
 
-func (t *tagDal) GetByResourceAndGroupType(tagGroups, tagTypes []int32, ids...int64) ([]*Tag, error) {
+func (t *tagDal) GetByResourceAndGroupType(tagGroups, tagTypes []int32, ids ...int64) ([]*Tag, error) {
 	var tags []*Tag
 	tx := t.db
 	if len(ids) > 0 {
@@ -66,7 +66,7 @@ func (t *tagDal) GetByResourceAndGroupType(tagGroups, tagTypes []int32, ids...in
 	err := tx.Find(&tags).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
-	} else if err!= nil {
+	} else if err != nil {
 		log.Printf("GetByResourceAndGroupType, get tags error: %v \n", err)
 		return nil, err
 	}
@@ -88,7 +88,7 @@ func (t *tagDal) GetByGroupType(tagGroup, tagType *int32) ([]*Tag, error) {
 	err := tx.Find(&tags).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
-	} else if err!= nil {
+	} else if err != nil {
 		log.Printf("GetByGroupType, get tags error: %v \n", err)
 		return nil, err
 	}
@@ -113,7 +113,7 @@ func (t *tagDal) Save(tags ...*Tag) error {
 	}).Create(tags).Error
 	if err != nil {
 		log.Printf("Save, save tag failed: err = %v \n", err)
-		return  err
+		return err
 	}
 	return nil
 }

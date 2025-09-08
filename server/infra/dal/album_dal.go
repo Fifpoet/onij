@@ -1,44 +1,37 @@
-package mysql
+package dal
 
 import (
-	"errors"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"log"
-	"time"
+	"onij/model"
+	"onij/util/cdb"
 )
 
 type AlbumDal interface {
-	Save(album *Album) error
-	GetById(id int64) (*Album, error)
-	GetByRelatedId(id int64) ([]*Album, error)
-	GetByMusicId(id int64) ([]*Album, error)
-	GetByArtistId(id int64, offset, limit int32) ([]*Album, int32, error)
+	cdb.Interface[AlbumDal]
+
+	Save(albums ...*model.Album) error
+	GetById(id int64) (*model.Album, error)
+	GetByRelatedId(id int64) ([]*model.Album, error)
+	GetByMusicId(id int64) ([]*model.Album, error)
+	GetByArtistId(id int64, offset, limit int32) ([]*model.Album, int32, error)
 }
 type albumDal struct {
-	db *gorm.DB
+	*cdb.Dal[ model.Album, model.AlbumQuerier,  model.AlbumUpdater]
 }
 
-func NewAlbumDal(db *gorm.DB) AlbumDal {
-	return &albumDal{db: db}
+func NewAlbumDal(db *cdb.DefaultProxy) AlbumDal {
+	return &albumDal{
+		cdb.NewDal[model.Album, model.AlbumQuerier, model.AlbumUpdater](db),
+	}
 }
 
-type Album struct {
-	Id             int64  `json:"id" gorm:"primaryKey;autoIncrement"`
-	Name           string `json:"name" gorm:"not null;uniqueIndex:uk_name_artist"`
-	ArtistId       int64  `json:"artist_id" gorm:"not null;uniqueIndex:uk_name_artist"`
-	MusicId        int64  `json:"music_id"`
-	RelatedAlbumId int64  `json:"related_album_id"`
-	CoverFileId    int64  `json:"cover_file_id"`
-	MvUrl          string `json:"mv_url"`
-	IssueTime      int32  `json:"issue_time"`
-
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `json:"deleted_at"`
+func (r *albumDal) With(tx *gorm.DB) AlbumDal {
+	return &albumDal{r.Dal.With(tx)}
 }
 
-func (f *albumDal) Save(album *Album) error {
+func (f *albumDal) Save(albums ...*model.Album) error {
 	if err := f.db.Clauses(clause.OnConflict{DoNothing: true}).Create(&album).Error; err != nil {
 		log.Printf("save album err: %v", err)
 		return err
@@ -46,19 +39,11 @@ func (f *albumDal) Save(album *Album) error {
 	return nil
 }
 
-func (f *albumDal) GetById(id int64) (*Album, error) {
-	var model Album
-	result := f.db.Where("id = ?", id).First(&model, id)
-	if result.Error != nil {
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-		return nil, result.Error
-	}
-	return &model, nil
+func (f *albumDal) GetById(id int64) (*model.Album, error) {
+	res, err :=
 }
-func (f *albumDal) GetByRelatedId(id int64) ([]*Album, error) {
-	var models []*Album
+func (f *albumDal) GetByRelatedId(id int64) ([]*model.Album, error) {
+	var models []*model.Album
 	if err := f.db.Where("related_album_id = ?", id).Find(&models).Error; err != nil {
 		log.Printf("get album by music id err: %v", err)
 		return nil, err
@@ -66,16 +51,16 @@ func (f *albumDal) GetByRelatedId(id int64) ([]*Album, error) {
 	return models, nil
 
 }
-func (f *albumDal) GetByMusicId(id int64) ([]*Album, error) {
-	var models []*Album
+func (f *albumDal) GetByMusicId(id int64) ([]*model.Album, error) {
+	var models []*model.Album
 	if err := f.db.Where("music_id = ?", id).Find(&models).Error; err != nil {
 		log.Printf("get album by music id err: %v", err)
 		return nil, err
 	}
 	return models, nil
 }
-func (f *albumDal) GetByArtistId(id int64, offset, limit int32) ([]*Album, int32, error) {
-	var models []*Album
+func (f *albumDal) GetByArtistId(id int64, offset, limit int32) ([]*model.Album, int32, error) {
+	var models []*model.Album
 	var total int64
 	if err := f.db.Where("artist_id = ?", id).Model(&Album{}).Count(&total).Error; err != nil {
 		log.Printf("count album by artist id err: %v", err)

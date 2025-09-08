@@ -1,4 +1,4 @@
-package mysql
+package dal
 
 import (
 	"onij/util"
@@ -22,17 +22,17 @@ func NewMemoDal(db *gorm.DB) MemoDal {
 }
 
 type Memo struct {
-	Id          int64  `json:"id" gorm:"primaryKey;autoIncrement"`
-	RootId      int64  `json:"root_id"`
-	Title       string `json:"title"`
-	Content     string `json:"content"`
-	ProfileContent string `json:"profile_content"`
-	CoverFileId   int64  `json:"cover_file_id"`
-	RelateFileId  int64  `json:"relate_file_id"`
-	OriginAt    int64  `json:"origin_at"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-	DeletedAt   gorm.DeletedAt `json:"deleted_at"`
+	Id             int64          `json:"id" gorm:"primaryKey;autoIncrement"`
+	RootId         int64          `json:"root_id"`
+	Title          string         `json:"title"`
+	Content        string         `json:"content"`
+	ProfileContent string         `json:"profile_content"`
+	CoverFileId    int64          `json:"cover_file_id"`
+	RelateFileId   int64          `json:"relate_file_id"`
+	OriginAt       int64          `json:"origin_at"`
+	CreatedAt      time.Time      `json:"created_at"`
+	UpdatedAt      time.Time      `json:"updated_at"`
+	DeletedAt      gorm.DeletedAt `json:"deleted_at"`
 }
 
 func (m *memoDal) Save(memo *Memo) error {

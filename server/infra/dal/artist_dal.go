@@ -1,4 +1,4 @@
-package mysql
+package dal
 
 import (
 	"errors"
@@ -67,7 +67,7 @@ func (p *artistDal) GetByName(name string) (*Artist, error) {
 func (p *artistDal) GetLikeNameAndType(name string, artistType *int) ([]*Artist, error) {
 	var performers []*Artist
 	tx := p.db.Where("name LIKE ?", "%"+name+"%")
-	if artistType!= nil {
+	if artistType != nil {
 		tx.Where("performer_type = ?", artistType)
 	}
 	err := tx.Find(&performers).Error

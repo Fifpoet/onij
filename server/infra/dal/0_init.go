@@ -1,15 +1,22 @@
-package mysql
+package dal
 
 import (
+	"context"
+
 	"fmt"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"log"
+	"onij/util/boost/ccmp"
+	"onij/util/boost/collection/collext"
+	"onij/util/boost/exp"
+	"onij/util/cdb"
 	"os"
 	"time"
 
 	"gorm.io/gorm/logger"
 
 	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 )
 
@@ -39,4 +46,160 @@ func NewMysqlCli() *gorm.DB {
 		log.Fatalf("failed to connect database: %v", err)
 	}
 	return Db
+}
+
+const (
+	FieldValue_RootItemRootId              = 0 // 根节点的root_id
+	FieldValue_RootItemParentId            = 0 // 根节点的parent_id
+	FieldValue_Available                   = 1 // 资源可用标记
+	FieldValue_Unavailable                 = 0 // 资源不可用标记
+	FieldValue_PaperQuestionIsRelatedFalse = 0 // 题卷题目非关联
+)
+
+const (
+	maxBatchSize = 500 // 批量上限
+)
+
+var (
+	timeColumnsSets = map[string]struct{}{"created_at": {}, "updated_at": {}}
+)
+
+type idQuerier[Q cdb.Querier] interface {
+	Id(any) Q
+}
+
+type idDal[U cdb.Updater, Q cdb.Querier, DQ idQuerier[Q]] interface {
+	Q() DQ
+	U() U
+	Delete(ctx context.Context, opts ...cdb.Option) (int64, error)
+	Update(ctx context.Context, u U, conditions ...cdb.Option) (int64, error)
+}
+
+type txDal[U cdb.Updater] interface {
+	U() U
+	W(ctx context.Context, opts ...cdb.Option) *gorm.DB
+}
+
+func NewProxy(cfg *config.Config) *cdb.Proxy {
+	return cdb.NewProxy(cfg.MySQL[0])
+}
+
+func deleteByIds[U cdb.Updater, Q cdb.Querier, DQ idQuerier[Q]](ctx context.Context, dal idDal[U, Q, DQ], ids []int64) (int64, error) {
+	if len(ids) == 0 {
+		logs.CtxInfo(ctx, "dal.deleteByIds[%T]: empty ids, skip", dal)
+		return 0, nil
+	}
+
+	affected, err := dal.Delete(ctx, dal.Q().Id(ids).ToOptions()...)
+	if err != nil {
+		logs.CtxError(ctx, "dal.DeleteByIds[%T]: err = %v", dal, err)
+		return 0, err
+	}
+
+	return affected, nil
+}
+
+func updateById[U cdb.Updater, Q cdb.Querier, DQ idQuerier[Q]](ctx context.Context, dal idDal[U, Q, DQ], hook func(U), id int64) (bool, error) {
+	if id <= 0 {
+		logs.CtxError(ctx, "dal.updateById[%T]: invalid id", dal)
+		return false, errdef.ErrDalEntityIdInvalid
+	}
+
+	u := dal.U()
+	hook(u)
+	if u.IsEmpty() {
+		logs.CtxInfo(ctx, "dal.updateById[%T]: non update items, id = %d", dal, id)
+		return false, nil
+	}
+
+	n, err := dal.Update(ctx, u, dal.Q().Id(id).ToOptions()...)
+	if err != nil {
+		logs.CtxError(ctx, "dal.updateById[%T]: err = %v, id = %d", dal, err, id)
+		return false, err
+	}
+
+	return n != 0, nil
+}
+
+func updates[M cdb.TableModel, U cdb.Updater](ctx context.Context, dal txDal[U], getId func(*M) int64, hook func(*M, U), models []*M) (affected int64, err error) {
+	zero := exp.Zero[M]()
+	if len(models) == 0 {
+		logs.CtxInfo(ctx, "dal.updates[%T]: empty models, skip", zero)
+		return
+	}
+
+	var columns []string
+	updatableColumns := collext.Sets(exp.Zero[M]().UpdatableColumns())
+	updateColumns := make(map[string]struct{})
+	for _, v := range models {
+		u := dal.U()
+		hook(v, u)
+		if u.IsEmpty() {
+			logs.CtxInfo(ctx, "dal.updates[%T]: non update items", zero)
+			continue
+		}
+		if getId != nil && getId(v) <= 0 {
+			err = errdef.ErrDalEntityIdInvalid
+			return
+		}
+		if len(columns) != 0 {
+			if !ccmp.ArraysEqual(columns, collext.MapKeys(u.ToMap())) {
+				err = errdef.ErrDalUpdateColumnsUnmatched
+				return
+			}
+			continue
+		}
+
+		for k := range u.ToMap() {
+			if _, ok := updatableColumns[k]; !ok {
+				err = errdef.ErrDalEntityUpdatableColumnInvalid
+				return
+			}
+			if _, ok := updateColumns[k]; !ok {
+				updateColumns[k] = struct{}{}
+				columns = append(columns, k)
+			}
+		}
+	}
+	if len(columns) == 0 {
+		logs.CtxInfo(ctx, "dal.updates[%T]: empty update columns, skip", zero)
+		return
+	}
+
+	clauses := clause.OnConflict{DoUpdates: clause.AssignmentColumns(columns)}
+	conn := dal.W(ctx).Clauses(clauses).CreateInBatches(models, maxBatchSize)
+	affected, err = conn.RowsAffected, conn.Error
+	if err != nil {
+		logs.CtxError(ctx, "dal.updates[%T]: err = %v", zero, err)
+	}
+	return
+}
+
+func saveUpdatable[M cdb.TableModel, U cdb.Updater](ctx context.Context, dal txDal[U], models []*M) (affected int64, err error) {
+	zero := exp.Zero[M]()
+	if len(models) == 0 {
+		logs.CtxInfo(ctx, "dal.saveUpdatable[%T]: empty models, skip", zero)
+		return 0, nil
+	}
+
+	updatable := zero.UpdatableColumns()
+	columns := make([]string, 0, len(updatable))
+	for _, v := range updatable {
+		if _, ok := timeColumnsSets[v]; ok {
+			continue
+		}
+		columns = append(columns, v)
+	}
+	if len(columns) == 0 {
+		logs.CtxInfo(ctx, "dal.saveUpdatable[%T]: empty update columns, skip", zero)
+		return
+	}
+
+	clauses := clause.OnConflict{DoUpdates: clause.AssignmentColumns(columns)}
+	conn := dal.W(ctx).Clauses(clauses).CreateInBatches(models, maxBatchSize)
+	affected, err = conn.RowsAffected, conn.Error
+	if err != nil {
+		logs.CtxError(ctx, "dal.saveUpdatable[%T]: err = %v", zero, err)
+	}
+	return
 }
