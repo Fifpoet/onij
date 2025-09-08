@@ -336,7 +336,7 @@ func (g *generator) genColumnNameConsts(ddl *sqlparser.DDL) string {
 	}
 
 	prefix := "\nimport (\n"
-	prefix += "cdb \"code.chenji.com/pkg/common/component/db\"\n"
+	prefix += "\"onij/util/cdb\"\n"
 	if hasTime {
 		prefix += "\"time\"\n"
 	}

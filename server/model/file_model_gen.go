@@ -3,8 +3,8 @@ package model
 /*********** 表字段常量定义 **********/
 
 import (
-	cdb "code.chenji.com/pkg/common/component/db"
 	"gorm.io/gorm"
+	"onij/util/cdb"
 	"time"
 )
 
