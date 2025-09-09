@@ -31,17 +31,23 @@ message UploadFileResp {
 message UploadMusicReq {
   // 基础信息
   string name = 1;
-  repeated int64 artist_ids = 2;
-  int64 mp3_file_id = 3;
-  int64 lyrics_file_id = 4;
+  string sub_name = 2;
+  repeated int64 artist_ids = 3;
+  int64 mp3_file_id = 4;
+  int64 lyric_file_id = 5;
+  int32 time_length = 6;
 
   // 表单信息
-  optional int64 composer_id = 10;
-  optional int64 writer_id = 11;
+  repeated int64 composer_ids = 10;
+  repeated int64 writer_ids = 11;
   optional int64 album_id = 12;
   optional string mv_url = 13;
   optional int64 root_music_id = 14;
   optional int32 issue_time = 15;
+  optional int32 priority = 16;
+  optional string lyric_content = 17;
+  AudioQuality audio_quality = 18;
+  PerformType perform_type = 19;
 
   // update
   optional int64 music_id = 50;
@@ -54,7 +60,9 @@ message UploadMusicResp {
 
 message UploadArtistReq {
   string name = 1;
-  ArtistType artist_type = 2;
+  optional string avatar_file_id = 2;
+
+  optional string artist_id = 10;
 }
 message UploadArtistResp {
   int32 code = 1;
@@ -68,44 +76,23 @@ message UploadTagResp {
   string message = 2;
 }
 
-message UploadMemoReq {
-  string title = 1;
-  string content = 2;
-  int64 origin_at = 3;
-  int64 cover_file_id = 4;
-  string profile_content = 5;
-}
-message UploadMemoResp {
-  int32 code = 1;
-  string message = 2;
-  int64 memo_id = 3;
-}
-
-message GetMemoDetailReq { int64 memo_id = 1; }
-message GetMemoDetailResp {
-  int32 code = 1;
-  string message = 2;
-  MemoDetail memo_detail = 3;
-}
-
-message GetMemoListReq {
-  string keyword = 1;
-  int32 page = 10;
-  int32 limit = 11;
-}
-message GetMemoListResp {
-  int32 code = 1;
-  string message = 2;
-  repeated MemoProfile memos = 3;
-}
 // 上传专辑
 message UploadAlbumReq {
+  message AlbumMusic {
+    string name = 1;
+    int32 time_length = 2;
+    int64 music_id = 3;
+    bool is_available = 4;
+  }
   string name = 1;
-  int64 artist_id = 2;
-  int64 cover_file_id = 3;
-  int32 issue_time = 4;
-  optional int64 music_id = 5;
-  optional int64 related_album_id = 6;
+  string profile = 2;
+  repeated int64 artist_ids = 3;
+  int64 cover_file_id = 4;
+  int32 issue_time = 5;
+  AlbumType album_type = 6;
+  repeated AlbumMusic album_musics = 7;
+
+  optional int64 album_id = 10;
 }
 message UploadAlbumResp {
   int32 code = 1;
@@ -131,7 +118,6 @@ message GetAlbumDetailResp {
 
 // 获取音乐列表
 message GetMusicListReq {
-  MusicSortType sort_type = 1;
   repeated string keywords = 2;
   optional int64 album_id = 3;
   repeated int64 artist_ids = 4;
@@ -241,18 +227,6 @@ service AllService {
   // 上传标签
   rpc UploadTag(UploadTagReq) returns (UploadTagResp) {
     option (api.post) = "/tag/upload";
-  }
-  // 上传Memo
-  rpc UploadMemo(UploadMemoReq) returns (UploadMemoResp) {
-    option (api.post) = "/memo/upload";
-  }
-  // 获取Memo详情
-  rpc GetMemoDetail(GetMemoDetailReq) returns (GetMemoDetailResp) {
-    option (api.post) = "/memo/detail";
-  }
-  // 获取Memo列表
-  rpc GetMemoList(GetMemoListReq) returns (GetMemoListResp) {
-    option (api.post) = "/memo/list";
   }
   // 获取音乐详情
   rpc GetMusicDetail(GetMusicDetailReq) returns (GetMusicDetailResp) {

@@ -69,7 +69,6 @@ message MusicProfile {
 message ArtistProfile {
   int64 id = 1;
   string name = 2;
-  ArtistType artist_type = 3;
 }
 
 message FileDetail {

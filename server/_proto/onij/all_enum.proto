@@ -22,21 +22,13 @@ enum AlbumType {
   ALT_Other = 99;
 }
 
-// 艺术家类型
-enum ArtistType {
-  ART_Unknown = 0;
-  ART_Singer = 1;
-  ART_Writer = 2;
-  ART_Composer = 3;
+enum AudioQuality {
+  AQ_Unknown = 0;
+  AQ_Low = 1;
 }
 
-// 音乐排序类型
-enum MusicSortType {
-  MST_Unknown = 0;
-  MST_Created_At_Desc = 1;
-  MST_Created_At_Asc = 2;
-  MST_Issue_Time_Desc = 3;
-  MST_Issue_Time_Asc = 4;
+enum PerformType {
+  PT_Unknown = 0;
 }
 
 // 标签业务
