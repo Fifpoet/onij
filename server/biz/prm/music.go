@@ -2,6 +2,7 @@ package prm
 
 import (
 	"onij/biz/getter"
+	"onij/model"
 	"onij/model/api"
 	"onij/util"
 	"onij/util/boost/collection/collext"
@@ -88,7 +89,7 @@ func (p *GetMusicDetailResult) Resp() *api.GetMusicDetailResp {
 	return &api.GetMusicDetailResp{
 		Code:    util.BaseCodeOK,
 		Message: util.BaseMsgOK,
-		Detail: &api.MusicDetail{
+		Music: &api.Music{
 			Id:            p.Music.Id,
 			Name:          p.Music.Name,
 			ArtistIds:     collext.Pick(p.ArtistIds, func(id int64) int64 { return p.ArtistMap[id].Id }),
@@ -101,13 +102,13 @@ func (p *GetMusicDetailResult) Resp() *api.GetMusicDetailResp {
 			MvUrl:         p.Music.MvUrl,
 			Mp3FileUrl:    util.DownloadFile(mp3Url),
 			LyricsFileUrl: util.DownloadFile(lyrUrl),
-			AlbumProfile: &api.AlbumProfile{
+			Album: &api.Album{
 				Id:           album.Id,
 				Name:         album.Name,
 				CoverFileUrl: util.DownloadFile(abmUrl),
 			},
-			TagDetails: collext.Pick(p.Tags, func(tag *model.Tag) *api.TagDetail {
-				return &api.TagDetail{
+			Tags: collext.Pick(p.Tags, func(tag *model.Tag) *api.Tag {
+				return &api.Tag{
 					ResourceId:   tag.ResourceId,
 					ResourceType: api.ResourceType(tag.ResourceType),
 					TagBiz:       api.TagBiz(tag.TagBiz),
@@ -116,7 +117,6 @@ func (p *GetMusicDetailResult) Resp() *api.GetMusicDetailResp {
 					TargetId:     &tag.TargetId,
 					TargetType:   &tag.TargetType,
 					Extra:        tag.Extra,
-					ListShow:     tag.ListShow,
 				}
 			}),
 		},
@@ -124,7 +124,6 @@ func (p *GetMusicDetailResult) Resp() *api.GetMusicDetailResp {
 }
 
 type GetMusicListParam struct {
-	SortType    api.MusicSortType
 	Keywords    []string
 	AlbumId     *int64
 	ArtistIds   []int64
@@ -137,7 +136,6 @@ type GetMusicListParam struct {
 
 func NewGetMusicListParam(req *api.GetMusicListReq) *GetMusicListParam {
 	return &GetMusicListParam{
-		SortType:    req.SortType,
 		Keywords:    req.Keywords,
 		AlbumId:     req.AlbumId,
 		ArtistIds:   req.ArtistIds,
@@ -159,8 +157,8 @@ func (p *GetMusicListResult) Resp() *api.GetMusicListResp {
 	return &api.GetMusicListResp{
 		Code:    util.BaseCodeOK,
 		Message: util.BaseMsgOK,
-		Musics: collext.Pick(p.Musics, func(music *model.Music) *api.MusicProfile {
-			return &api.MusicProfile{
+		Musics: collext.Pick(p.Musics, func(music *model.Music) *api.Music {
+			return &api.Music{
 				Id:             music.Id,
 				Name:           music.Name,
 				SingerProfiles: collext.Pick(p.MusicArtistsMap[music.Id], getter.ArtistToProfile),

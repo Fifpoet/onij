@@ -2,6 +2,7 @@ package prm
 
 import (
 	"onij/biz/getter"
+	"onij/model"
 	"onij/model/api"
 	"onij/util"
 	"onij/util/boost/collection/collext"
@@ -62,7 +63,7 @@ func (r *GetAlbumDetailResult) Resp() *api.GetAlbumDetailResp {
 	return &api.GetAlbumDetailResp{
 		Code:    util.BaseCodeOK,
 		Message: util.BaseMsgOK,
-		Detail: &api.AlbumDetail{
+		Album: &api.Album{
 			Id:           r.Album.Id,
 			Name:         r.Album.Name,
 			ArtistId:     r.Artist.Id,
@@ -70,14 +71,14 @@ func (r *GetAlbumDetailResult) Resp() *api.GetAlbumDetailResp {
 			IssueTime:    r.Album.IssueTime,
 			CoverFileUrl: r.CoverUrl,
 			MvUrl:        r.Album.MvUrl,
-			RelatedMusics: collext.Pick(r.Musics, func(music *model.Music) *api.MusicProfile {
-				return &api.MusicProfile{
-					Id:             music.Id,
-					Name:           music.Name,
-					SingerProfiles: collext.Pick(r.MusicArtistsMap[music.Id], getter.ArtistToProfile),
-					Tags:           collext.Pick(r.MusicTagsMap[music.Id], getter.TagToDetail),
-				}
-			}),
 		},
+		AlbumMusics: collext.Pick(r.Musics, func(music *model.Music) *api.Music {
+			return &api.Music{
+				Id:             music.Id,
+				Name:           music.Name,
+				SingerProfiles: collext.Pick(r.MusicArtistsMap[music.Id], getter.ArtistToProfile),
+				Tags:           collext.Pick(r.MusicTagsMap[music.Id], getter.TagToDetail),
+			}
+		}),
 	}
 }

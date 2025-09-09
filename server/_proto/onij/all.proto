@@ -90,7 +90,8 @@ message UploadAlbumReq {
   int64 cover_file_id = 4;
   int32 issue_time = 5;
   AlbumType album_type = 6;
-  repeated AlbumMusic album_musics = 7;
+  string live_url = 7;
+  repeated AlbumMusic album_musics = 8;
 
   optional int64 album_id = 10;
 }

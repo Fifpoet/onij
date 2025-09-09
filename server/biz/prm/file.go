@@ -55,7 +55,7 @@ type GetFileListResult struct {
 }
 
 func (r *GetFileListResult) Resp() *api.GetFileListResp {
-	res := collext.Pick(r.Files, func(f *model.File) *api.FileDetail {
+	res := collext.Pick(r.Files, func(f *model.File) *api.File {
 		return &api.File{
 			Id:        f.Id,
 			Name:      f.Name,
@@ -67,7 +67,7 @@ func (r *GetFileListResult) Resp() *api.GetFileListResp {
 			Url:       util.DownloadFile(f.StoreKey),
 		}
 	})
-	slices.SortFunc(res, func(a, b *api.FileDetail) int {
+	slices.SortFunc(res, func(a, b *api.File) int {
 		if (a.Format == api.FileType_FT_Folder || b.Format == api.FileType_FT_Folder) &&
 			a.Format != b.Format {
 			return int(b.Format - a.Format) // format大的在前面

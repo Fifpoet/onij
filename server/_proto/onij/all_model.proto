@@ -53,6 +53,7 @@ message Album {
   repeated Artist artists = 5;
   int32 issue_time = 6;
   string cover_file_url = 7;
+  string live_url = 8;
 }
 
 message AlbumMusic {
