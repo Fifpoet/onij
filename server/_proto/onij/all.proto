@@ -114,16 +114,16 @@ message GetAlbumDetailResp {
   int32 code = 1;
   string message = 2;
   Album album = 3;
+  repeated AlbumMusic album_musics = 4;
 }
 
 // 获取音乐列表
 message GetMusicListReq {
-  repeated string keywords = 2;
-  optional int64 album_id = 3;
-  repeated int64 artist_ids = 4;
-  repeated int64 writer_ids = 5;
-  repeated int64 composer_ids = 6;
-  repeated TagType tag_types = 7;
+  repeated string keywords = 1;
+  repeated int64 artist_ids = 2;
+  repeated int64 writer_ids = 3;
+  repeated int64 composer_ids = 4;
+  repeated TagType tag_types = 5;
 
   int32 page = 10;
   int32 limit = 11;
@@ -131,13 +131,12 @@ message GetMusicListReq {
 message GetMusicListResp {
   int32 code = 1;
   string message = 2;
-
   repeated Music musics = 10;
 }
 
 // 获取文件列表
 message GetFileListReq {
-  int64 parent_id = 1;
+  optional int64 parent_id = 1;
   string keyword = 2;
   int32 page = 10;
   int32 limit = 11;
@@ -149,47 +148,30 @@ message GetFileListResp {
   int32 total = 11;
 }
 
-// 下载文件
-message DownloadFileReq { repeated int64 file_ids = 1; }
-message DownloadFileResp {
-  int32 code = 1;
-  string message = 2;
-  repeated string urls = 10;
-}
-
-message SearchArtistReq {
+message GetArtistDetailReq {
   string keyword = 1;
   optional TagGroup tag_group = 2;
   optional TagType tag_type = 3;
   int32 page = 10;
   int32 limit = 11;
 }
-message SearchArtistResp {
+message GetArtistDetailResp {
   int32 code = 1;
   string message = 2;
 
   repeated Artist artists = 10;
 }
 
-message SearchAlbumReq {
+message GetAlbumListReq {
   string keyword = 1;
   optional int64 artist_id = 2;
   int32 page = 10;
   int32 limit = 11;
 }
-message SearchAlbumResp {
+message GetAlbumListResp {
   int32 code = 1;
   string message = 2;
   repeated Album albums = 10;
-}
-
-message DeleteTagReq {
-  int64 resource_id = 1;
-  TagType tag_type = 2;
-}
-message DeleteTagResp {
-  int32 code = 1;
-  string message = 2;
 }
 
 message DeleteFileReq { int64 file_id = 1; }
@@ -236,10 +218,6 @@ service AllService {
   rpc GetAlbumDetail(GetAlbumDetailReq) returns (GetAlbumDetailResp) {
     option (api.post) = "/album/detail";
   }
-  // 搜索专辑
-  rpc SearchAlbum(SearchAlbumReq) returns (SearchAlbumResp) {
-    option (api.post) = "/album/search";
-  }
   // 获取音乐列表
   rpc GetMusicList(GetMusicListReq) returns (GetMusicListResp) {
     option (api.post) = "/music/list";
@@ -247,18 +225,6 @@ service AllService {
   // 获取文件列表
   rpc GetFileList(GetFileListReq) returns (GetFileListResp) {
     option (api.post) = "/file/list";
-  }
-  // 下载文件
-  rpc DownloadFile(DownloadFileReq) returns (DownloadFileResp) {
-    option (api.post) = "/file/download";
-  }
-  // 搜索艺术家
-  rpc SearchArtist(SearchArtistReq) returns (SearchArtistResp) {
-    option (api.post) = "/artist/search";
-  }
-  // 删除标签
-  rpc DeleteTag(DeleteTagReq) returns (DeleteTagResp) {
-    option (api.post) = "/tag/delete";
   }
   // 删除文件
   rpc DeleteFile(DeleteFileReq) returns (DeleteFileResp) {

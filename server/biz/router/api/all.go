@@ -20,18 +20,15 @@ func Register(r *server.Hertz) {
 	{
 		_album := root.Group("/album", _albumMw()...)
 		_album.POST("/detail", append(_getalbumdetailMw(), handler.GetAlbumDetail)...)
-		_album.POST("/search", append(_searchalbumMw(), handler.SearchAlbum)...)
 		_album.POST("/upload", append(_uploadalbumMw(), handler.UploadAlbum)...)
 	}
 	{
 		_artist := root.Group("/artist", _artistMw()...)
-		_artist.POST("/search", append(_searchartistMw(), handler.SearchArtist)...)
 		_artist.POST("/upload", append(_uploadartistMw(), handler.UploadArtist)...)
 	}
 	{
 		_file := root.Group("/file", _fileMw()...)
 		_file.POST("/delete", append(_deletefileMw(), handler.DeleteFile)...)
-		_file.POST("/download", append(_downloadfileMw(), handler.DownloadFile)...)
 		_file.POST("/list", append(_getfilelistMw(), handler.GetFileList)...)
 		_file.POST("/upload", append(_uploadfileMw(), handler.UploadFile)...)
 		_file.POST("/upload_token", append(_getuploadtokenMw(), handler.GetUploadToken)...)
@@ -44,7 +41,6 @@ func Register(r *server.Hertz) {
 	}
 	{
 		_tag := root.Group("/tag", _tagMw()...)
-		_tag.POST("/delete", append(_deletetagMw(), handler.DeleteTag)...)
 		_tag.POST("/upload", append(_uploadtagMw(), handler.UploadTag)...)
 	}
 }
