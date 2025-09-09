@@ -1,135 +1,134 @@
 package dal
 
 import (
-	"errors"
-	"log"
+	"context"
+	"onij/model"
 	"onij/util"
-	"time"
+	"onij/util/cdb"
+	"onij/util/logs"
 
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type FileDal interface {
-	Save(files ...*File) error
+	cdb.Interface[FileDal]
 
-	DelByIds(id []int64) ([]*File, error)
-
-	GetByParentAndHash(parentId int64, keys ...string) ([]*File, error)
-	GetByIds(ids ...int64) ([]*File, error)
-	GetListByParentIdAndKeyword(parentId int64, keyword string, page util.Page) ([]*File, int32, error)
-	GetFolderPathByParentId(parentId int64) ([]string, error)
-	Delete(id int64) error
+	Save(ctx context.Context, files ...*model.File) (int64, error)
+	GetByIds(ctx context.Context, ids ...int64) ([]*model.File, error)
+	GetByParentAndHash(ctx context.Context, parentId int64, hashes ...string) ([]*model.File, error)
+	GetListByParentIdAndKeyword(ctx context.Context, parentId int64, keyword string, page util.Page) ([]*model.File, int32, error)
+	GetFolderPathByParentId(ctx context.Context, parentId int64) ([]string, error)
+	DeleteByIds(ctx context.Context, ids ...int64) ([]*model.File, error)
+	DeleteById(ctx context.Context, id int64) error
 }
+
 type fileDal struct {
-	db *gorm.DB
+	*cdb.Dal[model.File, model.FileQuerier, model.FileUpdater]
 }
 
-func NewFileDal(db *gorm.DB) FileDal {
-	return &fileDal{db: db}
+func NewFileDal(db *cdb.DefaultProxy) FileDal {
+	return &fileDal{
+		cdb.NewDal[model.File, model.FileQuerier, model.FileUpdater](db),
+	}
 }
 
-// File 同一个文件夹下的hash去重
-type File struct {
-	Id       int64  `json:"id" gorm:"primaryKey;autoIncrement"`
-	Name     string `json:"name" gorm:"not null;uniqueIndex:uk_parent_name"`
-	Format   int32  `json:"format"`
-	Size     int64  `json:"size"`
-	StoreKey string `json:"store_key"`
-	Hash     string `json:"hash" gorm:"not null"`
-	ParentId int64  `json:"parent_id" gorm:"not null;uniqueIndex:uk_parent_name"`
-
-	OriginAt  int64          `json:"origin_at"`
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `json:"deleted_at"`
+func (d *fileDal) With(tx *gorm.DB) FileDal {
+	return &fileDal{d.Dal.With(tx)}
 }
 
-func (f *fileDal) Delete(id int64) error {
-	return f.db.Delete(&File{}, "id = ?", id).Error
+func (d *fileDal) Save(ctx context.Context, files ...*model.File) (int64, error) {
+	return saveUpdatable(ctx, d, files)
 }
 
-func (f *fileDal) GetFolderPathByParentId(parentId int64) ([]string, error) {
+func (d *fileDal) GetByIds(ctx context.Context, ids ...int64) ([]*model.File, error) {
+	if len(ids) == 0 {
+		return nil, nil
+	}
+	res, err := d.QueryAll(ctx, d.Q().Id(cdb.IN(ids)).ToOptions()...)
+	if err != nil {
+		logs.Error("fileDal, GetByIds error = %v", err)
+		return nil, err
+	}
+	return res, nil
+}
+
+func (d *fileDal) GetByParentAndHash(ctx context.Context, parentId int64, hashes ...string) ([]*model.File, error) {
+	if len(hashes) == 0 {
+		return nil, nil
+	}
+	res, err := d.QueryAll(ctx, d.Q().ParentId(parentId).Hash(cdb.IN(hashes)).ToOptions()...)
+	if err != nil {
+		logs.Error("fileDal, GetByParentAndHash error = %v", err)
+		return nil, err
+	}
+	return res, nil
+}
+
+func (d *fileDal) GetListByParentIdAndKeyword(ctx context.Context, parentId int64, keyword string, page util.Page) ([]*model.File, int32, error) {
+	opts := d.Q().ParentId(parentId).Name(cdb.LIKE("%" + keyword + "%")).ToOptions()
+
+	cnt, err := d.Count(ctx, opts...)
+	if err != nil {
+		logs.Error("fileDal, GetListByParentIdAndKeyword count error = %v", err)
+		return nil, 0, err
+	}
+
+	// 添加分页
+	opts = append(opts, func(db *gorm.DB) *gorm.DB {
+		return db.Offset(page.OffsetNum()).Limit(page.LimitNum())
+	})
+
+	res, err := d.QueryAll(ctx, opts...)
+	if err != nil {
+		logs.Error("fileDal, GetListByParentIdAndKeyword query error = %v", err)
+		return nil, 0, err
+	}
+	return res, int32(cnt), nil
+}
+
+func (d *fileDal) GetFolderPathByParentId(ctx context.Context, parentId int64) ([]string, error) {
 	// 递归查询file, 直到parentId为0
 	folders := []string{}
 	for parentId != 0 {
-		var file File
-		err := f.db.Where("id = ?", parentId).First(&file).Error
+		res, err := d.QueryFirst(ctx, d.Q().Id(parentId).ToOptions()...)
 		if err != nil {
+			logs.Error("fileDal, GetFolderPathByParentId error = %v", err)
 			return nil, err
 		}
-		parentId = file.ParentId
-		folders = append([]string{file.Name}, folders...)
+		if res == nil {
+			break
+		}
+		parentId = res.ParentId
+		folders = append([]string{res.Name}, folders...)
 	}
 	return folders, nil
 }
 
-func (f *fileDal) GetListByParentIdAndKeyword(parentId int64, keyword string, page util.Page) ([]*File, int32, error) {
-	var res []*File
-	tx := f.db.Where("parent_id = ? AND name LIKE ?", parentId, "%"+keyword+"%").Model(&File{})
-	count := int64(0)
-	err := tx.Count(&count).Error
-	if err != nil {
-		log.Printf("GetByParentId, count file failed: err = %v \n", err)
-		return nil, 0, err
-	}
-	err = tx.Offset(page.OffsetNum()).Limit(page.LimitNum()).Find(&res).Error
-	if err != nil {
-		log.Printf("GetByParentId, find file failed: err = %v \n", err)
-		return nil, 0, err
-	}
-	return res, int32(count), nil
-}
-
-func (f *fileDal) Save(files ...*File) error {
-	err := f.db.Clauses(clause.OnConflict{
-		UpdateAll: true,
-	}).Create(files).Error
-	if err != nil {
-		log.Printf("save file failed: err = %v \n", err)
-		return err
-	}
-	return nil
-}
-
-func (f *fileDal) DelByIds(ids []int64) ([]*File, error) {
+func (d *fileDal) DeleteByIds(ctx context.Context, ids ...int64) ([]*model.File, error) {
 	if len(ids) == 0 {
 		return nil, nil
 	}
-	res, err := f.GetByIds(ids...)
+
+	// 先获取要删除的文件
+	res, err := d.GetByIds(ctx, ids...)
 	if err != nil {
 		return nil, err
 	}
-	err = f.db.Delete(&File{}, "id IN ?", ids).Error
+
+	// 执行删除
+	_, err = d.Delete(ctx, d.Q().Id(cdb.IN(ids)).ToOptions()...)
 	if err != nil {
-		log.Printf("DelByIds, delete file failed: err = %v \n", err)
+		logs.Error("fileDal, DeleteByIds error = %v", err)
 		return res, err
 	}
 	return res, nil
 }
 
-func (f *fileDal) GetByParentAndHash(parentId int64, keys ...string) ([]*File, error) {
-	res := []*File{}
-	err := f.db.Where("parent_id = ? AND hash IN (?)", parentId, keys).Find(&res).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, nil
-	}
+func (d *fileDal) DeleteById(ctx context.Context, id int64) error {
+	_, err := d.Delete(ctx, d.Q().Id(id).ToOptions()...)
 	if err != nil {
-		log.Printf("GetByHash, get file failed: err = %v \n", err)
-		return nil, err
+		logs.Error("fileDal, DeleteById error = %v", err)
+		return err
 	}
-	return res, nil
-}
-
-func (f *fileDal) GetByIds(ids ...int64) ([]*File, error) {
-	if len(ids) == 0 {
-		return nil, nil
-	}
-	var res []*File
-	err := f.db.Where("id IN ?", ids).Find(&res).Error
-	if err != nil {
-		log.Printf("GetByIds, get file failed: err = %v \n", err)
-		return nil, err
-	}
-	return res, nil
+	return nil
 }

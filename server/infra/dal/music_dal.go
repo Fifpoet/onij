@@ -1,120 +1,80 @@
 package dal
 
 import (
-	"errors"
+	"context"
 	"fmt"
-	"log"
+	"onij/model"
 	"onij/util"
+	"onij/util/cdb"
+	"onij/util/logs"
 	"strings"
-	"time"
 
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type MusicDal interface {
-	GetById(id int) (*Music, error)
-	GetByIds(ids ...int64) ([]*Music, error)
+	cdb.Interface[MusicDal]
 
-	Upsert(music *Music, toUpdate map[string]any) error
-	DelById(id int) (*Music, error)
-	GetByFullName(name string) ([]*Music, error)
-	SearchByArtistAndNameAndTag(artistIds, writerIds, composeIds []int64, tagTypes []int32, keywords []string, pageInfo util.Page) ([]*Music, error)
-	GetByTitleArtistPerType(title string, artistId, performType, page, size int) ([]*Music, error)
+	Save(ctx context.Context, musics ...*model.Music) (int64, error)
+	GetById(ctx context.Context, id int64) (*model.Music, error)
+	GetByIds(ctx context.Context, ids ...int64) ([]*model.Music, error)
+	GetByFullName(ctx context.Context, fullName string) ([]*model.Music, error)
+	SearchByArtistAndNameAndTag(ctx context.Context, artistIds, writerIds, composeIds []int64, tagTypes []int32, keywords []string, pageInfo util.Page) ([]*model.Music, error)
+	GetByTitleArtistPerType(ctx context.Context, title string, artistId, performType int64, offset, limit int32) ([]*model.Music, int32, error)
+	DeleteById(ctx context.Context, id int64) error
 }
 
 type musicDal struct {
-	db *gorm.DB
+	*cdb.Dal[model.Music, model.MusicQuerier, model.MusicUpdater]
 }
 
-func NewMusicDal(db *gorm.DB) MusicDal {
-	return &musicDal{db: db}
+func NewMusicDal(db *cdb.DefaultProxy) MusicDal {
+	return &musicDal{
+		cdb.NewDal[model.Music, model.MusicQuerier, model.MusicUpdater](db),
+	}
 }
 
-type Music struct {
-	Id          int64  `json:"id" gorm:"primaryKey;autoIncrement"`
-	RootId      int64  `json:"root_id"`
-	Name        string `json:"name" gorm:"not null;uniqueIndex:uni_idx_music"`
-	FullName    string `json:"full_name"`
-	ArtistIds   string `json:"artist_ids" gorm:"not null;uniqueIndex:uni_idx_music"`
-	ComposerId  int64  `json:"composer_id"`
-	WriterId    int64  `json:"writer_id"`
-	IssueTime   int32  `json:"issue_time"`
-	PerformType int32  `json:"perform_type"`
-	MvUrl       string `json:"mv_url"`
-	Mp3FileId   int64  `json:"mp3_file_id" gorm:"not null"`
-	LyricFileId int64  `json:"lyric_file_id"`
-
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `json:"deleted_at"`
+func (d *musicDal) With(tx *gorm.DB) MusicDal {
+	return &musicDal{d.Dal.With(tx)}
 }
 
-func (m *musicDal) GetById(id int) (*Music, error) {
-	var music Music
-	err := m.db.First(&music, "id = ?", id).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+func (d *musicDal) Save(ctx context.Context, musics ...*model.Music) (int64, error) {
+	return saveUpdatable(ctx, d, musics)
+}
+
+func (d *musicDal) GetById(ctx context.Context, id int64) (*model.Music, error) {
+	res, err := d.QueryFirst(ctx, d.Q().Id(id).ToOptions()...)
+	if err != nil {
+		logs.Error("musicDal, GetById error = %v", err)
+		return nil, err
+	}
+	return res, nil
+}
+
+func (d *musicDal) GetByIds(ctx context.Context, ids ...int64) ([]*model.Music, error) {
+	if len(ids) == 0 {
 		return nil, nil
-	} else if err != nil {
-		log.Printf("GetById, get music error: %v \n", err)
-		return nil, err
 	}
-	return &music, nil
-}
-func (m *musicDal) GetByIds(ids ...int64) ([]*Music, error) {
-	var musics []*Music
-	err := m.db.First(&musics, "id in ?", ids).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, nil
-	} else if err != nil {
-		log.Printf("GetByIds, get music error: %v \n", err)
-		return nil, err
-	}
-	return musics, nil
-}
-
-func (m *musicDal) Upsert(music *Music, toUpdate map[string]any) error {
-	if toUpdate == nil {
-		if err := m.db.Clauses(clause.OnConflict{DoNothing: true}).Create(music).Error; err != nil {
-			log.Printf("Upsert, save music err: %v", err)
-			return err
-		}
-	} else {
-		if err := m.db.Model(music).Updates(toUpdate).Error; err != nil {
-			log.Printf("Upsert, update music err: %v", err)
-			return err
-		}
-	}
-	return nil
-}
-
-func (m *musicDal) DelById(id int) (*Music, error) {
-	mus, err := m.GetById(id)
+	res, err := d.QueryAll(ctx, d.Q().Id(cdb.IN(ids)).ToOptions()...)
 	if err != nil {
+		logs.Error("musicDal, GetByIds error = %v", err)
 		return nil, err
 	}
-
-	err = m.db.Delete(&Music{}, "id = ?", id).Error
-	if err != nil {
-		log.Printf("DelById, del music error: %v \n", err)
-		return nil, err
-	}
-	return mus, nil
+	return res, nil
 }
 
-func (m *musicDal) GetByFullName(name string) ([]*Music, error) {
-	var musics []*Music
-	err := m.db.Where("full_name = ?", name).Find(&musics).Error
+func (d *musicDal) GetByFullName(ctx context.Context, fullName string) ([]*model.Music, error) {
+	res, err := d.QueryAll(ctx, d.Q().FullName(fullName).ToOptions()...)
 	if err != nil {
-		log.Printf("GetByFullName, get music error: %v \n", err)
+		logs.Error("musicDal, GetByFullName error = %v", err)
 		return nil, err
 	}
-	return musics, nil
+	return res, nil
 }
 
-func (m *musicDal) SearchByArtistAndNameAndTag(artistIds, writerIds, composeIds []int64, tagTypes []int32, keywords []string, pageInfo util.Page) ([]*Music, error) {
-	var musics []*Music
-	db := m.db
+func (d *musicDal) SearchByArtistAndNameAndTag(ctx context.Context, artistIds, writerIds, composeIds []int64, tagTypes []int32, keywords []string, pageInfo util.Page) ([]*model.Music, error) {
+	// 构建查询条件
+	var conditions []cdb.Option
 
 	// 处理artist_ids LIKE条件（满足一个即可）
 	if len(artistIds) > 0 {
@@ -122,23 +82,24 @@ func (m *musicDal) SearchByArtistAndNameAndTag(artistIds, writerIds, composeIds 
 		for _, id := range artistIds {
 			orConditions = append(orConditions, fmt.Sprintf("artist_ids LIKE '%%%d%%'", id))
 		}
-		db = db.Where(strings.Join(orConditions, " OR "))
+		// 这里需要使用原生SQL条件，因为LIKE条件比较复杂
+		conditions = append(conditions, func(db *gorm.DB) *gorm.DB {
+			return db.Where(strings.Join(orConditions, " OR "))
+		})
 	}
 
 	// 处理writer_id IN条件
 	if len(writerIds) > 0 {
-		db = db.Where("writer_id IN ?", writerIds)
+		conditions = append(conditions, func(db *gorm.DB) *gorm.DB {
+			return db.Where("writer_ids IN ?", writerIds)
+		})
 	}
 
 	// 处理composer_id IN条件
 	if len(composeIds) > 0 {
-		db = db.Where("composer_id IN ?", composeIds)
-	}
-
-	// 处理tag_type条件（需要连表查询）
-	if len(tagTypes) > 0 {
-		db = db.Joins("JOIN tag ON tag.resource_id = music.id AND tag.resource_type = ?", "music").
-			Where("tag.tag_type IN ?", tagTypes)
+		conditions = append(conditions, func(db *gorm.DB) *gorm.DB {
+			return db.Where("composer_ids IN ?", composeIds)
+		})
 	}
 
 	// 处理name条件
@@ -147,40 +108,76 @@ func (m *musicDal) SearchByArtistAndNameAndTag(artistIds, writerIds, composeIds 
 		for _, keyword := range keywords {
 			orConditions = append(orConditions, fmt.Sprintf("full_name LIKE '%%%s%%'", keyword))
 		}
-		db = db.Where(strings.Join(orConditions, " OR "))
+		conditions = append(conditions, func(db *gorm.DB) *gorm.DB {
+			return db.Where(strings.Join(orConditions, " OR "))
+		})
 	}
 
-	err := db.
-		Offset(pageInfo.OffsetNum()).
-		Limit(pageInfo.LimitNum()).
-		Order("created_at DESC").
-		Find(&musics).Error
+	// 处理tag_type条件（需要连表查询）
+	if len(tagTypes) > 0 {
+		conditions = append(conditions, func(db *gorm.DB) *gorm.DB {
+			return db.Joins("JOIN tag ON tag.resource_id = music.id AND tag.resource_type = ?", "music").
+				Where("tag.tag_type IN ?", tagTypes)
+		})
+	}
 
+	// 添加排序和分页
+	conditions = append(conditions, func(db *gorm.DB) *gorm.DB {
+		return db.Order("created_at DESC").
+			Offset(pageInfo.OffsetNum()).
+			Limit(pageInfo.LimitNum())
+	})
+
+	res, err := d.QueryAll(ctx, conditions...)
 	if err != nil {
-		log.Printf("SearchByArtistAndNameAndTag, get music error: %v \n", err)
+		logs.Error("musicDal, SearchByArtistAndNameAndTag error = %v", err)
 		return nil, err
 	}
-	return musics, nil
+	return res, nil
 }
 
-func (m *musicDal) GetByTitleArtistPerType(title string, artistId, performType, page, size int) ([]*Music, error) {
-	var musics []*Music
-	query := m.db
+func (d *musicDal) GetByTitleArtistPerType(ctx context.Context, title string, artistId, performType int64, offset, limit int32) ([]*model.Music, int32, error) {
+	var conditions []cdb.Option
 
 	if title != "" {
-		query = query.Where("title LIKE ?", "%"+title+"%")
+		conditions = append(conditions, func(db *gorm.DB) *gorm.DB {
+			return db.Where("name LIKE ?", "%"+title+"%")
+		})
 	}
 	if artistId != 0 {
 		artistIdStr := fmt.Sprintf(",%d,", artistId)
-		query = query.Where("artist_ids LIKE ?", "%"+artistIdStr+"%")
+		conditions = append(conditions, func(db *gorm.DB) *gorm.DB {
+			return db.Where("artist_ids LIKE ?", "%"+artistIdStr+"%")
+		})
 	}
 	if performType != 0 {
-		query = query.Where("perform_type = ?", performType)
+		conditions = append(conditions, d.Q().PerformType(performType).ToOptions()...)
 	}
-	err := query.Limit(size).Offset((page - 1) * size).Limit(size).Find(&musics).Error
+
+	cnt, err := d.Count(ctx, conditions...)
 	if err != nil {
-		log.Printf("GetByTitleArtistPerType, get music error: %v \n", err)
-		return nil, err
+		logs.Error("musicDal, GetByTitleArtistPerType count error = %v", err)
+		return nil, 0, err
 	}
-	return musics, nil
+
+	// 添加分页
+	conditions = append(conditions, func(db *gorm.DB) *gorm.DB {
+		return db.Offset(int(offset)).Limit(int(limit))
+	})
+
+	res, err := d.QueryAll(ctx, conditions...)
+	if err != nil {
+		logs.Error("musicDal, GetByTitleArtistPerType query error = %v", err)
+		return nil, 0, err
+	}
+	return res, int32(cnt), nil
+}
+
+func (d *musicDal) DeleteById(ctx context.Context, id int64) error {
+	_, err := d.Delete(ctx, d.Q().Id(id).ToOptions()...)
+	if err != nil {
+		logs.Error("musicDal, DeleteById error = %v", err)
+		return err
+	}
+	return nil
 }

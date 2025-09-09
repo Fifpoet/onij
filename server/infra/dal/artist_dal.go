@@ -1,94 +1,93 @@
 package dal
 
 import (
-	"errors"
+	"context"
+	"onij/model"
+	"onij/util/cdb"
+	"onij/util/logs"
+
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
-	"log"
-	"time"
 )
 
 type ArtistDal interface {
-	GetByIds(id ...int64) ([]*Artist, error)
-	GetByKeyword(name string) ([]*Artist, error)
-	GetByName(name string) (*Artist, error)
-	GetLikeNameAndType(name string, artistType *int) ([]*Artist, error)
-	Save(arts ...*Artist) error
-	DelById(id int) error
+	cdb.Interface[ArtistDal]
+
+	Save(ctx context.Context, artists ...*model.Artist) (int64, error)
+	GetById(ctx context.Context, id int64) (*model.Artist, error)
+	GetByIds(ctx context.Context, ids ...int64) ([]*model.Artist, error)
+	GetByName(ctx context.Context, name string) (*model.Artist, error)
+	GetByKeyword(ctx context.Context, keyword string, offset, limit int32) ([]*model.Artist, int32, error)
+	DeleteById(ctx context.Context, id int64) error
 }
 
 type artistDal struct {
-	db *gorm.DB
+	*cdb.Dal[model.Artist, model.ArtistQuerier, model.ArtistUpdater]
 }
 
-func NewArtistDal(db *gorm.DB) ArtistDal {
-	return &artistDal{db: db}
+func NewArtistDal(db *cdb.DefaultProxy) ArtistDal {
+	return &artistDal{
+		cdb.NewDal[model.Artist, model.ArtistQuerier, model.ArtistUpdater](db),
+	}
 }
 
-type Artist struct {
-	Id         int64          `json:"id" gorm:"primaryKey;autoIncrement"`
-	Name       string         `json:"name" gorm:"not null;uniqueIndex:uk_name"`
-	ArtistType int32          `json:"artist_type"`
-	CreatedAt  time.Time      `json:"created_at"`
-	UpdatedAt  time.Time      `json:"updated_at"`
-	DeletedAt  gorm.DeletedAt `json:"deleted_at"`
+func (d *artistDal) With(tx *gorm.DB) ArtistDal {
+	return &artistDal{d.Dal.With(tx)}
 }
 
-func (p *artistDal) GetByIds(id ...int64) ([]*Artist, error) {
-	var res []*Artist
-	err := p.db.Where("id IN ?", id).Find(&res).Error
+func (d *artistDal) Save(ctx context.Context, artists ...*model.Artist) (int64, error) {
+	return saveUpdatable(ctx, d, artists)
+}
+
+func (d *artistDal) GetById(ctx context.Context, id int64) (*model.Artist, error) {
+	res, err := d.QueryFirst(ctx, d.Q().Id(id).ToOptions()...)
 	if err != nil {
+		logs.Error("artistDal, GetById error = %v", err)
 		return nil, err
 	}
 	return res, nil
 }
 
-func (p *artistDal) GetByKeyword(name string) ([]*Artist, error) {
-	var res []*Artist
-	err := p.db.Where("name LIKE ?", "%"+name+"%").Find(&res).Error
+func (d *artistDal) GetByIds(ctx context.Context, ids ...int64) ([]*model.Artist, error) {
+	if len(ids) == 0 {
+		return nil, nil
+	}
+	res, err := d.QueryAll(ctx, d.Q().Id(cdb.IN(ids)).ToOptions()...)
 	if err != nil {
+		logs.Error("artistDal, GetByIds error = %v", err)
 		return nil, err
 	}
 	return res, nil
 }
 
-func (p *artistDal) GetByName(name string) (*Artist, error) {
-	var res *Artist
-	err := p.db.Where("name = ?", name).First(&res).Error
+func (d *artistDal) GetByName(ctx context.Context, name string) (*model.Artist, error) {
+	res, err := d.QueryFirst(ctx, d.Q().Name(name).ToOptions()...)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
+		logs.Error("artistDal, GetByName error = %v", err)
 		return nil, err
 	}
 	return res, nil
 }
 
-func (p *artistDal) GetLikeNameAndType(name string, artistType *int) ([]*Artist, error) {
-	var performers []*Artist
-	tx := p.db.Where("name LIKE ?", "%"+name+"%")
-	if artistType != nil {
-		tx.Where("performer_type = ?", artistType)
-	}
-	err := tx.Find(&performers).Error
+func (d *artistDal) GetByKeyword(ctx context.Context, keyword string, offset, limit int32) ([]*model.Artist, int32, error) {
+	opts := d.Q().Name(cdb.LIKE("%" + keyword + "%")).ToOptions()
+	cnt, err := d.Count(ctx, opts...)
 	if err != nil {
-		return nil, err
+		logs.Error("artistDal, GetByKeyword count error = %v", err)
+		return nil, 0, err
 	}
-	return performers, nil
+	res, err := d.QuerySlice(ctx, int(offset), int(limit), opts...)
+	if err != nil {
+		logs.Error("artistDal, GetByKeyword query error = %v", err)
+		return nil, 0, err
+	}
+	return res, int32(cnt), nil
 }
 
-func (p *artistDal) Save(arts ...*Artist) error {
-	err := p.db.Clauses(clause.OnConflict{
-		UpdateAll: true,
-	}).CreateInBatches(arts, 100).Error
+func (d *artistDal) DeleteById(ctx context.Context, id int64) error {
+	_, err := d.Delete(ctx, d.Q().Id(id).ToOptions()...)
 	if err != nil {
-		log.Printf("save artist err: %v", err)
+		logs.Error("artistDal, DeleteById error = %v", err)
 		return err
 	}
 	return nil
-}
-
-func (p *artistDal) DelById(id int) error {
-	err := p.db.Where("id = ?", id).Delete(&Artist{}).Error
-	return err
 }

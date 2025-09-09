@@ -2,6 +2,8 @@ package dal
 
 import (
 	"context"
+	"onij/domain/errdef"
+	"onij/util/logs"
 
 	"fmt"
 	"gorm.io/gorm"
@@ -80,19 +82,15 @@ type txDal[U cdb.Updater] interface {
 	W(ctx context.Context, opts ...cdb.Option) *gorm.DB
 }
 
-func NewProxy(cfg *config.Config) *cdb.Proxy {
-	return cdb.NewProxy(cfg.MySQL[0])
-}
-
 func deleteByIds[U cdb.Updater, Q cdb.Querier, DQ idQuerier[Q]](ctx context.Context, dal idDal[U, Q, DQ], ids []int64) (int64, error) {
 	if len(ids) == 0 {
-		logs.CtxInfo(ctx, "dal.deleteByIds[%T]: empty ids, skip", dal)
+		logs.Info("dal.deleteByIds[%T]: empty ids, skip", dal)
 		return 0, nil
 	}
 
 	affected, err := dal.Delete(ctx, dal.Q().Id(ids).ToOptions()...)
 	if err != nil {
-		logs.CtxError(ctx, "dal.DeleteByIds[%T]: err = %v", dal, err)
+		logs.Error("dal.DeleteByIds[%T]: err = %v", dal, err)
 		return 0, err
 	}
 
@@ -101,20 +99,20 @@ func deleteByIds[U cdb.Updater, Q cdb.Querier, DQ idQuerier[Q]](ctx context.Cont
 
 func updateById[U cdb.Updater, Q cdb.Querier, DQ idQuerier[Q]](ctx context.Context, dal idDal[U, Q, DQ], hook func(U), id int64) (bool, error) {
 	if id <= 0 {
-		logs.CtxError(ctx, "dal.updateById[%T]: invalid id", dal)
+		logs.Error("dal.updateById[%T]: invalid id", dal)
 		return false, errdef.ErrDalEntityIdInvalid
 	}
 
 	u := dal.U()
 	hook(u)
 	if u.IsEmpty() {
-		logs.CtxInfo(ctx, "dal.updateById[%T]: non update items, id = %d", dal, id)
+		logs.Info("dal.updateById[%T]: non update items, id = %d", dal, id)
 		return false, nil
 	}
 
 	n, err := dal.Update(ctx, u, dal.Q().Id(id).ToOptions()...)
 	if err != nil {
-		logs.CtxError(ctx, "dal.updateById[%T]: err = %v, id = %d", dal, err, id)
+		logs.Error("dal.updateById[%T]: err = %v, id = %d", dal, err, id)
 		return false, err
 	}
 
@@ -124,7 +122,7 @@ func updateById[U cdb.Updater, Q cdb.Querier, DQ idQuerier[Q]](ctx context.Conte
 func updates[M cdb.TableModel, U cdb.Updater](ctx context.Context, dal txDal[U], getId func(*M) int64, hook func(*M, U), models []*M) (affected int64, err error) {
 	zero := exp.Zero[M]()
 	if len(models) == 0 {
-		logs.CtxInfo(ctx, "dal.updates[%T]: empty models, skip", zero)
+		logs.Info("dal.updates[%T]: empty models, skip", zero)
 		return
 	}
 
@@ -135,7 +133,7 @@ func updates[M cdb.TableModel, U cdb.Updater](ctx context.Context, dal txDal[U],
 		u := dal.U()
 		hook(v, u)
 		if u.IsEmpty() {
-			logs.CtxInfo(ctx, "dal.updates[%T]: non update items", zero)
+			logs.Info("dal.updates[%T]: non update items", zero)
 			continue
 		}
 		if getId != nil && getId(v) <= 0 {
@@ -162,7 +160,7 @@ func updates[M cdb.TableModel, U cdb.Updater](ctx context.Context, dal txDal[U],
 		}
 	}
 	if len(columns) == 0 {
-		logs.CtxInfo(ctx, "dal.updates[%T]: empty update columns, skip", zero)
+		logs.Info("dal.updates[%T]: empty update columns, skip", zero)
 		return
 	}
 
@@ -170,7 +168,7 @@ func updates[M cdb.TableModel, U cdb.Updater](ctx context.Context, dal txDal[U],
 	conn := dal.W(ctx).Clauses(clauses).CreateInBatches(models, maxBatchSize)
 	affected, err = conn.RowsAffected, conn.Error
 	if err != nil {
-		logs.CtxError(ctx, "dal.updates[%T]: err = %v", zero, err)
+		logs.Error("dal.updates[%T]: err = %v", zero, err)
 	}
 	return
 }
@@ -178,7 +176,7 @@ func updates[M cdb.TableModel, U cdb.Updater](ctx context.Context, dal txDal[U],
 func saveUpdatable[M cdb.TableModel, U cdb.Updater](ctx context.Context, dal txDal[U], models []*M) (affected int64, err error) {
 	zero := exp.Zero[M]()
 	if len(models) == 0 {
-		logs.CtxInfo(ctx, "dal.saveUpdatable[%T]: empty models, skip", zero)
+		logs.Info("dal.saveUpdatable[%T]: empty models, skip", zero)
 		return 0, nil
 	}
 
@@ -191,7 +189,7 @@ func saveUpdatable[M cdb.TableModel, U cdb.Updater](ctx context.Context, dal txD
 		columns = append(columns, v)
 	}
 	if len(columns) == 0 {
-		logs.CtxInfo(ctx, "dal.saveUpdatable[%T]: empty update columns, skip", zero)
+		logs.Info("dal.saveUpdatable[%T]: empty update columns, skip", zero)
 		return
 	}
 
@@ -199,7 +197,7 @@ func saveUpdatable[M cdb.TableModel, U cdb.Updater](ctx context.Context, dal txD
 	conn := dal.W(ctx).Clauses(clauses).CreateInBatches(models, maxBatchSize)
 	affected, err = conn.RowsAffected, conn.Error
 	if err != nil {
-		logs.CtxError(ctx, "dal.saveUpdatable[%T]: err = %v", zero, err)
+		logs.Error("dal.saveUpdatable[%T]: err = %v", zero, err)
 	}
 	return
 }

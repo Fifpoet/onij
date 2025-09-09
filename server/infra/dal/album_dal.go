@@ -1,24 +1,22 @@
 package dal
 
 import (
+	"context"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
-	"log"
 	"onij/model"
 	"onij/util/cdb"
+	"onij/util/logs"
 )
 
 type AlbumDal interface {
 	cdb.Interface[AlbumDal]
 
-	Save(albums ...*model.Album) error
-	GetById(id int64) (*model.Album, error)
-	GetByRelatedId(id int64) ([]*model.Album, error)
-	GetByMusicId(id int64) ([]*model.Album, error)
-	GetByArtistId(id int64, offset, limit int32) ([]*model.Album, int32, error)
+	Save(ctx context.Context, albums ...*model.Album) (int64, error)
+	GetById(ctx context.Context, id int64) (*model.Album, error)
+	GetByArtistId(ctx context.Context, id int64, offset, limit int32) ([]*model.Album, int32, error)
 }
 type albumDal struct {
-	*cdb.Dal[ model.Album, model.AlbumQuerier,  model.AlbumUpdater]
+	*cdb.Dal[model.Album, model.AlbumQuerier, model.AlbumUpdater]
 }
 
 func NewAlbumDal(db *cdb.DefaultProxy) AlbumDal {
@@ -27,48 +25,34 @@ func NewAlbumDal(db *cdb.DefaultProxy) AlbumDal {
 	}
 }
 
-func (r *albumDal) With(tx *gorm.DB) AlbumDal {
-	return &albumDal{r.Dal.With(tx)}
+func (d *albumDal) With(tx *gorm.DB) AlbumDal {
+	return &albumDal{d.Dal.With(tx)}
 }
 
-func (f *albumDal) Save(albums ...*model.Album) error {
-	if err := f.db.Clauses(clause.OnConflict{DoNothing: true}).Create(&album).Error; err != nil {
-		log.Printf("save album err: %v", err)
-		return err
-	}
-	return nil
+func (d *albumDal) Save(ctx context.Context, albums ...*model.Album) (int64, error) {
+	return saveUpdatable(ctx, d, albums)
 }
 
-func (f *albumDal) GetById(id int64) (*model.Album, error) {
-	res, err :=
-}
-func (f *albumDal) GetByRelatedId(id int64) ([]*model.Album, error) {
-	var models []*model.Album
-	if err := f.db.Where("related_album_id = ?", id).Find(&models).Error; err != nil {
-		log.Printf("get album by music id err: %v", err)
+func (d *albumDal) GetById(ctx context.Context, id int64) (*model.Album, error) {
+	res, err := d.QueryFirst(ctx, d.Q().Id(id).ToOptions()...)
+	if err != nil {
+		logs.Error("albumDal, GetById error = %v", err)
 		return nil, err
 	}
-	return models, nil
+	return res, nil
+}
 
-}
-func (f *albumDal) GetByMusicId(id int64) ([]*model.Album, error) {
-	var models []*model.Album
-	if err := f.db.Where("music_id = ?", id).Find(&models).Error; err != nil {
-		log.Printf("get album by music id err: %v", err)
-		return nil, err
-	}
-	return models, nil
-}
-func (f *albumDal) GetByArtistId(id int64, offset, limit int32) ([]*model.Album, int32, error) {
-	var models []*model.Album
-	var total int64
-	if err := f.db.Where("artist_id = ?", id).Model(&Album{}).Count(&total).Error; err != nil {
-		log.Printf("count album by artist id err: %v", err)
+func (d *albumDal) GetByArtistId(ctx context.Context, id int64, offset, limit int32) ([]*model.Album, int32, error) {
+	opts := d.Q().ArtistIds(cdb.LIKE(id)).ToOptions()
+	cnt, err := d.Count(ctx, opts...)
+	if err != nil {
+		logs.Error("albumDal, GetById error = %v", err)
 		return nil, 0, err
 	}
-	if err := f.db.Where("artist_id = ?", id).Offset(int(offset)).Limit(int(limit)).Find(&models).Error; err != nil {
-		log.Printf("get album by artist id err: %v", err)
+	res, err := d.QuerySlice(ctx, int(offset), int(limit), opts...)
+	if err != nil {
+		logs.Error("albumDal, GetById error = %v", err)
 		return nil, 0, err
 	}
-	return models, int32(total), nil
+	return res, int32(cnt), nil
 }

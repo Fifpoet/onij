@@ -1,127 +1,111 @@
 package dal
 
 import (
-	"errors"
-	"log"
-	"time"
+	"context"
+	"onij/model"
+	"onij/util/cdb"
+	"onij/util/logs"
 
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type TagDal interface {
-	GetByResource(ids ...int64) ([]*Tag, error)
-	GetByGroupType(tagGroup, tagType *int32) ([]*Tag, error)
-	GetByResourceAndGroupType(tagGroup, tagType []int32, ids ...int64) ([]*Tag, error)
-	Save(tags ...*Tag) error
-	DelById(id int) error
-	Delete(resourceId int64, tagType int32) error
+	cdb.Interface[TagDal]
+
+	Save(ctx context.Context, tags ...*model.Tag) (int64, error)
+	GetByResource(ctx context.Context, resourceIds ...int64) ([]*model.Tag, error)
+	GetByGroupType(ctx context.Context, tagGroup, tagType *int32) ([]*model.Tag, error)
+	GetByResourceAndGroupType(ctx context.Context, tagGroups, tagTypes []int32, resourceIds ...int64) ([]*model.Tag, error)
+	DeleteById(ctx context.Context, id int64) error
+	DeleteByResourceAndType(ctx context.Context, resourceId int64, tagType int32) error
 }
 
 type tagDal struct {
-	db *gorm.DB
+	*cdb.Dal[model.Tag, model.TagQuerier, model.TagUpdater]
 }
 
-func NewTagDal(db *gorm.DB) TagDal {
-	return &tagDal{db: db}
+func NewTagDal(db *cdb.DefaultProxy) TagDal {
+	return &tagDal{
+		cdb.NewDal[model.Tag, model.TagQuerier, model.TagUpdater](db),
+	}
 }
 
-type Tag struct {
-	Id           int64          `json:"id" gorm:"primaryKey;autoIncrement"`
-	ResourceId   int64          `json:"origin" gorm:"index:uk_resource_biz_group_type_target,unique"`
-	ResourceType int32          `json:"origin_type"`
-	TagBiz       int32          `json:"tag_biz" gorm:"index:uk_resource_biz_group_type_target,unique"`
-	TagGroup     int32          `json:"tag_group" gorm:"index:uk_resource_biz_group_type_target,unique"`
-	TagType      int32          `json:"tag_type" gorm:"index:uk_resource_biz_group_type_target,unique"`
-	TargetId     int64          `json:"target" gorm:"index:uk_resource_biz_group_type_target,unique"`
-	TargetType   int32          `json:"target_type"`
-	ListShow     bool           `json:"list_show"`
-	Extra        string         `json:"extra"`
-	CreatedAt    time.Time      `json:"created_at"`
-	UpdatedAt    time.Time      `json:"updated_at"`
-	DeletedAt    gorm.DeletedAt `json:"deleted_at"`
+func (d *tagDal) With(tx *gorm.DB) TagDal {
+	return &tagDal{d.Dal.With(tx)}
 }
 
-func (t *tagDal) Delete(resourceId int64, tagType int32) error {
-	err := t.db.Where("resource_id =? and tag_type =?", resourceId, tagType).Delete(&Tag{}).Error
-	if err != nil {
-		log.Printf("Delete, delete tag failed: err = %v \n", err)
-		return err
-	}
-	return nil
+func (d *tagDal) Save(ctx context.Context, tags ...*model.Tag) (int64, error) {
+	return saveUpdatable(ctx, d, tags)
 }
 
-func (t *tagDal) GetByResourceAndGroupType(tagGroups, tagTypes []int32, ids ...int64) ([]*Tag, error) {
-	var tags []*Tag
-	tx := t.db
-	if len(ids) > 0 {
-		tx = tx.Where("resource_id in?", ids)
-	}
-	if len(tagGroups) > 0 {
-		tx = tx.Where("tag_group in?", tagGroups)
-	}
-	if len(tagTypes) > 0 {
-		tx = tx.Where("tag_type in?", tagTypes)
-	}
-	err := tx.Find(&tags).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+func (d *tagDal) GetByResource(ctx context.Context, resourceIds ...int64) ([]*model.Tag, error) {
+	if len(resourceIds) == 0 {
 		return nil, nil
-	} else if err != nil {
-		log.Printf("GetByResourceAndGroupType, get tags error: %v \n", err)
+	}
+	res, err := d.QueryAll(ctx, d.Q().ResourceId(cdb.IN(resourceIds)).ToOptions()...)
+	if err != nil {
+		logs.Error("tagDal, GetByResource error = %v", err)
 		return nil, err
 	}
-	return tags, nil
+	return res, nil
 }
 
-func (t *tagDal) GetByGroupType(tagGroup, tagType *int32) ([]*Tag, error) {
-	var tags []*Tag
+func (d *tagDal) GetByGroupType(ctx context.Context, tagGroup, tagType *int32) ([]*model.Tag, error) {
 	if tagGroup == nil && tagType == nil {
 		return nil, nil
 	}
-	tx := t.db
+
+	q := d.Q()
 	if tagGroup != nil {
-		tx = tx.Where("tag_group =?", tagGroup)
+		q = q.TagGroup(*tagGroup)
 	}
 	if tagType != nil {
-		tx = tx.Where("tag_type =?", tagType)
+		q = q.TagType(*tagType)
 	}
-	err := tx.Find(&tags).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, nil
-	} else if err != nil {
-		log.Printf("GetByGroupType, get tags error: %v \n", err)
-		return nil, err
-	}
-	return tags, nil
-}
 
-func (t *tagDal) GetByResource(ids ...int64) ([]*Tag, error) {
-	var tags []*Tag
-	err := t.db.Find(&tags, "resource_id in ?", ids).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, nil
-	} else if err != nil {
-		log.Printf("GetByResource, get tags error: %v \n", err)
-		return nil, err
-	}
-	return tags, nil
-}
-
-func (t *tagDal) Save(tags ...*Tag) error {
-	err := t.db.Clauses(clause.OnConflict{
-		UpdateAll: true,
-	}).Create(tags).Error
+	res, err := d.QueryAll(ctx, q.ToOptions()...)
 	if err != nil {
-		log.Printf("Save, save tag failed: err = %v \n", err)
+		logs.Error("tagDal, GetByGroupType error = %v", err)
+		return nil, err
+	}
+	return res, nil
+}
+
+func (d *tagDal) GetByResourceAndGroupType(ctx context.Context, tagGroups, tagTypes []int32, resourceIds ...int64) ([]*model.Tag, error) {
+	q := d.Q()
+
+	if len(resourceIds) > 0 {
+		q = q.ResourceId(cdb.IN(resourceIds))
+	}
+	if len(tagGroups) > 0 {
+		q = q.TagGroup(cdb.IN(tagGroups))
+	}
+	if len(tagTypes) > 0 {
+		q = q.TagType(cdb.IN(tagTypes))
+	}
+
+	res, err := d.QueryAll(ctx, q.ToOptions()...)
+	if err != nil {
+		logs.Error("tagDal, GetByResourceAndGroupType error = %v", err)
+		return nil, err
+	}
+	return res, nil
+}
+
+func (d *tagDal) DeleteById(ctx context.Context, id int64) error {
+	_, err := d.Delete(ctx, d.Q().Id(id).ToOptions()...)
+	if err != nil {
+		logs.Error("tagDal, DeleteById error = %v", err)
 		return err
 	}
 	return nil
 }
 
-func (t *tagDal) DelById(id int) error {
-	err := t.db.Where("id = ?", id).Delete(&Tag{}).Error
+func (d *tagDal) DeleteByResourceAndType(ctx context.Context, resourceId int64, tagType int32) error {
+	q := d.Q().ResourceId(resourceId).TagType(tagType)
+	_, err := d.Delete(ctx, q.ToOptions()...)
 	if err != nil {
-		log.Printf("DelById, delete tag failed: err = %v \n", err)
+		logs.Error("tagDal, DeleteByResourceAndType error = %v", err)
 		return err
 	}
 	return nil

@@ -1,7 +1,10 @@
 package dal
 
 import (
+	"context"
+	"onij/model"
 	"onij/util"
+	"onij/util/cdb"
 	"testing"
 )
 
@@ -10,12 +13,13 @@ func init() {
 
 func TestSaveUpdateAll(t *testing.T) {
 	db := NewMysqlCli()
-	dal := NewArtistDal(db)
+	proxy := cdb.NewDefaultProxy(db)
+	dal := NewArtistDal(proxy)
 
-	err := dal.Save(&Artist{
-		Id:         util.IdGen.Generate(),
-		Name:       "test",
-		ArtistType: 1,
+	ctx := context.Background()
+	_, err := dal.Save(ctx, &model.Artist{
+		Id:   util.IdGen.Generate(),
+		Name: "test",
 	})
 	if err != nil {
 		t.Error(err)
@@ -24,8 +28,11 @@ func TestSaveUpdateAll(t *testing.T) {
 
 func TestFirst(t *testing.T) {
 	db := NewMysqlCli()
-	dal := NewFileDal(db)
-	res, err := dal.GetByParentAndHash(0, "aaa")
+	proxy := cdb.NewDefaultProxy(db)
+	dal := NewFileDal(proxy)
+
+	ctx := context.Background()
+	res, err := dal.GetByParentAndHash(ctx, 0, "aaa")
 	if err != nil {
 		t.Error(err)
 	}
