@@ -180,6 +180,15 @@ message DeleteFileResp {
   string message = 2;
 }
 
+message DeleteTagReq {
+  int64 resource_id = 1;
+  TagType tag_type = 2;
+}
+message DeleteTagResp {
+  int32 code = 1;
+  string message = 2;
+}
+
 // 获取上传token
 message GetUploadTokenReq {}
 message GetUploadTokenResp {
@@ -229,6 +238,10 @@ service AllService {
   // 删除文件
   rpc DeleteFile(DeleteFileReq) returns (DeleteFileResp) {
     option (api.post) = "/file/delete";
+  }
+  // 删除标签
+  rpc DeleteTag(DeleteTagReq) returns (DeleteTagResp) {
+    option (api.post) = "/tag/delete";
   }
   // 获取上传token
   rpc GetUploadToken(GetUploadTokenReq) returns (GetUploadTokenResp) {

@@ -9,46 +9,45 @@ package inject
 import (
 	"github.com/google/wire"
 	"onij/infra"
-	"onij/infra/mysql"
+	"onij/infra/dal"
 	"onij/logic"
+	"onij/util/cdb"
 )
 
 // Injectors from wire.go:
 
 func InitDalForTest() *infra.AllInfra {
-	db := mysql.NewMysqlCli()
-	tagDal := mysql.NewTagDal(db)
-	fileDal := mysql.NewFileDal(db)
-	musicDal := mysql.NewMusicDal(db)
-	albumDal := mysql.NewAlbumDal(db)
-	artistDal := mysql.NewArtistDal(db)
-	memoDal := mysql.NewMemoDal(db)
+	db := dal.NewMysqlCli()
+	defaultProxy := cdb.NewDefaultProxy(db)
+	tagDal := dal.NewTagDal(defaultProxy)
+	fileDal := dal.NewFileDal(defaultProxy)
+	musicDal := dal.NewMusicDal(defaultProxy)
+	albumDal := dal.NewAlbumDal(defaultProxy)
+	artistDal := dal.NewArtistDal(defaultProxy)
 	allInfra := &infra.AllInfra{
 		TagDal:    tagDal,
 		FileDal:   fileDal,
 		MusicDal:  musicDal,
 		AlbumDal:  albumDal,
 		ArtistDal: artistDal,
-		MemoDal:   memoDal,
 	}
 	return allInfra
 }
 
 func InitLogicForTest() *logic.AllLogic {
-	db := mysql.NewMysqlCli()
-	tagDal := mysql.NewTagDal(db)
-	fileDal := mysql.NewFileDal(db)
-	musicDal := mysql.NewMusicDal(db)
-	albumDal := mysql.NewAlbumDal(db)
-	artistDal := mysql.NewArtistDal(db)
-	memoDal := mysql.NewMemoDal(db)
+	db := dal.NewMysqlCli()
+	defaultProxy := cdb.NewDefaultProxy(db)
+	tagDal := dal.NewTagDal(defaultProxy)
+	fileDal := dal.NewFileDal(defaultProxy)
+	musicDal := dal.NewMusicDal(defaultProxy)
+	albumDal := dal.NewAlbumDal(defaultProxy)
+	artistDal := dal.NewArtistDal(defaultProxy)
 	allInfra := &infra.AllInfra{
 		TagDal:    tagDal,
 		FileDal:   fileDal,
 		MusicDal:  musicDal,
 		AlbumDal:  albumDal,
 		ArtistDal: artistDal,
-		MemoDal:   memoDal,
 	}
 	musicLogic := logic.NewMusicLogic(allInfra)
 	fileLogic := logic.NewFileLogic(allInfra)
@@ -68,20 +67,19 @@ func InitLogicForTest() *logic.AllLogic {
 }
 
 func InitializeApp() *App {
-	db := mysql.NewMysqlCli()
-	tagDal := mysql.NewTagDal(db)
-	fileDal := mysql.NewFileDal(db)
-	musicDal := mysql.NewMusicDal(db)
-	albumDal := mysql.NewAlbumDal(db)
-	artistDal := mysql.NewArtistDal(db)
-	memoDal := mysql.NewMemoDal(db)
+	db := dal.NewMysqlCli()
+	defaultProxy := cdb.NewDefaultProxy(db)
+	tagDal := dal.NewTagDal(defaultProxy)
+	fileDal := dal.NewFileDal(defaultProxy)
+	musicDal := dal.NewMusicDal(defaultProxy)
+	albumDal := dal.NewAlbumDal(defaultProxy)
+	artistDal := dal.NewArtistDal(defaultProxy)
 	allInfra := &infra.AllInfra{
 		TagDal:    tagDal,
 		FileDal:   fileDal,
 		MusicDal:  musicDal,
 		AlbumDal:  albumDal,
 		ArtistDal: artistDal,
-		MemoDal:   memoDal,
 	}
 	musicLogic := logic.NewMusicLogic(allInfra)
 	fileLogic := logic.NewFileLogic(allInfra)
@@ -106,7 +104,7 @@ func InitializeApp() *App {
 
 // wire.go:
 
-var infraSet = wire.NewSet(mysql.NewMysqlCli, mysql.NewTagDal, mysql.NewFileDal, mysql.NewMusicDal, mysql.NewAlbumDal, mysql.NewArtistDal, mysql.NewMemoDal, wire.Struct(new(infra.AllInfra), "*"))
+var infraSet = wire.NewSet(dal.NewMysqlCli, cdb.NewDefaultProxy, dal.NewTagDal, dal.NewFileDal, dal.NewMusicDal, dal.NewAlbumDal, dal.NewArtistDal, wire.Struct(new(infra.AllInfra), "*"))
 
 var logicSet = wire.NewSet(logic.NewMusicLogic, logic.NewFileLogic, logic.NewAlbumLogic, logic.NewArtistLogic, logic.NewTagLogic, logic.NewMemoLogic, wire.Struct(new(logic.AllLogic), "*"))
 

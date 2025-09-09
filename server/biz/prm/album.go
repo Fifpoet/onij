@@ -2,7 +2,6 @@ package prm
 
 import (
 	"onij/biz/getter"
-	"onij/infra/mysql"
 	"onij/model/api"
 	"onij/util"
 	"onij/util/boost/collection/collext"
@@ -51,12 +50,12 @@ func NewGetAlbumParam(req *api.GetAlbumDetailReq) *GetAlbumDetailParam {
 }
 
 type GetAlbumDetailResult struct {
-	Album    *mysql.Album
-	Musics   []*mysql.Music
-	CoverUrl string
-	Artist   *mysql.Artist
-	MusicArtistsMap map[int64][]*mysql.Artist
-	MusicTagsMap map[int64][]*mysql.Tag
+	Album           *model.Album
+	Musics          []*model.Music
+	CoverUrl        string
+	Artist          *model.Artist
+	MusicArtistsMap map[int64][]*model.Artist
+	MusicTagsMap    map[int64][]*model.Tag
 }
 
 func (r *GetAlbumDetailResult) Resp() *api.GetAlbumDetailResp {
@@ -71,7 +70,7 @@ func (r *GetAlbumDetailResult) Resp() *api.GetAlbumDetailResp {
 			IssueTime:    r.Album.IssueTime,
 			CoverFileUrl: r.CoverUrl,
 			MvUrl:        r.Album.MvUrl,
-			RelatedMusics: collext.Pick(r.Musics, func(music *mysql.Music) *api.MusicProfile {
+			RelatedMusics: collext.Pick(r.Musics, func(music *model.Music) *api.MusicProfile {
 				return &api.MusicProfile{
 					Id:             music.Id,
 					Name:           music.Name,

@@ -1,7 +1,7 @@
 package prm
 
 import (
-	"onij/infra/mysql"
+	"onij/model"
 	"onij/model/api"
 	"onij/util"
 	"onij/util/boost/collection/collext"
@@ -50,13 +50,13 @@ func NewGetFileListParam(req *api.GetFileListReq) *GetFileListParam {
 }
 
 type GetFileListResult struct {
-	Files []*mysql.File
+	Files []*model.File
 	Total int32
 }
 
 func (r *GetFileListResult) Resp() *api.GetFileListResp {
-	res := collext.Pick(r.Files, func(f *mysql.File) *api.FileDetail {
-		return &api.FileDetail{
+	res := collext.Pick(r.Files, func(f *model.File) *api.FileDetail {
+		return &api.File{
 			Id:        f.Id,
 			Name:      f.Name,
 			Format:    api.FileType(f.Format),
@@ -87,24 +87,6 @@ func (r *GetFileListResult) Resp() *api.GetFileListResp {
 
 type DownloadFileParam struct {
 	FileIds []int64
-}
-
-func NewDownloadFileParam(req *api.DownloadFileReq) *DownloadFileParam {
-	return &DownloadFileParam{
-		FileIds: req.FileIds,
-	}
-}
-
-type DownloadFileResult struct {
-	Urls []string
-}
-
-func (r *DownloadFileResult) Resp() *api.DownloadFileResp {
-	return &api.DownloadFileResp{
-		Code:    util.BaseCodeOK,
-		Message: util.BaseMsgOK,
-		Urls:    r.Urls,
-	}
 }
 
 type DeleteFileParam struct {

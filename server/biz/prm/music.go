@@ -2,7 +2,6 @@ package prm
 
 import (
 	"onij/biz/getter"
-	"onij/infra/mysql"
 	"onij/model/api"
 	"onij/util"
 	"onij/util/boost/collection/collext"
@@ -61,18 +60,18 @@ func NewGetMusicDetailParam(req *api.GetMusicDetailReq) *GetMusicDetailParam {
 }
 
 type GetMusicDetailResult struct {
-	Music      *mysql.Music
-	Tags []*mysql.Tag
-	ArtistMap  map[int64]*mysql.Artist
+	Music      *model.Music
+	Tags       []*model.Tag
+	ArtistMap  map[int64]*model.Artist
 	ArtistIds  []int64
 	ComposerId int64
 	WriterId   int64
-	Albums     []*mysql.Album
-	FileMap    map[int64]*mysql.File
+	Albums     []*model.Album
+	FileMap    map[int64]*model.File
 }
 
 func (p *GetMusicDetailResult) Resp() *api.GetMusicDetailResp {
-	album := &mysql.Album{}
+	album := &model.Album{}
 	if len(p.Albums) > 0 {
 		album = p.Albums[0]
 	}
@@ -107,7 +106,7 @@ func (p *GetMusicDetailResult) Resp() *api.GetMusicDetailResp {
 				Name:         album.Name,
 				CoverFileUrl: util.DownloadFile(abmUrl),
 			},
-			TagDetails: collext.Pick(p.Tags, func(tag *mysql.Tag)*api.TagDetail {
+			TagDetails: collext.Pick(p.Tags, func(tag *model.Tag) *api.TagDetail {
 				return &api.TagDetail{
 					ResourceId:   tag.ResourceId,
 					ResourceType: api.ResourceType(tag.ResourceType),
@@ -125,42 +124,42 @@ func (p *GetMusicDetailResult) Resp() *api.GetMusicDetailResp {
 }
 
 type GetMusicListParam struct {
-	SortType api.MusicSortType
-	Keywords  []string
-	AlbumId  *int64
-	ArtistIds []int64
-	WriterIds []int64
+	SortType    api.MusicSortType
+	Keywords    []string
+	AlbumId     *int64
+	ArtistIds   []int64
+	WriterIds   []int64
 	ComposerIds []int64
-	TagTypes []int32
-	Page     int32
-	Limit    int32
+	TagTypes    []int32
+	Page        int32
+	Limit       int32
 }
 
 func NewGetMusicListParam(req *api.GetMusicListReq) *GetMusicListParam {
 	return &GetMusicListParam{
 		SortType:    req.SortType,
-		Keywords:     req.Keywords,
+		Keywords:    req.Keywords,
 		AlbumId:     req.AlbumId,
 		ArtistIds:   req.ArtistIds,
 		WriterIds:   req.WriterIds,
 		ComposerIds: req.ComposerIds,
-		TagTypes:     collext.Pick(req.TagTypes, func(tt api.TagType) int32{return int32(tt)}),
+		TagTypes:    collext.Pick(req.TagTypes, func(tt api.TagType) int32 { return int32(tt) }),
 		Page:        req.Page,
 		Limit:       req.Limit,
 	}
 }
 
 type GetMusicListResult struct {
-	Musics []*mysql.Music
-	MusicArtistsMap map[int64][]*mysql.Artist
-	MusicTagsMap map[int64][]*mysql.Tag
+	Musics          []*model.Music
+	MusicArtistsMap map[int64][]*model.Artist
+	MusicTagsMap    map[int64][]*model.Tag
 }
 
 func (p *GetMusicListResult) Resp() *api.GetMusicListResp {
 	return &api.GetMusicListResp{
 		Code:    util.BaseCodeOK,
 		Message: util.BaseMsgOK,
-		Musics: collext.Pick(p.Musics, func(music *mysql.Music) *api.MusicProfile {
+		Musics: collext.Pick(p.Musics, func(music *model.Music) *api.MusicProfile {
 			return &api.MusicProfile{
 				Id:             music.Id,
 				Name:           music.Name,

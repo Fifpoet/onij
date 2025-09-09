@@ -21,27 +21,7 @@ func _getalbumdetailMw() []app.HandlerFunc {
 	return nil
 }
 
-func _searchalbumMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
 func _uploadalbumMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _artistMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _searchartistMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _uploadartistMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
@@ -51,27 +31,7 @@ func _fileMw() []app.HandlerFunc {
 	return nil
 }
 
-func _deletefileMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _downloadfileMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _getfilelistMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
 func _uploadfileMw() []app.HandlerFunc {
-	// your code...
-	return nil
-}
-
-func _getuploadtokenMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
@@ -86,12 +46,27 @@ func _getmusicdetailMw() []app.HandlerFunc {
 	return nil
 }
 
+func _uploadmusicMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _artistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _uploadartistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
 func _getmusiclistMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _uploadmusicMw() []app.HandlerFunc {
+func _searchartistMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
@@ -101,12 +76,72 @@ func _tagMw() []app.HandlerFunc {
 	return nil
 }
 
+func _uploadtagMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _gettaglistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
 func _deletetagMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
 
-func _uploadtagMw() []app.HandlerFunc {
+func _downloadfileMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getfilelistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _deletefileMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getuploadtokenMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _memoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getmemodetailMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getmemolistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _uploadmemoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _aiMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _aichatMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _searchalbumMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }

@@ -1,7 +1,6 @@
 package biz
 
 import (
-	"onij/infra/mysql"
 	"onij/util"
 	"onij/util/boost/exp"
 )
@@ -16,9 +15,9 @@ type AlbumPrime struct {
 	MusicId        *int64
 }
 
-func (a *AlbumPrime) Model() *mysql.Album {
+func (a *AlbumPrime) Model() *model.Album {
 	if a.MusicId == nil {
-		return &mysql.Album{
+		return &model.Album{
 			Id:             util.IdGen.Generate(),
 			RelatedAlbumId: 0,
 			Name:           a.Name,
@@ -28,7 +27,7 @@ func (a *AlbumPrime) Model() *mysql.Album {
 			MusicId:        exp.ValueOrZero(a.MusicId),
 		}
 	}
-	return &mysql.Album{
+	return &model.Album{
 		Id:             util.IdGen.Generate(),
 		Name:           a.Name,
 		ArtistId:       a.ArtistId,

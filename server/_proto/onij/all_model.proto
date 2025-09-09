@@ -27,20 +27,22 @@ message Music {
 }
 
 message Tag {
-  int64 resource_id = 1;
-  ResourceType resource_type = 2;
-  TagBiz tag_biz = 3;
-  TagGroup tag_group = 4;
-  TagType tag_type = 5;
-  int64 target_id = 6;
-  int32 target_type = 7;
-  string extra = 8;
+  int64 id = 1;
+  int64 resource_id = 2;
+  ResourceType resource_type = 3;
+  TagBiz tag_biz = 4;
+  TagGroup tag_group = 5;
+  TagType tag_type = 6;
+  int64 target_id = 7;
+  int32 target_type = 8;
+  string extra = 9;
 }
 
 message Artist {
   int64 id = 1;
   string name = 2;
   string avatar_file_url = 3;
+  repeated ArtistType artist_types = 4;
 }
 
 message Album {

@@ -4,7 +4,6 @@ import (
 	"context"
 	"onij/biz/prm"
 	"onij/infra"
-	"onij/infra/mysql"
 	"onij/util"
 	"onij/util/boost/exp"
 )
@@ -26,15 +25,14 @@ func NewTagLogic(i *infra.AllInfra) TagLogic {
 
 func (l *tagLogic) Delete(ctx context.Context, param *prm.DeleteTagParam) (*prm.DeleteTagResult, error) {
 	err := l.TagDal.Delete(param.ResourceId, param.TagType)
-	if err!= nil {
+	if err != nil {
 		return nil, err
 	}
 	return &prm.DeleteTagResult{}, nil
 }
 
-
 func (l *tagLogic) Upload(ctx context.Context, param *prm.UploadTagParam) (*prm.UploadTagResult, error) {
-	err := l.TagDal.Save(&mysql.Tag{
+	err := l.TagDal.Save(&model.Tag{
 		Id:           util.IdGen.Generate(),
 		ResourceId:   param.ResourceId,
 		ResourceType: param.ResourceType,
@@ -49,6 +47,5 @@ func (l *tagLogic) Upload(ctx context.Context, param *prm.UploadTagParam) (*prm.
 	if err != nil {
 		return nil, err
 	}
-	return &prm.UploadTagResult{
-	}, nil
+	return &prm.UploadTagResult{}, nil
 }

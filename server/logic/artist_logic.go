@@ -4,7 +4,6 @@ import (
 	"context"
 	"onij/biz/prm"
 	"onij/infra"
-	"onij/infra/mysql"
 	"onij/model/api"
 	"onij/util"
 	"onij/util/boost/collection/collext"
@@ -26,15 +25,15 @@ func NewArtistLogic(i *infra.AllInfra) ArtistLogic {
 }
 
 func (l *artistLogic) Search(ctx context.Context, param *prm.SearchArtistParam) (*prm.SearchArtistResult, error) {
-	var arts []*mysql.Artist
+	var arts []*model.Artist
 	var err error
 	if param.TagType != nil || param.TagGroup != nil {
-		var tags []*mysql.Tag
+		var tags []*model.Tag
 		tags, err = l.TagDal.GetByGroupType(param.TagGroup, param.TagType)
 		if err != nil {
 			return nil, err
 		}
-		artistIds := collext.Select(tags, func(tag *mysql.Tag) (int64, bool) {
+		artistIds := collext.Select(tags, func(tag *model.Tag) (int64, bool) {
 			return tag.ResourceId, tag.ResourceType == int32(api.ResourceType_RT_Artist)
 		})
 		arts, err = l.ArtistDal.GetByIds(artistIds...)
@@ -53,7 +52,7 @@ func (l *artistLogic) Search(ctx context.Context, param *prm.SearchArtistParam) 
 }
 
 func (l *artistLogic) Upload(ctx context.Context, param *prm.UploadArtistParam) (*prm.UploadArtistResult, error) {
-	artist := &mysql.Artist{
+	artist := &model.Artist{
 		Id:         util.IdGen.Generate(),
 		Name:       param.Name,
 		ArtistType: int32(param.ArtistType),

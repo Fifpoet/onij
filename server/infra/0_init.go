@@ -1,15 +1,14 @@
 package infra
 
 import (
-	"onij/infra/mysql"
+	"onij/infra/dal"
 )
 
 // AllInfra 定义上层需要的Dal对象
 type AllInfra struct {
-	mysql.TagDal
-	mysql.FileDal
-	mysql.MusicDal
-	mysql.AlbumDal
-	mysql.ArtistDal
-	mysql.MemoDal
+	dal.TagDal
+	dal.FileDal
+	dal.MusicDal
+	dal.AlbumDal
+	dal.ArtistDal
 }

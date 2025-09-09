@@ -5,7 +5,6 @@ import (
 	"errors"
 	"onij/biz/prm"
 	"onij/infra"
-	"onij/infra/mysql"
 	"onij/util"
 )
 
@@ -27,7 +26,7 @@ func NewMemoLogic(i *infra.AllInfra) MemoLogic {
 
 func (l *memoLogic) Upload(ctx context.Context, param *prm.UploadMemoParam) (*prm.UploadMemoResult, error) {
 	id := util.IdGen.Generate()
-	err := l.MemoDal.Save(&mysql.Memo{
+	err := l.MemoDal.Save(&model.Memo{
 		Id:             id,
 		Title:          param.Title,
 		Content:        param.Content,

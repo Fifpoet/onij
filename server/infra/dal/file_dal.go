@@ -44,7 +44,7 @@ func (d *fileDal) GetByIds(ctx context.Context, ids ...int64) ([]*model.File, er
 	if len(ids) == 0 {
 		return nil, nil
 	}
-	res, err := d.QueryAll(ctx, d.Q().Id(cdb.IN(ids)).ToOptions()...)
+	res, err := d.QueryAll(ctx, d.Q().Id(ids).ToOptions()...)
 	if err != nil {
 		logs.Error("fileDal, GetByIds error = %v", err)
 		return nil, err
@@ -56,7 +56,7 @@ func (d *fileDal) GetByParentAndHash(ctx context.Context, parentId int64, hashes
 	if len(hashes) == 0 {
 		return nil, nil
 	}
-	res, err := d.QueryAll(ctx, d.Q().ParentId(parentId).Hash(cdb.IN(hashes)).ToOptions()...)
+	res, err := d.QueryAll(ctx, d.Q().ParentId(parentId).Hash(hashes).ToOptions()...)
 	if err != nil {
 		logs.Error("fileDal, GetByParentAndHash error = %v", err)
 		return nil, err
@@ -116,7 +116,7 @@ func (d *fileDal) DeleteByIds(ctx context.Context, ids ...int64) ([]*model.File,
 	}
 
 	// 执行删除
-	_, err = d.Delete(ctx, d.Q().Id(cdb.IN(ids)).ToOptions()...)
+	_, err = d.Delete(ctx, d.Q().Id(ids).ToOptions()...)
 	if err != nil {
 		logs.Error("fileDal, DeleteByIds error = %v", err)
 		return res, err

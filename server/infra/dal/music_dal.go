@@ -55,7 +55,7 @@ func (d *musicDal) GetByIds(ctx context.Context, ids ...int64) ([]*model.Music, 
 	if len(ids) == 0 {
 		return nil, nil
 	}
-	res, err := d.QueryAll(ctx, d.Q().Id(cdb.IN(ids)).ToOptions()...)
+	res, err := d.QueryAll(ctx, d.Q().Id(ids).ToOptions()...)
 	if err != nil {
 		logs.Error("musicDal, GetByIds error = %v", err)
 		return nil, err

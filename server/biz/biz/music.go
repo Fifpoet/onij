@@ -2,7 +2,6 @@ package biz
 
 import (
 	"fmt"
-	"onij/infra/mysql"
 	"onij/util"
 	"onij/util/boost/exp"
 	"strings"
@@ -23,9 +22,9 @@ type MusicPrime struct {
 	IssueTime    *int32
 }
 
-func (m *MusicPrime) Upsert() (music *mysql.Music, toUpdate map[string]any) {
+func (m *MusicPrime) Upsert() (music *model.Music, toUpdate map[string]any) {
 	if m.Id == nil {
-		return &mysql.Music{
+		return &model.Music{
 			Id:          util.IdGen.Generate(),
 			RootId:      exp.ValueOrZero(m.RootMusicId),
 			Name:        m.Name,
@@ -64,6 +63,6 @@ func (m *MusicPrime) Upsert() (music *mysql.Music, toUpdate map[string]any) {
 		if m.IssueTime != nil {
 			toUpdate["issue_time"] = *m.IssueTime
 		}
-		return &mysql.Music{Id: *m.Id}, toUpdate
+		return &model.Music{Id: *m.Id}, toUpdate
 	}
 }

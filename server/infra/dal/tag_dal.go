@@ -42,7 +42,7 @@ func (d *tagDal) GetByResource(ctx context.Context, resourceIds ...int64) ([]*mo
 	if len(resourceIds) == 0 {
 		return nil, nil
 	}
-	res, err := d.QueryAll(ctx, d.Q().ResourceId(cdb.IN(resourceIds)).ToOptions()...)
+	res, err := d.QueryAll(ctx, d.Q().ResourceId(resourceIds).ToOptions()...)
 	if err != nil {
 		logs.Error("tagDal, GetByResource error = %v", err)
 		return nil, err
@@ -75,13 +75,13 @@ func (d *tagDal) GetByResourceAndGroupType(ctx context.Context, tagGroups, tagTy
 	q := d.Q()
 
 	if len(resourceIds) > 0 {
-		q = q.ResourceId(cdb.IN(resourceIds))
+		q = q.ResourceId(resourceIds)
 	}
 	if len(tagGroups) > 0 {
-		q = q.TagGroup(cdb.IN(tagGroups))
+		q = q.TagGroup(tagGroups)
 	}
 	if len(tagTypes) > 0 {
-		q = q.TagType(cdb.IN(tagTypes))
+		q = q.TagType(tagTypes)
 	}
 
 	res, err := d.QueryAll(ctx, q.ToOptions()...)

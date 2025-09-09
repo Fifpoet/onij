@@ -6,7 +6,6 @@ import (
 	"onij/biz/getter"
 	"onij/biz/prm"
 	"onij/infra"
-	"onij/infra/mysql"
 	"onij/model/api"
 	"onij/util"
 	"onij/util/boost/collection/collext"
@@ -55,7 +54,7 @@ func (f *fileLogic) DownloadByIds(ctx context.Context, param *prm.DownloadFilePa
 		return nil, err
 	}
 	return &prm.DownloadFileResult{
-		Urls: collext.Pick(files, func(f *mysql.File) string {
+		Urls: collext.Pick(files, func(f *model.File) string {
 			return util.DownloadFile(f.StoreKey)
 		}),
 	}, nil
@@ -78,7 +77,7 @@ func (l *fileLogic) Upload(ctx context.Context, param *prm.UploadFileParam) (*pr
 	if len(param.Files) == 1 && len(param.Files[0].StoreKey) == 0 {
 		// upload folder
 		id := util.IdGen.Generate()
-		err := l.FileDal.Save(&mysql.File{
+		err := l.FileDal.Save(&model.File{
 			Id:       id,
 			Name:     param.Files[0].Filename,
 			Format:   int32(api.FileType_FT_Folder),
@@ -95,8 +94,8 @@ func (l *fileLogic) Upload(ctx context.Context, param *prm.UploadFileParam) (*pr
 		}, nil
 	}
 
-	fis := collext.Pick(param.Files, func(f *api.UploadFileReq_FileInfo) *mysql.File {
-		return &mysql.File{
+	fis := collext.Pick(param.Files, func(f *api.UploadFileReq_FileInfo) *model.File {
+		return &model.File{
 			Id:       util.IdGen.Generate(),
 			Name:     f.Filename,
 			Format:   int32(f.Format),

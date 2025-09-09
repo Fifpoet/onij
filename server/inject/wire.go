@@ -5,19 +5,20 @@ package inject
 import (
 	"github.com/google/wire"
 	"onij/infra"
-	"onij/infra/mysql"
+	"onij/infra/dal"
 	"onij/logic"
+	"onij/util/cdb"
 )
 
 var infraSet = wire.NewSet(
-	mysql.NewMysqlCli,
+	dal.NewMysqlCli,
+	cdb.NewDefaultProxy,
 
-	mysql.NewTagDal,
-	mysql.NewFileDal,
-	mysql.NewMusicDal,
-	mysql.NewAlbumDal,
-	mysql.NewArtistDal,
-	mysql.NewMemoDal,
+	dal.NewTagDal,
+	dal.NewFileDal,
+	dal.NewMusicDal,
+	dal.NewAlbumDal,
+	dal.NewArtistDal,
 	wire.Struct(new(infra.AllInfra), "*"),
 )
 

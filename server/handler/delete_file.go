@@ -4,6 +4,7 @@ package handler
 
 import (
 	"context"
+	"onij/biz/errdef"
 
 	"onij/biz/prm"
 	api "onij/model/api"
@@ -37,5 +38,8 @@ func DeleteFile(ctx context.Context, c *app.RequestContext) {
 }
 
 func checkDeleteFileReq(req *api.DeleteFileReq) error {
+	if req.FileId <= 0 {
+		return errdef.ErrInvalidFileId
+	}
 	return nil
 }

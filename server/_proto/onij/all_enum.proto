@@ -12,6 +12,13 @@ enum FileType {
   FT_Folder = 99;
 }
 
+enum ArtistType {
+  ATT_Unknown = 0;
+  ATT_Artist = 1;
+  ATT_Writer = 2;
+  ATT_Composer = 3;
+}
+
 // 专辑类型
 enum AlbumType {
   ALT_Unknown = 0;

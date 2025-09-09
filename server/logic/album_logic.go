@@ -7,7 +7,6 @@ import (
 	"onij/biz/getter"
 	"onij/biz/prm"
 	"onij/infra"
-	"onij/infra/mysql"
 	"onij/util"
 	"onij/util/boost/collection/collext"
 )
@@ -62,14 +61,14 @@ func (l *albumLogic) GetDetail(ctx context.Context, param *prm.GetAlbumDetailPar
 	if err != nil {
 		return nil, err
 	}
-	if len(artists) == 0{
+	if len(artists) == 0 {
 		return nil, errors.New("artists not found")
 	}
 	coverFiles, err := l.FileDal.GetByIds(mainAlbum.CoverFileId)
 	if err != nil {
 		return nil, err
 	}
-	if len(coverFiles) == 0{
+	if len(coverFiles) == 0 {
 		return nil, errors.New("cover file not found")
 	}
 	artGroup, tagGroup, err := l.getMusicArtistAndTags(musics...)
@@ -86,7 +85,7 @@ func (l *albumLogic) GetDetail(ctx context.Context, param *prm.GetAlbumDetailPar
 	}, nil
 }
 
-func (l *albumLogic) getMusicArtistAndTags(musics ...*mysql.Music) (map[int64][]*mysql.Artist, map[int64][]*mysql.Tag, error) {
+func (l *albumLogic) getMusicArtistAndTags(musics ...*model.Music) (map[int64][]*model.Artist, map[int64][]*model.Tag, error) {
 	musicArtistsMap := collext.MapKV(musics, getter.MusicId, getter.MusicArtistIds)
 	artIds := collext.PickCombine(musics, getter.MusicArtistIds)
 	musIds := collext.Pick(musics, getter.MusicId)
@@ -99,9 +98,9 @@ func (l *albumLogic) getMusicArtistAndTags(musics ...*mysql.Music) (map[int64][]
 	if err != nil {
 		return nil, nil, err
 	}
-	artGroup := make(map[int64][]*mysql.Artist)
+	artGroup := make(map[int64][]*model.Artist)
 	for mId, artIds := range musicArtistsMap {
-		artGroup[mId] = collext.Pick(artIds, func(id int64) *mysql.Artist { return artMap[id] })
+		artGroup[mId] = collext.Pick(artIds, func(id int64) *model.Artist { return artMap[id] })
 	}
 	return collext.Group(arts, getter.ArtistId),
 		collext.Group(tags, getter.TagResourceId), nil
