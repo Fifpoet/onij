@@ -70,7 +70,7 @@ message UploadArtistResp {
   int64 artist_id = 3;
 }
 
-message UploadTagReq { TagDetail tag_detail = 1; }
+message UploadTagReq { Tag tag = 1; }
 message UploadTagResp {
   int32 code = 1;
   string message = 2;
@@ -105,7 +105,7 @@ message GetMusicDetailReq { int64 music_id = 1; }
 message GetMusicDetailResp {
   int32 code = 1;
   string message = 2;
-  MusicDetail detail = 3;
+  Music music = 3;
 }
 
 // 获取专辑详情
@@ -113,7 +113,7 @@ message GetAlbumDetailReq { int64 album_id = 1; }
 message GetAlbumDetailResp {
   int32 code = 1;
   string message = 2;
-  AlbumDetail detail = 3;
+  Album album = 3;
 }
 
 // 获取音乐列表
@@ -132,7 +132,7 @@ message GetMusicListResp {
   int32 code = 1;
   string message = 2;
 
-  repeated MusicProfile musics = 10;
+  repeated Music musics = 10;
 }
 
 // 获取文件列表
@@ -145,7 +145,7 @@ message GetFileListReq {
 message GetFileListResp {
   int32 code = 1;
   string message = 2;
-  repeated FileDetail files = 10;
+  repeated File files = 10;
   int32 total = 11;
 }
 
@@ -168,7 +168,7 @@ message SearchArtistResp {
   int32 code = 1;
   string message = 2;
 
-  repeated ArtistProfile artists = 10;
+  repeated Artist artists = 10;
 }
 
 message SearchAlbumReq {
@@ -180,7 +180,7 @@ message SearchAlbumReq {
 message SearchAlbumResp {
   int32 code = 1;
   string message = 2;
-  repeated AlbumProfile albums = 10;
+  repeated Album albums = 10;
 }
 
 message DeleteTagReq {

@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package onij;
+
+option go_package = "api";
+
+import "api.proto";
+import "all_enum.proto";
+
+message TagOneExtra {}

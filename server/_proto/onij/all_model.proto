@@ -7,7 +7,7 @@ option go_package = "api";
 import "api.proto";
 import "all_enum.proto";
 
-message MusicDetail {
+message Music {
   int64 id = 1;
   string name = 2;
   repeated int64 artist_ids = 3;
@@ -22,81 +22,53 @@ message MusicDetail {
   string mp3_file_url = 21;
   string lyrics_file_url = 22;
 
-  // 专辑信息
-  AlbumProfile album_profile = 30;
-  // 标签信息
-  repeated TagDetail tag_details = 31;
+  Album album = 30;
+  repeated Tag tags = 31;
 }
 
-message TagDetail {
+message Tag {
   int64 resource_id = 1;
   ResourceType resource_type = 2;
   TagBiz tag_biz = 3;
   TagGroup tag_group = 4;
   TagType tag_type = 5;
-  optional int64 target_id = 6;
-  optional int32 target_type = 7;
+  int64 target_id = 6;
+  int32 target_type = 7;
   string extra = 8;
-  bool list_show = 9;
 }
 
-message AlbumDetail {
+message Artist {
   int64 id = 1;
   string name = 2;
-  int64 artist_id = 3;
-  string artist_name = 4;
-  int32 issue_time = 5;
-
-  string cover_file_url = 20;
-  string mv_url = 21;
-
-  repeated MusicProfile related_musics = 30;
+  string avatar_file_url = 3;
 }
 
-message AlbumProfile {
+message Album {
   int64 id = 1;
   string name = 2;
-  string cover_file_url = 3;
+  string profile = 3;
+  AlbumType album_type = 4;
+  repeated Artist artists = 5;
+  int32 issue_time = 6;
+  string cover_file_url = 7;
 }
 
-message MusicProfile {
-  int64 id = 1;
-  string name = 2;
-  repeated ArtistProfile singer_profiles = 3;
-  repeated TagDetail tags = 4;
+message AlbumMusic {
+  string name = 1;
+  int32 time_length = 2;
+  int64 music_id = 3;
+  int64 album_id = 4;
+  bool is_available = 5;
 }
 
-message ArtistProfile {
-  int64 id = 1;
-  string name = 2;
-}
-
-message FileDetail {
+message File {
   int64 id = 1;
   string name = 2;
   FileType format = 3;
-  int64 parent_id = 4;
-  int64 origin_at = 5;
-  int64 created_at = 6;
-  int64 updated_at = 7;
-  string url = 10; // 下载链接
-}
-
-message MemoDetail {
-  int64 id = 1;
-  string title = 2;
-  string content = 3;
-  int64 origin_at = 4;
-  string cover_url = 5;
-  string profile_content = 6;
-}
-
-message MemoProfile {
-  int64 id = 1;
-  string title = 2;
-  string cover_url = 3;
-  string profile_content = 4;
-  int64 created_at = 5;
-  int64 updated_at = 6;
-  int64 origin_at = 7;
+  int32 size = 4;
+  int64 parent_id = 5;
+  string extra = 6;
+  int64 created_at = 7;
+  int64 updated_at = 8;
+  string url = 10;
 }
