@@ -39,7 +39,7 @@ func (l *musicLogic) Upload(ctx context.Context, param *prm.UploadMusicParam) (*
 		ArtistIds:    param.ArtistIds,
 		ArtistNames:  collext.Pick(artistNames, getter.ArtistName),
 		Mp3FileId:    param.Mp3FileId,
-		LyricsFileId: param.LyricsFileId,
+		LyricsFileId: param.LyricFileId,
 		ComposerId:   param.ComposerId,
 		WriterId:     param.WriterId,
 		AlbumId:      param.AlbumId,

@@ -6,14 +6,16 @@ import (
 )
 
 type UploadArtistParam struct {
-	Name       string
-	ArtistType api.ArtistType
+	Name         string
+	AvatarFileId *string
+	ArtistId     *string
 }
 
 func NewUploadArtistParam(req *api.UploadArtistReq) *UploadArtistParam {
 	return &UploadArtistParam{
-		Name:       req.Name,
-		ArtistType: req.ArtistType,
+		Name:         req.Name,
+		AvatarFileId: req.AvatarFileId,
+		ArtistId:     req.ArtistId,
 	}
 }
 

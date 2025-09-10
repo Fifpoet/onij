@@ -1,7 +1,6 @@
 package prm
 
 import (
-	"onij/biz/getter"
 	"onij/model"
 	"onij/model/api"
 	"onij/util"
@@ -9,22 +8,28 @@ import (
 )
 
 type UploadAlbumParam struct {
-	Name           string
-	ArtistId       int64
-	CoverFileId    int64
-	IssueTime      int32
-	MusicId        *int64
-	RelatedAlbumId *int64
+	Name        string
+	Profile     string
+	ArtistIds   []int64
+	CoverFileId int64
+	IssueTime   int32
+	AlbumType   api.AlbumType
+	LiveUrl     string
+	AlbumMusics []*api.UploadAlbumReq_AlbumMusic
+	AlbumId     *int64
 }
 
 func NewUploadAlbumParam(req *api.UploadAlbumReq) *UploadAlbumParam {
 	return &UploadAlbumParam{
-		Name:           req.Name,
-		ArtistId:       req.ArtistId,
-		CoverFileId:    req.CoverFileId,
-		IssueTime:      req.IssueTime,
-		MusicId:        req.MusicId,
-		RelatedAlbumId: req.RelatedAlbumId,
+		Name:        req.Name,
+		Profile:     req.Profile,
+		ArtistIds:   req.ArtistIds,
+		CoverFileId: req.CoverFileId,
+		IssueTime:   req.IssueTime,
+		AlbumType:   req.AlbumType,
+		LiveUrl:     req.LiveUrl,
+		AlbumMusics: req.AlbumMusics,
+		AlbumId:     req.AlbumId,
 	}
 }
 
@@ -53,8 +58,9 @@ func NewGetAlbumParam(req *api.GetAlbumDetailReq) *GetAlbumDetailParam {
 type GetAlbumDetailResult struct {
 	Album           *model.Album
 	Musics          []*model.Music
+	AlbumMusics     []*model.AlbumMusic
 	CoverUrl        string
-	Artist          *model.Artist
+	Artists         []*model.Artist
 	MusicArtistsMap map[int64][]*model.Artist
 	MusicTagsMap    map[int64][]*model.Tag
 }
@@ -64,20 +70,22 @@ func (r *GetAlbumDetailResult) Resp() *api.GetAlbumDetailResp {
 		Code:    util.BaseCodeOK,
 		Message: util.BaseMsgOK,
 		Album: &api.Album{
-			Id:           r.Album.Id,
-			Name:         r.Album.Name,
-			ArtistId:     r.Artist.Id,
-			ArtistName:   r.Artist.Name,
-			IssueTime:    r.Album.IssueTime,
+			Id:        r.Album.Id,
+			Name:      r.Album.Name,
+			Profile:   r.Album.Profile,
+			AlbumType: api.AlbumType(r.Album.AlbumType),
+			//Artists:      r.Artists,
+			IssueTime:    int32(r.Album.IssueTime.Unix()),
 			CoverFileUrl: r.CoverUrl,
-			MvUrl:        r.Album.MvUrl,
+			LiveUrl:      "",
 		},
-		AlbumMusics: collext.Pick(r.Musics, func(music *model.Music) *api.Music {
-			return &api.Music{
-				Id:             music.Id,
-				Name:           music.Name,
-				SingerProfiles: collext.Pick(r.MusicArtistsMap[music.Id], getter.ArtistToProfile),
-				Tags:           collext.Pick(r.MusicTagsMap[music.Id], getter.TagToDetail),
+		AlbumMusics: collext.Pick(r.AlbumMusics, func(am *model.AlbumMusic) *api.AlbumMusic {
+			return &api.AlbumMusic{
+				Name:        am.Name,
+				TimeLength:  am.TimeLength,
+				MusicId:     am.Id,
+				AlbumId:     r.Album.Id,
+				IsAvailable: util.IntToBool(am.IsAvailable),
 			}
 		}),
 	}

@@ -11,24 +11,24 @@ import (
 const (
 	TableName_Artist = "artist"
 
-	Artist_Id        = "id"
-	Artist_Name      = "name"
-	Artist_Avatar    = "avatar"
-	Artist_CreatedAt = "created_at"
-	Artist_UpdatedAt = "updated_at"
-	Artist_DeletedAt = "deleted_at"
+	Artist_Id           = "id"
+	Artist_Name         = "name"
+	Artist_AvatarFileId = "avatar_file_id"
+	Artist_CreatedAt    = "created_at"
+	Artist_UpdatedAt    = "updated_at"
+	Artist_DeletedAt    = "deleted_at"
 )
 
 /*********** 表结构定义 **********/
 
 // Artist 表 artist 结构定义
 type Artist struct {
-	Id        int64          `gorm:"column:id" json:"id"`                 // 主键id
-	Name      string         `gorm:"column:name" json:"name"`             // 艺术家名字
-	Avatar    string         `gorm:"column:avatar" json:"avatar"`         // 艺术家头像
-	CreatedAt time.Time      `gorm:"column:created_at" json:"created_at"` // 创建时间
-	UpdatedAt time.Time      `gorm:"column:updated_at" json:"updated_at"` // 更新时间
-	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"` // 删除时间
+	Id           int64          `gorm:"column:id" json:"id"`                         // 主键id
+	Name         string         `gorm:"column:name" json:"name"`                     // 艺术家名字
+	AvatarFileId int64          `gorm:"column:avatar_file_id" json:"avatar_file_id"` // 艺术家头像
+	CreatedAt    time.Time      `gorm:"column:created_at" json:"created_at"`         // 创建时间
+	UpdatedAt    time.Time      `gorm:"column:updated_at" json:"updated_at"`         // 更新时间
+	DeletedAt    gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`         // 删除时间
 }
 
 func NewArtist() *Artist {
@@ -42,7 +42,7 @@ func (Artist) TableName() string {
 func (Artist) UpdatableColumns() []string {
 	return []string{
 		Artist_Name,
-		Artist_Avatar,
+		Artist_AvatarFileId,
 		Artist_CreatedAt,
 		Artist_UpdatedAt,
 		Artist_DeletedAt,
@@ -92,8 +92,8 @@ func (q ArtistQuerier) Name(v any) ArtistQuerier {
 	return q
 }
 
-func (q ArtistQuerier) Avatar(v any) ArtistQuerier {
-	q.super().Add(Artist_Avatar, v)
+func (q ArtistQuerier) AvatarFileId(v any) ArtistQuerier {
+	q.super().Add(Artist_AvatarFileId, v)
 	return q
 }
 
@@ -129,8 +129,8 @@ func (u ArtistUpdater) Name(v string) ArtistUpdater {
 	return u
 }
 
-func (u ArtistUpdater) Avatar(v string) ArtistUpdater {
-	u.super().Add(Artist_Avatar, v)
+func (u ArtistUpdater) AvatarFileId(v int64) ArtistUpdater {
+	u.super().Add(Artist_AvatarFileId, v)
 	return u
 }
 

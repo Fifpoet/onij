@@ -33,7 +33,7 @@ func (r *UploadFileResult) Resp() *api.UploadFileResp {
 }
 
 type GetFileListParam struct {
-	ParentId int64
+	ParentId *int64
 	Keyword  string
 	Page     util.Page
 }
@@ -61,7 +61,6 @@ func (r *GetFileListResult) Resp() *api.GetFileListResp {
 			Name:      f.Name,
 			Format:    api.FileType(f.Format),
 			ParentId:  f.ParentId,
-			OriginAt:  f.OriginAt,
 			CreatedAt: f.CreatedAt.Unix(),
 			UpdatedAt: f.UpdatedAt.Unix(),
 			Url:       util.DownloadFile(f.StoreKey),
@@ -72,10 +71,7 @@ func (r *GetFileListResult) Resp() *api.GetFileListResp {
 			a.Format != b.Format {
 			return int(b.Format - a.Format) // format大的在前面
 		}
-		if a.OriginAt == b.OriginAt {
-			return int(a.CreatedAt - b.CreatedAt)
-		}
-		return int(a.OriginAt - b.OriginAt)
+		return int(a.Id - b.Id)
 	})
 	return &api.GetFileListResp{
 		Code:    util.BaseCodeOK,

@@ -11,8 +11,8 @@ type UploadTagParam struct {
 	TagBiz       int32
 	TagGroup     int32
 	TagType      int32
-	TargetId     *int64
-	TargetType   *int32
+	TargetId     int64
+	TargetType   int32
 	Extra        string
 }
 
@@ -24,7 +24,7 @@ func NewUploadTagParam(req *api.UploadTagReq) *UploadTagParam {
 		TagGroup:     int32(req.Tag.TagGroup),
 		TagType:      int32(req.Tag.TagType),
 		TargetId:     req.Tag.TargetId,
-		TargetType:   (*int32)(req.Tag.TargetType),
+		TargetType:   req.Tag.TargetType,
 		Extra:        req.Tag.Extra,
 	}
 }

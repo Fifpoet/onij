@@ -33,7 +33,7 @@ message UploadMusicReq {
   string name = 1;
   string sub_name = 2;
   repeated int64 artist_ids = 3;
-  int64 mp3_file_id = 4;
+  int64 audio_file_id = 4;
   int64 lyric_file_id = 5;
   int32 time_length = 6;
 
@@ -60,7 +60,7 @@ message UploadMusicResp {
 
 message UploadArtistReq {
   string name = 1;
-  optional string avatar_file_id = 2;
+  optional int64 avatar_file_id = 2;
 
   optional string artist_id = 10;
 }

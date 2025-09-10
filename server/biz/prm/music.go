@@ -9,32 +9,32 @@ import (
 )
 
 type UploadMusicParam struct {
-	Id           *int64
-	Name         string
-	ArtistIds    []int64
-	Mp3FileId    int64
-	LyricsFileId int64
-	ComposerId   *int64
-	WriterId     *int64
-	AlbumId      *int64
-	MvUrl        *string
-	RootMusicId  *int64
-	IssueTime    *int32
+	Id          *int64
+	Name        string
+	ArtistIds   []int64
+	AudioFileId int64
+	LyricFileId int64
+	ComposerIds []int64
+	WriterIds   []int64
+	AlbumId     *int64
+	MvUrl       *string
+	RootMusicId *int64
+	IssueTime   *int32
 }
 
 func NewUploadMusicParam(req *api.UploadMusicReq) *UploadMusicParam {
 	return &UploadMusicParam{
-		Id:           req.MusicId,
-		Name:         req.Name,
-		ArtistIds:    req.ArtistIds,
-		Mp3FileId:    req.Mp3FileId,
-		LyricsFileId: req.LyricsFileId,
-		ComposerId:   req.ComposerId,
-		WriterId:     req.WriterId,
-		AlbumId:      req.AlbumId,
-		MvUrl:        req.MvUrl,
-		RootMusicId:  req.RootMusicId,
-		IssueTime:    req.IssueTime,
+		Id:          req.MusicId,
+		Name:        req.Name,
+		ArtistIds:   req.ArtistIds,
+		AudioFileId: req.AudioFileId,
+		LyricFileId: req.LyricFileId,
+		ComposerIds: req.ComposerIds,
+		WriterIds:   req.WriterIds,
+		AlbumId:     req.AlbumId,
+		MvUrl:       req.MvUrl,
+		RootMusicId: req.RootMusicId,
+		IssueTime:   req.IssueTime,
 	}
 }
 
@@ -77,8 +77,8 @@ func (p *GetMusicDetailResult) Resp() *api.GetMusicDetailResp {
 		album = p.Albums[0]
 	}
 	var mp3Url, lyrUrl, abmUrl string
-	if p.FileMap[p.Music.Mp3FileId] != nil {
-		mp3Url = p.FileMap[p.Music.Mp3FileId].StoreKey
+	if p.FileMap[p.Music.AudioFileId] != nil {
+		mp3Url = p.FileMap[p.Music.AudioFileId].StoreKey
 	}
 	if p.FileMap[p.Music.LyricFileId] != nil {
 		lyrUrl = p.FileMap[p.Music.LyricFileId].StoreKey
@@ -98,7 +98,7 @@ func (p *GetMusicDetailResult) Resp() *api.GetMusicDetailResp {
 			ComposerName:  p.ArtistMap[p.ComposerId].Name,
 			WriterId:      p.WriterId,
 			WriterName:    p.ArtistMap[p.WriterId].Name,
-			IssueTime:     p.Music.IssueTime,
+			IssueTime:     int32(p.Music.IssueTime.Unix()),
 			MvUrl:         p.Music.MvUrl,
 			Mp3FileUrl:    util.DownloadFile(mp3Url),
 			LyricsFileUrl: util.DownloadFile(lyrUrl),
@@ -114,8 +114,8 @@ func (p *GetMusicDetailResult) Resp() *api.GetMusicDetailResp {
 					TagBiz:       api.TagBiz(tag.TagBiz),
 					TagGroup:     api.TagGroup(tag.TagGroup),
 					TagType:      api.TagType(tag.TagType),
-					TargetId:     &tag.TargetId,
-					TargetType:   &tag.TargetType,
+					TargetId:     tag.TargetId,
+					TargetType:   tag.TargetType,
 					Extra:        tag.Extra,
 				}
 			}),
@@ -125,7 +125,6 @@ func (p *GetMusicDetailResult) Resp() *api.GetMusicDetailResp {
 
 type GetMusicListParam struct {
 	Keywords    []string
-	AlbumId     *int64
 	ArtistIds   []int64
 	WriterIds   []int64
 	ComposerIds []int64
@@ -137,7 +136,6 @@ type GetMusicListParam struct {
 func NewGetMusicListParam(req *api.GetMusicListReq) *GetMusicListParam {
 	return &GetMusicListParam{
 		Keywords:    req.Keywords,
-		AlbumId:     req.AlbumId,
 		ArtistIds:   req.ArtistIds,
 		WriterIds:   req.WriterIds,
 		ComposerIds: req.ComposerIds,
@@ -159,10 +157,9 @@ func (p *GetMusicListResult) Resp() *api.GetMusicListResp {
 		Message: util.BaseMsgOK,
 		Musics: collext.Pick(p.Musics, func(music *model.Music) *api.Music {
 			return &api.Music{
-				Id:             music.Id,
-				Name:           music.Name,
-				SingerProfiles: collext.Pick(p.MusicArtistsMap[music.Id], getter.ArtistToProfile),
-				Tags:           collext.Pick(p.MusicTagsMap[music.Id], getter.TagToDetail),
+				Id:   music.Id,
+				Name: music.Name,
+				Tags: collext.Pick(p.MusicTagsMap[music.Id], getter.TagToDetail),
 			}
 		}),
 	}
