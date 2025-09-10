@@ -4,13 +4,13 @@ import (
 	"context"
 	"onij/biz/prm"
 	"onij/infra"
+	"onij/model"
 	"onij/util"
-	"onij/util/boost/exp"
 )
 
 type TagLogic interface {
-	Upload(ctx context.Context, prm *prm.UploadTagParam) (*prm.UploadTagResult, error)
-	Delete(ctx context.Context, prm *prm.DeleteTagParam) (*prm.DeleteTagResult, error)
+	Upload(ctx context.Context, param *prm.UploadTagParam) (*prm.UploadTagResult, error)
+	Delete(ctx context.Context, param *prm.DeleteTagParam) (*prm.DeleteTagResult, error)
 }
 
 type tagLogic struct {
@@ -24,7 +24,7 @@ func NewTagLogic(i *infra.AllInfra) TagLogic {
 }
 
 func (l *tagLogic) Delete(ctx context.Context, param *prm.DeleteTagParam) (*prm.DeleteTagResult, error) {
-	err := l.TagDal.Delete(param.ResourceId, param.TagType)
+	err := l.TagDal.DeleteByResourceAndType(ctx, param.ResourceId, param.TagType)
 	if err != nil {
 		return nil, err
 	}
@@ -32,20 +32,22 @@ func (l *tagLogic) Delete(ctx context.Context, param *prm.DeleteTagParam) (*prm.
 }
 
 func (l *tagLogic) Upload(ctx context.Context, param *prm.UploadTagParam) (*prm.UploadTagResult, error) {
-	err := l.TagDal.Save(&model.Tag{
+	tag := &model.Tag{
 		Id:           util.IdGen.Generate(),
 		ResourceId:   param.ResourceId,
 		ResourceType: param.ResourceType,
-		TagBiz:       int32(param.TagBiz),
-		TagGroup:     int32(param.TagGroup),
-		TagType:      int32(param.TagType),
-		TargetId:     exp.ValueOrZero(param.TargetId),
-		TargetType:   exp.ValueOrZero(param.TargetType),
-		ListShow:     param.ListShow,
+		TagBiz:       param.TagBiz,
+		TagGroup:     param.TagGroup,
+		TagType:      param.TagType,
+		TargetId:     param.TargetId,
+		TargetType:   param.TargetType,
 		Extra:        param.Extra,
-	})
+	}
+
+	_, err := l.TagDal.Save(ctx, tag)
 	if err != nil {
 		return nil, err
 	}
+
 	return &prm.UploadTagResult{}, nil
 }

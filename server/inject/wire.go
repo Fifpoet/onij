@@ -28,7 +28,6 @@ var logicSet = wire.NewSet(
 	logic.NewAlbumLogic,
 	logic.NewArtistLogic,
 	logic.NewTagLogic,
-	logic.NewMemoLogic,
 	wire.Struct(new(logic.AllLogic), "*"),
 )
 

@@ -1,13 +1,14 @@
 package prm
 
 import (
+	"onij/model"
 	"onij/model/api"
 	"onij/util"
 )
 
 type UploadArtistParam struct {
 	Name         string
-	AvatarFileId *string
+	AvatarFileId *int64
 	ArtistId     *string
 }
 
@@ -37,4 +38,8 @@ type SearchArtistParam struct {
 	TagType  *int32
 	Page     int32
 	Limit    int32
+}
+
+type SearchArtistResult struct {
+	Artists []*model.Artist
 }

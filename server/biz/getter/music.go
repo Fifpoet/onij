@@ -1,11 +1,12 @@
 package getter
 
 import (
-	"onij/util"
+	"onij/model"
+	"onij/util/boost/tool"
 )
 
 func MusicArtistIds(m *model.Music) []int64 {
-	return util.StrList2Int64(m.ArtistIds)
+	return *tool.LoadJson[[]int64](m.ArtistIds, true)
 }
 func MusicId(m *model.Music) int64 {
 	return m.Id

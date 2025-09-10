@@ -29,7 +29,7 @@ func (m *MusicPrime) Upsert() (music *model.Music, toUpdate map[string]any) {
 			RootId:      exp.ValueOrZero(m.RootMusicId),
 			Name:        m.Name,
 			FullName:    fmt.Sprintf("%s-%s", m.Name, strings.Join(m.ArtistNames, ",")),
-			ArtistIds:   util.Int64List2Str(m.ArtistIds),
+			ArtistIds:   tool.ToJson(m.ArtistIds),
 			ComposerId:  exp.ValueOrZero(m.ComposerId),
 			WriterId:    exp.ValueOrZero(m.WriterId),
 			IssueTime:   exp.ValueOrZero(m.IssueTime),
@@ -41,7 +41,7 @@ func (m *MusicPrime) Upsert() (music *model.Music, toUpdate map[string]any) {
 	} else {
 		toUpdate = map[string]any{
 			"name":          m.Name,
-			"artist_ids":    util.Int64List2Str(m.ArtistIds),
+			"artist_ids":    tool.ToJson(m.ArtistIds),
 			"mp3_file_id":   m.Mp3FileId,
 			"lyric_file_id": m.LyricsFileId,
 		}

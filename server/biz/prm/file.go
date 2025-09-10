@@ -85,6 +85,10 @@ type DownloadFileParam struct {
 	FileIds []int64
 }
 
+type DownloadFileResult struct {
+	Urls []string
+}
+
 type DeleteFileParam struct {
 	FileId int64
 }
