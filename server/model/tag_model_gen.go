@@ -18,7 +18,6 @@ const (
 	Tag_TagGroup     = "tag_group"
 	Tag_TagType      = "tag_type"
 	Tag_TargetId     = "target_id"
-	Tag_TargetType   = "target_type"
 	Tag_Extra        = "extra"
 	Tag_CreatedAt    = "created_at"
 	Tag_UpdatedAt    = "updated_at"
@@ -36,7 +35,6 @@ type Tag struct {
 	TagGroup     int32          `gorm:"column:tag_group" json:"tag_group"`         // 标签组
 	TagType      int32          `gorm:"column:tag_type" json:"tag_type"`           // 标签类型
 	TargetId     int64          `gorm:"column:target_id" json:"target_id"`         // 目标id
-	TargetType   int32          `gorm:"column:target_type" json:"target_type"`     // 目标类型
 	Extra        string         `gorm:"column:extra" json:"extra"`                 // 额外信息
 	CreatedAt    time.Time      `gorm:"column:created_at" json:"created_at"`       // 创建时间
 	UpdatedAt    time.Time      `gorm:"column:updated_at" json:"updated_at"`       // 更新时间
@@ -54,7 +52,6 @@ func (Tag) TableName() string {
 func (Tag) UpdatableColumns() []string {
 	return []string{
 		Tag_ResourceType,
-		Tag_TargetType,
 		Tag_Extra,
 		Tag_CreatedAt,
 		Tag_UpdatedAt,
@@ -134,11 +131,6 @@ func (q TagQuerier) TargetId(v any) TagQuerier {
 	return q
 }
 
-func (q TagQuerier) TargetType(v any) TagQuerier {
-	q.super().Add(Tag_TargetType, v)
-	return q
-}
-
 func (q TagQuerier) Extra(v any) TagQuerier {
 	q.super().Add(Tag_Extra, v)
 	return q
@@ -198,11 +190,6 @@ func (u TagUpdater) TagType(v int32) TagUpdater {
 
 func (u TagUpdater) TargetId(v int64) TagUpdater {
 	u.super().Add(Tag_TargetId, v)
-	return u
-}
-
-func (u TagUpdater) TargetType(v int32) TagUpdater {
-	u.super().Add(Tag_TargetType, v)
 	return u
 }
 

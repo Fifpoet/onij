@@ -7,7 +7,6 @@ CREATE TABLE
     `tag_group` INT NULL COMMENT '标签组',
     `tag_type` INT NULL COMMENT '标签类型',
     `target_id` BIGINT NULL COMMENT '目标id',
-    `target_type` INT NULL COMMENT '目标类型',
     `extra` VARCHAR(256) NULL COMMENT '额外信息',
     `created_at` DATETIME NULL COMMENT '创建时间',
     `updated_at` DATETIME NULL COMMENT '更新时间',

@@ -13,12 +13,10 @@ message Music {
   repeated Artist artists = 3;
   int32 issue_time = 4;
   string mv_url = 5;
-
-  string mp3_file_url = 21;
-  string lyrics_file_url = 22;
-
-  Album album = 30;
-  repeated Tag tags = 31;
+  string audio_file_url = 6;
+  string lyrics_file_url = 7;
+  repeated Album album = 8;
+  repeated Tag tags = 9;
 }
 
 message Tag {
@@ -29,7 +27,6 @@ message Tag {
   TagGroup tag_group = 5;
   TagType tag_type = 6;
   int64 target_id = 7;
-  int32 target_type = 8;
   string extra = 9;
 }
 

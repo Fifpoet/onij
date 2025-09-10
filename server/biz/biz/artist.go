@@ -2,6 +2,7 @@ package biz
 
 import (
 	"onij/model"
+	"onij/model/api"
 	"onij/util/boost/exp"
 )
 
@@ -15,10 +16,38 @@ type ArtistPrime struct {
 	AvatarFile *FilePrime
 }
 
-func (a *ArtistPrime) Model() *model.Artist {
+func (p *ArtistPrime) Model() *model.Artist {
+	if p == nil {
+		return nil
+	}
 	return &model.Artist{
+		Id:           p.Id,
+		Name:         exp.ValueOrZero(p.Name),
+		AvatarFileId: exp.ValueOrZero(p.AvatarFileId),
+	}
+}
+
+func Artist(p *ArtistPrime) *api.Artist {
+	if p == nil {
+		return nil
+	}
+	return &api.Artist{
+		Id:            p.Id,
+		Name:          exp.ValueOrZero(p.Name),
+		AvatarFileUrl: p.AvatarFile.Url(),
+	}
+}
+
+func ArtistToBiz(a *model.Artist, f *model.File) *ArtistPrime {
+	if a == nil {
+		return nil
+	}
+	return &ArtistPrime{
 		Id:           a.Id,
-		Name:         exp.ValueOrZero(a.Name),
-		AvatarFileId: exp.ValueOrZero(a.AvatarFileId),
+		Name:         exp.Ptr(a.Name),
+		AvatarFileId: exp.Ptr(a.AvatarFileId),
+		CreatedAt:    exp.Ptr(a.CreatedAt.Unix()),
+		UpdatedAt:    exp.Ptr(a.UpdatedAt.Unix()),
+		AvatarFile:   FileToBiz(f),
 	}
 }
