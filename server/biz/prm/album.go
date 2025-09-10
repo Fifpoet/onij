@@ -56,13 +56,11 @@ func NewGetAlbumParam(req *api.GetAlbumDetailReq) *GetAlbumDetailParam {
 }
 
 type GetAlbumDetailResult struct {
-	Album           *model.Album
-	Musics          []*model.Music
-	AlbumMusics     []*model.AlbumMusic
-	CoverUrl        string
-	Artists         []*model.Artist
-	MusicArtistsMap map[int64][]*model.Artist
-	MusicTagsMap    map[int64][]*model.Tag
+	Album        *model.Album
+	CoverUrl     string
+	Artists      []*model.Artist
+	MusicTagsMap map[int64][]*model.Tag
+	AlbumMusics  []*model.AlbumMusic
 }
 
 func (r *GetAlbumDetailResult) Resp() *api.GetAlbumDetailResp {
@@ -74,10 +72,10 @@ func (r *GetAlbumDetailResult) Resp() *api.GetAlbumDetailResp {
 			Name:      r.Album.Name,
 			Profile:   r.Album.Profile,
 			AlbumType: api.AlbumType(r.Album.AlbumType),
-			//Artists:      r.Artists,
+			//Artists:   ,
 			IssueTime:    int32(r.Album.IssueTime.Unix()),
 			CoverFileUrl: r.CoverUrl,
-			LiveUrl:      "",
+			LiveUrl:      r.Album.LiveUrl,
 		},
 		AlbumMusics: collext.Pick(r.AlbumMusics, func(am *model.AlbumMusic) *api.AlbumMusic {
 			return &api.AlbumMusic{

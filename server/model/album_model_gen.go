@@ -18,6 +18,7 @@ const (
 	Album_ArtistIds   = "artist_ids"
 	Album_IssueTime   = "issue_time"
 	Album_CoverFileId = "cover_file_id"
+	Album_LiveUrl     = "live_url"
 	Album_CreatedAt   = "created_at"
 	Album_UpdatedAt   = "updated_at"
 	Album_DeletedAt   = "deleted_at"
@@ -34,6 +35,7 @@ type Album struct {
 	ArtistIds   string         `gorm:"column:artist_ids" json:"artist_ids"`       // 艺术家id列表
 	IssueTime   time.Time      `gorm:"column:issue_time" json:"issue_time"`       // 发行时间
 	CoverFileId int64          `gorm:"column:cover_file_id" json:"cover_file_id"` // 封面文件id
+	LiveUrl     string         `gorm:"column:live_url" json:"live_url"`           // 视频地址
 	CreatedAt   time.Time      `gorm:"column:created_at" json:"created_at"`       // 创建时间
 	UpdatedAt   time.Time      `gorm:"column:updated_at" json:"updated_at"`       // 更新时间
 	DeletedAt   gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`       // 删除时间
@@ -55,6 +57,7 @@ func (Album) UpdatableColumns() []string {
 		Album_ArtistIds,
 		Album_IssueTime,
 		Album_CoverFileId,
+		Album_LiveUrl,
 		Album_CreatedAt,
 		Album_UpdatedAt,
 		Album_DeletedAt,
@@ -129,6 +132,11 @@ func (q AlbumQuerier) CoverFileId(v any) AlbumQuerier {
 	return q
 }
 
+func (q AlbumQuerier) LiveUrl(v any) AlbumQuerier {
+	q.super().Add(Album_LiveUrl, v)
+	return q
+}
+
 func (q AlbumQuerier) CreatedAt(v any) AlbumQuerier {
 	q.super().Add(Album_CreatedAt, v)
 	return q
@@ -183,6 +191,11 @@ func (u AlbumUpdater) IssueTime(v time.Time) AlbumUpdater {
 
 func (u AlbumUpdater) CoverFileId(v int64) AlbumUpdater {
 	u.super().Add(Album_CoverFileId, v)
+	return u
+}
+
+func (u AlbumUpdater) LiveUrl(v string) AlbumUpdater {
+	u.super().Add(Album_LiveUrl, v)
 	return u
 }
 

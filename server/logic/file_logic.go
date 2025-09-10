@@ -15,7 +15,6 @@ import (
 type FileLogic interface {
 	Upload(ctx context.Context, param *prm.UploadFileParam) (*prm.UploadFileResult, error)
 	GetList(ctx context.Context, param *prm.GetFileListParam) (*prm.GetFileListResult, error)
-	DownloadByIds(ctx context.Context, param *prm.DownloadFileParam) (*prm.DownloadFileResult, error)
 	Delete(ctx context.Context, param *prm.DeleteFileParam) (*prm.DeleteFileResult, error)
 }
 
@@ -29,8 +28,8 @@ func NewFileLogic(i *infra.AllInfra) FileLogic {
 	}
 }
 
-func (f *fileLogic) Delete(ctx context.Context, param *prm.DeleteFileParam) (*prm.DeleteFileResult, error) {
-	fis, err := f.FileDal.GetByIds(ctx, param.FileId)
+func (l *fileLogic) Delete(ctx context.Context, param *prm.DeleteFileParam) (*prm.DeleteFileResult, error) {
+	fis, err := l.FileDal.GetByIds(ctx, param.FileId)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +38,7 @@ func (f *fileLogic) Delete(ctx context.Context, param *prm.DeleteFileParam) (*pr
 	}
 	fi := fis[0]
 
-	err = f.FileDal.DeleteById(ctx, param.FileId)
+	err = l.FileDal.DeleteById(ctx, param.FileId)
 	if err != nil {
 		return nil, err
 	}
@@ -52,25 +51,13 @@ func (f *fileLogic) Delete(ctx context.Context, param *prm.DeleteFileParam) (*pr
 	return &prm.DeleteFileResult{}, nil
 }
 
-func (f *fileLogic) DownloadByIds(ctx context.Context, param *prm.DownloadFileParam) (*prm.DownloadFileResult, error) {
-	files, err := f.FileDal.GetByIds(ctx, param.FileIds...)
-	if err != nil {
-		return nil, err
-	}
-	return &prm.DownloadFileResult{
-		Urls: collext.Pick(files, func(file *model.File) string {
-			return util.DownloadFile(file.StoreKey)
-		}),
-	}, nil
-}
-
-func (f *fileLogic) GetList(ctx context.Context, param *prm.GetFileListParam) (*prm.GetFileListResult, error) {
+func (l *fileLogic) GetList(ctx context.Context, param *prm.GetFileListParam) (*prm.GetFileListResult, error) {
 	parentId := int64(0)
 	if param.ParentId != nil {
 		parentId = *param.ParentId
 	}
 
-	files, total, err := f.FileDal.GetListByParentIdAndKeyword(ctx, parentId, param.Keyword, param.Page)
+	files, total, err := l.FileDal.GetListByParentIdAndKeyword(ctx, parentId, param.Keyword, param.Page)
 	if err != nil {
 		return nil, err
 	}

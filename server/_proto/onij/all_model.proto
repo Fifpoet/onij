@@ -10,14 +10,9 @@ import "all_enum.proto";
 message Music {
   int64 id = 1;
   string name = 2;
-  repeated int64 artist_ids = 3;
-  repeated string artist_names = 4;
-  int64 composer_id = 5;
-  string composer_name = 6;
-  int64 writer_id = 7;
-  string writer_name = 8;
-  int32 issue_time = 9;
-  string mv_url = 10;
+  repeated Artist artists = 3;
+  int32 issue_time = 4;
+  string mv_url = 5;
 
   string mp3_file_url = 21;
   string lyrics_file_url = 22;

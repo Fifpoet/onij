@@ -9,6 +9,7 @@ import (
 	"onij/model"
 	"onij/util"
 	"onij/util/boost/collection/collext"
+	"onij/util/boost/exp"
 	"onij/util/boost/tool"
 	"time"
 )
@@ -30,40 +31,29 @@ func NewMusicLogic(i *infra.AllInfra) MusicLogic {
 }
 
 func (l *musicLogic) Upload(ctx context.Context, param *prm.UploadMusicParam) (*prm.UploadMusicResult, error) {
-	// 获取艺术家信息（用于验证艺术家是否存在）
-	_, err := l.ArtistDal.GetByIds(ctx, param.ArtistIds...)
-	if err != nil {
-		return nil, err
-	}
-
-	// 构建音乐对象
 	music := &model.Music{
 		Id:           util.IdGen.Generate(),
 		Name:         param.Name,
-		FullName:     param.Name, // TODO: 根据艺术家名称构建全名
+		FullName:     param.Name + param.SubName,
 		ArtistIds:    tool.ToJson(param.ArtistIds),
 		ComposerIds:  tool.ToJson(param.ComposerIds),
 		WriterIds:    tool.ToJson(param.WriterIds),
-		IssueTime:    time.Now(), // TODO: 根据 param.IssueTime 设置
-		PerformType:  0,          // TODO: 根据实际需求设置
-		TimeLength:   0,          // TODO: 根据实际需求设置
-		MvUrl:        "",         // TODO: 根据 param.MvUrl 设置
+		IssueTime:    time.Unix(int64(exp.ValueOrZero(param.IssueTime)), 0),
+		PerformType:  int32(param.PerformType),
+		TimeLength:   param.TimeLength,
+		MvUrl:        exp.ValueOrZero(param.MvUrl),
 		AudioFileId:  param.AudioFileId,
-		AudioQuality: 0, // TODO: 根据实际需求设置
+		AudioQuality: int32(param.AudioQuality),
 		LyricFileId:  param.LyricFileId,
-		LyricContent: "", // TODO: 根据实际需求设置
-		RootId:       0,  // TODO: 根据 param.RootMusicId 设置
-		Priority:     0,  // TODO: 根据实际需求设置
-		CreatedAt:    time.Now(),
-		UpdatedAt:    time.Now(),
+		LyricContent: exp.ValueOrZero(param.LyricContent),
+		RootId:       exp.ValueOrZero(param.RootMusicId),
+		Priority:     exp.ValueOrZero(param.Priority),
 	}
-
-	// 如果传入了 ID，则使用传入的 ID
 	if param.Id != nil {
 		music.Id = *param.Id
 	}
 
-	_, err = l.MusicDal.Save(ctx, music)
+	_, err := l.MusicDal.Save(ctx, music)
 	if err != nil {
 		return nil, err
 	}

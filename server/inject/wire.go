@@ -18,6 +18,7 @@ var infraSet = wire.NewSet(
 	dal.NewFileDal,
 	dal.NewMusicDal,
 	dal.NewAlbumDal,
+	dal.NewAlbumMusicDal,
 	dal.NewArtistDal,
 	wire.Struct(new(infra.AllInfra), "*"),
 )

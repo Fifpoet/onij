@@ -7,6 +7,7 @@ CREATE TABLE
     `artist_ids` VARCHAR(255) NOT NULL COMMENT '艺术家id列表',
     `issue_time` DATETIME NULL COMMENT '发行时间',
     `cover_file_id` BIGINT NULL COMMENT '封面文件id',
+    `live_url` VARCHAR(1024)  NULL COMMENT '视频地址',
     `created_at` DATETIME NULL COMMENT '创建时间',
     `updated_at` DATETIME NULL COMMENT '更新时间',
     `deleted_at` DATETIME NULL COMMENT '删除时间',

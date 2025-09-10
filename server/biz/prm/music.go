@@ -9,32 +9,44 @@ import (
 )
 
 type UploadMusicParam struct {
-	Id          *int64
-	Name        string
-	ArtistIds   []int64
-	AudioFileId int64
-	LyricFileId int64
-	ComposerIds []int64
-	WriterIds   []int64
-	AlbumId     *int64
-	MvUrl       *string
-	RootMusicId *int64
-	IssueTime   *int32
+	Id           *int64
+	Name         string
+	SubName      string
+	ArtistIds    []int64
+	AudioFileId  int64
+	LyricFileId  int64
+	TimeLength   int32
+	ComposerIds  []int64
+	WriterIds    []int64
+	AlbumId      *int64
+	MvUrl        *string
+	RootMusicId  *int64
+	IssueTime    *int32
+	Priority     *int32
+	LyricContent *string
+	AudioQuality api.AudioQuality
+	PerformType  api.PerformType
 }
 
 func NewUploadMusicParam(req *api.UploadMusicReq) *UploadMusicParam {
 	return &UploadMusicParam{
-		Id:          req.MusicId,
-		Name:        req.Name,
-		ArtistIds:   req.ArtistIds,
-		AudioFileId: req.AudioFileId,
-		LyricFileId: req.LyricFileId,
-		ComposerIds: req.ComposerIds,
-		WriterIds:   req.WriterIds,
-		AlbumId:     req.AlbumId,
-		MvUrl:       req.MvUrl,
-		RootMusicId: req.RootMusicId,
-		IssueTime:   req.IssueTime,
+		Id:           req.MusicId,
+		Name:         req.Name,
+		SubName:      req.SubName,
+		ArtistIds:    req.ArtistIds,
+		AudioFileId:  req.AudioFileId,
+		LyricFileId:  req.LyricFileId,
+		TimeLength:   req.TimeLength,
+		ComposerIds:  req.ComposerIds,
+		WriterIds:    req.WriterIds,
+		AlbumId:      req.AlbumId,
+		MvUrl:        req.MvUrl,
+		RootMusicId:  req.RootMusicId,
+		IssueTime:    req.IssueTime,
+		Priority:     req.Priority,
+		LyricContent: req.LyricContent,
+		AudioQuality: req.AudioQuality,
+		PerformType:  req.PerformType,
 	}
 }
 
