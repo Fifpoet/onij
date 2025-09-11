@@ -17,7 +17,6 @@ func TagToDetail(t *model.Tag) *api.Tag {
 		TagGroup:     api.TagGroup(t.TagGroup),
 		TagType:      api.TagType(t.TagType),
 		TargetId:     t.TargetId,
-		TargetType:   t.TargetType,
 		Extra:        t.Extra,
 	}
 }

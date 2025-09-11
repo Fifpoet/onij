@@ -40,7 +40,6 @@ func (l *tagLogic) Upload(ctx context.Context, param *prm.UploadTagParam) (*prm.
 		TagGroup:     param.TagGroup,
 		TagType:      param.TagType,
 		TargetId:     param.TargetId,
-		TargetType:   param.TargetType,
 		Extra:        param.Extra,
 	}
 

@@ -112,58 +112,21 @@ func (l *musicLogic) GetDetail(ctx context.Context, param *prm.GetMusicDetailPar
 	}
 	musicPrime.Tags = collext.Pick(tags, biz.TagToBiz)
 
-	fileMap := collext.Map(files, getter.FileId)
 	return &prm.GetMusicDetailResult{
-		Music:      music,
-		Tags:       tags,
-		ArtistMap:  collext.Map(artists, getter.ArtistId),
-		ArtistIds:  artistIds,
-		ComposerId: 0,                // TODO: 从 composerIds 中获取
-		WriterId:   0,                // TODO: 从 writerIds 中获取
-		Albums:     []*model.Album{}, // TODO: 获取实际专辑数据
-		FileMap:    fileMap,
+		Music: musicPrime,
 	}, nil
 }
 
 func (l *musicLogic) GetList(ctx context.Context, param *prm.GetMusicListParam) (*prm.GetMusicListResult, error) {
 	var musics []*model.Music
 	var err error
-
-	// TODO: 需要实现 AlbumId 相关的逻辑
-	// if param.AlbumId != nil {
-	// 	// 专辑范围内
-	// 	album, err := l.AlbumDal.GetById(ctx, *param.AlbumId)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	relatedAlbum, err := l.AlbumDal.GetByRelatedId(ctx, album.Id)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	musics, err = l.MusicDal.GetByIds(ctx, collext.Pick(relatedAlbum, getter.AlbumMusicId)...)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	if len(param.Keywords) > 0 {
-	// 		musics = collext.Select(musics, func(m *model.Music) (*model.Music, bool) {
-	// 			for _, kw := range param.Keywords {
-	// 				if strings.Contains(m.Name, kw) {
-	// 					return m, true
-	// 				}
-	// 			}
-	// 			return nil, false
-	// 		})
-	// 	}
-	// } else {
-	// 不指定专辑，使用搜索功能
-	musics, err = l.MusicDal.SearchByArtistAndNameAndTag(
-		ctx, param.ArtistIds, param.WriterIds, param.ComposerIds, param.TagTypes,
-		param.Keywords, util.Page{Page: param.Page, Limit: param.Limit},
+	musics, err = l.MusicDal.Search(
+		ctx, param.ArtistIds, param.TagTypes,
+		param.Keyword, util.Page{Page: param.Page, Limit: param.Limit},
 	)
 	if err != nil {
 		return nil, err
 	}
-	// }
 
 	artGroup, tagGroup, err := l.getMusicArtistAndTags(ctx, musics...)
 	if err != nil {

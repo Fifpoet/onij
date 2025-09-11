@@ -120,11 +120,9 @@ message GetAlbumDetailResp {
 
 // 获取音乐列表
 message GetMusicListReq {
-  repeated string keywords = 1;
+  string keyword = 1;
   repeated int64 artist_ids = 2;
-  repeated int64 writer_ids = 3;
-  repeated int64 composer_ids = 4;
-  repeated TagType tag_types = 5;
+  repeated TagType tag_types = 3;
 
   int32 page = 10;
   int32 limit = 11;

@@ -56,10 +56,14 @@ func (l *albumLogic) Upload(ctx context.Context, param *prm.UploadAlbumParam) (*
 }
 
 func (l *albumLogic) GetDetail(ctx context.Context, param *prm.GetAlbumDetailParam) (*prm.GetAlbumDetailResult, error) {
-	album, err := l.AlbumDal.GetByIds(ctx, param.AlbumId)
+	albums, err := l.AlbumDal.GetByIds(ctx, param.AlbumId)
 	if err != nil {
 		return nil, err
 	}
+	if len(albums) == 0 {
+		return nil, errors.New("album not found")
+	}
+	album := albums[0]
 	albumPrime := biz.AlbumToBiz(album)
 
 	albumMusics, err := l.AlbumMusicDal.GetByAlbumId(ctx, param.AlbumId)

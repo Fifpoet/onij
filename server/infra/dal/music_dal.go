@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"onij/model"
 	"onij/util"
+	"onij/util/boost/collection/collext"
 	"onij/util/cdb"
 	"onij/util/logs"
 	"strings"
@@ -16,11 +17,8 @@ type MusicDal interface {
 	cdb.Interface[MusicDal]
 
 	Save(ctx context.Context, musics ...*model.Music) (int64, error)
-	GetById(ctx context.Context, id int64) (*model.Music, error)
 	GetByIds(ctx context.Context, ids ...int64) ([]*model.Music, error)
-	GetByFullName(ctx context.Context, fullName string) ([]*model.Music, error)
-	SearchByArtistAndNameAndTag(ctx context.Context, artistIds, writerIds, composeIds []int64, tagTypes []int32, keywords []string, pageInfo util.Page) ([]*model.Music, error)
-	GetByTitleArtistPerType(ctx context.Context, title string, artistId, performType int64, offset, limit int32) ([]*model.Music, int32, error)
+	Search(ctx context.Context, artistIds []int64, tagTypes []int32, keyword string, pageInfo util.Page) ([]*model.Music, error)
 	DeleteById(ctx context.Context, id int64) error
 }
 
@@ -72,46 +70,23 @@ func (d *musicDal) GetByFullName(ctx context.Context, fullName string) ([]*model
 	return res, nil
 }
 
-func (d *musicDal) SearchByArtistAndNameAndTag(ctx context.Context, artistIds, writerIds, composeIds []int64, tagTypes []int32, keywords []string, pageInfo util.Page) ([]*model.Music, error) {
-	// 构建查询条件
+func (d *musicDal) Search(ctx context.Context, artistIds []int64, tagTypes []int32, keyword string, pageInfo util.Page) ([]*model.Music, error) {
 	var conditions []cdb.Option
 
-	// 处理artist_ids LIKE条件（满足一个即可）
 	if len(artistIds) > 0 {
-		var orConditions []string
-		for _, id := range artistIds {
-			orConditions = append(orConditions, fmt.Sprintf("artist_ids LIKE '%%%d%%'", id))
-		}
-		// 这里需要使用原生SQL条件，因为LIKE条件比较复杂
+		orConditions := collext.PickCombine(artistIds, func(id int64) []string {
+			return []string{
+				fmt.Sprintf("artist_ids LIKE '%%%d%%'", id),
+				fmt.Sprintf("composer_ids LIKE '%%%d%%'", id),
+				fmt.Sprintf("writer_ids LIKE '%%%d%%'", id),
+			}
+		})
 		conditions = append(conditions, func(db *gorm.DB) *gorm.DB {
 			return db.Where(strings.Join(orConditions, " OR "))
 		})
 	}
 
-	// 处理writer_id IN条件
-	if len(writerIds) > 0 {
-		conditions = append(conditions, func(db *gorm.DB) *gorm.DB {
-			return db.Where("writer_ids IN ?", writerIds)
-		})
-	}
-
-	// 处理composer_id IN条件
-	if len(composeIds) > 0 {
-		conditions = append(conditions, func(db *gorm.DB) *gorm.DB {
-			return db.Where("composer_ids IN ?", composeIds)
-		})
-	}
-
-	// 处理name条件
-	if len(keywords) > 0 {
-		var orConditions []string
-		for _, keyword := range keywords {
-			orConditions = append(orConditions, fmt.Sprintf("full_name LIKE '%%%s%%'", keyword))
-		}
-		conditions = append(conditions, func(db *gorm.DB) *gorm.DB {
-			return db.Where(strings.Join(orConditions, " OR "))
-		})
-	}
+	conditions = append(d.Q().FullName(cdb.LIKE(keyword)).ToOptions())
 
 	// 处理tag_type条件（需要连表查询）
 	if len(tagTypes) > 0 {
@@ -121,16 +96,9 @@ func (d *musicDal) SearchByArtistAndNameAndTag(ctx context.Context, artistIds, w
 		})
 	}
 
-	// 添加排序和分页
-	conditions = append(conditions, func(db *gorm.DB) *gorm.DB {
-		return db.Order("created_at DESC").
-			Offset(pageInfo.OffsetNum()).
-			Limit(pageInfo.LimitNum())
-	})
-
-	res, err := d.QueryAll(ctx, conditions...)
+	res, err := d.QuerySlice(ctx, pageInfo.PageNum(), pageInfo.LimitNum(), conditions...)
 	if err != nil {
-		logs.Error("musicDal, SearchByArtistAndNameAndTag error = %v", err)
+		logs.Error("musicDal, Search error = %v", err)
 		return nil, err
 	}
 	return res, nil

@@ -78,14 +78,16 @@ func Music(p *MusicPrime) *api.Music {
 		Writers: collext.Pick(collext.Select(p.Artists, func(a *ArtistPrime) (*ArtistPrime, bool) {
 			return a, writerMap[a.Id] > 0
 		}), Artist),
-		IssueTime:     exp.ValueOrZero(p.IssueTime),
-		MvUrl:         exp.ValueOrZero(p.MvUrl),
-		AudioFileUrl:  collext.Select(p.Files, func(a *FilePrime) (string, bool) {
-			return a, a.Id == exp.ValueOrZero(p.AudioFileId)
-		})
-		LyricsFileUrl: p.LyricFile.Url(),
-		Album:         collext.Pick(p.Albums, Album),
-		Tags:          collext.Pick(p.Tags, Tag),
+		IssueTime: exp.ValueOrZero(p.IssueTime),
+		MvUrl:     exp.ValueOrZero(p.MvUrl),
+		AudioFileUrl: collext.SelectOne(p.Files, func(a *FilePrime) (string, bool) {
+			return a.Url(), a.Id == exp.ValueOrZero(p.AudioFileId)
+		}),
+		LyricsFileUrl: collext.SelectOne(p.Files, func(a *FilePrime) (string, bool) {
+			return a.Url(), a.Id == exp.ValueOrZero(p.LyricFileId)
+		}),
+		Album: collext.Pick(p.Albums, Album),
+		Tags:  collext.Pick(p.Tags, Tag),
 	}
 }
 

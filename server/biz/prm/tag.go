@@ -24,7 +24,6 @@ func NewUploadTagParam(req *api.UploadTagReq) *UploadTagParam {
 		TagGroup:     int32(req.Tag.TagGroup),
 		TagType:      int32(req.Tag.TagType),
 		TargetId:     req.Tag.TargetId,
-		TargetType:   req.Tag.TargetType,
 		Extra:        req.Tag.Extra,
 	}
 }

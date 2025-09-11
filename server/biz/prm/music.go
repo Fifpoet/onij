@@ -78,7 +78,6 @@ type GetMusicDetailResult struct {
 }
 
 func (p *GetMusicDetailResult) Resp() *api.GetMusicDetailResp {
-	album := &model.Album{}
 	return &api.GetMusicDetailResp{
 		Code:    util.BaseCodeOK,
 		Message: util.BaseMsgOK,
@@ -87,24 +86,20 @@ func (p *GetMusicDetailResult) Resp() *api.GetMusicDetailResp {
 }
 
 type GetMusicListParam struct {
-	Keywords    []string
-	ArtistIds   []int64
-	WriterIds   []int64
-	ComposerIds []int64
-	TagTypes    []int32
-	Page        int32
-	Limit       int32
+	Keyword   string
+	ArtistIds []int64
+	TagTypes  []int32
+	Page      int32
+	Limit     int32
 }
 
 func NewGetMusicListParam(req *api.GetMusicListReq) *GetMusicListParam {
 	return &GetMusicListParam{
-		Keywords:    req.Keywords,
-		ArtistIds:   req.ArtistIds,
-		WriterIds:   req.WriterIds,
-		ComposerIds: req.ComposerIds,
-		TagTypes:    collext.Pick(req.TagTypes, func(tt api.TagType) int32 { return int32(tt) }),
-		Page:        req.Page,
-		Limit:       req.Limit,
+		Keyword:   req.Keyword,
+		ArtistIds: req.ArtistIds,
+		TagTypes:  collext.Pick(req.TagTypes, func(tt api.TagType) int32 { return int32(tt) }),
+		Page:      req.Page,
+		Limit:     req.Limit,
 	}
 }
 
