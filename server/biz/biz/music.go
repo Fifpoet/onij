@@ -29,13 +29,10 @@ type MusicPrime struct {
 	CreatedAt    *int64
 	UpdatedAt    *int64
 
-	Albums    []*AlbumPrime
-	Artists   []*ArtistPrime
-	Composers []*ArtistPrime
-	Writers   []*ArtistPrime
-	AudioFile *FilePrime
-	LyricFile *FilePrime
-	Tags      []*TagPrime
+	Albums  []*AlbumPrime
+	Artists []*ArtistPrime // 包含artist composer writer
+	Files   []*FilePrime   // 包含audio lyric
+	Tags    []*TagPrime
 }
 
 func (m *MusicPrime) Model() *model.Music {
@@ -60,15 +57,57 @@ func (m *MusicPrime) Model() *model.Music {
 }
 
 func Music(p *MusicPrime) *api.Music {
+	artistMap := collext.Map(p.ArtistIds, func(a int64) int64 {
+		return a
+	})
+	composerMap := collext.Map(p.ComposerIds, func(a int64) int64 {
+		return a
+	})
+	writerMap := collext.Map(p.WriterIds, func(a int64) int64 {
+		return a
+	})
 	return &api.Music{
-		Id:            p.Id,
-		Name:          exp.ValueOrZero(p.Name),
-		Artists:       collext.Pick(collext.Combine(p.Artists, p.Composers, p.Writers), Artist),
+		Id:   p.Id,
+		Name: exp.ValueOrZero(p.Name),
+		Artists: collext.Pick(collext.Select(p.Artists, func(a *ArtistPrime) (*ArtistPrime, bool) {
+			return a, artistMap[a.Id] > 0
+		}), Artist),
+		Composers: collext.Pick(collext.Select(p.Artists, func(a *ArtistPrime) (*ArtistPrime, bool) {
+			return a, composerMap[a.Id] > 0
+		}), Artist),
+		Writers: collext.Pick(collext.Select(p.Artists, func(a *ArtistPrime) (*ArtistPrime, bool) {
+			return a, writerMap[a.Id] > 0
+		}), Artist),
 		IssueTime:     exp.ValueOrZero(p.IssueTime),
 		MvUrl:         exp.ValueOrZero(p.MvUrl),
-		AudioFileUrl:  p.AudioFile.Url(),
+		AudioFileUrl:  collext.Select(p.Files, func(a *FilePrime) (string, bool) {
+			return a, a.Id == exp.ValueOrZero(p.AudioFileId)
+		})
 		LyricsFileUrl: p.LyricFile.Url(),
 		Album:         collext.Pick(p.Albums, Album),
 		Tags:          collext.Pick(p.Tags, Tag),
+	}
+}
+
+func MusicToBiz(m *model.Music) *MusicPrime {
+	return &MusicPrime{
+		Id:           m.Id,
+		Name:         exp.Ptr(m.Name),
+		FullName:     exp.Ptr(m.FullName),
+		ArtistIds:    *tool.LoadJson[[]int64](m.ArtistIds, true),
+		ComposerIds:  *tool.LoadJson[[]int64](m.ComposerIds, true),
+		WriterIds:    *tool.LoadJson[[]int64](m.WriterIds, true),
+		IssueTime:    exp.Ptr(int32(m.IssueTime.Unix())),
+		PerformType:  exp.Ptr(api.PerformType(m.PerformType)),
+		TimeLength:   exp.Ptr(m.TimeLength),
+		MvUrl:        exp.Ptr(m.MvUrl),
+		AudioFileId:  exp.Ptr(m.AudioFileId),
+		AudioQuality: exp.Ptr(api.AudioQuality(m.AudioQuality)),
+		LyricFileId:  exp.Ptr(m.LyricFileId),
+		LyricContent: exp.Ptr(m.LyricContent),
+		RootId:       exp.Ptr(m.RootId),
+		Priority:     exp.Ptr(m.Priority),
+		CreatedAt:    exp.Ptr(m.CreatedAt.Unix()),
+		UpdatedAt:    exp.Ptr(m.UpdatedAt.Unix()),
 	}
 }

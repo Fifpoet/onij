@@ -11,12 +11,14 @@ message Music {
   int64 id = 1;
   string name = 2;
   repeated Artist artists = 3;
-  int32 issue_time = 4;
-  string mv_url = 5;
-  string audio_file_url = 6;
-  string lyrics_file_url = 7;
-  repeated Album album = 8;
-  repeated Tag tags = 9;
+  repeated Artist composers = 4;
+  repeated Artist writers = 5;
+  int32 issue_time = 6;
+  string mv_url = 7;
+  string audio_file_url = 8;
+  string lyrics_file_url = 9;
+  repeated Album album = 10;
+  repeated Tag tags = 11;
 }
 
 message Tag {
@@ -46,14 +48,15 @@ message Album {
   int32 issue_time = 6;
   string cover_file_url = 7;
   string live_url = 8;
+
+  repeated AlbumMusic album_musics = 20;
 }
 
 message AlbumMusic {
   string name = 1;
   int32 time_length = 2;
   int64 music_id = 3;
-  int64 album_id = 4;
-  bool is_available = 5;
+  bool is_available = 4;
 }
 
 message File {

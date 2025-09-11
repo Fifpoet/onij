@@ -69,29 +69,6 @@ func (l *fileLogic) GetList(ctx context.Context, param *prm.GetFileListParam) (*
 }
 
 func (l *fileLogic) Upload(ctx context.Context, param *prm.UploadFileParam) (*prm.UploadFileResult, error) {
-	// 处理文件夹创建（空文件表示创建文件夹）
-	if len(param.Files) == 1 && len(param.Files[0].StoreKey) == 0 {
-		// upload folder
-		id := util.IdGen.Generate()
-		folder := &model.File{
-			Id:       id,
-			Name:     param.Files[0].Filename,
-			Format:   int32(api.FileType_FT_Folder),
-			Hash:     param.Files[0].Hash,
-			ParentId: param.ParentId,
-			Size:     param.Files[0].Size,
-		}
-
-		_, err := l.FileDal.Save(ctx, folder)
-		if err != nil {
-			return nil, err
-		}
-
-		return &prm.UploadFileResult{
-			FileIds: []int64{id},
-		}, nil
-	}
-
 	fis := collext.Pick(param.Files, func(f *api.UploadFileReq_FileInfo) *model.File {
 		return &model.File{
 			Id:       util.IdGen.Generate(),

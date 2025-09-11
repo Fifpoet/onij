@@ -1,6 +1,7 @@
 package prm
 
 import (
+	"onij/biz/biz"
 	"onij/biz/getter"
 	"onij/model"
 	"onij/model/api"
@@ -73,65 +74,15 @@ func NewGetMusicDetailParam(req *api.GetMusicDetailReq) *GetMusicDetailParam {
 }
 
 type GetMusicDetailResult struct {
-	Music      *model.Music
-	Tags       []*model.Tag
-	ArtistMap  map[int64]*model.Artist
-	ArtistIds  []int64
-	ComposerId int64
-	WriterId   int64
-	Albums     []*model.Album
-	FileMap    map[int64]*model.File
+	Music *biz.MusicPrime
 }
 
 func (p *GetMusicDetailResult) Resp() *api.GetMusicDetailResp {
 	album := &model.Album{}
-	if len(p.Albums) > 0 {
-		album = p.Albums[0]
-	}
-	var mp3Url, lyrUrl, abmUrl string
-	if p.FileMap[p.Music.AudioFileId] != nil {
-		mp3Url = p.FileMap[p.Music.AudioFileId].StoreKey
-	}
-	if p.FileMap[p.Music.LyricFileId] != nil {
-		lyrUrl = p.FileMap[p.Music.LyricFileId].StoreKey
-	}
-	if p.FileMap[album.CoverFileId] != nil {
-		abmUrl = p.FileMap[album.CoverFileId].StoreKey
-	}
 	return &api.GetMusicDetailResp{
 		Code:    util.BaseCodeOK,
 		Message: util.BaseMsgOK,
-		Music: &api.Music{
-			Id:            p.Music.Id,
-			Name:          p.Music.Name,
-			ArtistIds:     collext.Pick(p.ArtistIds, func(id int64) int64 { return p.ArtistMap[id].Id }),
-			ArtistNames:   collext.Pick(p.ArtistIds, func(id int64) string { return p.ArtistMap[id].Name }),
-			ComposerId:    p.ComposerId,
-			ComposerName:  p.ArtistMap[p.ComposerId].Name,
-			WriterId:      p.WriterId,
-			WriterName:    p.ArtistMap[p.WriterId].Name,
-			IssueTime:     int32(p.Music.IssueTime.Unix()),
-			MvUrl:         p.Music.MvUrl,
-			Mp3FileUrl:    util.DownloadFile(mp3Url),
-			LyricsFileUrl: util.DownloadFile(lyrUrl),
-			Album: &api.Album{
-				Id:           album.Id,
-				Name:         album.Name,
-				CoverFileUrl: util.DownloadFile(abmUrl),
-			},
-			Tags: collext.Pick(p.Tags, func(tag *model.Tag) *api.Tag {
-				return &api.Tag{
-					ResourceId:   tag.ResourceId,
-					ResourceType: api.ResourceType(tag.ResourceType),
-					TagBiz:       api.TagBiz(tag.TagBiz),
-					TagGroup:     api.TagGroup(tag.TagGroup),
-					TagType:      api.TagType(tag.TagType),
-					TargetId:     tag.TargetId,
-					TargetType:   tag.TargetType,
-					Extra:        tag.Extra,
-				}
-			}),
-		},
+		Music:   biz.Music(p.Music),
 	}
 }
 

@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 	"errors"
+	"onij/biz/biz"
 	"onij/biz/getter"
 	"onij/biz/prm"
 	"onij/infra"
@@ -72,6 +73,7 @@ func (l *musicLogic) GetDetail(ctx context.Context, param *prm.GetMusicDetailPar
 		return nil, errors.New("music not found")
 	}
 	music := musics[0]
+	musicPrime := biz.MusicToBiz(music)
 
 	// 获取艺术家信息
 	artistIds := *tool.LoadJson[[]int64](music.ArtistIds, true)
@@ -83,24 +85,32 @@ func (l *musicLogic) GetDetail(ctx context.Context, param *prm.GetMusicDetailPar
 	if err != nil {
 		return nil, err
 	}
+	musicPrime.Artists = collext.Pick(artists, biz.ArtistToBiz)
 
-	// TODO: 需要实现 GetByMusicId 方法
-	// albums, err := l.AlbumDal.GetByMusicId(ctx, music.Id)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	// 获取专辑信息
+	albumMusics, err := l.AlbumMusicDal.GetByMusicId(ctx, music.Id)
+	if err != nil {
+		return nil, err
+	}
+	albums, err := l.AlbumDal.GetByIds(ctx, collext.Pick(albumMusics, getter.AlbumMusicMusicId)...)
+	if err != nil {
+		return nil, err
+	}
+	musicPrime.Albums = collext.Pick(albums, biz.AlbumToBiz)
 
 	// 获取文件信息
 	files, err := l.FileDal.GetByIds(ctx, music.AudioFileId, music.LyricFileId)
 	if err != nil {
 		return nil, err
 	}
+	musicPrime.Files = collext.Pick(files, biz.FileToBiz)
 
 	// 获取标签信息
 	tags, err := l.TagDal.GetByResource(ctx, music.Id)
 	if err != nil {
 		return nil, err
 	}
+	musicPrime.Tags = collext.Pick(tags, biz.TagToBiz)
 
 	fileMap := collext.Map(files, getter.FileId)
 	return &prm.GetMusicDetailResult{

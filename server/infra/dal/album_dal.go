@@ -12,7 +12,7 @@ type AlbumDal interface {
 	cdb.Interface[AlbumDal]
 
 	Save(ctx context.Context, albums ...*model.Album) (int64, error)
-	GetById(ctx context.Context, id int64) (*model.Album, error)
+	GetByIds(ctx context.Context, id ...int64) ([]*model.Album, error)
 	GetByArtistId(ctx context.Context, id int64, offset, limit int32) ([]*model.Album, int32, error)
 }
 type albumDal struct {
@@ -33,10 +33,10 @@ func (d *albumDal) Save(ctx context.Context, albums ...*model.Album) (int64, err
 	return saveUpdatable(ctx, d, albums)
 }
 
-func (d *albumDal) GetById(ctx context.Context, id int64) (*model.Album, error) {
-	res, err := d.QueryFirst(ctx, d.Q().Id(id).ToOptions()...)
+func (d *albumDal) GetByIds(ctx context.Context, id ...int64) ([]*model.Album, error) {
+	res, err := d.QueryAll(ctx, d.Q().Id(id).ToOptions()...)
 	if err != nil {
-		logs.Error("albumDal, GetById error = %v", err)
+		logs.Error("albumDal, GetByIds error = %v", err)
 		return nil, err
 	}
 	return res, nil

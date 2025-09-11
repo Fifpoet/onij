@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 	"errors"
+	"onij/biz/biz"
 	"onij/biz/getter"
 	"onij/biz/prm"
 	"onij/infra"
@@ -55,15 +56,17 @@ func (l *albumLogic) Upload(ctx context.Context, param *prm.UploadAlbumParam) (*
 }
 
 func (l *albumLogic) GetDetail(ctx context.Context, param *prm.GetAlbumDetailParam) (*prm.GetAlbumDetailResult, error) {
-	album, err := l.AlbumDal.GetById(ctx, param.AlbumId)
+	album, err := l.AlbumDal.GetByIds(ctx, param.AlbumId)
 	if err != nil {
 		return nil, err
 	}
+	albumPrime := biz.AlbumToBiz(album)
 
 	albumMusics, err := l.AlbumMusicDal.GetByAlbumId(ctx, param.AlbumId)
 	if err != nil {
 		return nil, err
 	}
+	albumPrime.AlbumMusics = collext.Pick(albumMusics, biz.AlbumMusicToBiz)
 
 	// 获取艺术家信息
 	artistIds := *tool.LoadJson[[]int64](album.ArtistIds, true)
@@ -74,6 +77,7 @@ func (l *albumLogic) GetDetail(ctx context.Context, param *prm.GetAlbumDetailPar
 	if len(artists) == 0 {
 		return nil, errors.New("artists not found")
 	}
+	albumPrime.Artists = collext.Pick(artists, biz.ArtistToBiz)
 
 	// 获取封面文件
 	coverFiles, err := l.FileDal.GetByIds(ctx, album.CoverFileId)
@@ -83,17 +87,15 @@ func (l *albumLogic) GetDetail(ctx context.Context, param *prm.GetAlbumDetailPar
 	if len(coverFiles) == 0 {
 		return nil, errors.New("cover file not found")
 	}
+	albumPrime.CoverFile = biz.FileToBiz(coverFiles[0])
 
-	tags, err := l.TagDal.GetByResource(ctx, collext.Pick(albumMusics, getter.AlbumMusicMusicId)...)
+	tags, err := l.TagDal.GetByResource(ctx, append(collext.Pick(albumMusics, getter.AlbumMusicMusicId), param.AlbumId)...)
 	if err != nil {
 		return nil, err
 	}
+	albumPrime.TagPrime = collext.Pick(tags, biz.TagToBiz)
 
 	return &prm.GetAlbumDetailResult{
-		Album:        album,
-		CoverUrl:     util.DownloadFile(coverFiles[0].StoreKey),
-		Artists:      artists,
-		MusicTagsMap: collext.Group(tags, getter.TagResourceId),
-		AlbumMusics:  albumMusics,
+		Album: albumPrime,
 	}, nil
 }

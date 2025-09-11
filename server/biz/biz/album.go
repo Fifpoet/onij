@@ -22,8 +22,10 @@ type AlbumPrime struct {
 	CreatedAt   *int64
 	UpdatedAt   *int64
 
-	CoverFile *FilePrime
-	Artists   []*ArtistPrime
+	CoverFile   *FilePrime
+	Artists     []*ArtistPrime
+	AlbumMusics []*AlbumMusicPrime
+	TagPrime    []*TagPrime // album + musicIds
 }
 
 func (p *AlbumPrime) Model() *model.Album {
@@ -60,10 +62,11 @@ func Album(p *AlbumPrime) *api.Album {
 		IssueTime:    exp.ValueOrZero(p.IssueTime),
 		CoverFileUrl: p.CoverFile.Url(),
 		LiveUrl:      exp.ValueOrZero(p.LiveUrl),
+		AlbumMusics:  collext.Pick(p.AlbumMusics, AlbumMusic),
 	}
 }
 
-func AlbumToBiz(a *model.Album, f *model.File, as []*model.Artist) *AlbumPrime {
+func AlbumToBiz(a *model.Album) *AlbumPrime {
 	if a == nil {
 		return nil
 	}
@@ -76,8 +79,6 @@ func AlbumToBiz(a *model.Album, f *model.File, as []*model.Artist) *AlbumPrime {
 		IssueTime:   exp.Ptr(int32(a.IssueTime.Unix())),
 		CoverFileId: exp.Ptr(a.CoverFileId),
 		LiveUrl:     exp.Ptr(a.LiveUrl),
-		CoverFile:   FileToBiz(f),
-		Artists:     collext.Pick(as, func(a *model.Artist) *ArtistPrime { return ArtistToBiz(a, nil) }),
 		CreatedAt:   exp.Ptr(a.CreatedAt.Unix()),
 		UpdatedAt:   exp.Ptr(a.UpdatedAt.Unix()),
 	}

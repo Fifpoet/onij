@@ -1,7 +1,7 @@
 package prm
 
 import (
-	"onij/model"
+	"onij/biz/biz"
 	"onij/model/api"
 	"onij/util"
 	"onij/util/boost/collection/collext"
@@ -56,35 +56,14 @@ func NewGetAlbumParam(req *api.GetAlbumDetailReq) *GetAlbumDetailParam {
 }
 
 type GetAlbumDetailResult struct {
-	Album        *model.Album
-	CoverUrl     string
-	Artists      []*model.Artist
-	MusicTagsMap map[int64][]*model.Tag
-	AlbumMusics  []*model.AlbumMusic
+	Album *biz.AlbumPrime
 }
 
 func (r *GetAlbumDetailResult) Resp() *api.GetAlbumDetailResp {
 	return &api.GetAlbumDetailResp{
-		Code:    util.BaseCodeOK,
-		Message: util.BaseMsgOK,
-		Album: &api.Album{
-			Id:        r.Album.Id,
-			Name:      r.Album.Name,
-			Profile:   r.Album.Profile,
-			AlbumType: api.AlbumType(r.Album.AlbumType),
-			//Artists:   ,
-			IssueTime:    int32(r.Album.IssueTime.Unix()),
-			CoverFileUrl: r.CoverUrl,
-			LiveUrl:      r.Album.LiveUrl,
-		},
-		AlbumMusics: collext.Pick(r.AlbumMusics, func(am *model.AlbumMusic) *api.AlbumMusic {
-			return &api.AlbumMusic{
-				Name:        am.Name,
-				TimeLength:  am.TimeLength,
-				MusicId:     am.Id,
-				AlbumId:     r.Album.Id,
-				IsAvailable: util.IntToBool(am.IsAvailable),
-			}
-		}),
+		Code:        util.BaseCodeOK,
+		Message:     util.BaseMsgOK,
+		Album:       biz.Album(r.Album),
+		AlbumMusics: collext.Pick(r.Album.AlbumMusics, biz.AlbumMusic),
 	}
 }

@@ -38,7 +38,7 @@ func Artist(p *ArtistPrime) *api.Artist {
 	}
 }
 
-func ArtistToBiz(a *model.Artist, f *model.File) *ArtistPrime {
+func ArtistToBiz(a *model.Artist) *ArtistPrime {
 	if a == nil {
 		return nil
 	}
@@ -48,6 +48,5 @@ func ArtistToBiz(a *model.Artist, f *model.File) *ArtistPrime {
 		AvatarFileId: exp.Ptr(a.AvatarFileId),
 		CreatedAt:    exp.Ptr(a.CreatedAt.Unix()),
 		UpdatedAt:    exp.Ptr(a.UpdatedAt.Unix()),
-		AvatarFile:   FileToBiz(f),
 	}
 }
