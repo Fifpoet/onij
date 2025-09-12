@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音乐信息提取器测试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .test-section h2 {
+            color: #666;
+            margin-bottom: 15px;
+        }
+        button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #005a87;
+        }
+        .url-list {
+            list-style: none;
+            padding: 0;
+        }
+        .url-list li {
+            background: #e8f4f8;
+            margin: 8px 0;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid #007cba;
+        }
+        .url-list a {
+            color: #007cba;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .url-list a:hover {
+            text-decoration: underline;
+        }
+        .instructions {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .instructions h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        .instructions p {
+            color: #856404;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 音乐信息提取器测试页面</h1>
+        
+        <div class="instructions">
+            <h3>📋 测试说明</h3>
+            <p>1. 确保已安装并启用了音乐信息提取器插件</p>
+            <p>2. 点击下面的测试链接，模拟访问音乐详情页面</p>
+            <p>3. 打开插件弹窗查看捕获的请求列表</p>
+            <p>4. 现在每个请求会显示：<strong>歌曲名 - 歌手</strong>，第二排显示专辑名</p>
+            <p>5. 如果没有显示音乐信息，请等待几秒钟让API响应完成</p>
+        </div>
+
+        <div class="test-section">
+            <h2>🔗 测试链接</h2>
+            <p>点击下面的链接来测试插件功能：</p>
+            <ul class="url-list">
+                <li>
+                    <a href="https://zm.i9mr.com/song/detail?ids=1807595701" target="_blank">
+                        https://zm.i9mr.com/song/detail?ids=1807595701
+                    </a>
+                    <div style="margin-top: 8px; font-size: 12px; color: #666;">
+                        <strong>歌曲：</strong>刻不容缓 (Live) | 
+                        <strong>歌手：</strong>容祖儿, 李克勤 | 
+                        <strong>专辑：</strong>PRETTY CRAZY JOEY YUNG CONCERT TOUR 容祖儿演唱会
+                    </div>
+                </li>
+                <li>
+                    <a href="https://zm.i9mr.com/song/detail?ids=123456789" target="_blank">
+                        https://zm.i9mr.com/song/detail?ids=123456789
+                    </a>
+                    <div style="margin-top: 8px; font-size: 12px; color: #666;">
+                        <strong>示例歌曲ID：</strong>123456789
+                    </div>
+                </li>
+                <li>
+                    <a href="https://zm.i9mr.com/song/detail?ids=987654321" target="_blank">
+                        https://zm.i9mr.com/song/detail?ids=987654321
+                    </a>
+                    <div style="margin-top: 8px; font-size: 12px; color: #666;">
+                        <strong>示例歌曲ID：</strong>987654321
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>🧪 动态测试</h2>
+            <p>使用JavaScript动态创建请求来测试插件：</p>
+            <button onclick="simulateRequest()">模拟音乐详情请求</button>
+            <button onclick="simulateMultipleRequests()">模拟多个请求</button>
+            <button onclick="clearConsole()">清空控制台</button>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 状态监控</h2>
+            <p>打开浏览器开发者工具查看详细日志：</p>
+            <button onclick="openDevTools()">打开开发者工具</button>
+            <div id="status" style="margin-top: 10px; padding: 10px; background: #e8f5e8; border-radius: 4px;">
+                状态：等待测试...
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🎵 API响应数据示例</h2>
+            <p>基于真实API响应的数据结构：</p>
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin: 10px 0;">
+                <h4>歌曲信息解析：</h4>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li><strong>歌曲名称：</strong>songs[0].name = "刻不容缓 (Live)"</li>
+                    <li><strong>歌手名称：</strong>songs[0].ar[0].name = "容祖儿", songs[0].ar[1].name = "李克勤"</li>
+                    <li><strong>专辑名称：</strong>songs[0].al.name = "PRETTY CRAZY JOEY YUNG CONCERT TOUR 容祖儿演唱会"</li>
+                    <li><strong>歌曲ID：</strong>songs[0].id = 1807595701</li>
+                    <li><strong>专辑封面：</strong>songs[0].al.picUrl</li>
+                </ul>
+            </div>
+            <button onclick="showApiExample()">显示完整API响应示例</button>
+            <div id="apiExample" style="margin-top: 10px; display: none;">
+                <pre style="background: #f1f1f1; padding: 10px; border-radius: 4px; overflow-x: auto; font-size: 12px;"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let requestCount = 0;
+
+        function simulateRequest() {
+            requestCount++;
+            const url = `https://zm.i9mr.com/song/detail?ids=1807595701`;
+            
+            // 创建一个隐藏的iframe来模拟请求
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = url;
+            document.body.appendChild(iframe);
+            
+            // 清理iframe
+            setTimeout(() => {
+                document.body.removeChild(iframe);
+            }, 1000);
+            
+            updateStatus(`已模拟请求 ${requestCount}: ${url}`);
+            console.log(`模拟请求 ${requestCount}:`, url);
+            console.log('预期响应数据:', {
+                songName: '刻不容缓 (Live)',
+                artists: ['容祖儿', '李克勤'],
+                album: 'PRETTY CRAZY JOEY YUNG CONCERT TOUR 容祖儿演唱会'
+            });
+        }
+
+        function simulateMultipleRequests() {
+            for (let i = 1; i <= 3; i++) {
+                setTimeout(() => {
+                    simulateRequest();
+                }, i * 500);
+            }
+        }
+
+        function clearConsole() {
+            console.clear();
+            updateStatus('控制台已清空');
+        }
+
+        function openDevTools() {
+            updateStatus('请按 F12 或右键选择"检查"来打开开发者工具');
+        }
+
+        function showApiExample() {
+            const apiExample = document.getElementById('apiExample');
+            const pre = apiExample.querySelector('pre');
+            
+            const exampleData = {
+                "songs": [
+                    {
+                        "name": "刻不容缓 (Live)",
+                        "mainTitle": "刻不容缓 ",
+                        "additionalTitle": "(Live)",
+                        "id": 1807595701,
+                        "ar": [
+                            {
+                                "id": 9269,
+                                "name": "容祖儿",
+                                "tns": [],
+                                "alias": []
+                            },
+                            {
+                                "id": 3699,
+                                "name": "李克勤",
+                                "tns": [],
+                                "alias": []
+                            }
+                        ],
+                        "al": {
+                            "id": 120923715,
+                            "name": "PRETTY CRAZY JOEY YUNG CONCERT TOUR 容祖儿演唱会",
+                            "picUrl": "https://p1.music.126.net/3zxzfGyUp-X8Q22eSkhL-Q==/109951166656569168.jpg"
+                        }
+                    }
+                ],
+                "code": 200
+            };
+            
+            pre.textContent = JSON.stringify(exampleData, null, 2);
+            apiExample.style.display = 'block';
+            updateStatus('已显示API响应示例');
+        }
+
+        function updateStatus(message) {
+            document.getElementById('status').textContent = `状态：${message}`;
+        }
+
+        // 页面加载完成
+        console.log('测试页面已加载');
+        console.log('请点击测试链接或按钮来测试插件功能');
+        updateStatus('页面已加载，可以开始测试');
+    </script>
+</body>
+</html>
