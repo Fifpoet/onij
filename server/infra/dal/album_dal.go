@@ -2,10 +2,12 @@ package dal
 
 import (
 	"context"
-	"gorm.io/gorm"
 	"onij/model"
+	"onij/util"
 	"onij/util/cdb"
 	"onij/util/logs"
+
+	"gorm.io/gorm"
 )
 
 type AlbumDal interface {
@@ -13,7 +15,7 @@ type AlbumDal interface {
 
 	Save(ctx context.Context, albums ...*model.Album) (int64, error)
 	GetByIds(ctx context.Context, id ...int64) ([]*model.Album, error)
-	GetByArtistId(ctx context.Context, id int64, offset, limit int32) ([]*model.Album, int32, error)
+	GetByKeywordAndArtistId(ctx context.Context, keyword string, artistId *int64, page util.Page) ([]*model.Album, int32, error)
 }
 type albumDal struct {
 	*cdb.Dal[model.Album, model.AlbumQuerier, model.AlbumUpdater]
@@ -42,17 +44,24 @@ func (d *albumDal) GetByIds(ctx context.Context, id ...int64) ([]*model.Album, e
 	return res, nil
 }
 
-func (d *albumDal) GetByArtistId(ctx context.Context, id int64, offset, limit int32) ([]*model.Album, int32, error) {
-	opts := d.Q().ArtistIds(cdb.LIKE(id)).ToOptions()
-	cnt, err := d.Count(ctx, opts...)
+func (d *albumDal) GetByKeywordAndArtistId(ctx context.Context, keyword string, artistId *int64, page util.Page) ([]*model.Album, int32, error) {
+	opts := d.Q().ToOptions()
+	if len(keyword) > 0 {
+		opts = append(opts, d.Q().Name(cdb.LIKE(keyword)).ToOptions()...)
+	}
+	if artistId != nil {
+		opts = append(opts, d.Q().ArtistIds(cdb.LIKE(*artistId)).ToOptions()...)
+	}
+	cnt , err := d.Count(ctx, opts...)
 	if err != nil {
-		logs.Error("albumDal, GetById error = %v", err)
+		logs.Error("albumDal, GetByKeywordAndArtistId count error = %v", err)
 		return nil, 0, err
 	}
-	res, err := d.QuerySlice(ctx, int(offset), int(limit), opts...)
+	res, err := d.QuerySlice(ctx, int(page.OffsetNum()), int(page.LimitNum()), opts...)
 	if err != nil {
-		logs.Error("albumDal, GetById error = %v", err)
+		logs.Error("albumDal, GetByKeywordAndArtistId query error = %v", err)
 		return nil, 0, err
 	}
 	return res, int32(cnt), nil
 }
+

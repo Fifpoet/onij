@@ -13,7 +13,7 @@ type AlbumMusicDal interface {
 
 	Save(ctx context.Context, albums ...*model.AlbumMusic) (int64, error)
 	GetById(ctx context.Context, id int64) (*model.AlbumMusic, error)
-	GetByAlbumId(ctx context.Context, id int64) ([]*model.AlbumMusic, error)
+	GetByAlbumIds(ctx context.Context, ids ...int64) ([]*model.AlbumMusic, error)
 	GetByMusicId(ctx context.Context, id int64) ([]*model.AlbumMusic, error)
 }
 type albumMusicDal struct {
@@ -43,8 +43,8 @@ func (d *albumMusicDal) GetById(ctx context.Context, id int64) (*model.AlbumMusi
 	return res, nil
 }
 
-func (d *albumMusicDal) GetByAlbumId(ctx context.Context, id int64) ([]*model.AlbumMusic, error) {
-	res, err := d.QueryAll(ctx, d.Q().AlbumId(id).ToOptions()...)
+func (d *albumMusicDal) GetByAlbumIds(ctx context.Context, ids ...int64) ([]*model.AlbumMusic, error) {
+	res, err := d.QueryAll(ctx, d.Q().AlbumId(ids).ToOptions()...)
 	if err != nil {
 		logs.Error("albumMusicDal, GetByAlbumId error = %v", err)
 		return nil, err

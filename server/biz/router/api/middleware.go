@@ -145,3 +145,8 @@ func _searchalbumMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _getalbumlistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

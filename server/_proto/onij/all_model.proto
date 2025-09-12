@@ -56,7 +56,8 @@ message AlbumMusic {
   string name = 1;
   int32 time_length = 2;
   int64 music_id = 3;
-  bool is_available = 4;
+  repeated Artist artists = 4;
+  bool is_available = 5;
 }
 
 message File {

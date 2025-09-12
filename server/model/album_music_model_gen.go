@@ -16,6 +16,7 @@ const (
 	AlbumMusic_TimeLength  = "time_length"
 	AlbumMusic_MusicId     = "music_id"
 	AlbumMusic_AlbumId     = "album_id"
+	AlbumMusic_ArtistIds   = "artist_ids"
 	AlbumMusic_IsAvailable = "is_available"
 	AlbumMusic_CreatedAt   = "created_at"
 	AlbumMusic_UpdatedAt   = "updated_at"
@@ -31,6 +32,7 @@ type AlbumMusic struct {
 	TimeLength  int32          `gorm:"column:time_length" json:"time_length"`   // 时长(s)
 	MusicId     int64          `gorm:"column:music_id" json:"music_id"`         // 音乐id
 	AlbumId     int64          `gorm:"column:album_id" json:"album_id"`         // 专辑id
+	ArtistIds   string         `gorm:"column:artist_ids" json:"artist_ids"`     // 艺术家id
 	IsAvailable int16          `gorm:"column:is_available" json:"is_available"` // 是否可用
 	CreatedAt   time.Time      `gorm:"column:created_at" json:"created_at"`     // 创建时间
 	UpdatedAt   time.Time      `gorm:"column:updated_at" json:"updated_at"`     // 更新时间
@@ -51,6 +53,7 @@ func (AlbumMusic) UpdatableColumns() []string {
 		AlbumMusic_TimeLength,
 		AlbumMusic_MusicId,
 		AlbumMusic_AlbumId,
+		AlbumMusic_ArtistIds,
 		AlbumMusic_IsAvailable,
 		AlbumMusic_CreatedAt,
 		AlbumMusic_UpdatedAt,
@@ -116,6 +119,11 @@ func (q AlbumMusicQuerier) AlbumId(v any) AlbumMusicQuerier {
 	return q
 }
 
+func (q AlbumMusicQuerier) ArtistIds(v any) AlbumMusicQuerier {
+	q.super().Add(AlbumMusic_ArtistIds, v)
+	return q
+}
+
 func (q AlbumMusicQuerier) IsAvailable(v any) AlbumMusicQuerier {
 	q.super().Add(AlbumMusic_IsAvailable, v)
 	return q
@@ -165,6 +173,11 @@ func (u AlbumMusicUpdater) MusicId(v int64) AlbumMusicUpdater {
 
 func (u AlbumMusicUpdater) AlbumId(v int64) AlbumMusicUpdater {
 	u.super().Add(AlbumMusic_AlbumId, v)
+	return u
+}
+
+func (u AlbumMusicUpdater) ArtistIds(v string) AlbumMusicUpdater {
+	u.super().Add(AlbumMusic_ArtistIds, v)
 	return u
 }
 

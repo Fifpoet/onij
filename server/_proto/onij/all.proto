@@ -226,6 +226,10 @@ service AllService {
   rpc GetAlbumDetail(GetAlbumDetailReq) returns (GetAlbumDetailResp) {
     option (api.post) = "/album/detail";
   }
+  // 获取专辑列表
+  rpc GetAlbumList(GetAlbumListReq) returns (GetAlbumListResp) {
+    option (api.post) = "/album/list";
+  }
   // 获取音乐列表
   rpc GetMusicList(GetMusicListReq) returns (GetMusicListResp) {
     option (api.post) = "/music/list";

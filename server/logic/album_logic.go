@@ -17,6 +17,7 @@ import (
 type AlbumLogic interface {
 	Upload(ctx context.Context, param *prm.UploadAlbumParam) (*prm.UploadAlbumResult, error)
 	GetDetail(ctx context.Context, param *prm.GetAlbumDetailParam) (*prm.GetAlbumDetailResult, error)
+	GetList(ctx context.Context, param *prm.GetAlbumListParam) (*prm.GetAlbumListResult, error)
 }
 
 type albumLogic struct {
@@ -101,5 +102,45 @@ func (l *albumLogic) GetDetail(ctx context.Context, param *prm.GetAlbumDetailPar
 
 	return &prm.GetAlbumDetailResult{
 		Album: albumPrime,
+	}, nil
+}
+
+func (l *albumLogic) GetList(ctx context.Context, param *prm.GetAlbumListParam) (*prm.GetAlbumListResult, error) {
+	albums, cnt, err := l.AlbumDal.GetByKeywordAndArtistId(ctx, param.Keyword, param.ArtistId, util.Page{
+		Page: param.Page,
+		Limit: param.Limit,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	files , err  := l.FileDal.GetByIds(ctx, collext.Pick(albums, getter.AlbumCoverFileId)...)
+	if err != nil {
+		return nil, err
+	}
+	fileMap := collext.Map(files, getter.FileId)
+
+	albumMusics, err := l.AlbumMusicDal.GetByAlbumIds(ctx, collext.Pick(albums, getter.AlbumId)...)
+	if err != nil {
+		return nil, err
+	}
+	artistIds := collext.Distinct(append(collext.PickCombine(albumMusics, getter.AlbumMusicArtistIds), 
+	collext.PickCombine(albums, getter.AlbumArtistIds)...))
+
+	artists, err := l.ArtistDal.GetByIds(ctx, artistIds...)
+	if err != nil {
+		return nil, err
+	}
+
+	albumPrimes := collext.Pick(albums, func(a *model.Album) *biz.AlbumPrime {
+		prime := biz.AlbumToBiz(a)
+		prime.CoverFile = biz.FileToBiz(fileMap[a.CoverFileId])
+		prime.Artists = collext.Pick(artists, biz.ArtistToBiz)
+		return prime
+	})
+	
+	return &prm.GetAlbumListResult{
+		Albums: albumPrimes,
+		Total:  cnt,
 	}, nil
 }

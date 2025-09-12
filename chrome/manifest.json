@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "音乐爬取助手",
+  "version": "1.0.0",
+  "description": "用于音乐爬取和管理的浏览器插件",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "webRequest",
+    "webRequestBlocking",
+    "tabs"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "音乐爬取助手"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["popup.html", "styles.css"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

@@ -67,3 +67,32 @@ func (r *GetAlbumDetailResult) Resp() *api.GetAlbumDetailResp {
 		AlbumMusics: collext.Pick(r.Album.AlbumMusics, biz.AlbumMusic),
 	}
 }
+
+type GetAlbumListParam struct {
+	Keyword   string
+	ArtistId  *int64
+	Page      int32
+	Limit     int32
+}
+
+func NewGetAlbumListParam(req *api.GetAlbumListReq) *GetAlbumListParam {
+	return &GetAlbumListParam{
+		Keyword:   req.Keyword,
+		ArtistId:  req.ArtistId,
+		Page:      req.Page,
+		Limit:     req.Limit,
+	}
+}
+
+type GetAlbumListResult struct {
+	Albums []*biz.AlbumPrime
+	Total  int32
+}
+
+func (r *GetAlbumListResult) Resp() *api.GetAlbumListResp {
+	return &api.GetAlbumListResp{
+		Code:        util.BaseCodeOK,
+		Message:     util.BaseMsgOK,
+		Albums:      collext.Pick(r.Albums, biz.Album),
+	}
+}

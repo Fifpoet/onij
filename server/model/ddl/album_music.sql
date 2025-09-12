@@ -5,6 +5,7 @@ CREATE TABLE
     `time_length` INT NULL COMMENT '时长(s)',
     `music_id` BIGINT NOT NULL COMMENT '音乐id',
     `album_id` BIGINT NOT NULL COMMENT '专辑id',
+    `artist_ids` VARCHAR(255) NULL COMMENT '艺术家id',
     `is_available` TINYINT NOT NULL COMMENT '是否可用',
     `created_at` DATETIME NULL COMMENT '创建时间',
     `updated_at` DATETIME NULL COMMENT '更新时间',
