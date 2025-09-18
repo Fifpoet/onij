@@ -28,13 +28,7 @@ const (
 type UploadInfo struct {
 	Name string
 
-	// 文件信息, 三选一
-	LocalPath string
-
-	Bytes []byte
-
-	File multipart.File
-	Size int64
+	Url string
 
 	// extra
 	OssFolder []string
@@ -48,7 +42,7 @@ func getQiniuMac() *qbox.Mac {
 	return qbox.NewMac(ak, sk)
 }
 
-func GetFiles(ctx context.Context, key string) ([]byte, error) {
+func GetFile(ctx context.Context, key string) ([]byte, error) {
 	bucketManager := getManager()
 
 	var res []byte
@@ -78,7 +72,11 @@ func UploadFile(ctx context.Context, info UploadInfo) (string, error) {
 	putExtra := storage.PutExtra{}
 
 	var err error
-	ossPath := strings.Join(info.OssFolder, "/") + "/" + info.Name + "-" + uuid.New().String()[:8]
+	ossPath := strings.Join(info.OssFolder, "/") + "/" + info.Name
+
+	bs, err = Get(info.Url)
+	if 
+
 	if info.LocalPath != "" {
 		err = formUploader.PutFile(ctx, &ret, upToken, ossPath, info.LocalPath, &putExtra)
 	} else if len(info.Bytes) > 0 {

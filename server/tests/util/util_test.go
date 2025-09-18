@@ -44,7 +44,7 @@ func TestGetFileName(t *testing.T) {
 }
 
 func TestGetList(t *testing.T) {
-	files, err := util.GetFiles(nil, "music/a")
+	files, err := util.GetFile(nil, "music/a")
 	if err != nil {
 		t.Fatalf("get file list failed %v", err)
 		return

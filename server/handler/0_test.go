@@ -23,3 +23,8 @@ func TestGetMusicDetail(t *testing.T) {
 	}
 	t.Log(tool.ToJson(detail))
 }
+
+
+func TestUploadAlbum(t *testing.T){
+	
+}

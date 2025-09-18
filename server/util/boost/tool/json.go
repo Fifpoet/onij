@@ -2,6 +2,7 @@ package tool
 
 import (
 	"bytes"
+	"encoding/json"
 	"strings"
 
 	"github.com/golang/protobuf/jsonpb"
@@ -99,6 +100,16 @@ func (j *jsonTool) UseNumber() jsoniter.API {
 func ToJson(v any) string {
 	str, _ := Json.MarshalToString(v)
 	return str
+}
+
+func ToIndentJson(v any) string {
+	js := ToJson(v)
+	buf := bytes.NewBuffer(make([]byte, 0, len(js)))
+	err := json.Indent(buf, []byte(js), "", "\t")
+	if err != nil {
+		return js
+	}
+	return buf.String()
 }
 
 // LoadJson 将 json 字符串转换为结构体，如果 withDefault 为 true, 则在转换失败时返回结构体的默认值

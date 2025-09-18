@@ -67,7 +67,7 @@ func (l *albumLogic) GetDetail(ctx context.Context, param *prm.GetAlbumDetailPar
 	album := albums[0]
 	albumPrime := biz.AlbumToBiz(album)
 
-	albumMusics, err := l.AlbumMusicDal.GetByAlbumId(ctx, param.AlbumId)
+	albumMusics, err := l.AlbumMusicDal.GetByAlbumIds(ctx, param.AlbumId)
 	if err != nil {
 		return nil, err
 	}
