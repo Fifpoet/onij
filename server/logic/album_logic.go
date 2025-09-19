@@ -8,8 +8,10 @@ import (
 	"onij/biz/prm"
 	"onij/infra"
 	"onij/model"
+	"onij/model/api"
 	"onij/util"
 	"onij/util/boost/collection/collext"
+	"onij/util/boost/exp"
 	"onij/util/boost/tool"
 	"time"
 )
@@ -39,14 +41,32 @@ func (l *albumLogic) Upload(ctx context.Context, param *prm.UploadAlbumParam) (*
 		IssueTime:   time.Unix(int64(param.IssueTime), 0),
 		CoverFileId: param.CoverFileId,
 		LiveUrl:     param.LiveUrl,
+		ThirdId:     exp.ValueOrZero(param.ThirdId),
 	}
 	if param.AlbumId == nil {
 		album.Id = util.IdGen.Generate()
 	} else {
 		album.Id = *param.AlbumId
 	}
-
 	_, err := l.AlbumDal.Save(ctx, album)
+	if err != nil {
+		return nil, err
+	}
+
+	// albumMusic
+	albumMusics := collext.Pick(param.AlbumMusics, func(a *api.UploadAlbumReq_AlbumMusic) *model.AlbumMusic {
+		return &model.AlbumMusic{
+			Id:          util.IdGen.Generate(),
+			Name:        a.Name,
+			TimeLength:  a.TimeLength,
+			MusicId:     a.MusicId,
+			AlbumId:     album.Id,
+			ArtistNames: tool.ToJson(a.ArtistName),
+			ThirdId:     exp.ValueOrZero(a.ThirdId),
+			IsAvailable: util.BoolToInt16(a.IsAvailable),
+		}
+	})
+	_, err = l.AlbumMusicDal.Save(ctx, albumMusics...)
 	if err != nil {
 		return nil, err
 	}

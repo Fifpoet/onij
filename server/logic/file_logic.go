@@ -96,6 +96,22 @@ func (l *fileLogic) Upload(ctx context.Context, param *prm.UploadFileParam) (*pr
 	if err != nil {
 		return nil, err
 	}
+	hash, err := util.CalcFileHash(bytes)
+	if err != nil {
+		return nil, err
+	}
+
+	// check hash
+	fil, err := l.FileDal.GetByParentAndHash(ctx, param.ParentId, hash)
+	if err != nil {
+		return nil, err
+	}
+	if fil != nil {
+		return &prm.UploadFileResult{
+			FileIds: []int64{fil.Id},
+		}, nil
+	}
+
 	folder, err := l.FileDal.GetFolderPathByParentId(ctx, param.ParentId)
 	if err != nil {
 		return nil, err
@@ -108,10 +124,7 @@ func (l *fileLogic) Upload(ctx context.Context, param *prm.UploadFileParam) (*pr
 	if err != nil {
 		return nil, err
 	}
-	hash, err := util.CalcFileHash(bytes)
-	if err != nil {
-		return nil, err
-	}
+
 	id := util.IdGen.Generate()
 	_, err = l.FileDal.Save(ctx, &model.File{
 		Id:       id,

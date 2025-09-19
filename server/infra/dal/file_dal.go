@@ -15,7 +15,7 @@ type FileDal interface {
 
 	Save(ctx context.Context, files ...*model.File) (int64, error)
 	GetByIds(ctx context.Context, ids ...int64) ([]*model.File, error)
-	GetByParentAndHash(ctx context.Context, parentId int64, hashes ...string) ([]*model.File, error)
+	GetByParentAndHash(ctx context.Context, parentId int64, hashes ...string) (*model.File, error)
 	GetListByParentIdAndKeyword(ctx context.Context, parentId *int64, keyword *string, page util.Page) ([]*model.File, int32, error)
 	GetFolderPathByParentId(ctx context.Context, parentId int64) ([]string, error)
 	DeleteByIds(ctx context.Context, ids ...int64) ([]*model.File, error)
@@ -52,7 +52,7 @@ func (d *fileDal) GetByIds(ctx context.Context, ids ...int64) ([]*model.File, er
 	return res, nil
 }
 
-func (d *fileDal) GetByParentAndHash(ctx context.Context, parentId int64, hashes ...string) ([]*model.File, error) {
+func (d *fileDal) GetByParentAndHash(ctx context.Context, parentId int64, hashes ...string) (*model.File, error) {
 	if len(hashes) == 0 {
 		return nil, nil
 	}
@@ -61,7 +61,10 @@ func (d *fileDal) GetByParentAndHash(ctx context.Context, parentId int64, hashes
 		logs.Error("fileDal, GetByParentAndHash error = %v", err)
 		return nil, err
 	}
-	return res, nil
+	if len(res) == 0 {
+		return nil, nil
+	}
+	return res[0], nil
 }
 
 func (d *fileDal) GetListByParentIdAndKeyword(ctx context.Context, parentId *int64, keyword *string, page util.Page) ([]*model.File, int32, error) {

@@ -16,15 +16,15 @@ import (
 var ctx = context.Background()
 var app *inject.App
 
-const ArtistAvatarFolderId = 11111111111
-const AlbumCoverFolderId = 11111111111
+const ArtistAvatarFolderId = 10000000000002
+const AlbumCoverFolderId = 10000000000003
 
 func init() {
 	app = inject.InitializeApp()
 }
 
 func FetchAlbum(thirdAlbumIds ...int64) (*AlbumResponse, error) {
-	file, err := os.ReadFile("album.json")
+	file, err := os.ReadFile("/Users/asen/Documents/gopath/src/owner/onij/server/tests/main/album.json")
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +86,7 @@ func processAlbum(album Album, songs []Song, artistIds []int64) (int64, error) {
 		return 0, errdef.ErrAlbumExisted
 	}
 	fileUploadRes, err := app.FileLogic.Upload(ctx, &prm.UploadFileParam{
-		ParentId: ArtistAvatarFolderId,
+		ParentId: AlbumCoverFolderId,
 		Url:      exp.Ptr(album.PicURL),
 	})
 	if err != nil {
