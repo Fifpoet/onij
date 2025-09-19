@@ -119,3 +119,6 @@ func processAlbum(album Album, songs []Song, artistIds []int64) (int64, error) {
 	}
 	return albumResp.AlbumId, nil
 }
+
+func FetchMusic(thirdMusicIds ...int64) error {
+}
