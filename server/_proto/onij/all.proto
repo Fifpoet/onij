@@ -20,6 +20,7 @@ message UploadFileReq {
   }
   int64 parent_id = 1;         // 父级文件夹id
   repeated FileInfo files = 2; // 文件列表
+  optional string url = 3;     // 后端自己做转存
 }
 message UploadFileResp {
   int32 code = 1;
@@ -82,7 +83,8 @@ message UploadAlbumReq {
     string name = 1;
     int32 time_length = 2;
     int64 music_id = 3;
-    bool is_available = 4;
+    repeated int64 artist_id = 4;
+    bool is_available = 10;
   }
   string name = 1;
   string profile = 2;
@@ -136,7 +138,7 @@ message GetMusicListResp {
 // 获取文件列表
 message GetFileListReq {
   optional int64 parent_id = 1;
-  string keyword = 2;
+  optional string keyword = 2;
   int32 page = 10;
   int32 limit = 11;
 }
@@ -147,14 +149,13 @@ message GetFileListResp {
   int32 total = 11;
 }
 
-message GetArtistDetailReq {
+message GetArtistListReq {
   string keyword = 1;
-  optional TagGroup tag_group = 2;
-  optional TagType tag_type = 3;
+  string name = 2;
   int32 page = 10;
   int32 limit = 11;
 }
-message GetArtistDetailResp {
+message GetArtistListResp {
   int32 code = 1;
   string message = 2;
 
@@ -237,6 +238,10 @@ service AllService {
   // 获取文件列表
   rpc GetFileList(GetFileListReq) returns (GetFileListResp) {
     option (api.post) = "/file/list";
+  }
+  // 获取艺术家列表
+  rpc GetArtistList(GetArtistListReq) returns (GetArtistListResp) {
+    option (api.post) = "/artist/list";
   }
   // 删除文件
   rpc DeleteFile(DeleteFileReq) returns (DeleteFileResp) {

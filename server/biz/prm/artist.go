@@ -32,14 +32,31 @@ func (r *UploadArtistResult) Resp() *api.UploadArtistResp {
 	}
 }
 
-type SearchArtistParam struct {
-	Keyword  string
-	TagGroup *int32
-	TagType  *int32
-	Page     int32
-	Limit    int32
+type GetArtistListParam struct {
+	Keyword string
+	Name    string
+	Page    int32
+	Limit   int32
 }
 
-type SearchArtistResult struct {
+func NewGetArtistListParam(req *api.GetArtistListReq) *GetArtistListParam {
+	return &GetArtistListParam{
+		Keyword: req.Keyword,
+		Name:    req.Name,
+		Page:    req.Page,
+		Limit:   req.Limit,
+	}
+}
+
+type GetArtistListResult struct {
 	Artists []*model.Artist
+	Total   int32
+}
+
+func (r *GetArtistListResult) Resp() *api.GetArtistListResp {
+	return &api.GetArtistListResp{
+		Code:    util.BaseCodeOK,
+		Message: util.BaseMsgOK,
+		Artists: model.ArtistList(r.Artists),
+	}
 }

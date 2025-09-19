@@ -44,7 +44,7 @@ func TestGetFileName(t *testing.T) {
 }
 
 func TestGetList(t *testing.T) {
-	files, err := util.GetFile(nil, "music/a")
+	files, err := util.GetFile("music/a")
 	if err != nil {
 		t.Fatalf("get file list failed %v", err)
 		return
@@ -52,3 +52,7 @@ func TestGetList(t *testing.T) {
 	t.Log(files)
 }
 
+func TestGetSuffix(t *testing.T) {
+	ext := util.GetFileSuffix("https://p1.music.126.net/VnZiScyynLG7atLIZ2YPkw==/18686200114669622.jpg")
+	print(ext)
+}

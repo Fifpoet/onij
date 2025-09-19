@@ -16,7 +16,7 @@ type FileDal interface {
 	Save(ctx context.Context, files ...*model.File) (int64, error)
 	GetByIds(ctx context.Context, ids ...int64) ([]*model.File, error)
 	GetByParentAndHash(ctx context.Context, parentId int64, hashes ...string) ([]*model.File, error)
-	GetListByParentIdAndKeyword(ctx context.Context, parentId int64, keyword string, page util.Page) ([]*model.File, int32, error)
+	GetListByParentIdAndKeyword(ctx context.Context, parentId *int64, keyword *string, page util.Page) ([]*model.File, int32, error)
 	GetFolderPathByParentId(ctx context.Context, parentId int64) ([]string, error)
 	DeleteByIds(ctx context.Context, ids ...int64) ([]*model.File, error)
 	DeleteById(ctx context.Context, id int64) error
@@ -64,8 +64,15 @@ func (d *fileDal) GetByParentAndHash(ctx context.Context, parentId int64, hashes
 	return res, nil
 }
 
-func (d *fileDal) GetListByParentIdAndKeyword(ctx context.Context, parentId int64, keyword string, page util.Page) ([]*model.File, int32, error) {
-	opts := d.Q().ParentId(parentId).Name(cdb.LIKE("%" + keyword + "%")).ToOptions()
+func (d *fileDal) GetListByParentIdAndKeyword(ctx context.Context, parentId *int64, keyword *string, page util.Page) ([]*model.File, int32, error) {
+	q := d.Q()
+	if parentId != nil {
+		q = d.Q().ParentId(parentId)
+	}
+	if keyword != nil {
+		q = q.Name(cdb.LIKE("%" + *keyword + "%"))
+	}
+	opts := d.Q().ToOptions()
 
 	cnt, err := d.Count(ctx, opts...)
 	if err != nil {
@@ -88,7 +95,7 @@ func (d *fileDal) GetListByParentIdAndKeyword(ctx context.Context, parentId int6
 
 func (d *fileDal) GetFolderPathByParentId(ctx context.Context, parentId int64) ([]string, error) {
 	// 递归查询file, 直到parentId为0
-	folders := []string{}
+	var folders []string
 	for parentId != 0 {
 		res, err := d.QueryFirst(ctx, d.Q().Id(parentId).ToOptions()...)
 		if err != nil {

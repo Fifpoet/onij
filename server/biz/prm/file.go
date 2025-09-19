@@ -11,12 +11,14 @@ import (
 type UploadFileParam struct {
 	ParentId int64
 	Files    []*api.UploadFileReq_FileInfo
+	Url      *string
 }
 
 func NewUploadFileParam(req *api.UploadFileReq) *UploadFileParam {
 	return &UploadFileParam{
 		ParentId: req.ParentId,
 		Files:    req.Files,
+		Url:      req.Url,
 	}
 }
 
@@ -34,7 +36,7 @@ func (r *UploadFileResult) Resp() *api.UploadFileResp {
 
 type GetFileListParam struct {
 	ParentId *int64
-	Keyword  string
+	Keyword  *string
 	Page     util.Page
 }
 

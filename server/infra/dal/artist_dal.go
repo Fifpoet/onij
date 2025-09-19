@@ -3,6 +3,7 @@ package dal
 import (
 	"context"
 	"onij/model"
+	"onij/util"
 	"onij/util/cdb"
 	"onij/util/logs"
 
@@ -15,8 +16,7 @@ type ArtistDal interface {
 	Save(ctx context.Context, artists ...*model.Artist) (int64, error)
 	GetById(ctx context.Context, id int64) (*model.Artist, error)
 	GetByIds(ctx context.Context, ids ...int64) ([]*model.Artist, error)
-	GetByName(ctx context.Context, name string) (*model.Artist, error)
-	GetByKeyword(ctx context.Context, keyword string, offset, limit int32) ([]*model.Artist, int32, error)
+	GetByName(ctx context.Context, name string, keyword string, page util.Page) ([]*model.Artist, int32, error)
 	DeleteById(ctx context.Context, id int64) error
 }
 
@@ -59,25 +59,23 @@ func (d *artistDal) GetByIds(ctx context.Context, ids ...int64) ([]*model.Artist
 	return res, nil
 }
 
-func (d *artistDal) GetByName(ctx context.Context, name string) (*model.Artist, error) {
-	res, err := d.QueryFirst(ctx, d.Q().Name(name).ToOptions()...)
-	if err != nil {
-		logs.Error("artistDal, GetByName error = %v", err)
-		return nil, err
+func (d *artistDal) GetByName(ctx context.Context, name string, keyword string, page util.Page) ([]*model.Artist, int32, error) {
+	q := d.Q()
+	if len(name) > 0 {
+		q = q.Name(name)
 	}
-	return res, nil
-}
-
-func (d *artistDal) GetByKeyword(ctx context.Context, keyword string, offset, limit int32) ([]*model.Artist, int32, error) {
-	opts := d.Q().Name(cdb.LIKE("%" + keyword + "%")).ToOptions()
+	if len(keyword) > 0 {
+		q = q.Name(cdb.LIKE(keyword))
+	}
+	opts := q.ToOptions()
 	cnt, err := d.Count(ctx, opts...)
 	if err != nil {
-		logs.Error("artistDal, GetByKeyword count error = %v", err)
+		logs.Error("artistDal, GetByName count error = %v", err)
 		return nil, 0, err
 	}
-	res, err := d.QuerySlice(ctx, int(offset), int(limit), opts...)
+	res, err := d.QuerySlice(ctx, page.PageNum(), page.LimitNum(), opts...)
 	if err != nil {
-		logs.Error("artistDal, GetByKeyword query error = %v", err)
+		logs.Error("artistDal, GetByName query error = %v", err)
 		return nil, 0, err
 	}
 	return res, int32(cnt), nil

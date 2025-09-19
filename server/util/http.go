@@ -5,7 +5,8 @@ import (
 	"io"
 	"net/http"
 	"onij/util/logs"
-
+	"path"
+	"strings"
 )
 
 func Get(url string, param map[string]string) ([]byte, error) {
@@ -41,4 +42,20 @@ func Get(url string, param map[string]string) ([]byte, error) {
 	}
 
 	return body, nil
+}
+
+func GetUrlResourceName(url string) string {
+	// 去除查询参数和片段标识
+	cleanURL := strings.Split(url, "?")[0]
+	cleanURL = strings.Split(cleanURL, "#")[0]
+
+	// 获取路径的最后一部分
+	resource := path.Base(cleanURL)
+
+	// 如果结果是空或者斜杠，返回空字符串
+	if resource == "" || resource == "/" || resource == "." {
+		return ""
+	}
+
+	return resource
 }

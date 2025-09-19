@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 	"fmt"
+	"onij/biz/errdef"
 	"onij/biz/getter"
 	"onij/biz/prm"
 	"onij/infra"
@@ -52,12 +53,7 @@ func (l *fileLogic) Delete(ctx context.Context, param *prm.DeleteFileParam) (*pr
 }
 
 func (l *fileLogic) GetList(ctx context.Context, param *prm.GetFileListParam) (*prm.GetFileListResult, error) {
-	parentId := int64(0)
-	if param.ParentId != nil {
-		parentId = *param.ParentId
-	}
-
-	files, total, err := l.FileDal.GetListByParentIdAndKeyword(ctx, parentId, param.Keyword, param.Page)
+	files, total, err := l.FileDal.GetListByParentIdAndKeyword(ctx, param.ParentId, param.Keyword, param.Page)
 	if err != nil {
 		return nil, err
 	}
@@ -69,24 +65,68 @@ func (l *fileLogic) GetList(ctx context.Context, param *prm.GetFileListParam) (*
 }
 
 func (l *fileLogic) Upload(ctx context.Context, param *prm.UploadFileParam) (*prm.UploadFileResult, error) {
-	fis := collext.Pick(param.Files, func(f *api.UploadFileReq_FileInfo) *model.File {
-		return &model.File{
-			Id:       util.IdGen.Generate(),
-			Name:     f.Filename,
-			Format:   int32(f.Format),
-			StoreKey: f.StoreKey,
-			ParentId: param.ParentId,
-			Hash:     f.Hash,
-			Size:     f.Size,
+	if param.Url == nil {
+		fis := collext.Pick(param.Files, func(f *api.UploadFileReq_FileInfo) *model.File {
+			return &model.File{
+				Id:       util.IdGen.Generate(),
+				Name:     f.Filename,
+				Format:   int32(f.Format),
+				StoreKey: f.StoreKey,
+				ParentId: param.ParentId,
+				Hash:     f.Hash,
+				Size:     f.Size,
+			}
+		})
+		_, err := l.FileDal.Save(ctx, fis...)
+		if err != nil {
+			return nil, err
 		}
-	})
+		return &prm.UploadFileResult{
+			FileIds: collext.Pick(fis, getter.FileId),
+		}, nil
+	}
 
-	_, err := l.FileDal.Save(ctx, fis...)
+	url := *param.Url
+	name := util.GetUrlResourceName(url)
+	ext := util.GetFileSuffix(name)
+	if len(ext) == 0 {
+		return nil, errdef.ErrUrlFileExtUnknown
+	}
+	bytes, err := util.Get(url, nil)
 	if err != nil {
 		return nil, err
 	}
-
+	folder, err := l.FileDal.GetFolderPathByParentId(ctx, param.ParentId)
+	if err != nil {
+		return nil, err
+	}
+	key, err := util.UploadFile(ctx, util.UploadInfo{
+		Name:      name,
+		Bytes:     bytes,
+		OssFolder: folder,
+	})
+	if err != nil {
+		return nil, err
+	}
+	hash, err := util.CalcFileHash(bytes)
+	if err != nil {
+		return nil, err
+	}
+	id := util.IdGen.Generate()
+	_, err = l.FileDal.Save(ctx, &model.File{
+		Id:       id,
+		Name:     name,
+		Format:   int32(util.GetFileType(name)),
+		Size:     int64(len(bytes)),
+		StoreKey: key,
+		Hash:     hash,
+		ParentId: param.ParentId,
+		Extra:    "",
+	})
+	if err != nil {
+		return nil, err
+	}
 	return &prm.UploadFileResult{
-		FileIds: collext.Pick(fis, getter.FileId),
+		FileIds: []int64{id},
 	}, nil
 }

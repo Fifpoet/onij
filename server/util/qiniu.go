@@ -3,18 +3,15 @@ package util
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	_ "image/gif"  // 必须导入
 	_ "image/jpeg" // 必须导入
 	_ "image/png"  // 必须导入
 	"log"
-	"mime/multipart"
 	"os"
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/qiniu/go-sdk/v7/auth/qbox"
 	"github.com/qiniu/go-sdk/v7/storage"
 )
@@ -25,12 +22,12 @@ const (
 	dm = "http://cloud.onij.fun"
 )
 
+var zone = &storage.ZoneHuadong
+
 type UploadInfo struct {
-	Name string
-
-	Url string
-
-	// extra
+	Name      string
+	Url       string
+	Bytes     []byte
 	OssFolder []string
 }
 
@@ -42,7 +39,7 @@ func getQiniuMac() *qbox.Mac {
 	return qbox.NewMac(ak, sk)
 }
 
-func GetFile(ctx context.Context, key string) ([]byte, error) {
+func GetFile(key string) ([]byte, error) {
 	bucketManager := getManager()
 
 	var res []byte
@@ -63,7 +60,7 @@ func UploadFile(ctx context.Context, info UploadInfo) (string, error) {
 	putPolicy := storage.PutPolicy{Scope: bk}
 	upToken := putPolicy.UploadToken(getQiniuMac())
 	cfg := storage.Config{
-		Zone:          &storage.ZoneHuadong,
+		Zone:          zone,
 		UseHTTPS:      false,
 		UseCdnDomains: false,
 	}
@@ -74,23 +71,19 @@ func UploadFile(ctx context.Context, info UploadInfo) (string, error) {
 	var err error
 	ossPath := strings.Join(info.OssFolder, "/") + "/" + info.Name
 
-	bs, err = Get(info.Url)
-	if 
-
-	if info.LocalPath != "" {
-		err = formUploader.PutFile(ctx, &ret, upToken, ossPath, info.LocalPath, &putExtra)
-	} else if len(info.Bytes) > 0 {
-		err = formUploader.Put(ctx, &ret, upToken, ossPath, bytes.NewReader(info.Bytes), int64(len(info.Bytes)), &putExtra)
-	} else if info.File != nil {
-		err = formUploader.Put(ctx, &ret, upToken, ossPath, info.File, info.Size, &putExtra)
+	var bs []byte
+	if len(info.Bytes) > 0 {
+		bs = info.Bytes
 	} else {
-		return "", errors.New("no file to upload")
+		bs, err = Get(info.Url, nil)
+		if err != nil {
+			return "", err
+		}
 	}
+	err = formUploader.Put(ctx, &ret, upToken, ossPath, bytes.NewReader(bs), int64(len(bs)), &putExtra)
 	if err != nil {
-		log.Printf("UploadFile, upload file failed: err = %v \n", err)
-		return "", fmt.Errorf("file upload failed: %v", err)
+		return "", err
 	}
-	fmt.Printf("File uploaded successfully, key: %s; hash: %s \n", ret.Key, ret.Hash)
 	return ret.Key, nil
 }
 
@@ -119,7 +112,7 @@ func DeleteFile(key string) error {
 func getManager() *storage.BucketManager {
 	mac := getQiniuMac()
 	cfg := storage.Config{
-		Zone:          &storage.ZoneHuadong,
+		Zone:          zone,
 		UseHTTPS:      false,
 		UseCdnDomains: false,
 	}

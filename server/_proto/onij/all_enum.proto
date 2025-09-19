@@ -6,9 +6,18 @@ option go_package = "api";
 
 enum FileType {
   FT_Unknown = 0;
-  FT_Mp3 = 1;
-  FT_Lyrics = 2;
-  FT_Png = 3;
+  FT_Pdf = 1;
+  FT_Word = 2;
+  FT_Excel = 3;
+  FT_PowerPoint = 4;
+  FT_Image = 5;
+  FT_Video = 6;
+  FT_Audio = 7;
+  FT_Text = 8;
+  FT_Archive = 9;
+  FT_Code = 10;
+  FT_CSV = 11;
+  FT_Executable = 12;
   FT_Folder = 99;
 }
 

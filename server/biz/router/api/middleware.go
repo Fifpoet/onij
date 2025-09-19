@@ -150,3 +150,8 @@ func _getalbumlistMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _getartistlistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
