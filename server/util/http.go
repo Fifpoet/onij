@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func Get(url string, param map[string]string) ([]byte, error) {
+func GET(url string, param map[string]string) ([]byte, error) {
 	for k, v := range param {
 		if k == "" || v == "" {
 			continue

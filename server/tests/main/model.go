@@ -218,3 +218,32 @@ type CommentResource struct {
 	SubTitle  interface{} `json:"subTitle"`
 	WebURL    interface{} `json:"webUrl"`
 }
+
+// LyricResponse 对应 lyric.json 顶层结构
+type LyricResponse struct {
+	Sgc       bool       `json:"sgc"`
+	Sfy       bool       `json:"sfy"`
+	Qfy       bool       `json:"qfy"`
+	LyricUser LyricUser  `json:"lyricUser"`
+	Lrc       LyricBlock `json:"lrc"`
+	KLyric    LyricBlock `json:"klyric"`
+	TLyric    LyricBlock `json:"tlyric"`
+	RomaLrc   LyricBlock `json:"romalrc"`
+	Code      int        `json:"code"`
+}
+
+// LyricUser 对应 lyricUser
+type LyricUser struct {
+	ID       int    `json:"id"`
+	Status   int    `json:"status"`
+	Demand   int    `json:"demand"`
+	UserID   int    `json:"userid"`
+	Nickname string `json:"nickname"`
+	Uptime   int64  `json:"uptime"`
+}
+
+// LyricBlock 对应 lrc/klyric/tlyric/romalrc
+type LyricBlock struct {
+	Version int    `json:"version"`
+	Lyric   string `json:"lyric"`
+}

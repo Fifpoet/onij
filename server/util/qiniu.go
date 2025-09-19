@@ -75,7 +75,7 @@ func UploadFile(ctx context.Context, info UploadInfo) (string, error) {
 	if len(info.Bytes) > 0 {
 		bs = info.Bytes
 	} else {
-		bs, err = Get(info.Url, nil)
+		bs, err = GET(info.Url, nil)
 		if err != nil {
 			return "", err
 		}

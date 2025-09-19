@@ -92,7 +92,7 @@ func (l *fileLogic) Upload(ctx context.Context, param *prm.UploadFileParam) (*pr
 	if len(ext) == 0 {
 		return nil, errdef.ErrUrlFileExtUnknown
 	}
-	bytes, err := util.Get(url, nil)
+	bytes, err := util.GET(url, nil)
 	if err != nil {
 		return nil, err
 	}

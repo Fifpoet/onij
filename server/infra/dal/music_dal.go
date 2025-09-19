@@ -18,8 +18,10 @@ type MusicDal interface {
 
 	Save(ctx context.Context, musics ...*model.Music) (int64, error)
 	GetByIds(ctx context.Context, ids ...int64) ([]*model.Music, error)
+	GetByThirdIds(ctx context.Context, thirdIds ...int64) ([]*model.Music, error)
 	Search(ctx context.Context, artistIds []int64, tagTypes []int32, keyword string, pageInfo util.Page) ([]*model.Music, error)
 	DeleteById(ctx context.Context, id int64) error
+	UpdateById(ctx context.Context, hook func(u model.MusicUpdater), id int64) (bool, error)
 }
 
 type musicDal struct {
@@ -32,12 +34,28 @@ func NewMusicDal(db *cdb.DefaultProxy) MusicDal {
 	}
 }
 
+func (d *musicDal) UpdateById(ctx context.Context, hook func(u model.MusicUpdater), id int64) (bool, error) {
+	return updateById(ctx, d, hook, id)
+}
+
 func (d *musicDal) With(tx *gorm.DB) MusicDal {
 	return &musicDal{d.Dal.With(tx)}
 }
 
 func (d *musicDal) Save(ctx context.Context, musics ...*model.Music) (int64, error) {
 	return saveUpdatable(ctx, d, musics)
+}
+
+func (d *musicDal) GetByThirdIds(ctx context.Context, thirdIds ...int64) ([]*model.Music, error) {
+	if len(thirdIds) == 0 {
+		return nil, nil
+	}
+	res, err := d.QueryAll(ctx, d.Q().ThirdId(thirdIds).ToOptions()...)
+	if err != nil {
+		logs.Error("musicDal, GetByThirdIds error = %v", err)
+		return nil, err
+	}
+	return res, nil
 }
 
 func (d *musicDal) GetById(ctx context.Context, id int64) (*model.Music, error) {

@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"onij/biz/errdef"
+	"onij/biz/getter"
 	"onij/biz/prm"
 	"onij/inject"
+	"onij/model"
 	"onij/model/api"
 	"onij/util"
 	"onij/util/boost/collection/collext"
@@ -24,7 +26,7 @@ func init() {
 }
 
 func FetchAlbum(thirdAlbumIds ...int64) (*AlbumResponse, error) {
-	file, err := os.ReadFile("/Users/asen/Documents/gopath/src/owner/onij/server/tests/main/album.json")
+	file, err := os.ReadFile("/Users/asen/Documents/gopath/src/owner/onij/server/tests/main/jsn/album.json")
 	if err != nil {
 		return nil, err
 	}
@@ -121,4 +123,30 @@ func processAlbum(album Album, songs []Song, artistIds []int64) (int64, error) {
 }
 
 func FetchMusic(thirdMusicIds ...int64) error {
+	file, err := os.ReadFile("/Users/asen/Documents/gopath/src/owner/onij/server/tests/main/jsn/lyric.json")
+	if err != nil {
+		return err
+	}
+
+	musics, err := app.MusicDal.GetByIds(ctx, thirdMusicIds...)
+	if err != nil {
+		return err
+	}
+	if len(musics) < len(thirdMusicIds) {
+		return errdef.ErrThirdMusicIdNotFound
+	}
+	musicMap := collext.Map(musics, getter.MusicThirdId)
+	for _, thirdId := range thirdMusicIds {
+		lyc := tool.LoadJson[LyricResponse](string(file), true)
+		if len(lyc.Lrc.Lyric) == 0 {
+			return errdef.ErrResponseNoLyric
+		}
+		_, err = app.MusicDal.UpdateById(ctx, func(u model.MusicUpdater) {
+			u.LyricContent(lyc.Lrc.Lyric)
+		}, musicMap[thirdId].Id)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

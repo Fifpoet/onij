@@ -11,3 +11,6 @@ func MusicArtistIds(m *model.Music) []int64 {
 func MusicId(m *model.Music) int64 {
 	return m.Id
 }
+func MusicThirdId(m *model.Music) int64 {
+	return m.ThirdId
+}
