@@ -106,26 +106,27 @@ func (l *albumLogic) GetDetail(ctx context.Context, param *prm.GetAlbumDetailPar
 }
 
 func (l *albumLogic) GetList(ctx context.Context, param *prm.GetAlbumListParam) (*prm.GetAlbumListResult, error) {
-	albums, cnt, err := l.AlbumDal.GetByKeywordAndArtistId(ctx, param.Keyword, param.ArtistId, util.Page{
-		Page: param.Page,
+	var artistIds []int64
+	if param.ArtistId != nil {
+		artistIds = append(artistIds, *param.ArtistId)
+	}
+	albums, cnt, err := l.AlbumDal.GetByNameAndArtistId(ctx, param.Keyword, "", artistIds, util.Page{
+		Page:  param.Page,
 		Limit: param.Limit,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	files , err  := l.FileDal.GetByIds(ctx, collext.Pick(albums, getter.AlbumCoverFileId)...)
+	files, err := l.FileDal.GetByIds(ctx, collext.Pick(albums, getter.AlbumCoverFileId)...)
 	if err != nil {
 		return nil, err
 	}
 	fileMap := collext.Map(files, getter.FileId)
 
-	albumMusics, err := l.AlbumMusicDal.GetByAlbumIds(ctx, collext.Pick(albums, getter.AlbumId)...)
-	if err != nil {
-		return nil, err
+	if param.ArtistId == nil {
+		artistIds = collext.PickCombine(albums, getter.AlbumArtistIds)
 	}
-	artistIds := collext.Distinct(append(collext.PickCombine(albumMusics, getter.AlbumMusicArtistIds), 
-	collext.PickCombine(albums, getter.AlbumArtistIds)...))
 
 	artists, err := l.ArtistDal.GetByIds(ctx, artistIds...)
 	if err != nil {
@@ -138,7 +139,7 @@ func (l *albumLogic) GetList(ctx context.Context, param *prm.GetAlbumListParam) 
 		prime.Artists = collext.Pick(artists, biz.ArtistToBiz)
 		return prime
 	})
-	
+
 	return &prm.GetAlbumListResult{
 		Albums: albumPrimes,
 		Total:  cnt,

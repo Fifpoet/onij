@@ -8,6 +8,7 @@ CREATE TABLE
     `issue_time` DATETIME NULL COMMENT '发行时间',
     `cover_file_id` BIGINT NULL COMMENT '封面文件id',
     `live_url` VARCHAR(1024)  NULL COMMENT '视频地址',
+    `third_id` BIGINT NULL COMMENT '三方id',
     `created_at` DATETIME NULL COMMENT '创建时间',
     `updated_at` DATETIME NULL COMMENT '更新时间',
     `deleted_at` DATETIME NULL COMMENT '删除时间',

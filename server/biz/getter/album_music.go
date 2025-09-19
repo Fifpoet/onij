@@ -12,5 +12,5 @@ func AlbumMusicAlbumId(a *model.AlbumMusic) int64 {
 	return a.AlbumId
 }
 func AlbumMusicArtistIds(a *model.AlbumMusic) []int64 {
-	return *tool.LoadJson[[]int64](a.ArtistIds, true)
+	return *tool.LoadJson[[]int64](a.ArtistNames, true)
 }

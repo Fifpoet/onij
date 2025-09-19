@@ -16,6 +16,7 @@ CREATE TABLE
     `lyric_content` TEXT NULL COMMENT '歌词内容',
     `root_id` BIGINT NULL COMMENT '根id',
     `priority` INT NULL COMMENT '优先级',
+    `third_id` BIGINT NULL COMMENT '三方id',
     `created_at` DATETIME NULL COMMENT '创建时间',
     `updated_at` DATETIME NULL COMMENT '更新时间',
     `deleted_at` DATETIME NULL COMMENT '删除时间',

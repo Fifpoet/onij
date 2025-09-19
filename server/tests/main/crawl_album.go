@@ -5,7 +5,9 @@ import (
 	"onij/biz/errdef"
 	"onij/biz/prm"
 	"onij/inject"
+	"onij/model/api"
 	"onij/util"
+	"onij/util/boost/collection/collext"
 	"onij/util/boost/exp"
 	"onij/util/boost/tool"
 	"os"
@@ -21,7 +23,7 @@ func init() {
 	app = inject.InitializeApp()
 }
 
-func FetchAlbum(albumIds ...int64) (*AlbumResponse, error) {
+func FetchAlbum(thirdAlbumIds ...int64) (*AlbumResponse, error) {
 	file, err := os.ReadFile("album.json")
 	if err != nil {
 		return nil, err
@@ -39,12 +41,10 @@ func FetchAlbum(albumIds ...int64) (*AlbumResponse, error) {
 	}
 
 	// 处理album
-	albumId, err := processAlbum(album.Album, album.Songs, artistIds)
+	_, err = processAlbum(album.Album, album.Songs, artistIds)
 	if err != nil {
 		return nil, err
 	}
-
-	// 处理album.songs
 
 	return album, nil
 }
@@ -94,10 +94,6 @@ func processAlbum(album Album, songs []Song, artistIds []int64) (int64, error) {
 	}
 
 	// album.songs
-	for _, song := range songs {
-
-	}
-
 	albumResp, err := app.AlbumLogic.Upload(ctx, &prm.UploadAlbumParam{
 		Name:        album.Name,
 		Profile:     album.Description,
@@ -106,7 +102,17 @@ func processAlbum(album Album, songs []Song, artistIds []int64) (int64, error) {
 		IssueTime:   int32(album.PublishTime / 1000),
 		AlbumType:   util.NameToAlbumType(album.Type),
 		LiveUrl:     "",
-		AlbumMusics: nil,
+		ThirdId:     exp.Ptr(int64(album.ID)),
+		AlbumMusics: collext.Pick(songs, func(song Song) *api.UploadAlbumReq_AlbumMusic {
+			return &api.UploadAlbumReq_AlbumMusic{
+				Name:        song.Name,
+				ArtistName:  collext.Pick(song.Ar, func(a Artist) string { return a.Name }),
+				TimeLength:  int32(song.Dt),
+				MusicId:     0,
+				IsAvailable: false,
+				ThirdId:     exp.Ptr(int64(song.ID)),
+			}
+		}),
 	})
 	if err != nil {
 		return 0, err

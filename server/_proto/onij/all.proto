@@ -49,6 +49,7 @@ message UploadMusicReq {
   optional string lyric_content = 17;
   AudioQuality audio_quality = 18;
   PerformType perform_type = 19;
+  optional int64 third_id = 30;
 
   // update
   optional int64 music_id = 50;
@@ -83,7 +84,8 @@ message UploadAlbumReq {
     string name = 1;
     int32 time_length = 2;
     int64 music_id = 3;
-    repeated int64 artist_id = 4;
+    repeated string artist_name = 4;
+    optional int64 third_id = 5;
     bool is_available = 10;
   }
   string name = 1;
@@ -93,9 +95,10 @@ message UploadAlbumReq {
   int32 issue_time = 5;
   AlbumType album_type = 6;
   string live_url = 7;
-  repeated AlbumMusic album_musics = 8;
+  optional int64 third_id = 8;
+  repeated AlbumMusic album_musics = 20;
 
-  optional int64 album_id = 10;
+  optional int64 album_id = 30;
 }
 message UploadAlbumResp {
   int32 code = 1;

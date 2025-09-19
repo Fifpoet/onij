@@ -27,6 +27,7 @@ const (
 	Music_LyricContent = "lyric_content"
 	Music_RootId       = "root_id"
 	Music_Priority     = "priority"
+	Music_ThirdId      = "third_id"
 	Music_CreatedAt    = "created_at"
 	Music_UpdatedAt    = "updated_at"
 	Music_DeletedAt    = "deleted_at"
@@ -52,6 +53,7 @@ type Music struct {
 	LyricContent string         `gorm:"column:lyric_content" json:"lyric_content"` // 歌词内容
 	RootId       int64          `gorm:"column:root_id" json:"root_id"`             // 根id
 	Priority     int32          `gorm:"column:priority" json:"priority"`           // 优先级
+	ThirdId      int64          `gorm:"column:third_id" json:"third_id"`           // 三方id
 	CreatedAt    time.Time      `gorm:"column:created_at" json:"created_at"`       // 创建时间
 	UpdatedAt    time.Time      `gorm:"column:updated_at" json:"updated_at"`       // 更新时间
 	DeletedAt    gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`       // 删除时间
@@ -82,6 +84,7 @@ func (Music) UpdatableColumns() []string {
 		Music_LyricContent,
 		Music_RootId,
 		Music_Priority,
+		Music_ThirdId,
 		Music_CreatedAt,
 		Music_UpdatedAt,
 		Music_DeletedAt,
@@ -201,6 +204,11 @@ func (q MusicQuerier) Priority(v any) MusicQuerier {
 	return q
 }
 
+func (q MusicQuerier) ThirdId(v any) MusicQuerier {
+	q.super().Add(Music_ThirdId, v)
+	return q
+}
+
 func (q MusicQuerier) CreatedAt(v any) MusicQuerier {
 	q.super().Add(Music_CreatedAt, v)
 	return q
@@ -300,6 +308,11 @@ func (u MusicUpdater) RootId(v int64) MusicUpdater {
 
 func (u MusicUpdater) Priority(v int32) MusicUpdater {
 	u.super().Add(Music_Priority, v)
+	return u
+}
+
+func (u MusicUpdater) ThirdId(v int64) MusicUpdater {
+	u.super().Add(Music_ThirdId, v)
 	return u
 }
 

@@ -15,6 +15,7 @@ type UploadAlbumParam struct {
 	IssueTime   int32
 	AlbumType   api.AlbumType
 	LiveUrl     string
+	ThirdId     *int64
 	AlbumMusics []*api.UploadAlbumReq_AlbumMusic
 	AlbumId     *int64
 }
@@ -28,6 +29,7 @@ func NewUploadAlbumParam(req *api.UploadAlbumReq) *UploadAlbumParam {
 		IssueTime:   req.IssueTime,
 		AlbumType:   req.AlbumType,
 		LiveUrl:     req.LiveUrl,
+		ThirdId:     req.ThirdId,
 		AlbumMusics: req.AlbumMusics,
 		AlbumId:     req.AlbumId,
 	}
@@ -69,18 +71,18 @@ func (r *GetAlbumDetailResult) Resp() *api.GetAlbumDetailResp {
 }
 
 type GetAlbumListParam struct {
-	Keyword   string
-	ArtistId  *int64
-	Page      int32
-	Limit     int32
+	Keyword  string
+	ArtistId *int64
+	Page     int32
+	Limit    int32
 }
 
 func NewGetAlbumListParam(req *api.GetAlbumListReq) *GetAlbumListParam {
 	return &GetAlbumListParam{
-		Keyword:   req.Keyword,
-		ArtistId:  req.ArtistId,
-		Page:      req.Page,
-		Limit:     req.Limit,
+		Keyword:  req.Keyword,
+		ArtistId: req.ArtistId,
+		Page:     req.Page,
+		Limit:    req.Limit,
 	}
 }
 
@@ -91,8 +93,8 @@ type GetAlbumListResult struct {
 
 func (r *GetAlbumListResult) Resp() *api.GetAlbumListResp {
 	return &api.GetAlbumListResp{
-		Code:        util.BaseCodeOK,
-		Message:     util.BaseMsgOK,
-		Albums:      collext.Pick(r.Albums, biz.Album),
+		Code:    util.BaseCodeOK,
+		Message: util.BaseMsgOK,
+		Albums:  collext.Pick(r.Albums, biz.Album),
 	}
 }

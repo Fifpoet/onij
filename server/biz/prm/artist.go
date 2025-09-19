@@ -57,6 +57,6 @@ func (r *GetArtistListResult) Resp() *api.GetArtistListResp {
 	return &api.GetArtistListResp{
 		Code:    util.BaseCodeOK,
 		Message: util.BaseMsgOK,
-		Artists: model.ArtistList(r.Artists),
+		//Artists: , TODO
 	}
 }
