@@ -1,6 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 
-const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://127.0.0.1:8889/";
+const SERVER_URL = import.meta.env.VITE_SERVER_URL;
+const NETEASE_URL = import.meta.env.VITE_NETEASE_URL;
 
 const apiClient = axios.create({
     baseURL: SERVER_URL,
@@ -48,17 +49,17 @@ apiClient.interceptors.response.use(
 );
 
 // GET 请求
-export const get = <T>(url: string, params?: any, config?: AxiosRequestConfig): Promise<T> => {
-    return apiClient.get(url, { params, ...config });
+export const get = async <T>(url: string, params?: any, config?: AxiosRequestConfig): Promise<T> => {
+    return apiClient.get(url, { params, ...config }).then(response => response.data);
 };
 
 // POST 请求
-export const post = <T = any, R = AxiosResponse<T>, _D = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<R> => {
-    return apiClient.post(url, data, config);
+export const post =  async<T = any, R = AxiosResponse<T>, _D = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<R> => {
+    return apiClient.post(url, data, config).then(response => response.data);
 };
 
 // 上传文件专用 POST 请求
-export const uploadFile = <T>(url: string, formData: FormData, config?: AxiosRequestConfig): Promise<T> => {
+export const uploadFile =  async<T>(url: string, formData: FormData, config?: AxiosRequestConfig): Promise<T> => {
     const uploadConfig = {
         headers: {
             'Content-Type': 'multipart/form-data',
@@ -68,5 +69,24 @@ export const uploadFile = <T>(url: string, formData: FormData, config?: AxiosReq
     return apiClient.post(url, formData, uploadConfig).then(response => response.data);
 };
 
-export default apiClient;
 
+
+// third api
+
+const neteaseApiClient = axios.create({
+    baseURL: NETEASE_URL,
+    timeout: 10000, // 请求超时时间
+    headers: {
+        'Content-Type': 'application/json', // 默认的请求头
+        'Accept': 'application/json',
+    },
+});
+
+export const getNetease =  async <T>(url: string, params?: any, config?: AxiosRequestConfig): Promise<T> => {
+    console.log('cnmmmmmmmmmmmmmmm', url, params, config);
+    return neteaseApiClient.get(url, { params, ...config }).then(response => response.data);
+};
+
+export const postNetease = async <T = any, R = AxiosResponse<T>, _D = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<R> => {
+    return neteaseApiClient.post(url, data, config).then(response => response.data);
+};

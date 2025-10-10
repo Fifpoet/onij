@@ -15,16 +15,27 @@
             </n-dropdown>
           </div>
         </div>
+        <n-input
+            placeholder="搜索"
+            :style="{ width: '300px' }"
+            @keyup.enter="onSearch"
+            v-model:value="searchValue"
+        >
+          <template #prefix>
+            <n-icon :component="SearchOutline" />
+          </template>
+        </n-input>
       </div>
     </div>
   </Transition>
 </template>
 
 <script setup lang="ts">
-import { h } from 'vue'
+import {h, ref} from 'vue'
 import { useAppStore, useMusicStore } from '@/store'
 import { RouterLink } from 'vue-router'
-import { NButton, NDropdown, NIcon } from 'naive-ui'
+import { NButton, NDropdown, NIcon, NInput } from 'naive-ui'
+import { SearchOutline } from '@vicons/ionicons5'
 import type { DropdownOption } from 'naive-ui'
 import { MidShowWhat } from '@/api/types'
 import {
@@ -38,8 +49,9 @@ import {
   DiamondOutline,
   ChatboxOutline
 } from '@vicons/ionicons5'
+import {useSearch} from "@/composables/searchMusic.ts";
+import {router} from "@/router.ts";
 
-const appStore = useAppStore()
 const musicStore = useMusicStore()
 
 interface MenuItem {
@@ -47,6 +59,17 @@ interface MenuItem {
   label: string
   icon: any
   onClick?: () => void
+}
+
+const { searchValue } = useSearch(0, 20)
+
+const onSearch = async () => {
+  await router.push({
+    name: 'Search',
+    query: {
+      q: searchValue.value
+    }
+  })
 }
 
 const menuItems: Record<string, MenuItem[]> = {

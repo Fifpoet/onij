@@ -10,7 +10,7 @@
       <!-- 右上角图标 -->
       <div class="flex items-center gap-3">
         <!-- 搜索按钮 -->
-        <button @click="appStore.setSearchFlag(true)" 
+        <button @click=""
           class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-dark-700">
           <n-icon size="20">
             <SearchOutline />

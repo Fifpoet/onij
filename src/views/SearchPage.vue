@@ -1,0 +1,158 @@
+<template>
+  <div class="w-full flex justify-center">
+    <div class="w-full max-w-4xl px-4 py-8">
+      <div class="mb-8">
+        <h3 class="text-xl font-semibold mb-4 border-l-4 border-blue-500 pl-2">歌手</h3>
+        <div class="artists-container">
+          <div v-if="searchResults.artists.length === 0" class="text-gray-500 py-4">
+            没有找到相关歌手
+          </div>
+          <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div
+              v-for="artist in searchResults.artists"
+              :key="artist.id"
+              class="flex items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer"
+            >
+              <img
+                :src="artist.picUrl || artist.img1v1Url || defaultAvatar"
+                :alt="artist.name"
+                class="w-12 h-12 rounded-full object-cover"
+              >
+              <div class="ml-3">
+                <div class="font-medium">{{ artist.name }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-8">
+        <h3 class="text-xl font-semibold mb-4 border-l-4 border-green-500 pl-2">专辑</h3>
+        <div class="albums-container">
+          <div v-if="searchResults.albums.length === 0" class="text-gray-500 py-4">
+            没有找到相关专辑
+          </div>
+          <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            <div
+              v-for="album in searchResults.albums"
+              :key="album.id"
+              class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer"
+            >
+              <img
+                :src="album.picUrl || defaultAlbumCover"
+                :alt="album.name"
+                class="w-full aspect-square object-cover rounded"
+              >
+              <div class="mt-2">
+                <div class="font-medium truncate">{{ album.name }}</div>
+                <div class="text-sm text-gray-500 truncate">{{ album.artist.name }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-8">
+        <h3 class="text-xl font-semibold mb-4 border-l-4 border-red-500 pl-2">单曲</h3>
+        <div class="songs-container">
+          <div v-if="searchResults.songs.length === 0" class="text-gray-500 py-4">
+            没有找到相关单曲
+          </div>
+          <div v-else class="space-y-2">
+            <div
+              v-for="song in searchResults.songs"
+              :key="song.id"
+              class="flex items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer"
+            >
+              <img
+                :src=" defaultAlbumCover"
+                :alt="song.name"
+                class="w-12 h-12 object-cover rounded"
+              >
+              <div class="ml-3 flex-1 min-w-0">
+                <div class="font-medium truncate">{{ song.name }}</div>
+                <div class="text-sm text-gray-500 truncate">
+                  {{ song.artists.map(a => a.name).join('/') }} - {{ song.album.name }}
+                </div>
+              </div>
+              <div class="text-sm text-gray-500 ml-2">
+                {{ formatDuration(song.duration) }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { useRoute } from 'vue-router'
+import { onMounted, reactive } from 'vue'
+import { useSearch } from '@/composables/searchMusic'
+import type { SongSearchItem, AlbumSearchItem, ArtistSearchItem } from '@/api/netease/search'
+
+const route = useRoute()
+const { searchValue, handleSearch } = useSearch(0, 20)
+
+// 默认图片
+const defaultAvatar = 'https://p1.music.126.net/VnZiScyynLG7atLIZ2YPkw==/18686200114669622.jpg'
+const defaultAlbumCover = 'https://p1.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg'
+
+// 搜索结果
+const searchResults = reactive({
+  songs: [] as SongSearchItem[],
+  albums: [] as AlbumSearchItem[],
+  artists: [] as ArtistSearchItem[]
+})
+
+// 格式化时长
+const formatDuration = (duration: number) => {
+  const seconds = Math.floor(duration / 1000)
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = seconds % 60
+  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
+}
+
+// 执行搜索
+const performSearch = async (keywords: string) => {
+  if (!keywords.trim()) return
+
+  try {
+    const results = await handleSearch([1])
+    console.log('搜索结果:', results)
+    // results?.forEach(res => {
+    //   if (res.result.songs) {
+    //     searchResults.songs = res.result.songs
+    //   }
+    //   if (res.result.albums) {
+    //     searchResults.albums = res.result.albums
+    //   }
+    //   if (res.result.artists) {
+    //     searchResults.artists = res.result.artists
+    //   }
+    // })
+  } catch (error) {
+    console.error('搜索出错:', error)
+  }
+}
+
+onMounted(() => {
+  // 从路由查询参数获取搜索关键字
+  const keywords = route.query.q as string
+  if (keywords) {
+    performSearch(keywords)
+  }
+})
+
+// 监听路由变化
+// 如果需要在搜索页面内部再次搜索，可以使用这个方法
+</script>
+
+<style scoped>
+.artists-container,
+.albums-container,
+.songs-container {
+  min-height: 100px;
+}
+</style>

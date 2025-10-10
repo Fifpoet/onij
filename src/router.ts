@@ -6,9 +6,9 @@ import './styles/nprogress.css'
 
 const basicRoutes = [
   {
-    name: 'Home',
-    path: '/',
-    component: () => import('@/views/weekly/index.vue'),
+    path: '/search',
+    name: 'Search',
+    component: () => import('@/views/SearchPage.vue')
   }
 ]
 

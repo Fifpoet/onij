@@ -31,20 +31,25 @@ const handleFileClick = (file: FileDetail) => {
   <PageHeader />
 
   <n-message-provider>
-    <MusicDetail />
-      <MusicDetailMobile />
-    <MusicLike />
-    <MemoList />
-    <ChatWindow />
+<!--    <MusicDetail />-->
+<!--      <MusicDetailMobile />-->
+<!--    <MusicLike />-->
+<!--    <MemoList />-->
+<!--    <ChatWindow />-->
       
-      <!-- 文件管理区域 -->
-      <div class="h-full pt-[60px]">
-        <!-- 文件列表 -->
-        <FileList 
-          :parent-id="currentFolderId"
-          @file-click="handleFileClick"
-        />
+      <!-- 路由视图 -->
+      <div class="pt-[60px]">
+        <RouterView />
       </div>
+
+<!--      &lt;!&ndash; 文件管理区域 &ndash;&gt;-->
+<!--      <div class="h-full">-->
+<!--        &lt;!&ndash; 文件列表 &ndash;&gt;-->
+<!--        <FileList -->
+<!--          :parent-id="currentFolderId"-->
+<!--          @file-click="handleFileClick"-->
+<!--        />-->
+<!--      </div>-->
       
   <AudioContainer></AudioContainer>
   </n-message-provider>
