@@ -64,6 +64,9 @@ interface MenuItem {
 const { searchValue } = useSearch(0, 20)
 
 const onSearch = async () => {
+  if (!searchValue.value) {
+    return
+  }
   await router.push({
     name: 'Search',
     query: {

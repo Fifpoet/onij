@@ -83,7 +83,6 @@ const neteaseApiClient = axios.create({
 });
 
 export const getNetease =  async <T>(url: string, params?: any, config?: AxiosRequestConfig): Promise<T> => {
-    console.log('cnmmmmmmmmmmmmmmm', url, params, config);
     return neteaseApiClient.get(url, { params, ...config }).then(response => response.data);
 };
 

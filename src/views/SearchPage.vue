@@ -88,7 +88,7 @@
 
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
-import { onMounted, reactive } from 'vue'
+import {onMounted, reactive, watch} from 'vue'
 import { useSearch } from '@/composables/searchMusic'
 import type { SongSearchItem, AlbumSearchItem, ArtistSearchItem } from '@/api/netease/search'
 
@@ -119,31 +119,32 @@ const performSearch = async (keywords: string) => {
   if (!keywords.trim()) return
 
   try {
-    const results = await handleSearch([1])
-    console.log('搜索结果:', results)
-    // results?.forEach(res => {
-    //   if (res.result.songs) {
-    //     searchResults.songs = res.result.songs
-    //   }
-    //   if (res.result.albums) {
-    //     searchResults.albums = res.result.albums
-    //   }
-    //   if (res.result.artists) {
-    //     searchResults.artists = res.result.artists
-    //   }
-    // })
+    const results = await handleSearch([1, 10, 100])
+    results?.forEach(res => {
+      if (res.result.songs) {
+        searchResults.songs = res.result.songs
+      }
+      if (res.result.albums) {
+        searchResults.albums = res.result.albums
+      }
+      if (res.result.artists) {
+        searchResults.artists = res.result.artists
+      }
+    })
   } catch (error) {
     console.error('搜索出错:', error)
   }
 }
 
-onMounted(() => {
-  // 从路由查询参数获取搜索关键字
-  const keywords = route.query.q as string
-  if (keywords) {
-    performSearch(keywords)
-  }
-})
+watch(
+    () => route.query.q,
+    (newQuery) => {
+      if (newQuery) {
+        searchValue.value = newQuery as string
+        performSearch(newQuery as string)
+      }
+    }
+)
 
 // 监听路由变化
 // 如果需要在搜索页面内部再次搜索，可以使用这个方法

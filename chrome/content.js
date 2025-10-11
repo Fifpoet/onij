@@ -11,8 +11,6 @@ class MusicInfoExtractor {
     
     // 拦截XMLHttpRequest
     this.interceptXHR();
-    
-    console.log('音乐信息提取器 Content Script 已启动');
   }
 
   interceptFetch() {
@@ -24,12 +22,9 @@ class MusicInfoExtractor {
       
       // 记录所有请求以便调试
       if (args[0] && typeof args[0] === 'string') {
-        console.log('🌐 拦截到请求:', args[0]);
-        
         // 检查是否是音乐详情API
         if (args[0].includes('/song/detail') || args[0].includes('song/detail') || 
             args[0].includes('detail') || args[0].includes('song')) {
-          console.log('🎵 拦截到可能的音乐API请求:', args[0]);
           self.handleApiResponse(response.clone(), args[0]);
         }
       }
@@ -54,10 +49,7 @@ class MusicInfoExtractor {
       // 监听响应
       xhr.addEventListener('load', function() {
         if (xhr._url) {
-          console.log('🌐 XHR请求完成:', xhr._url);
-          
           if (xhr._url.includes('/song/detail') || xhr._url.includes('song/detail')) {
-            console.log('🎵 拦截到音乐详情XHR请求:', xhr._url);
             self.handleXHRResponse(xhr);
           }
         }
