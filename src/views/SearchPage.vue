@@ -12,6 +12,7 @@
               v-for="artist in searchResults.artists"
               :key="artist.id"
               class="flex items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer"
+              @click="goToArtist(artist.id)"
             >
               <img
                 :src="artist.picUrl || artist.img1v1Url || defaultAvatar"
@@ -37,6 +38,7 @@
               v-for="album in searchResults.albums"
               :key="album.id"
               class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer"
+              @click="goToAlbum(album.id)"
             >
               <img
                 :src="album.picUrl || defaultAlbumCover"
@@ -88,7 +90,8 @@
 
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
-import {onMounted, reactive, watch} from 'vue'
+import {router} from "@/router.ts";
+import { onMounted, reactive, watch } from 'vue'
 import { useSearch } from '@/composables/searchMusic'
 import type { SongSearchItem, AlbumSearchItem, ArtistSearchItem } from '@/api/netease/search'
 
@@ -112,6 +115,16 @@ const formatDuration = (duration: number) => {
   const minutes = Math.floor(seconds / 60)
   const remainingSeconds = seconds % 60
   return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
+}
+
+// 跳转到专辑详情页
+const goToAlbum = (albumId: number) => {
+  router.push(`/album?id=${albumId}`)
+}
+
+// 跳转到歌手详情页
+const goToArtist = (artistId: number) => {
+  router.push(`/artist?ids=${artistId}`)
 }
 
 // 执行搜索
