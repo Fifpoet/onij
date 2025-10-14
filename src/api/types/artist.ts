@@ -1,45 +1,34 @@
-// src/api/types/artist.ts
+import { ArtistType } from './enums'
 
-/* 枚举类型 */
-export enum ArtistType {
-  AT_Unknown = 0,
-  AT_Singer = 1,
-  AT_Writer = 2,
-  AT_Composer = 3,
+export interface Artist {
+  id: number
+  name: string
+  avatarFileUrl: string
+  artistTypes: ArtistType[]
 }
 
-/* 请求参数类型 */
+// 请求和响应类型
 export interface UploadArtistReq {
-  name: string;
-  artist_type: ArtistType;
+  name: string
+  avatarFileId?: number
+  artistId?: string
 }
 
-/* 响应数据类型 */
 export interface UploadArtistResp {
-  code: number;
-  message: string;
-  artist_id: number;
+  code: number
+  message: string
+  artistId: number
 }
 
-/* 搜索艺人请求参数 */
-export interface SearchArtistReq {
-  keyword: string;
-  tag_group?: number;
-  tag_type?: number;
-  page: number;
-  limit: number;
+export interface GetArtistListReq {
+  keyword: string
+  name: string
+  page: number
+  limit: number
 }
 
-/* 搜索艺人响应数据 */
-export interface SearchArtistResp {
-  code: number;
-  message: string;
-  artists: ArtistProfile[];
-}
-
-/* 艺术家信息 */
-export interface ArtistProfile {
-    id: number;
-    name: string;
-    artist_type: ArtistType;
+export interface GetArtistListResp {
+  code: number
+  message: string
+  artists: Artist[]
 }

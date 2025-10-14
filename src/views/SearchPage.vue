@@ -159,6 +159,13 @@ watch(
     }
 )
 
+onMounted(() => {
+  if (route.query.q) {
+    searchValue.value = route.query.q as string
+    performSearch(route.query.q as string)
+  }
+})
+
 // 监听路由变化
 // 如果需要在搜索页面内部再次搜索，可以使用这个方法
 </script>

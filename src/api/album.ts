@@ -1,13 +1,13 @@
 // src/api/album.ts
-import { post } from '../util/http';
+import { post } from '@/util';
 import {
   UploadAlbumReq,
   UploadAlbumResp,
   GetAlbumDetailReq,
   GetAlbumDetailResp,
-  SearchAlbumReq,
-  SearchAlbumResp
-} from './types/album';
+  GetAlbumListReq,
+  GetAlbumListResp
+} from '@/api/types';
 
 export const UploadAlbum = async (params: UploadAlbumReq): Promise<UploadAlbumResp> => {
   return (await post<UploadAlbumResp>('/album/upload', params)).data;
@@ -17,6 +17,6 @@ export const GetAlbumDetail = async (params: GetAlbumDetailReq): Promise<GetAlbu
   return (await post<GetAlbumDetailResp>('/album/detail', params)).data;
 };
 
-export const SearchAlbum = async (params: SearchAlbumReq): Promise<SearchAlbumResp> => {
-  return (await post<SearchAlbumResp>('/album/search', params)).data;
+export const SearchAlbum = async (params: GetAlbumListReq): Promise<GetAlbumListResp> => {
+  return (await post<GetAlbumListResp>('/album/search', params)).data;
 };

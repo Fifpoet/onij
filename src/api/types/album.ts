@@ -1,62 +1,73 @@
-// src/api/types/album.ts
+import { AlbumType } from './enums'
+import { Artist } from './artist'
 
-import { MusicProfile } from './music';
-
-/* 请求参数类型 */
-export interface UploadAlbumReq {
-  name: string;
-  artist_id: number;
-  cover_file_id: number;
-  issue_time: number;
-  music_id?: number;
-  related_album_id?: number;
+export interface AlbumMusic {
+  name: string
+  timeLength: number
+  musicId: number
+  artists: Artist[]
+  isAvailable: boolean
 }
 
-/* 响应数据类型 */
+export interface Album {
+  id: number
+  name: string
+  profile: string
+  albumType: AlbumType
+  artists: Artist[]
+  issueTime: number
+  coverFileUrl: string
+  liveUrl: string
+  albumMusics: AlbumMusic[]
+}
+
+// 请求和响应类型
+export interface UploadAlbumReq {
+  name: string
+  profile: string
+  artistIds: number[]
+  coverFileId: number
+  issueTime: number
+  albumType: AlbumType
+  liveUrl: string
+  thirdId?: number
+  albumMusics: Array<{
+    name: string
+    timeLength: number
+    musicId: number
+    artistName: string[]
+    thirdId?: number
+    isAvailable: boolean
+  }>
+  albumId?: number
+}
+
 export interface UploadAlbumResp {
-  code: number;
-  message: string;
-  album_id: number;
+  code: number
+  message: string
+  albumId: number
 }
 
 export interface GetAlbumDetailReq {
-  album_id: number;
+  albumId: number
 }
 
 export interface GetAlbumDetailResp {
-  code: number;
-  message: string;
-  detail: AlbumDetail;
+  code: number
+  message: string
+  album: Album
+  albumMusics: AlbumMusic[]
 }
 
-export interface SearchAlbumReq {
-  keyword: string;
-  artist_id?: number;
-  page: number;
-  limit: number;
+export interface GetAlbumListReq {
+  keyword: string
+  artistId?: number
+  page: number
+  limit: number
 }
 
-export interface SearchAlbumResp {
-  code: number;
-  message: string;
-  albums: AlbumProfile[];
-}
-
-export interface AlbumDetail {
-  id: number;
-  name: string;
-  artist_id: number;
-  artist_name: string;
-  issue_time: number;
-  
-  cover_file_url: string;
-  mv_url: string;
-  
-  related_musics: MusicProfile[];
-}
-
-export interface AlbumProfile {
-  id: number;
-  name: string;
-  cover_file_url: string;
+export interface GetAlbumListResp {
+  code: number
+  message: string
+  albums: Album[]
 }

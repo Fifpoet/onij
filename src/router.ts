@@ -9,6 +9,11 @@ const basicRoutes = [
     path: '/search',
     name: 'Search',
     component: () => import('@/views/SearchPage.vue')
+  },
+  {
+    path: '/artist',
+    name: 'Artist',
+    component: () => import('@/views/ArtistDetail.vue')
   }
 ]
 
