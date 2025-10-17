@@ -58,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import {ref, onMounted, computed, watch} from 'vue'
 import { useRoute } from 'vue-router'
 import { getNetease } from '@/util'
 import SongItem from '@/components/music/MusicListItem.vue'
@@ -141,13 +141,19 @@ const fetchArtistDetail = async (id: string) => {
   }
 }
 
+watch(
+    () => route.query.q,
+    (newQuery) => {
+      if (newQuery) {
+        // fetchArtistDetail(newQuery)
+      }
+    }
+)
+
 onMounted(() => {
-  const artistId = route.query.id as string
+  const artistId = route.query.ids as string
   if (artistId) {
     fetchArtistDetail(artistId)
-  } else {
-    error.value = '缺少歌手ID参数'
-    loading.value = false
   }
 })
 </script>

@@ -45,13 +45,13 @@
 
 <script lang="ts" setup>
 import { ref, h, onMounted, VNodeChild } from 'vue';
-import { NList, NListItem, NThing, NSpace, NTag, NSelect, NIcon, SelectGroupOption } from 'naive-ui';
+import { NList, NSpace, NTag, NSelect, NIcon, SelectGroupOption } from 'naive-ui';
 import { useMusicStore } from "@/store/music.ts";
-import { GetMusicDetail, GetMusicList, SearchArtist } from '@/api';
-import { MusicSortType, tagOpts, TagType, SelectTagExtra, ArtistType } from '@/api/types';
 import { MusicalNote as MusicIcon } from '@vicons/ionicons5';
 import { PlayCircleOutline } from '@vicons/ionicons5';
 import type { SelectOption } from 'naive-ui';
+import {GetArtist, GetMusicList} from "@/api";
+import {ArtistType, TagType} from "@/api/types";
 
 // 直接使用 musicStore 而不通过 props 传递
 const musicStore = useMusicStore();
@@ -152,13 +152,13 @@ const keywords: string[] = [];
     if (tag.includes('{') && tag.includes('}')) {
       const extra = JSON.parse(tag) as SelectTagExtra;
       switch (extra.artist_type) {
-        case ArtistType.AT_Singer:
+        case ArtistType.ATT_Singer:
           artistIds.push(extra.artist_id!);
           break;
         case ArtistType.AT_Composer:
           composerIds.push(extra.artist_id!);
           break;
-        case ArtistType.AT_Writer:
+        case ArtistType.ATT_Writer:
           writerIds.push(extra.artist_id!);
           break;
         default:
@@ -171,7 +171,6 @@ const keywords: string[] = [];
     }
   });
   return {
-      sort_type: MusicSortType.MST_Created_At_Asc,
       keywords: keywords,
       artist_ids: artistIds,
       writer_ids: writerIds,
@@ -185,7 +184,7 @@ const keywords: string[] = [];
 onMounted(async () => {
   // 获取标签
   try {
-    const response = await SearchArtist({
+    const response = await GetArtist({
       keyword: '',
       tag_type: TagType.TT_Star,
       page: 1,

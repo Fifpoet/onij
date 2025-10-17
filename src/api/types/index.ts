@@ -4,6 +4,7 @@ export * from './file';
 export * from './artist';
 export * from './album';
 export * from './tag';
+export * from './enums.ts';
 
 export enum MidShowWhat {
     ShowMusicDetail = 1,

@@ -51,7 +51,7 @@ const handleFileClick = (file: FileDetail) => {
 <!--        />-->
 <!--      </div>-->
       
-  <AudioContainer></AudioContainer>
+<!--  <AudioContainer></AudioContainer>-->
   </n-message-provider>
   </div>
 </template>
