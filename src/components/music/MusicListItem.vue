@@ -1,54 +1,64 @@
 <template>
   <div class="flex items-center py-3 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 rounded px-2">
+    <!-- 序号 -->
+    <div v-if="index" class="w-8 text-center text-gray-500 mr-2">
+      {{ index }}
+    </div>
+
+    <!-- 专辑封面 -->
     <img
-        :src="song.album?.name || defaultAlbumCover"
+        :src="song.cover_file_url || defaultAlbumCover"
         :alt="song.name"
         class="w-12 h-12 object-cover rounded mr-4"
-        @error="handleImageError"
     >
+
     <div class="flex-1 min-w-0">
+      <!-- 歌曲名称 -->
       <div class="font-medium truncate">{{ song.name }}</div>
+
+      <!-- 歌手名（可点击） -->
       <div class="text-sm text-gray-500 truncate">
-        {{ getArtists(song) }} - {{ song.album?.name }}
+        <span
+            v-for="(artist, i) in song.artists"
+            :key="artist.artist_id"
+            class="hover:text-blue-500 cursor-pointer"
+            @click.stop="onArtistClick(artist.artist_id)"
+        >
+          {{ artist.artist_name }}{{ i < song.artists.length - 1 ? '/' : '' }}
+        </span>
+        <span v-if="!song.artists || song.artists.length === 0">未知艺术家</span>
+        - {{ song.album_name }}
       </div>
     </div>
+
+    <!-- 时长 -->
     <div class="text-sm text-gray-500 ml-2">
-      {{ formatDuration(song.duration || 0) }}
+      {{ formatDuration(song.time_long) }}
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { SongSearchItem } from '@/api/netease/search'
+import type { ViewMusicListItem } from '@/api/view/music.ts'
 
 // 默认专辑封面
 const defaultAlbumCover = 'https://p1.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg'
 
 const props = defineProps<{
-  song: SongSearchItem
+  song: ViewMusicListItem
+  index: number
 }>()
 
-// 获取艺术家名称
-const getArtists = (song: SongSearchItem): string => {
-  if (!song.artists || song.artists.length === 0) {
-    return '未知艺术家'
-  }
-  return song.artists.map(a => a.name).join('/')
-}
-
-// 格式化时长
-const formatDuration = (duration: number) => {
-  const seconds = Math.floor(duration / 1000)
+// 格式化时长 (从秒转换为 x:xx 格式)
+const formatDuration = (seconds: number) => {
   const minutes = Math.floor(seconds / 60)
-  const remainingSeconds = seconds % 60
+  const remainingSeconds = Math.floor(seconds % 60)
   return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
 }
 
-// 处理图片加载错误
-const handleImageError = (event: Event) => {
-  const imgElement = event.target as HTMLImageElement
-  if (imgElement.src !== defaultAlbumCover) {
-    imgElement.src = defaultAlbumCover
-  }
+// 歌手点击事件
+const onArtistClick = (id: number) => {
+  // 可以在这里处理跳转到歌手详情页等逻辑
+  console.log('Artist clicked:', id)
 }
 </script>
