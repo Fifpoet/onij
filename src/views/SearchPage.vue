@@ -1,53 +1,60 @@
 <template>
   <div class="w-full flex justify-center">
-    <div class="w-full max-w-4xl px-4 py-8">
+    <div class="w-4/5 px-4 py-8">
+      <!-- 歌手 & 专辑 并排 -->
       <div class="mb-8">
-        <h3 class="text-xl font-semibold mb-4 border-l-4 border-blue-500 pl-2">歌手</h3>
-        <div class="artists-container">
-          <div v-if="searchResults.artists.length === 0" class="text-gray-500 py-4">
-            没有找到相关歌手
-          </div>
-          <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <div
-              v-for="artist in searchResults.artists"
-              :key="artist.id"
-              class="flex items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer"
-              @click="goToArtist(artist.id)"
-            >
-              <img
-                :src="artist.picUrl || artist.img1v1Url || defaultAvatar"
-                :alt="artist.name"
-                class="w-12 h-12 rounded-full object-cover"
-              >
-              <div class="ml-3">
-                <div class="font-medium">{{ artist.name }}</div>
+        <div class="flex flex-col md:flex-row gap-8">
+          <!-- 歌手 -->
+          <div class="md:w-1/2">
+            <h3 class="text-xl font-semibold mb-4 border-l-4 border-blue-500 pl-2">歌手</h3>
+            <div class="artists-container">
+              <div v-if="searchResults.artists.length === 0" class="text-gray-500 py-4">
+                没有找到相关歌手
+              </div>
+              <div v-else class="grid grid-cols-3 gap-4">
+                <div
+                  v-for="artist in searchResults.artists.slice(0, 6)"
+                  :key="artist.id"
+                  class="flex flex-col items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer"
+                  @click="goToArtist(artist.id)"
+                >
+                  <img
+                    :src="artist.picUrl || artist.img1v1Url || defaultAvatar"
+                    :alt="artist.name"
+                    class="w-full aspect-square rounded-full object-cover"
+                  >
+                  <div class="mt-2 text-center">
+                    <div class="font-medium text-sm truncate w-full">{{ artist.name }}</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <div class="mb-8">
-        <h3 class="text-xl font-semibold mb-4 border-l-4 border-green-500 pl-2">专辑</h3>
-        <div class="albums-container">
-          <div v-if="searchResults.albums.length === 0" class="text-gray-500 py-4">
-            没有找到相关专辑
-          </div>
-          <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            <div
-              v-for="album in searchResults.albums"
-              :key="album.id"
-              class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer"
-              @click="goToAlbum(album.id)"
-            >
-              <img
-                :src="album.picUrl || defaultAlbumCover"
-                :alt="album.name"
-                class="w-full aspect-square object-cover rounded"
-              >
-              <div class="mt-2">
-                <div class="font-medium truncate">{{ album.name }}</div>
-                <div class="text-sm text-gray-500 truncate">{{ album.artist.name }}</div>
+          <!-- 专辑 -->
+          <div class="md:w-1/2">
+            <h3 class="text-xl font-semibold mb-4 border-l-4 border-green-500 pl-2">专辑</h3>
+            <div class="albums-container">
+              <div v-if="searchResults.albums.length === 0" class="text-gray-500 py-4">
+                没有找到相关专辑
+              </div>
+              <div v-else class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <div
+                  v-for="album in searchResults.albums"
+                  :key="album.id"
+                  class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer"
+                  @click="goToAlbum(album.id)"
+                >
+                  <img
+                    :src="album.picUrl || defaultAlbumCover"
+                    :alt="album.name"
+                    class="w-full aspect-square object-cover rounded"
+                  >
+                  <div class="mt-2 text-center">
+                    <div class="font-medium truncate">{{ album.name }}</div>
+                    <div class="text-sm text-gray-500 truncate">{{ album.artist.name }}</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -62,7 +69,7 @@
           </div>
           <div v-else class="space-y-2">
             <div
-              v-for="detail in searchResults.songDetails"
+              v-for="detail in searchResults.songDetails.slice(0, 10)"
               :key="detail.id"
               class="flex items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer"
             >
