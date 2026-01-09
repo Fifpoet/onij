@@ -1,3 +1,6 @@
+// 导入工具函数和类型
+import { getNetease } from '@/util/http'
+import type { SongDetailResponse } from './result'
 
 // 歌曲搜索 - 艺术家
 export interface SongSearchArtist {
@@ -146,4 +149,12 @@ export interface ArtistSearchItem {
     alg: string
     alia?: string[]
     trans: string | null
+}
+
+// 获取歌曲详情
+export async function getSongDetail(ids: number[]): Promise<SongDetailResponse> {
+    const idsStr = ids.join(',')
+    return await getNetease<SongDetailResponse>('/song/detail', {
+        ids: idsStr
+    })
 }

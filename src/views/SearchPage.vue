@@ -57,28 +57,28 @@
       <div class="mb-8">
         <h3 class="text-xl font-semibold mb-4 border-l-4 border-red-500 pl-2">单曲</h3>
         <div class="songs-container">
-          <div v-if="searchResults.songs.length === 0" class="text-gray-500 py-4">
+          <div v-if="searchResults.songDetails.length === 0" class="text-gray-500 py-4">
             没有找到相关单曲
           </div>
           <div v-else class="space-y-2">
             <div
-              v-for="song in searchResults.songs"
-              :key="song.id"
+              v-for="detail in searchResults.songDetails"
+              :key="detail.id"
               class="flex items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer"
             >
               <img
-                :src=" defaultAlbumCover"
-                :alt="song.name"
+                :src="detail.al.picUrl"
+                :alt="detail.name"
                 class="w-12 h-12 object-cover rounded"
               >
               <div class="ml-3 flex-1 min-w-0">
-                <div class="font-medium truncate">{{ song.name }}</div>
+                <div class="font-medium truncate">{{ detail.name }}</div>
                 <div class="text-sm text-gray-500 truncate">
-                  {{ song.artists.map(a => a.name).join('/') }} - {{ song.album.name }}
+                  {{ detail.ar.map(a => a.name).join('/') }} - {{ detail.al.name }}
                 </div>
               </div>
               <div class="text-sm text-gray-500 ml-2">
-                {{ formatDuration(song.duration) }}
+                {{ formatDuration(detail.dt) }}
               </div>
             </div>
           </div>
@@ -94,9 +94,11 @@ import {router} from "@/router.ts";
 import { onMounted, reactive, watch } from 'vue'
 import { useSearch } from '@/composables/searchMusic'
 import type { SongSearchItem, AlbumSearchItem, ArtistSearchItem } from '@/api/netease/search'
+import { getSongDetail } from '@/api/netease/search'
+import type { SongDetail } from '@/api/netease/result'
 
 const route = useRoute()
-const { searchValue, handleSearch } = useSearch(0, 20)
+const { searchValue, handleSearch } = useSearch()
 
 // 默认图片
 const defaultAvatar = 'https://p1.music.126.net/VnZiScyynLG7atLIZ2YPkw==/18686200114669622.jpg'
@@ -106,7 +108,8 @@ const defaultAlbumCover = 'https://p1.music.126.net/6y-UleORITEDbvrOLV0Q8A==/563
 const searchResults = reactive({
   songs: [] as SongSearchItem[],
   albums: [] as AlbumSearchItem[],
-  artists: [] as ArtistSearchItem[]
+  artists: [] as ArtistSearchItem[],
+  songDetails: [] as SongDetail[]
 })
 
 // 格式化时长
@@ -133,9 +136,14 @@ const performSearch = async (keywords: string) => {
 
   try {
     const results = await handleSearch([1, 10, 100])
+    const allSongIds: number[] = []
+    
     results?.forEach(res => {
       if (res.result.songs) {
         searchResults.songs = res.result.songs
+        // 提取所有歌曲的 id
+        const ids = res.result.songs.map(song => song.id)
+        allSongIds.push(...ids)
       }
       if (res.result.albums) {
         searchResults.albums = res.result.albums
@@ -144,6 +152,18 @@ const performSearch = async (keywords: string) => {
         searchResults.artists = res.result.artists
       }
     })
+
+    // 如果有歌曲ID，调用详情接口
+    if (allSongIds.length > 0) {
+      try {
+        const detailResponse = await getSongDetail(allSongIds)
+        if (detailResponse.code === 200 && detailResponse.songs) {
+          searchResults.songDetails = detailResponse.songs
+        }
+      } catch (error) {
+        console.error('获取歌曲详情出错:', error)
+      }
+    }
   } catch (error) {
     console.error('搜索出错:', error)
   }
