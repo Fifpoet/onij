@@ -27,7 +27,7 @@
           {{ artist.artist_name }}{{ i < song.artists.length - 1 ? '/' : '' }}
         </span>
         <span v-if="!song.artists || song.artists.length === 0">未知艺术家</span>
-        - {{ song.album_name }}
+        - <span class="truncate">{{ song.album_name }}</span>
       </div>
     </div>
 
@@ -46,7 +46,7 @@ const defaultAlbumCover = 'https://p1.music.126.net/6y-UleORITEDbvrOLV0Q8A==/563
 
 const props = defineProps<{
   song: ViewMusicListItem
-  index: number
+  index?: number
 }>()
 
 // 格式化时长 (从秒转换为 x:xx 格式)

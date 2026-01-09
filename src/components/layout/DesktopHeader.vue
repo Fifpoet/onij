@@ -61,7 +61,7 @@ interface MenuItem {
   onClick?: () => void
 }
 
-const { searchValue } = useSearch(0, 20)
+const { searchValue } = useSearch()
 
 const onSearch = async () => {
   if (!searchValue.value) {

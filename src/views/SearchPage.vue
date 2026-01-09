@@ -24,7 +24,7 @@
                     class="w-full aspect-square rounded-full object-cover"
                   >
                   <div class="mt-2 text-center">
-                    <div class="font-medium text-sm truncate w-full">{{ artist.name }}</div>
+                    <div class="font-bold text-sm truncate w-full">{{ artist.name }}</div>
                   </div>
                 </div>
               </div>
@@ -51,7 +51,7 @@
                     class="w-full aspect-square object-cover rounded"
                   >
                   <div class="mt-2 text-center">
-                    <div class="font-medium truncate">{{ album.name }}</div>
+                    <div class="font-bold truncate">{{ album.name }}</div>
                     <div class="text-sm text-gray-500 truncate">{{ album.artist.name }}</div>
                   </div>
                 </div>
@@ -61,32 +61,20 @@
         </div>
       </div>
 
+      <!-- 单曲 -->
       <div class="mb-8">
         <h3 class="text-xl font-semibold mb-4 border-l-4 border-red-500 pl-2">单曲</h3>
         <div class="songs-container">
           <div v-if="searchResults.songDetails.length === 0" class="text-gray-500 py-4">
             没有找到相关单曲
           </div>
-          <div v-else class="space-y-2">
+          <div v-else class="grid grid-cols-3 gap-4">
             <div
-              v-for="detail in searchResults.songDetails.slice(0, 10)"
-              :key="detail.id"
-              class="flex items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer"
+              v-for="song in viewSongs"
+              :key="song.id"
+              class="w-full"
             >
-              <img
-                :src="detail.al.picUrl"
-                :alt="detail.name"
-                class="w-12 h-12 object-cover rounded"
-              >
-              <div class="ml-3 flex-1 min-w-0">
-                <div class="font-medium truncate">{{ detail.name }}</div>
-                <div class="text-sm text-gray-500 truncate">
-                  {{ detail.ar.map(a => a.name).join('/') }} - {{ detail.al.name }}
-                </div>
-              </div>
-              <div class="text-sm text-gray-500 ml-2">
-                {{ formatDuration(detail.dt) }}
-              </div>
+              <SongItem :song="song" />
             </div>
           </div>
         </div>
@@ -98,11 +86,13 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
 import {router} from "@/router.ts";
-import { onMounted, reactive, watch } from 'vue'
+import { onMounted, reactive, watch, computed } from 'vue'
 import { useSearch } from '@/composables/searchMusic'
 import type { SongSearchItem, AlbumSearchItem, ArtistSearchItem } from '@/api/netease/search'
 import { getSongDetail } from '@/api/netease/search'
 import type { SongDetail } from '@/api/netease/result'
+import SongItem from '@/components/music/MusicListItem.vue'
+import type { ViewMusicListItem } from '@/api/view/music'
 
 const route = useRoute()
 const { searchValue, handleSearch } = useSearch()
@@ -119,13 +109,23 @@ const searchResults = reactive({
   songDetails: [] as SongDetail[]
 })
 
-// 格式化时长
-const formatDuration = (duration: number) => {
-  const seconds = Math.floor(duration / 1000)
-  const minutes = Math.floor(seconds / 60)
-  const remainingSeconds = seconds % 60
-  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
-}
+// 将歌曲详情转换为通用列表项结构，供 MusicListItem 使用
+const viewSongs = computed<ViewMusicListItem[]>(() => {
+  return searchResults.songDetails.map((detail) => {
+    return {
+      id: detail.id,
+      name: detail.name,
+      time_long: detail.dt / 1000,
+      album_id: detail.al.id,
+      album_name: detail.al.name,
+      cover_file_url: detail.al.picUrl,
+      artists: detail.ar.map(artist => ({
+        artist_id: artist.id,
+        artist_name: artist.name,
+      })),
+    }
+  })
+})
 
 // 跳转到专辑详情页
 const goToAlbum = (albumId: number) => {
@@ -142,7 +142,7 @@ const performSearch = async (keywords: string) => {
   if (!keywords.trim()) return
 
   try {
-    const results = await handleSearch([1, 10, 100])
+    const results = await handleSearch([1, 10, 100], 0, 20)
     const allSongIds: number[] = []
     
     results?.forEach(res => {
@@ -192,9 +192,6 @@ onMounted(() => {
     performSearch(route.query.q as string)
   }
 })
-
-// 监听路由变化
-// 如果需要在搜索页面内部再次搜索，可以使用这个方法
 </script>
 
 <style scoped>
