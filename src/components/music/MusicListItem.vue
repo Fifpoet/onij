@@ -14,14 +14,14 @@
 
     <div class="flex-1 min-w-0">
       <!-- 歌曲名称 -->
-      <div class="font-medium truncate">{{ song.name }}</div>
+      <div class="font-bold truncate">{{ song.name }}</div>
 
       <!-- 歌手名（可点击） -->
       <div class="text-sm text-gray-500 truncate">
         <span
             v-for="(artist, i) in song.artists"
             :key="artist.artist_id"
-            class="hover:text-blue-500 cursor-pointer"
+            class="hover:text-blue-500 hover:underline cursor-pointer"
             @click.stop="onArtistClick(artist.artist_id)"
         >
           {{ artist.artist_name }}{{ i < song.artists.length - 1 ? '/' : '' }}
@@ -39,10 +39,13 @@
 </template>
 
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
 import type { ViewMusicListItem } from '@/api/view/music.ts'
 
 // 默认专辑封面
 const defaultAlbumCover = 'https://p1.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg'
+
+const router = useRouter()
 
 const props = defineProps<{
   song: ViewMusicListItem
@@ -56,9 +59,8 @@ const formatDuration = (seconds: number) => {
   return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
 }
 
-// 歌手点击事件
+// 歌手点击事件 - 跳转到歌手详情页
 const onArtistClick = (id: number) => {
-  // 可以在这里处理跳转到歌手详情页等逻辑
-  console.log('Artist clicked:', id)
+  router.push(`/artist?ids=${id}`)
 }
 </script>

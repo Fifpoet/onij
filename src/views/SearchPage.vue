@@ -6,9 +6,10 @@
         <div class="flex flex-col md:flex-row gap-8">
           <!-- 歌手 -->
           <div class="md:w-1/2">
-            <h3 class="text-xl font-semibold mb-4 border-l-4 border-blue-500 pl-2">歌手</h3>
+            <h3 v-if="!isLoading" class="text-xl font-semibold mb-4 border-l-4 border-blue-500 pl-2">歌手</h3>
             <div class="artists-container">
-              <div v-if="searchResults.artists.length === 0" class="text-gray-500 py-4">
+              <div v-if="isLoading"></div>
+              <div v-else-if="searchResults.artists.length === 0" class="text-gray-500 py-4">
                 没有找到相关歌手
               </div>
               <div v-else class="grid grid-cols-3 gap-4">
@@ -33,9 +34,10 @@
 
           <!-- 专辑 -->
           <div class="md:w-1/2">
-            <h3 class="text-xl font-semibold mb-4 border-l-4 border-green-500 pl-2">专辑</h3>
+            <h3 v-if="!isLoading" class="text-xl font-semibold mb-4 border-l-4 border-green-500 pl-2">专辑</h3>
             <div class="albums-container">
-              <div v-if="searchResults.albums.length === 0" class="text-gray-500 py-4">
+              <div v-if="isLoading"></div>
+              <div v-else-if="searchResults.albums.length === 0" class="text-gray-500 py-4">
                 没有找到相关专辑
               </div>
               <div v-else class="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -52,7 +54,12 @@
                   >
                   <div class="mt-2 text-center">
                     <div class="font-bold truncate">{{ album.name }}</div>
-                    <div class="text-sm text-gray-500 truncate">{{ album.artist.name }}</div>
+                    <div 
+                      class="text-sm text-gray-500 truncate hover:text-blue-500 hover:underline cursor-pointer inline-block"
+                      @click.stop="goToArtist(album.artist.id)"
+                    >
+                      {{ album.artist.name }}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -63,9 +70,10 @@
 
       <!-- 单曲 -->
       <div class="mb-8">
-        <h3 class="text-xl font-semibold mb-4 border-l-4 border-red-500 pl-2">单曲</h3>
+        <h3 v-if="!isLoading" class="text-xl font-semibold mb-4 border-l-4 border-red-500 pl-2">单曲</h3>
         <div class="songs-container">
-          <div v-if="searchResults.songDetails.length === 0" class="text-gray-500 py-4">
+          <div v-if="isLoading"></div>
+          <div v-else-if="searchResults.songDetails.length === 0" class="text-gray-500 py-4">
             没有找到相关单曲
           </div>
           <div v-else class="grid grid-cols-3 gap-4">
@@ -86,7 +94,7 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
 import {router} from "@/router.ts";
-import { onMounted, reactive, watch, computed } from 'vue'
+import { onMounted, reactive, watch, computed, ref } from 'vue'
 import { useSearch } from '@/composables/searchMusic'
 import type { SongSearchItem, AlbumSearchItem, ArtistSearchItem } from '@/api/netease/search'
 import { getSongDetail } from '@/api/netease/search'
@@ -100,6 +108,9 @@ const { searchValue, handleSearch } = useSearch()
 // 默认图片
 const defaultAvatar = 'https://p1.music.126.net/VnZiScyynLG7atLIZ2YPkw==/18686200114669622.jpg'
 const defaultAlbumCover = 'https://p1.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg'
+
+// 加载状态
+const isLoading = ref(false)
 
 // 搜索结果
 const searchResults = reactive({
@@ -141,6 +152,14 @@ const goToArtist = (artistId: number) => {
 const performSearch = async (keywords: string) => {
   if (!keywords.trim()) return
 
+  isLoading.value = true
+  
+  // 清空之前的结果
+  searchResults.songs = []
+  searchResults.albums = []
+  searchResults.artists = []
+  searchResults.songDetails = []
+
   try {
     const results = await handleSearch([1, 10, 100], 0, 20)
     const allSongIds: number[] = []
@@ -153,10 +172,10 @@ const performSearch = async (keywords: string) => {
         allSongIds.push(...ids)
       }
       if (res.result.albums) {
-        searchResults.albums = res.result.albums
+        searchResults.albums = res.result.albums.filter(album => album.artist.albumSize > 10 || album.artist.musicSize > 10)
       }
       if (res.result.artists) {
-        searchResults.artists = res.result.artists
+        searchResults.artists = res.result.artists.filter(artist => artist.albumSize > 10 || artist.musicSize > 10)
       }
     })
 
@@ -173,6 +192,8 @@ const performSearch = async (keywords: string) => {
     }
   } catch (error) {
     console.error('搜索出错:', error)
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -198,6 +219,6 @@ onMounted(() => {
 .artists-container,
 .albums-container,
 .songs-container {
-  min-height: 100px;
+  min-height: 200px;
 }
 </style>

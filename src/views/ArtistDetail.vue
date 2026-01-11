@@ -1,22 +1,22 @@
 <template>
-  <div class="w-full flex justify-center">
-    <div class="w-3/4 px-4 py-8">
-      <div v-if="loading" class="text-center py-8">
-        加载中...
+  <div class="w-full flex justify-center min-w-0">
+    <div class="w-[80vw] px-4 py-8">
+      <div v-if="loading" class="bg-white dark:bg-gray-800 rounded-lg  flex items-center justify-center">
+        <div class="text-center py-8"></div>
       </div>
-      <div v-else-if="artist" class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+      <div v-else-if="artist" class="bg-white dark:bg-gray-800 rounded-lg  overflow-hidden">
         <!-- 歌手信息 -->
         <div class="flex p-6">
           <div class="w-1/3 flex justify-center">
             <img
                 :src="artist.picUrl || artist.img1v1Url"
                 :alt="artist.name"
-                class="w-48 h-48 rounded-full object-cover shadow-md"
+                class="w-64 h-64 rounded-full object-cover shadow-md"
             >
           </div>
-          <div class="w-2/3 pl-6 flex flex-col justify-center">
-            <h1 class="text-3xl font-bold mb-4">{{ artist.name }}</h1>
-            <div class="grid grid-cols-2 gap-3 text-gray-700 dark:text-gray-300">
+          <div class="w-2/3 pl-6 flex flex-col justify-center text-left">
+            <h1 class="text-5xl font-bold mb-4 ">{{ artist.name }}</h1>
+            <div class="grid grid-cols-3 gap-3 text-gray-700 dark:text-gray-300">
               <div>专辑: {{ artist.albumSize }}</div>
               <div>歌曲: {{ artist.musicSize }}</div>
               <div>MV: {{ artist.mvSize }}</div>
@@ -40,13 +40,18 @@
         <!-- 歌曲列表 -->
         <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
           <h2 class="text-2xl font-bold mb-4">热门歌曲</h2>
-          <SongItem
-              v-for="song in hotSongs"
+          <div v-if="songDetails.length === 0" class="text-gray-500 py-4">
+            暂无歌曲
+          </div>
+          <div v-else class="grid grid-cols-3 gap-4">
+            <div
+              v-for="song in viewSongs"
               :key="song.id"
-              :song="ConvHotSongToViewItem(song)"
-              class="cursor-pointer"
-              @click="playSong(song)"
-          />
+              class="w-full"
+            >
+              <SongItem :song="song" />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -57,38 +62,43 @@
 import {ref, onMounted, computed, watch} from 'vue'
 import { useRoute } from 'vue-router'
 import { getNetease } from '@/util'
+import { getSongDetail } from '@/api/netease/search'
+import type { SongDetail } from '@/api/netease/result'
 import SongItem from '@/components/music/MusicListItem.vue'
 import {ArtistDetailResponse} from "@/api/netease/result.ts";
 import {ArtistDetail, ArtistHotSong} from "@/api/netease/artists.ts";
 import {ViewMusicListItem} from "@/api/view/music.ts";
 
-// 默认头像
-const defaultAvatar = 'https://p1.music.126.net/VnZiScyynLG7atLIZ2YPkw==/18686200114669622.jpg'
+// 默认封面
 const defaultAlbumCover = 'https://p1.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg'
 
 const route = useRoute()
 const artist = ref<ArtistDetail>()
 const hotSongs = ref<ArtistHotSong[]>([])
+const songDetails = ref<SongDetail[]>([])
+const albumCoverMap = ref<Map<number, string>>(new Map())
 const loading = ref(true)
 const error = ref('')
 const showFullDescription = ref(false)
 const fullDescription = ref('')
 
-const ConvHotSongToViewItem = (song: ArtistHotSong): ViewMusicListItem => {
-  return {
-    id: song.id,
-    name: song.name,
-    time_long: song.dt / 1000,
-    album_id: song.al.id,
-    album_name: song.al.name,
-    artists: song.ar.map(artist => {
-      return {
+// 将歌曲详情转换为通用列表项结构
+const viewSongs = computed<ViewMusicListItem[]>(() => {
+  return songDetails.value.map((detail) => {
+    return {
+      id: detail.id,
+      name: detail.name,
+      time_long: detail.dt / 1000,
+      album_id: detail.al.id,
+      album_name: detail.al.name,
+      cover_file_url: detail.al.picUrl || defaultAlbumCover,
+      artists: detail.ar.map(artist => ({
         artist_id: artist.id,
-        artist_name: artist.name
-      }
-    })
-  }
-}
+        artist_name: artist.name,
+      })),
+    }
+  })
+})
 
 // 显示的简介（根据是否展开显示全部或部分）
 const displayedDescription = computed(() => {
@@ -102,12 +112,6 @@ const displayedDescription = computed(() => {
 const shouldShowMore = computed(() => {
   return fullDescription.value.length > 100
 })
-
-// 播放歌曲（后续可以连接到播放功能）
-const playSong = (song: ArtistHotSong) => {
-  console.log('播放歌曲:', song)
-  // 这里可以连接到音乐播放功能
-}
 
 // 获取歌手详情
 const fetchArtistDetail = async (id: string) => {
@@ -126,6 +130,25 @@ const fetchArtistDetail = async (id: string) => {
       artist.value = response.artist
       hotSongs.value = response.hotSongs || []
       fullDescription.value = response.artist.briefDesc || ''
+
+      // 提取所有歌曲ID，调用详情接口获取完整信息（包括专辑封面）
+      if (hotSongs.value.length > 0) {
+        const songIds = hotSongs.value.map(song => song.id)
+        try {
+          const detailResponse = await getSongDetail(songIds)
+          if (detailResponse.code === 200 && detailResponse.songs) {
+            songDetails.value = detailResponse.songs
+            // 构建专辑ID到封面URL的映射
+            detailResponse.songs.forEach(song => {
+              if (song.al.picUrl) {
+                albumCoverMap.value.set(song.al.id, song.al.picUrl)
+              }
+            })
+          }
+        } catch (err) {
+          console.error('获取歌曲详情出错:', err)
+        }
+      }
     } else {
       throw new Error('获取歌手详情失败')
     }

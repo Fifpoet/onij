@@ -138,6 +138,7 @@ export interface ArtistSearchItem {
     picUrl: string | null
     alias: string[]
     albumSize: number
+    musicSize: number
     picId: number
     fansGroup: number | null
     img1v1Url: string

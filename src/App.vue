@@ -38,7 +38,7 @@ const handleFileClick = (file: FileDetail) => {
 <!--    <ChatWindow />-->
       
       <!-- 路由视图 -->
-      <div class="pt-[60px]">
+      <div class="w-full">
         <RouterView />
       </div>
 
