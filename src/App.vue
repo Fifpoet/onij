@@ -10,13 +10,13 @@ import MusicLike from "@/components/music/MusicLike.vue";
 import {NMessageProvider} from "naive-ui"
 import MemoList from './components/memo/MemoList.vue';
 import FileList from './components/file/FileList.vue';
-import { FileDetail } from '@/api/types/file';
+import { File } from '@/api/types/file';
 
 // 当前文件夹ID
 const currentFolderId = ref(0);
 
 // 处理文件点击事件
-const handleFileClick = (file: FileDetail) => {
+const handleFileClick = (file: File) => {
   if (file.format === 99) { // FileType.FT_Folder
     // 更新当前文件夹ID
     currentFolderId.value = file.id;

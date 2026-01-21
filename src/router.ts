@@ -14,6 +14,11 @@ const basicRoutes = [
     path: '/artist',
     name: 'Artist',
     component: () => import('@/views/ArtistDetail.vue')
+  },
+  {
+    path: '/album',
+    name: 'Album',
+    component: () => import('@/views/AlbumDetail.vue')
   }
 ]
 

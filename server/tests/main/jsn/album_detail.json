@@ -1,0 +1,260 @@
+{
+    "resourceState": true,
+    "songs": [
+        {
+            "rtUrls": [],
+            "ar": [
+                {
+                    "id": 9269,
+                    "name": "容祖儿",
+                    "alia": [
+                        "Joey Yung"
+                    ]
+                }
+            ],
+            "al": {
+                "id": 2901405,
+                "name": "1314 容祖儿演唱会",
+                "pic_str": "5947258395118743",
+                "pic": 5947258395118743,
+                "alia": [
+                    "Joey Yung in Concert 1314"
+                ]
+            },
+            "st": 1,
+            "noCopyrightRcmd": null,
+            "songJumpInfo": null,
+            "djId": 0,
+            "no": 1,
+            "fee": 1,
+            "mv": 14490807,
+            "cd": "1",
+            "t": 0,
+            "v": 37,
+            "rtype": 0,
+            "rurl": null,
+            "pst": 0,
+            "alia": [],
+            "pop": 65,
+            "rt": null,
+            "mst": 9,
+            "cp": 2706568,
+            "crbt": null,
+            "cf": "",
+            "dt": 260480,
+            "h": {
+                "br": 320000,
+                "fid": 0,
+                "size": 10421856,
+                "vd": -24087,
+                "sr": 44100
+            },
+            "sq": {
+                "br": 868370,
+                "fid": 0,
+                "size": 28274138,
+                "vd": -24083,
+                "sr": 44100
+            },
+            "hr": null,
+            "l": {
+                "br": 128000,
+                "fid": 0,
+                "size": 4168768,
+                "vd": -19809,
+                "sr": 44100
+            },
+            "rtUrl": null,
+            "ftype": 0,
+            "a": null,
+            "m": {
+                "br": 192000,
+                "fid": 0,
+                "size": 6253131,
+                "vd": -21482,
+                "sr": 44100
+            },
+            "name": "小日子 (Live)",
+            "id": 28853693,
+            "videoInfo": {
+                "moreThanOne": false,
+                "video": {
+                    "vid": "14490807",
+                    "type": 0,
+                    "title": "小日子 (1314 容祖儿演唱会)",
+                    "playTime": 1914,
+                    "coverUrl": "https://p1.music.126.net/3UKdurnWE2JstF-6s2rcEw==/109951166899795202.jpg",
+                    "publishTime": 1406995200007,
+                    "artists": null
+                }
+            },
+            "privilege": {
+                "id": 28853693,
+                "fee": 1,
+                "payed": 0,
+                "st": 0,
+                "pl": 0,
+                "dl": 0,
+                "sp": 7,
+                "cp": 1,
+                "subp": 1,
+                "cs": false,
+                "maxbr": 999000,
+                "fl": 0,
+                "toast": false,
+                "flag": 2065668,
+                "preSell": false,
+                "playMaxbr": 999000,
+                "downloadMaxbr": 999000,
+                "maxBrLevel": "sky",
+                "playMaxBrLevel": "sky",
+                "downloadMaxBrLevel": "sky",
+                "plLevel": "none",
+                "dlLevel": "none",
+                "flLevel": "none",
+                "rscl": null,
+                "freeTrialPrivilege": {
+                    "resConsumable": true,
+                    "userConsumable": false,
+                    "listenType": null,
+                    "cannotListenReason": null,
+                    "playReason": null,
+                    "freeLimitTagType": null
+                },
+                "rightSource": 0,
+                "chargeInfoList": [
+                    {
+                        "rate": 128000,
+                        "chargeUrl": null,
+                        "chargeMessage": null,
+                        "chargeType": 1
+                    },
+                    {
+                        "rate": 192000,
+                        "chargeUrl": null,
+                        "chargeMessage": null,
+                        "chargeType": 1
+                    },
+                    {
+                        "rate": 320000,
+                        "chargeUrl": null,
+                        "chargeMessage": null,
+                        "chargeType": 1
+                    },
+                    {
+                        "rate": 999000,
+                        "chargeUrl": null,
+                        "chargeMessage": null,
+                        "chargeType": 1
+                    }
+                ],
+                "code": 0,
+                "message": null,
+                "plLevels": null,
+                "dlLevels": null,
+                "ignoreCache": null,
+                "bd": null
+            }
+        }
+    ],
+    "code": 200,
+    "album": {
+        "songs": [],
+        "paid": false,
+        "onSale": false,
+        "mark": 8192,
+        "awardTags": null,
+        "displayTags": null,
+        "artists": [
+            {
+                "img1v1Id": 18686200114669624,
+                "topicPerson": 0,
+                "picId": 0,
+                "musicSize": 0,
+                "albumSize": 0,
+                "briefDesc": "",
+                "picUrl": "",
+                "img1v1Url": "https://p2.music.126.net/VnZiScyynLG7atLIZ2YPkw==/18686200114669622.jpg",
+                "followed": false,
+                "trans": "",
+                "alias": [],
+                "name": "容祖儿",
+                "id": 9269,
+                "img1v1Id_str": "18686200114669622"
+            }
+        ],
+        "copyrightId": 2706568,
+        "picId": 5947258395118743,
+        "artist": {
+            "img1v1Id": 109951170514231790,
+            "topicPerson": 0,
+            "picId": 109951170514231790,
+            "musicSize": 1985,
+            "albumSize": 141,
+            "briefDesc": "",
+            "picUrl": "https://p2.music.126.net/FK3gKIL8k5WgVpZmq3nlLg==/109951170514231795.jpg",
+            "img1v1Url": "https://p2.music.126.net/36HG9EBu-LKlKl3BvqdeSg==/109951170514231799.jpg",
+            "followed": false,
+            "trans": "",
+            "alias": [
+                "Joey Yung"
+            ],
+            "name": "容祖儿",
+            "id": 9269,
+            "picId_str": "109951170514231795",
+            "img1v1Id_str": "109951170514231799"
+        },
+        "briefDesc": "",
+        "publishTime": 1406563200000,
+        "company": "EEG Music",
+        "picUrl": "https://p2.music.126.net/JBrpywjuQ7fRoY-yCWIj6g==/5947258395118743.jpg",
+        "commentThreadId": "R_AL_3_2901405",
+        "blurPicUrl": "https://p2.music.126.net/JBrpywjuQ7fRoY-yCWIj6g==/5947258395118743.jpg",
+        "companyId": 0,
+        "pic": 5947258395118743,
+        "status": 1,
+        "subType": "现场版",
+        "alias": [
+            "Joey Yung in Concert 1314"
+        ],
+        "description": "乐坛天后容祖儿第7次在红馆举行个人演唱会\n1314容祖儿演唱会Live 3CD \n记录超过40首容祖儿新旧经典金曲 \n\n阔别三年再踏红馆，首次举行跨年红馆演唱会，由2013年圣诞唱到2014除夕和新年，共开15场成功破她个人演唱会纪录。个唱以「一生一世」为主题，Joey载歌载舞与乐迷一起欢渡佳节，以情人节、复活节、母亲节、生日、中秋节、万圣节和圣诞节等不同节日的环节唱跳超过40首经典金曲，为一连15场的跨年演唱会带来全新的震撼和神秘感。让广大歌迷重温天后风采、见证舞台上的祖儿一生一世。",
+        "tags": "",
+        "name": "1314 容祖儿演唱会",
+        "id": 2901405,
+        "type": "专辑",
+        "size": 39,
+        "info": {
+            "commentThread": {
+                "id": "R_AL_3_2901405",
+                "resourceInfo": {
+                    "id": 2901405,
+                    "userId": -1,
+                    "name": "1314 容祖儿演唱会",
+                    "imgUrl": "http://p3.music.126.net/JBrpywjuQ7fRoY-yCWIj6g==/5947258395118743.jpg",
+                    "creator": null,
+                    "encodedId": null,
+                    "subTitle": null,
+                    "webUrl": null
+                },
+                "resourceType": 3,
+                "commentCount": 283,
+                "likedCount": 0,
+                "shareCount": 239,
+                "hotCount": 14,
+                "latestLikedUsers": null,
+                "resourceId": 2901405,
+                "resourceOwnerId": -1,
+                "resourceTitle": "1314 容祖儿演唱会"
+            },
+            "latestLikedUsers": null,
+            "liked": false,
+            "comments": null,
+            "resourceType": 3,
+            "resourceId": 2901405,
+            "commentCount": 283,
+            "likedCount": 0,
+            "shareCount": 239,
+            "threadId": "R_AL_3_2901405"
+        }
+    }
+}
