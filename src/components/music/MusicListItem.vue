@@ -29,7 +29,12 @@
         </span>
         <template v-if="showAlbumName">
           <span class="mx-1">-</span>
-          <span class="truncate">{{ song.album_name }}</span>
+          <span 
+            class="truncate hover:text-blue-500 hover:underline cursor-pointer"
+            @click.stop="onAlbumClick(song.album_id)"
+          >
+            {{ song.album_name }}
+          </span>
         </template>
       </div>
     </div>
@@ -70,5 +75,10 @@ const formatDuration = (seconds: number) => {
 // 歌手点击事件 - 跳转到歌手详情页
 const onArtistClick = (id: number) => {
   router.push(`/artist?ids=${id}`)
+}
+
+// 专辑点击事件 - 跳转到专辑详情页
+const onAlbumClick = (id: number) => {
+  router.push(`/album?id=${id}`)
 }
 </script>
