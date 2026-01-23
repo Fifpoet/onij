@@ -50,14 +50,15 @@
                   Disc {{ discNumber }}
                 </h3>
               </div>
-              <div class="grid grid-cols-3 gap-4 mb-6">
-                <div
-                  v-for="song in discSongs"
+              <div class="mb-6">
+                <SongItem
+                  v-for="(song, idx) in discSongs"
                   :key="song.id"
-                  class="w-full"
-                >
-                  <SongItem :song="song" />
-                </div>
+                  :song="song"
+                  :index="idx + 1"
+                  :show-cover="false"
+                  :show-album-name="false"
+                />
               </div>
             </template>
           </div>
@@ -89,15 +90,43 @@ const loading = ref(true)
 const error = ref('')
 const showFullDescription = ref(false)
 
+// 获取专辑创作者ID列表
+const albumArtistIds = computed(() => {
+  if (!album.value) return new Set<number>()
+  const ids = new Set<number>()
+  // 添加主艺术家
+  if (album.value.artist?.id) {
+    ids.add(album.value.artist.id)
+  }
+  // 添加所有艺术家
+  if (album.value.artists) {
+    album.value.artists.forEach(artist => {
+      if (artist.id) {
+        ids.add(artist.id)
+      }
+    })
+  }
+  return ids
+})
+
 // 按 cd 字段分组歌曲
 const groupedSongs = computed(() => {
   const groups: Record<string, ViewMusicListItem[]> = {}
+  const artistIds = albumArtistIds.value
   
   songDetails.value.forEach((detail) => {
     const discNumber = detail.cd || '0'
     if (!groups[discNumber]) {
       groups[discNumber] = []
     }
+    
+    // 过滤掉专辑创作者的歌手
+    const filteredArtists = detail.ar
+      .filter(artist => !artistIds.has(artist.id))
+      .map(artist => ({
+        artist_id: artist.id,
+        artist_name: artist.name,
+      }))
     
     groups[discNumber].push({
       id: detail.id,
@@ -106,10 +135,7 @@ const groupedSongs = computed(() => {
       album_id: detail.al.id,
       album_name: detail.al.name,
       cover_file_url: detail.al.picUrl || defaultAlbumCover,
-      artists: detail.ar.map(artist => ({
-        artist_id: artist.id,
-        artist_name: artist.name,
-      })),
+      artists: filteredArtists,
     })
   })
   

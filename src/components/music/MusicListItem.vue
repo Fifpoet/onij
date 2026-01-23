@@ -7,6 +7,7 @@
 
     <!-- 专辑封面 -->
     <img
+        v-if="showCover"
         :src="song.cover_file_url || defaultAlbumCover"
         :alt="song.name"
         class="w-12 h-12 object-cover rounded mr-4"
@@ -17,7 +18,7 @@
       <div class="font-bold truncate">{{ song.name }}</div>
 
       <!-- 歌手名（可点击） -->
-      <div class="text-sm text-gray-500 truncate">
+      <div v-if="song.artists && song.artists.length > 0" class="text-sm text-gray-500 truncate">
         <span
             v-for="(artist, i) in song.artists"
             :key="artist.artist_id"
@@ -26,8 +27,10 @@
         >
           {{ artist.artist_name }}{{ i < song.artists.length - 1 ? '/' : '' }}
         </span>
-        <span v-if="!song.artists || song.artists.length === 0">未知艺术家</span>
-        - <span class="truncate">{{ song.album_name }}</span>
+        <template v-if="showAlbumName">
+          <span class="mx-1">-</span>
+          <span class="truncate">{{ song.album_name }}</span>
+        </template>
       </div>
     </div>
 
@@ -47,10 +50,15 @@ const defaultAlbumCover = 'https://p1.music.126.net/6y-UleORITEDbvrOLV0Q8A==/563
 
 const router = useRouter()
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   song: ViewMusicListItem
   index?: number
-}>()
+  showCover?: boolean
+  showAlbumName?: boolean
+}>(), {
+  showCover: true,
+  showAlbumName: true,
+})
 
 // 格式化时长 (从秒转换为 x:xx 格式)
 const formatDuration = (seconds: number) => {
