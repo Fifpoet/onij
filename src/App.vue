@@ -8,6 +8,8 @@ import MusicDetail from "@/components/music/MusicDetail.vue";
 import MusicDetailMobile from "@/components/music/MusicDetailMobile.vue";
 import MusicLike from "@/components/music/MusicLike.vue";
 import {NMessageProvider} from "naive-ui"
+import NeteaseAudioHost from '@/components/player/NeteaseAudioHost.vue'
+import PlayQueueDrawer from '@/components/player/PlayQueueDrawer.vue'
 import MemoList from './components/memo/MemoList.vue';
 import FileList from './components/file/FileList.vue';
 import { File } from '@/api/types/file';
@@ -31,6 +33,8 @@ const handleFileClick = (file: File) => {
   <PageHeader />
 
   <n-message-provider>
+    <NeteaseAudioHost />
+    <PlayQueueDrawer />
 <!--    <MusicDetail />-->
 <!--      <MusicDetailMobile />-->
 <!--    <MusicLike />-->

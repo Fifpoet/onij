@@ -31,6 +31,12 @@ export default defineConfig((configEnv) => {
           target: env.VITE_BACKEND_URL,
           changeOrigin: true,
         },
+        // 浏览器直连 music-api 可能受 CORS 限制，开发时走本地代理
+        '/gdstudio-music': {
+          target: 'https://music-api.gdstudio.xyz',
+          changeOrigin: true,
+          rewrite: (p) => p.replace(/^\/gdstudio-music/, ''),
+        },
       },
     },
     // https://cn.vitejs.dev/guide/api-javascript.html#build

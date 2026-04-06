@@ -58,6 +58,7 @@
                   :index="idx + 1"
                   :show-cover="false"
                   :show-album-name="false"
+                  variant="album"
                 />
               </div>
             </template>
@@ -136,6 +137,10 @@ const groupedSongs = computed(() => {
       album_name: detail.al.name,
       cover_file_url: detail.al.picUrl || defaultAlbumCover,
       artists: filteredArtists,
+      display_artists: detail.ar.map((a) => ({
+        artist_id: a.id,
+        artist_name: a.name,
+      })),
     })
   })
   

@@ -3,10 +3,12 @@
   <!-- 顶部导航栏 -->
   <Transition name="slide-fade" appear>
     <div class="fixed inset-x-0 top-0 z-50 h-[60px] flex items-center justify-between px-4 py-2 bg-white/95 dark:bg-dark-800/95 backdrop-blur-sm border-b">
-      <!-- 左上角标题 -->
-      <RouterLink to="/" class="text-[18px] font-bold">
-        ONIJ
-      </RouterLink>
+      <div class="flex items-center gap-2 min-w-0">
+        <RouterLink to="/" class="text-[18px] font-bold shrink-0">
+          ONIJ
+        </RouterLink>
+        <PlayerHeaderDisc />
+      </div>
       <!-- 右上角图标 -->
       <div class="flex items-center gap-3">
         <!-- 搜索按钮 -->
@@ -53,8 +55,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useAppStore, useMusicStore } from '@/store'
+import { useMusicStore } from '@/store'
 import { RouterLink } from 'vue-router'
+import PlayerHeaderDisc from '@/components/layout/PlayerHeaderDisc.vue'
 import { NIcon } from 'naive-ui'
 import { MidShowWhat } from '@/api/types'
 import {
@@ -71,7 +74,6 @@ import {
   DiamondOutline
 } from '@vicons/ionicons5'
 
-const appStore = useAppStore()
 const musicStore = useMusicStore()
 const isMenuOpen = ref(false)
 

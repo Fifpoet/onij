@@ -3,10 +3,12 @@
   <Transition name="slide-fade" appear>
     <div class="fixed inset-x-0 top-0 z-50 h-[60px] bg-white/95 dark:bg-dark-800/95 backdrop-blur-sm border-b">
       <div class="h-full flex items-center justify-between px-9">
-        <!-- 左上角标题 -->
-        <RouterLink to="/" class="text-xl font-bold">
-          onij
-        </RouterLink>
+        <div class="flex items-center gap-3 min-w-0">
+          <RouterLink to="/" class="text-xl font-bold shrink-0">
+            ONIJ
+          </RouterLink>
+          <PlayerHeaderDisc />
+        </div>
         <!-- 右上角菜单 -->
         <div class="flex items-center justify-end space-x-4">
           <div v-for="(items, group) in menuItems" :key="group" class="flex items-center">
@@ -31,8 +33,8 @@
 </template>
 
 <script setup lang="ts">
-import {h, ref} from 'vue'
-import { useAppStore, useMusicStore } from '@/store'
+import { h } from 'vue'
+import { useMusicStore } from '@/store'
 import { RouterLink } from 'vue-router'
 import { NButton, NDropdown, NIcon, NInput } from 'naive-ui'
 import { SearchOutline } from '@vicons/ionicons5'
@@ -51,6 +53,7 @@ import {
 } from '@vicons/ionicons5'
 import {useSearch} from "@/composables/searchMusic.ts";
 import {router} from "@/router.ts";
+import PlayerHeaderDisc from '@/components/layout/PlayerHeaderDisc.vue'
 
 const musicStore = useMusicStore()
 

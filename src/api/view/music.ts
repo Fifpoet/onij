@@ -7,6 +7,11 @@ export interface ViewMusicListItem {
         artist_id: number;
         artist_name: string;
     })[];
+    /** 完整表演者（可选；专辑页列表仍用 artists 表示「非专辑歌手」，队列/搜索样式可用此字段展示全员） */
+    display_artists?: {
+        artist_id: number;
+        artist_name: string;
+    }[];
     time_long: number;
     composer_id?: number;
     composer_name?: string;
