@@ -1,8 +1,8 @@
-<!-- 移动端导航栏 -->
+<!-- 移动端导航栏：单根包裹，否则父级 lg:hidden 无法 fallthrough，大屏会与桌面导航重复一行 -->
 <template>
-  <!-- 顶部导航栏 -->
+  <div class="lg:hidden">
   <Transition name="slide-fade" appear>
-    <div class="fixed inset-x-0 top-0 z-50 h-[60px] flex items-center justify-between px-4 py-2 bg-white/95 dark:bg-dark-800/95 backdrop-blur-sm border-b">
+    <div class="fixed inset-x-0 top-0 z-50 h-[60px] flex items-center justify-between px-4 py-2 bg-white/95 dark:bg-dark-800/95 backdrop-blur-sm">
       <div class="flex items-center gap-2 min-w-0">
         <RouterLink to="/" class="text-[18px] font-bold shrink-0">
           ONIJ
@@ -31,7 +31,7 @@
 
   <!-- 下拉菜单 -->
   <Transition name="slide-down">
-    <div v-if="isMenuOpen" class="fixed inset-x-0 top-[60px] z-40 bg-white/95 dark:bg-dark-800/95 backdrop-blur-sm border-b">
+    <div v-if="isMenuOpen" class="fixed inset-x-0 top-[60px] z-40 bg-white/95 dark:bg-dark-800/95 backdrop-blur-sm">
       <div class="px-4 py-3">
         <template v-for="(items, group) in menuItems" :key="group">
           <div class="mb-4">
@@ -51,6 +51,7 @@
       </div>
     </div>
   </Transition>
+  </div>
 </template>
 
 <script setup lang="ts">

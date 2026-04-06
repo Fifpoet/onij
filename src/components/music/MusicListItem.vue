@@ -38,7 +38,7 @@
             <template v-for="(artist, i) in song.artists" :key="artist.artist_id">
               <RouterLink
                 :to="{ path: '/artist', query: { ids: String(artist.artist_id) } }"
-                class="text-blue-600 dark:text-blue-400 hover:underline shrink-0"
+                class="!text-gray-900 dark:!text-gray-100 hover:!text-gray-900 dark:hover:!text-gray-100 hover:underline shrink-0"
                 @click.stop
               >
                 {{ artist.artist_name }}

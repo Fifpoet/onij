@@ -20,7 +20,7 @@
               <span class="font-normal">Album by </span>
               <RouterLink
                 :to="{ path: '/artist', query: { ids: String(album.artist.id) } }"
-                class="font-bold hover:text-blue-500 hover:underline"
+                class="font-bold !text-gray-900 dark:!text-gray-100 hover:!text-gray-900 dark:hover:!text-gray-100 hover:underline"
               >
                 {{ album.artist.name }}
               </RouterLink>

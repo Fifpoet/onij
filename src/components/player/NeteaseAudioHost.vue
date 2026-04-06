@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useMessage } from 'naive-ui'
 import { usePlayQueueStore } from '@/store/playQueue'
 import { fetchSongPlayUrl } from '@/api/netease/songUrl'
@@ -14,6 +14,16 @@ const playQueue = usePlayQueueStore()
 const audioRef = ref<HTMLAudioElement | null>(null)
 
 let loadToken = 0
+
+function isBenignPlayRejection(err: unknown): boolean {
+  if (typeof err !== 'object' || err === null || !('name' in err)) return false
+  const n = (err as DOMException).name
+  // 刷新后无手势：浏览器拒绝自动播放
+  if (n === 'NotAllowedError') return true
+  // 切歌时 src 被替换，上一次 play() 可能被中止
+  if (n === 'AbortError') return true
+  return false
+}
 
 function syncPlaybackFromAudio() {
   if (playQueue.playbackSeeking) return
@@ -28,7 +38,11 @@ async function loadAndPlay(songId: number) {
   const token = ++loadToken
   const url = await fetchSongPlayUrl(songId)
   if (token !== loadToken) return
-  const el = audioRef.value
+  let el = audioRef.value
+  if (!el) {
+    await nextTick()
+    el = audioRef.value
+  }
   if (!el) return
   if (!url) {
     message.error('无法获取播放链接')
@@ -38,7 +52,12 @@ async function loadAndPlay(songId: number) {
   playQueue.resetPlaybackProgress()
   el.volume = playQueue.volume / 100
   el.src = url
-  el.play().catch(() => {
+  el.play().catch((err: unknown) => {
+    // 刷新后无用户手势时浏览器会拒绝自动播放，不应当作「播放失败」
+    if (isBenignPlayRejection(err)) {
+      playQueue.setPlaying(false)
+      return
+    }
     message.error('播放失败')
     playQueue.setPlaying(false)
   })
@@ -92,7 +111,10 @@ function togglePlay() {
   const el = audioRef.value
   if (!el || !playQueue.nowPlaying) return
   if (el.paused) {
-    el.play().catch(() => message.error('播放失败'))
+    el.play().catch((err: unknown) => {
+      if (isBenignPlayRejection(err)) return
+      message.error('播放失败')
+    })
   } else {
     el.pause()
   }

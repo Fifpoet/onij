@@ -5,7 +5,7 @@
     placement="left"
     @update:show="playQueue.setDrawerVisible"
   >
-    <n-drawer-content title="播放队列" closable>
+    <n-drawer-content title="播放队列">
       <div class="play-queue-drawer flex flex-col gap-4 pb-4">
         <!-- 1 正在播放：与下方列表相同的 SongItem -->
         <div

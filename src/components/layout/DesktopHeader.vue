@@ -1,7 +1,7 @@
 <!-- 桌面端导航栏 -->
 <template>
   <Transition name="slide-fade" appear>
-    <div class="fixed inset-x-0 top-0 z-50 h-[60px] bg-white/95 dark:bg-dark-800/95 backdrop-blur-sm border-b">
+    <div class="fixed inset-x-0 top-0 z-50 h-[60px] bg-white/95 dark:bg-dark-800/95 backdrop-blur-sm">
       <div class="h-full flex items-center justify-between px-9">
         <div class="flex items-center gap-3 min-w-0">
           <RouterLink to="/" class="text-xl font-bold shrink-0">

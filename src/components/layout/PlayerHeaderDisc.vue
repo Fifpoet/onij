@@ -2,7 +2,7 @@
   <button
     v-if="playQueue.nowPlaying"
     type="button"
-    class="shrink-0 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 overflow-hidden border border-gray-200 dark:border-gray-600 shadow-sm"
+    class="shrink-0 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 overflow-hidden"
     :aria-label="'打开播放队列'"
     @click="playQueue.toggleDrawer()"
   >

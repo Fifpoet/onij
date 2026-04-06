@@ -1,6 +1,6 @@
 <!-- 主导航栏组件 -->
 <template>
-  <MobileHeader class="lg:hidden" />
+  <MobileHeader />
   <DesktopHeader class="hidden lg:block" />
 </template>
 
