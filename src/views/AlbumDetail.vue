@@ -14,13 +14,22 @@
                 class="w-64 h-64 rounded-lg object-cover shadow-md"
             >
           </div>
-          <div class="w-2/3 pl-6 flex flex-col justify-center text-left">
-            <h1 class="text-5xl font-bold mb-4">{{ album.name }}</h1>
-            <div class="grid grid-cols-3 gap-3 text-gray-700 dark:text-gray-300 mb-4">
-              <div>艺术家: {{ album.artist.name }}</div>
-              <div>发行时间: {{ formatDate(album.publishTime) }}</div>
-              <div>歌曲数: {{ album.size }}</div>
-            </div>
+          <div class="w-2/3 pl-6 flex flex-col justify-center text-left select-none">
+            <h1 class="text-5xl font-bold mb-3 text-gray-900 dark:text-gray-100">{{ album.name }}</h1>
+            <p class="text-base sm:text-lg text-gray-900 dark:text-gray-100 mb-2">
+              <span class="font-normal">Album by </span>
+              <RouterLink
+                :to="{ path: '/artist', query: { ids: String(album.artist.id) } }"
+                class="font-bold hover:text-blue-500 hover:underline"
+              >
+                {{ album.artist.name }}
+              </RouterLink>
+            </p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 tabular-nums mb-4">
+              {{ albumMetaYear }}
+              <span class="mx-1 text-gray-300 dark:text-gray-600">·</span>
+              {{ albumSongCount }} 首歌, {{ albumTotalMinutes }} 分钟
+            </p>
 
             <!-- 简介 -->
             <div class="mt-4">
@@ -71,14 +80,13 @@
 
 <script setup lang="ts">
 import {ref, onMounted, computed} from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, RouterLink } from 'vue-router'
 import { getSongDetail } from '@/api/netease/search'
 import type { SongDetail } from '@/api/netease/result'
 import SongItem from '@/components/music/MusicListItem.vue'
 import { getAlbumDetail } from '@/api/netease/album'
 import type { AlbumDetail, AlbumSong } from '@/api/netease/album'
 import {ViewMusicListItem} from "@/api/view/music.ts";
-import { formatDate } from '@/util/time'
 
 // 默认封面
 const defaultAlbumCover = 'https://p1.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg'
@@ -90,6 +98,26 @@ const songDetails = ref<SongDetail[]>([])
 const loading = ref(true)
 const error = ref('')
 const showFullDescription = ref(false)
+
+const albumMetaYear = computed(() => {
+  const t = album.value?.publishTime
+  if (!t) return '—'
+  const y = new Date(t).getFullYear()
+  return Number.isFinite(y) ? String(y) : '—'
+})
+
+const albumSongCount = computed(() => {
+  if (!album.value) return 0
+  return songDetails.value.length > 0 ? songDetails.value.length : album.value.size
+})
+
+/** 曲目总时长（分），优先用 songDetail，否则用专辑接口返回的 songs.dt（毫秒） */
+const albumTotalMinutes = computed(() => {
+  const list = songDetails.value.length > 0 ? songDetails.value : songs.value
+  if (!list.length) return 0
+  const sec = list.reduce((acc, d) => acc + (Number(d.dt) || 0) / 1000, 0)
+  return Math.max(0, Math.round(sec / 60))
+})
 
 // 获取专辑创作者ID列表
 const albumArtistIds = computed(() => {

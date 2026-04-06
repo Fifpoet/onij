@@ -16,11 +16,13 @@
           </div>
           <div class="w-2/3 pl-6 flex flex-col justify-center text-left">
             <h1 class="text-5xl font-bold mb-4 ">{{ artist.name }}</h1>
-            <div class="grid grid-cols-3 gap-3 text-gray-700 dark:text-gray-300">
-              <div>专辑: {{ artist.albumSize }}</div>
-              <div>歌曲: {{ artist.musicSize }}</div>
-              <div>MV: {{ artist.mvSize }}</div>
-            </div>
+            <p class="text-sm text-gray-600 dark:text-gray-400 tabular-nums select-none">
+              {{ artist.musicSize }} 首歌
+              <span class="mx-1 text-gray-300 dark:text-gray-600">·</span>
+              {{ artist.albumSize }} 张专辑
+              <span class="mx-1 text-gray-300 dark:text-gray-600">·</span>
+              {{ artist.mvSize }} 个 MV
+            </p>
 
             <!-- 简介 -->
             <div class="mt-4">
