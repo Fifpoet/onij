@@ -28,6 +28,27 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* 表单与显式类仍可选中、可复制 */
+input,
+textarea,
+select,
+option,
+[contenteditable='true'],
+pre,
+code,
+.select-text {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.select-text-all,
+.select-text-all * {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 h1 {

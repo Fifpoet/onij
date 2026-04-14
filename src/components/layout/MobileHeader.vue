@@ -7,7 +7,7 @@
         <RouterLink to="/" class="text-[18px] font-bold shrink-0">
           ONIJ
         </RouterLink>
-        <PlayerHeaderDisc />
+        <PlayerHeaderControls />
       </div>
       <!-- 右上角图标 -->
       <div class="flex items-center gap-3">
@@ -58,7 +58,7 @@
 import { ref } from 'vue'
 import { useMusicStore } from '@/store'
 import { RouterLink } from 'vue-router'
-import PlayerHeaderDisc from '@/components/layout/PlayerHeaderDisc.vue'
+import PlayerHeaderControls from '@/components/layout/PlayerHeaderControls.vue'
 import { NIcon } from 'naive-ui'
 import { MidShowWhat } from '@/api/types'
 import {

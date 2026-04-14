@@ -7,7 +7,7 @@
           <RouterLink to="/" class="text-xl font-bold shrink-0">
             ONIJ
           </RouterLink>
-          <PlayerHeaderDisc />
+          <PlayerHeaderControls />
         </div>
         <!-- 右上角菜单 -->
         <div class="flex items-center justify-end space-x-4">
@@ -53,7 +53,7 @@ import {
 } from '@vicons/ionicons5'
 import {useSearch} from "@/composables/searchMusic.ts";
 import {router} from "@/router.ts";
-import PlayerHeaderDisc from '@/components/layout/PlayerHeaderDisc.vue'
+import PlayerHeaderControls from '@/components/layout/PlayerHeaderControls.vue'
 
 const musicStore = useMusicStore()
 

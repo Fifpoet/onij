@@ -6,7 +6,7 @@
 import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useMessage } from 'naive-ui'
 import { usePlayQueueStore } from '@/store/playQueue'
-import { fetchSongPlayUrl } from '@/api/netease/songUrl'
+import { getOrFetchPlayUrl, prefetchPlayUrl } from '@/player/songPlayUrlCache'
 import { neteasePlayerControl } from '@/player/neteasePlayerControl'
 
 const message = useMessage()
@@ -14,6 +14,8 @@ const playQueue = usePlayQueueStore()
 const audioRef = ref<HTMLAudioElement | null>(null)
 
 let loadToken = 0
+/** 当前曲是否已在尾段触发过「预取下一批 URL」 */
+let tailPrefetchDoneForSongId: number | null = null
 
 function isBenignPlayRejection(err: unknown): boolean {
   if (typeof err !== 'object' || err === null || !('name' in err)) return false
@@ -25,6 +27,12 @@ function isBenignPlayRejection(err: unknown): boolean {
   return false
 }
 
+function prefetchUpcomingFromQueue() {
+  const q = playQueue.queue
+  const n = Math.min(3, q.length)
+  for (let i = 0; i < n; i++) prefetchPlayUrl(q[i].id)
+}
+
 function syncPlaybackFromAudio() {
   if (playQueue.playbackSeeking) return
   const el = audioRef.value
@@ -32,11 +40,29 @@ function syncPlaybackFromAudio() {
   const d = el.duration
   if (!Number.isFinite(d) || d <= 0) return
   playQueue.setPlaybackProgress(el.currentTime, d)
+
+  const sid = playQueue.nowPlaying?.id
+  if (sid == null || playQueue.queue.length === 0) return
+  if (tailPrefetchDoneForSongId === sid) return
+  const remain = d - el.currentTime
+  if (remain <= 10.5 && remain >= 0) {
+    tailPrefetchDoneForSongId = sid
+    prefetchUpcomingFromQueue()
+  }
 }
 
 async function loadAndPlay(songId: number) {
   const token = ++loadToken
-  const url = await fetchSongPlayUrl(songId)
+  /** 立刻停掉上一首，避免等接口期间仍在播 */
+  const el0 = audioRef.value
+  if (el0) {
+    el0.pause()
+    el0.removeAttribute('src')
+    el0.load()
+  }
+  playQueue.setPlaying(false)
+
+  const url = await getOrFetchPlayUrl(songId)
   if (token !== loadToken) return
   let el = audioRef.value
   if (!el) {
@@ -74,18 +100,20 @@ watch(
 watch(
   () => playQueue.nowPlaying,
   (song) => {
+    tailPrefetchDoneForSongId = null
     if (!song) {
       loadToken++
       const el = audioRef.value
       if (el) {
         el.pause()
         el.removeAttribute('src')
+        el.load()
       }
       playQueue.setPlaying(false)
       playQueue.resetPlaybackProgress()
       return
     }
-    loadAndPlay(song.id)
+    void loadAndPlay(song.id)
   },
   { immediate: true },
 )

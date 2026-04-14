@@ -66,6 +66,19 @@ export const usePlayQueueStore = defineStore(
       }
     }
 
+    /** 手动下一曲：从队列取下一首并切歌；队列为空则停止在播 */
+    function skipToNext() {
+      const next = takeNextFromQueue()
+      if (next) {
+        nowPlaying.value = next
+        resetPlaybackProgress()
+      } else {
+        nowPlaying.value = null
+        isPlaying.value = false
+        resetPlaybackProgress()
+      }
+    }
+
     function setPlaying(playing: boolean) {
       isPlaying.value = playing
     }
@@ -176,6 +189,7 @@ export const usePlayQueueStore = defineStore(
       removeFromQueue,
       clearQueue,
       playNow,
+      skipToNext,
     }
   },
   {
