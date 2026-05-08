@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
+    "build:vite": "vite build",
     "build:release": "sh build-release.sh",
+    "build:release:win": "powershell -NoProfile -ExecutionPolicy Bypass -File ./build-release.ps1",
     "preview": "vite preview"
   },
   "dependencies": {
