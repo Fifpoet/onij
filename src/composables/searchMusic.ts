@@ -1,10 +1,11 @@
-import {ref} from 'vue'
-import {getNetease} from "@/util";
-import {SearchResponse} from "@/api/netease/result.ts";
+import { ref } from 'vue'
+import { getNetease } from '@/util'
+import { SearchResponse } from '@/api/netease/result.ts'
+
+/** 顶栏全屏搜索与搜索页共用 */
+const searchValue = ref('')
 
 export function useSearch() {
-    const searchValue = ref('')
-
     // 多个类型使用默认分页参数, 单个类型可指定
     const handleSearch = async (tps: number[], offset: number, limit: number) => {
         if (!searchValue.value.trim()) return
@@ -35,8 +36,5 @@ export function useSearch() {
         return Promise.all(promises)
     }
 
-    return {
-        searchValue,
-        handleSearch
-    }
+    return { searchValue, handleSearch }
 }

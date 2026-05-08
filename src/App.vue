@@ -43,8 +43,8 @@ const handleFileClick = (file: File) => {
 <!--    <MemoList />-->
 <!--    <ChatWindow />-->
       
-      <!-- 路由视图 -->
-      <div class="w-full">
+      <!-- 路由视图：为固定顶栏留出空间（移动端含安全区） -->
+      <div class="w-full pt-[calc(56px+env(safe-area-inset-top,0px))] lg:pt-[60px]">
         <RouterView />
       </div>
 
