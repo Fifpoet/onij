@@ -3,24 +3,50 @@
 package main
 
 import (
+	"os"
+	"strings"
+	"time"
+
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/hertz-contrib/cors"
 	"onij/handler"
-	"time"
 )
 
+func corsAllowOrigins() []string {
+	if v := strings.TrimSpace(os.Getenv("CORS_ALLOW_ORIGINS")); v != "" {
+		parts := strings.Split(v, ",")
+		out := make([]string, 0, len(parts))
+		for _, p := range parts {
+			p = strings.TrimSpace(p)
+			if p != "" {
+				out = append(out, p)
+			}
+		}
+		if len(out) > 0 {
+			return out
+		}
+	}
+	return []string{"http://onij.fun", "http://localhost:18968"}
+}
+
+func listenAddr() string {
+	if v := strings.TrimSpace(os.Getenv("LISTEN_ADDR")); v != "" {
+		return v
+	}
+	return ":8889"
+}
+
 func main() {
-	h := server.Default(server.WithHostPorts(":8889"))
+	h := server.Default(server.WithHostPorts(listenAddr()))
 
 	h.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://onij.fun", "http://localhost:18968"},
+		AllowOrigins:     corsAllowOrigins(),
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization", "X-Requested-With"},
 		ExposeHeaders:    []string{"Content-Length", "X-Custom-Header"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
-	
 
 	handler.InitApp()
 	register(h)

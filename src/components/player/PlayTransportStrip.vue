@@ -182,7 +182,7 @@ const playButtonIcon = computed(() => {
 })
 
 const modeButtonLabel = computed(() =>
-  playQueue.playMode === 'shuffle' ? '随机播放（点击切换为顺序）' : '顺序播放（点击切换为随机）',
+  playQueue.playMode === 'shuffle' ? '随机播放' : '顺序播放',
 )
 
 const volumeIcon = computed(() => {
