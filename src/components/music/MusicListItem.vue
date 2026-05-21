@@ -1,8 +1,9 @@
 <template>
   <div
-    class="flex items-center hover:bg-gray-50 dark:hover:bg-gray-700 rounded px-2"
+    class="flex items-center hover:bg-gray-50 dark:hover:bg-gray-700 rounded"
     :class="[
       rowPaddingClass,
+      rowPxClass,
       showRowBorder ? 'border-b border-gray-100 dark:border-gray-700' : '',
       showQueueAdd ? 'group' : '',
     ]"
@@ -22,7 +23,7 @@
         v-if="showCover"
         :src="song.cover_file_url || defaultAlbumCover"
         :alt="song.name"
-        class="w-12 h-12 object-cover rounded mr-4"
+        :class="['object-cover rounded shrink-0', coverSizeClass]"
     >
 
     <div class="flex-1 min-w-0">
@@ -31,10 +32,10 @@
         v-if="variant === 'album'"
         class="flex flex-wrap items-baseline gap-x-1.5 gap-y-1 min-w-0"
       >
-        <span class="font-bold text-lg text-gray-900 dark:text-gray-100 shrink min-w-0">{{ song.name }}</span>
+        <span class="font-bold text-lg md:text-xl text-gray-900 dark:text-gray-100 shrink min-w-0">{{ song.name }}</span>
         <template v-if="song.artists && song.artists.length > 0">
-          <span class="text-gray-400 dark:text-gray-500 shrink-0 text-base">·</span>
-          <span class="inline-flex flex-wrap items-baseline gap-x-0 min-w-0 text-base">
+          <span class="text-gray-400 dark:text-gray-500 shrink-0 text-base md:text-lg">·</span>
+          <span class="inline-flex flex-wrap items-baseline gap-x-0 min-w-0 text-base md:text-lg">
             <template v-for="(artist, i) in song.artists" :key="artist.artist_id">
               <RouterLink
                 :to="{ path: '/artist', query: { ids: String(artist.artist_id) } }"
@@ -78,10 +79,10 @@
 
       <template v-else>
         <!-- 歌曲名称 -->
-        <div class="font-bold truncate">{{ song.name }}</div>
+        <div :class="titleClass">{{ song.name }}</div>
 
         <!-- 歌手 / 专辑（无歌手时仍可只显示专辑名） -->
-        <div v-if="showSubtitleRow" class="text-sm text-gray-500 truncate">
+        <div v-if="showSubtitleRow" :class="subtitleClass">
           <span
               v-for="(artist, i) in lineArtists"
               :key="artist.artist_id"
@@ -153,7 +154,7 @@ const props = withDefaults(defineProps<{
   showCover?: boolean
   showAlbumName?: boolean
   /** 专辑曲目列表：歌名后展示非专辑歌手链接 */
-  variant?: 'default' | 'album' | 'queue'
+  variant?: 'default' | 'album' | 'queue' | 'queuePage' | 'browse'
   /** 悬停时在时长前显示加入队列 */
   showQueueAdd?: boolean
   /** 底部分割线 */
@@ -169,11 +170,49 @@ const props = withDefaults(defineProps<{
   dblClickPlayNow: true,
 })
 
-const isLargeRow = computed(() => props.variant === 'album' || props.variant === 'queue')
-
-const rowPaddingClass = computed(() =>
-  isLargeRow.value ? 'py-3.5' : 'py-3',
+const isLargeRow = computed(
+  () =>
+    props.variant === 'album'
+    || props.variant === 'queue'
+    || props.variant === 'queuePage'
+    || props.variant === 'browse',
 )
+
+const rowPaddingClass = computed(() => {
+  if (props.variant === 'queuePage') return 'py-4 md:py-[1.125rem]'
+  if (props.variant === 'browse') return 'py-3.5 md:py-4'
+  if (isLargeRow.value) return 'py-3.5'
+  return 'py-3'
+})
+
+const rowPxClass = computed(() =>
+  props.variant === 'queuePage' ? 'px-1 md:px-2' : 'px-2',
+)
+
+const coverSizeClass = computed(() => {
+  if (props.variant === 'queuePage') return 'w-14 h-14 md:w-16 md:h-16 mr-4 md:mr-5'
+  if (props.variant === 'browse') return 'w-14 h-14 mr-4'
+  return 'w-12 h-12 mr-4'
+})
+
+const largeTitleClass =
+  'font-bold truncate text-lg leading-snug md:text-xl text-gray-900 dark:text-gray-100'
+
+const largeSubtitleClass =
+  'text-base text-gray-500 dark:text-gray-400 truncate mt-0.5 md:mt-1'
+
+const titleClass = computed(() => {
+  if (props.variant === 'queuePage' || props.variant === 'browse') return largeTitleClass
+  return 'font-bold truncate text-gray-900 dark:text-gray-100'
+})
+
+const subtitleClass = computed(() => {
+  if (props.variant === 'queuePage') {
+    return 'text-base text-gray-500 dark:text-gray-400 truncate mt-1'
+  }
+  if (props.variant === 'browse') return largeSubtitleClass
+  return 'text-sm text-gray-500 dark:text-gray-400 truncate'
+})
 
 /** 副标题行歌手：专辑页入队后队列用 display_artists（全员），专辑行 variant=album 仍只用 artists（合作歌手） */
 const lineArtists = computed(() => {
@@ -191,6 +230,8 @@ function onAddToQueue() {
   const r = playQueue.enqueue(props.song)
   if (r === 'duplicate') {
     message.warning('该歌曲已在队列或正在播放')
+  } else if (r === 'playing') {
+    message.success('开始播放')
   } else {
     message.success('已加入播放队列')
   }

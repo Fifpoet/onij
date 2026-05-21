@@ -1,31 +1,31 @@
 <template>
-  <div class="w-full flex justify-center">
-    <div class="w-4/5 px-4 py-8">
+  <PageContent>
+    <div class="min-w-0 py-4 md:py-8">
       <!-- 歌手 & 专辑 并排 -->
-      <div class="mb-8">
-        <div class="flex flex-col md:flex-row gap-8">
+      <div class="mb-8 min-w-0">
+        <div class="flex flex-col gap-8 md:flex-row md:gap-8">
           <!-- 歌手 -->
-          <div class="md:w-1/2">
-            <h3 v-if="!isLoading" class="text-xl font-semibold mb-4 border-l-4 border-blue-500 pl-2">歌手</h3>
-            <div class="artists-container">
+          <div class="min-w-0 md:w-1/2">
+            <h3 v-if="!isLoading" class="browse-section-title mb-4 border-l-4 border-blue-500 pl-2">歌手</h3>
+            <div class="artists-container min-w-0">
               <div v-if="isLoading"></div>
-              <div v-else-if="searchResults.artists.length === 0" class="text-gray-500 py-4">
+              <div v-else-if="searchResults.artists.length === 0" class="browse-muted py-4">
                 没有找到相关歌手
               </div>
-              <div v-else class="grid grid-cols-3 gap-4">
+              <div v-else class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
                 <div
                   v-for="artist in searchResults.artists.slice(0, 6)"
                   :key="artist.id"
-                  class="flex flex-col items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer"
+                  class="flex min-w-0 flex-col items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer"
                   @click="goToArtist(artist.id)"
                 >
                   <img
                     :src="artist.picUrl || artist.img1v1Url || defaultAvatar"
                     :alt="artist.name"
-                    class="w-full aspect-square rounded-full object-cover"
+                    class="w-full max-w-[7.5rem] aspect-square rounded-full object-cover"
                   >
-                  <div class="mt-2 text-center">
-                    <div class="font-bold text-sm truncate w-full">{{ artist.name }}</div>
+                  <div class="mt-2 w-full min-w-0 text-center">
+                    <div class="font-bold text-base md:text-lg truncate">{{ artist.name }}</div>
                   </div>
                 </div>
               </div>
@@ -33,18 +33,18 @@
           </div>
 
           <!-- 专辑 -->
-          <div class="md:w-1/2">
-            <h3 v-if="!isLoading" class="text-xl font-semibold mb-4 border-l-4 border-green-500 pl-2">专辑</h3>
-            <div class="albums-container">
+          <div class="min-w-0 md:w-1/2">
+            <h3 v-if="!isLoading" class="browse-section-title mb-4 border-l-4 border-green-500 pl-2">专辑</h3>
+            <div class="albums-container min-w-0">
               <div v-if="isLoading"></div>
-              <div v-else-if="searchResults.albums.length === 0" class="text-gray-500 py-4">
+              <div v-else-if="searchResults.albums.length === 0" class="browse-muted py-4">
                 没有找到相关专辑
               </div>
-              <div v-else class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              <div v-else class="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
                 <div
                   v-for="album in searchResults.albums"
                   :key="album.id"
-                  class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer"
+                  class="min-w-0 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer"
                   @click="goToAlbum(album.id)"
                 >
                   <img
@@ -52,10 +52,10 @@
                     :alt="album.name"
                     class="w-full aspect-square object-cover rounded"
                   >
-                  <div class="mt-2 text-center">
-                    <div class="font-bold truncate">{{ album.name }}</div>
-                    <div 
-                      class="text-sm text-gray-500 truncate hover:text-blue-500 hover:underline cursor-pointer inline-block"
+                  <div class="mt-2 min-w-0 text-center">
+                    <div class="font-bold text-base md:text-lg truncate">{{ album.name }}</div>
+                    <div
+                      class="block truncate text-base text-gray-500 hover:text-blue-500 hover:underline"
                       @click.stop="goToArtist(album.artist.id)"
                     >
                       {{ album.artist.name }}
@@ -69,29 +69,33 @@
       </div>
 
       <!-- 单曲 -->
-      <div class="mb-8">
-        <h3 v-if="!isLoading" class="text-xl font-semibold mb-4 border-l-4 border-red-500 pl-2">单曲</h3>
-        <div class="songs-container">
+      <div class="mb-8 min-w-0">
+        <h3 v-if="!isLoading" class="browse-section-title mb-4 border-l-4 border-red-500 pl-2">单曲</h3>
+        <div class="songs-container min-w-0">
           <div v-if="isLoading"></div>
-          <div v-else-if="searchResults.songDetails.length === 0" class="text-gray-500 py-4">
+          <div v-else-if="searchResults.songDetails.length === 0" class="browse-muted py-4">
             没有找到相关单曲
           </div>
-          <div v-else class="grid grid-cols-3 gap-4">
+          <div
+            v-else
+            class="flex min-w-0 flex-col md:grid md:grid-cols-2 md:gap-3 lg:grid-cols-3 lg:gap-4"
+          >
             <div
               v-for="song in viewSongs"
               :key="song.id"
-              class="w-full"
+              class="min-w-0 w-full"
             >
-              <SongItem :song="song" />
+              <SongItem :song="song" variant="browse" />
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </PageContent>
 </template>
 
 <script setup lang="ts">
+import PageContent from '@/components/layout/PageContent.vue'
 import { useRoute } from 'vue-router'
 import {router} from "@/router.ts";
 import { onMounted, reactive, watch, computed, ref } from 'vue'
@@ -221,4 +225,5 @@ onMounted(() => {
 .songs-container {
   min-height: 200px;
 }
+
 </style>

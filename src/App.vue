@@ -9,8 +9,9 @@ import MusicDetailMobile from "@/components/music/MusicDetailMobile.vue";
 import MusicLike from "@/components/music/MusicLike.vue";
 import {NMessageProvider} from "naive-ui"
 import NeteaseAudioHost from '@/components/player/NeteaseAudioHost.vue'
-import PlayQueueDrawer from '@/components/player/PlayQueueDrawer.vue'
 import LyricsFullScreen from '@/components/player/LyricsFullScreen.vue'
+import MobileBottomPlayerBar from '@/components/player/MobileBottomPlayerBar.vue'
+import MobileLyricsSheet from '@/components/player/MobileLyricsSheet.vue'
 import MemoList from './components/memo/MemoList.vue';
 import FileList from './components/file/FileList.vue';
 import { File } from '@/api/types/file';
@@ -29,14 +30,15 @@ const handleFileClick = (file: File) => {
 </script>
 
 <template>
-  <div>
+  <div class="app-shell min-h-screen w-full text-left">
     <!-- 顶部导航栏 -->
   <PageHeader />
 
   <n-message-provider>
     <NeteaseAudioHost />
-    <PlayQueueDrawer />
     <LyricsFullScreen />
+    <MobileBottomPlayerBar />
+    <MobileLyricsSheet />
 <!--    <MusicDetail />-->
 <!--      <MusicDetailMobile />-->
 <!--    <MusicLike />-->
@@ -44,7 +46,7 @@ const handleFileClick = (file: File) => {
 <!--    <ChatWindow />-->
       
       <!-- 路由视图：为固定顶栏留出空间（移动端含安全区） -->
-      <div class="w-full pt-[calc(56px+env(safe-area-inset-top,0px))] lg:pt-[60px]">
+      <div class="app-main">
         <RouterView />
       </div>
 
@@ -63,6 +65,10 @@ const handleFileClick = (file: File) => {
 </template>
 
 <style scoped>
+.app-shell {
+  text-align: left;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;

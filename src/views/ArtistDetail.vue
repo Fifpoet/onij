@@ -1,22 +1,22 @@
 <template>
-  <div class="w-full flex justify-center min-w-0">
-    <div class="w-[80vw] px-4 py-8">
+  <PageContent>
+    <div class="py-4 md:py-8">
       <div v-if="loading" class="bg-white dark:bg-gray-800 rounded-lg  flex items-center justify-center">
         <div class="text-center py-8"></div>
       </div>
-      <div v-else-if="artist" class="bg-white dark:bg-gray-800 rounded-lg  overflow-hidden">
-        <!-- 歌手信息 -->
-        <div class="flex p-6">
-          <div class="w-1/3 flex justify-center">
+      <div v-else-if="artist" class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden min-w-0">
+        <!-- 歌手信息：手机竖排，避免与背景圆/文字重叠 -->
+        <div class="flex flex-col gap-4 p-4 sm:flex-row sm:items-start sm:gap-6 sm:p-6">
+          <div class="flex shrink-0 justify-center sm:justify-start">
             <img
                 :src="artist.picUrl || artist.img1v1Url"
                 :alt="artist.name"
-                class="w-64 h-64 rounded-full object-cover shadow-md"
+                class="h-36 w-36 rounded-full object-cover shadow-md sm:h-48 sm:w-48 md:h-64 md:w-64"
             >
           </div>
-          <div class="w-2/3 pl-6 flex flex-col justify-center text-left">
-            <h1 class="text-5xl font-bold mb-4 ">{{ artist.name }}</h1>
-            <p class="text-sm text-gray-600 dark:text-gray-400 tabular-nums select-none">
+          <div class="min-w-0 flex-1 text-left">
+            <h1 class="mb-3 text-2xl font-bold leading-tight text-gray-900 dark:text-gray-100 sm:text-3xl md:mb-4 md:text-5xl">{{ artist.name }}</h1>
+            <p class="text-base md:text-lg text-gray-600 dark:text-gray-400 tabular-nums select-none">
               {{ artist.musicSize }} 首歌
               <span class="mx-1 text-gray-300 dark:text-gray-600">·</span>
               {{ artist.albumSize }} 张专辑
@@ -27,7 +27,7 @@
             <!-- 简介 -->
             <div class="mt-4">
               <div
-                  class="text-gray-600 dark:text-gray-400 cursor-pointer"
+                  class="text-base md:text-lg leading-relaxed text-gray-600 dark:text-gray-400 cursor-pointer"
                   @click="showFullDescription = !showFullDescription"
               >
                 {{ displayedDescription }}
@@ -39,29 +39,30 @@
           </div>
         </div>
 
-        <!-- 歌曲列表 -->
-        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-          <h2 class="text-2xl font-bold mb-4">热门歌曲</h2>
-          <div v-if="songDetails.length === 0" class="text-gray-500 py-4">
+        <!-- 歌曲列表：手机单列，宽屏再网格 -->
+        <div class="border-t border-gray-200 px-4 py-4 dark:border-gray-700 sm:px-6">
+          <h2 class="browse-section-title mb-4">热门歌曲</h2>
+          <div v-if="songDetails.length === 0" class="text-base text-gray-500 py-4 md:text-lg">
             暂无歌曲
           </div>
-          <div v-else class="grid grid-cols-3 gap-4">
+          <div v-else class="flex min-w-0 flex-col md:grid md:grid-cols-2 md:gap-3 lg:grid-cols-3 lg:gap-4">
             <div
               v-for="song in viewSongs"
               :key="song.id"
-              class="w-full"
+              class="min-w-0 w-full"
             >
-              <SongItem :song="song" />
+              <SongItem :song="song" variant="browse" />
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </PageContent>
 </template>
 
 <script setup lang="ts">
 import {ref, onMounted, computed, watch} from 'vue'
+import PageContent from '@/components/layout/PageContent.vue'
 import { useRoute } from 'vue-router'
 import { getNetease } from '@/util'
 import { getSongDetail } from '@/api/netease/search'

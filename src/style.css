@@ -11,6 +11,33 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* 主内容区通用边距：手机较小，PC（lg+）较大，与顶栏 px-9 对齐 */
+  --page-gutter-x: 1rem;
+  --page-gutter-y: 1rem;
+  --app-header-offset-mobile: calc(56px + env(safe-area-inset-top, 0px));
+  --app-header-offset-desktop: 60px;
+  --app-player-bar-offset: calc(3rem + env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 768px) {
+  :root {
+    --page-gutter-x: 1.5rem;
+    --page-gutter-y: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --page-gutter-x: clamp(2.25rem, 4vw, 4rem);
+    --page-gutter-y: 2rem;
+  }
+}
+
+@media (min-width: 1536px) {
+  :root {
+    --page-gutter-x: 4.5rem;
+  }
 }
 
 a {
@@ -24,8 +51,6 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
   user-select: none;
@@ -80,10 +105,73 @@ button:focus-visible {
 }
 
 #app {
+  width: 100%;
   max-width: 100%;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+
+/* App.vue 中 RouterView 外层：全站页面左右/上下内容边距（#app 提高优先级，避免被 Uno 覆盖） */
+#app .app-main {
+  box-sizing: border-box;
+  width: 100%;
+  text-align: left;
+  padding-left: var(--page-gutter-x);
+  padding-right: var(--page-gutter-x);
+  padding-top: calc(var(--app-header-offset-mobile) + var(--page-gutter-y));
+  padding-bottom: calc(var(--app-player-bar-offset) + var(--page-gutter-y));
+}
+
+@media (min-width: 1024px) {
+  #app .app-main {
+    padding-top: calc(var(--app-header-offset-desktop) + var(--page-gutter-y));
+    padding-bottom: var(--page-gutter-y);
+  }
+}
+
+/* 各路由页内容区：居中列（约 80% 宽，上限 80rem），块内文字仍左对齐 */
+#app .page-content {
+  box-sizing: border-box;
+  width: 80%;
+  max-width: 80rem;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: left;
+}
+
+/* 搜索 / 歌手 / 专辑等浏览页区块标题（与队列页标题字号一致） */
+#app .browse-section-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: rgb(17 24 39);
+}
+
+.dark #app .browse-section-title {
+  color: rgb(243 244 246);
+}
+
+@media (min-width: 768px) {
+  #app .browse-section-title {
+    font-size: 2.125rem;
+  }
+}
+
+#app .browse-muted {
+  font-size: 1rem;
+  color: rgb(107 114 128);
+}
+
+.dark #app .browse-muted {
+  color: rgb(156 163 175);
+}
+
+@media (min-width: 768px) {
+  #app .browse-muted {
+    font-size: 1.0625rem;
+  }
 }
 
 @media (prefers-color-scheme: light) {

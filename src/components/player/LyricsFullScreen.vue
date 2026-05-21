@@ -4,7 +4,7 @@
       <div
         v-if="panel.visible"
         ref="rootRef"
-        class="lyrics-fullscreen fixed inset-0 z-[220] flex flex-col overflow-hidden overflow-x-hidden text-left text-white select-none"
+        class="lyrics-fullscreen fixed inset-0 z-[220] hidden flex-col overflow-hidden overflow-x-hidden text-left text-white select-none lg:flex"
         role="dialog"
         aria-modal="true"
         aria-label="歌词"

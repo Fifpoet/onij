@@ -4,7 +4,7 @@
     type="button"
     class="shrink-0 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 overflow-hidden"
     :aria-label="'打开播放队列'"
-    @click="playQueue.toggleDrawer()"
+    @click="router.push('/queue')"
   >
     <img
       :src="coverUrl"
@@ -17,7 +17,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { usePlayQueueStore } from '@/store/playQueue'
+
+const router = useRouter()
 
 const defaultAlbumCover = 'https://p1.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg'
 

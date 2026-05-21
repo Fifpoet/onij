@@ -2,7 +2,7 @@
   <button
     v-if="playQueue.nowPlaying"
     type="button"
-    class="lyrics-entry-btn shrink-0 rounded-2xl text-sm font-semibold text-gray-800 dark:text-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+    class="lyrics-entry-btn hidden shrink-0 rounded-2xl text-sm font-semibold text-gray-800 dark:text-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 lg:flex"
     aria-label="歌词"
     @click="lyrics.open()"
   >
