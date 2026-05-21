@@ -11,7 +11,6 @@ export const usePlayQueueStore = defineStore(
     const nowPlaying = ref<ViewMusicListItem | null>(null)
     const playMode = ref<PlayQueueMode>('sequential')
     const isPlaying = ref(false)
-    const drawerVisible = ref(false)
     /** 音量 0–100，同步到 HTMLAudioElement.volume */
     const volume = ref(85)
     /** 当前播放进度（秒），由 NeteaseAudioHost 写入 */
@@ -29,13 +28,16 @@ export const usePlayQueueStore = defineStore(
       return queue.value.some((s) => s.id === id)
     }
 
-    /** 加入队列尾部；不改变已有顺序 */
-    function enqueue(song: ViewMusicListItem): 'added' | 'duplicate' {
+    /** 加入队列；若无在播则直接开始播放该曲 */
+    function enqueue(song: ViewMusicListItem): 'added' | 'playing' | 'duplicate' {
       if (isInQueueOrPlaying(song.id)) return 'duplicate'
-      queue.value.push({
-        ...song,
-        artists: song.artists?.map((a) => ({ ...a })) ?? [],
-      })
+      const item = cloneSong(song)
+      if (!nowPlaying.value) {
+        nowPlaying.value = item
+        resetPlaybackProgress()
+        return 'playing'
+      }
+      queue.value.push(item)
       return 'added'
     }
 
@@ -111,22 +113,6 @@ export const usePlayQueueStore = defineStore(
       volume.value = n
     }
 
-    function toggleDrawer() {
-      drawerVisible.value = !drawerVisible.value
-    }
-
-    function openDrawer() {
-      drawerVisible.value = true
-    }
-
-    function closeDrawer() {
-      drawerVisible.value = false
-    }
-
-    function setDrawerVisible(v: boolean) {
-      drawerVisible.value = v
-    }
-
     function removeFromQueue(id: number) {
       queue.value = queue.value.filter((s) => s.id !== id)
     }
@@ -163,7 +149,6 @@ export const usePlayQueueStore = defineStore(
       nowPlaying,
       playMode,
       isPlaying,
-      drawerVisible,
       volume,
       playbackCurrentSec,
       playbackDurationSec,
@@ -182,10 +167,6 @@ export const usePlayQueueStore = defineStore(
       setPlaybackSeeking,
       resetPlaybackProgress,
       setVolume,
-      toggleDrawer,
-      openDrawer,
-      closeDrawer,
-      setDrawerVisible,
       removeFromQueue,
       clearQueue,
       playNow,

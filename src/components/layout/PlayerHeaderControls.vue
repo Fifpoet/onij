@@ -1,11 +1,7 @@
 <template>
-  <div class="flex items-center gap-2 shrink-0 min-w-0">
-    <PlayerHeaderDisc />
-    <LyricsEntryButton />
-  </div>
+  <PlayerHeaderNowPlaying />
 </template>
 
 <script setup lang="ts">
-import PlayerHeaderDisc from '@/components/layout/PlayerHeaderDisc.vue'
-import LyricsEntryButton from '@/components/player/LyricsEntryButton.vue'
+import PlayerHeaderNowPlaying from '@/components/layout/PlayerHeaderNowPlaying.vue'
 </script>

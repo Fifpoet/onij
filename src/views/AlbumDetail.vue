@@ -1,21 +1,21 @@
 <template>
-  <div class="w-full flex justify-center min-w-0">
-    <div class="w-[80vw] px-4 py-8">
+  <PageContent>
+    <div class="py-4 md:py-8">
       <div v-if="loading" class="bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center">
         <div class="text-center py-8"></div>
       </div>
-      <div v-else-if="album" class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden">
-        <!-- 专辑信息 -->
-        <div class="flex p-6">
-          <div class="w-1/3 flex justify-center">
+      <div v-else-if="album" class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden min-w-0">
+        <!-- 专辑信息：手机竖排，避免封面与文字重叠 -->
+        <div class="flex flex-col gap-4 p-4 sm:flex-row sm:items-start sm:gap-6 sm:p-6">
+          <div class="flex shrink-0 justify-center sm:justify-start">
             <img
                 :src="album.picUrl || album.blurPicUrl"
                 :alt="album.name"
-                class="w-64 h-64 rounded-lg object-cover shadow-md"
+                class="h-36 w-36 rounded-lg object-cover shadow-md sm:h-48 sm:w-48 md:h-64 md:w-64"
             >
           </div>
-          <div class="w-2/3 pl-6 flex flex-col justify-center text-left select-none">
-            <h1 class="text-5xl font-bold mb-3 text-gray-900 dark:text-gray-100">{{ album.name }}</h1>
+          <div class="min-w-0 flex-1 text-left select-none sm:pl-0">
+            <h1 class="mb-2 text-2xl font-bold leading-tight text-gray-900 dark:text-gray-100 sm:mb-3 sm:text-3xl md:text-5xl">{{ album.name }}</h1>
             <p class="text-base sm:text-lg text-gray-900 dark:text-gray-100 mb-2">
               <span class="font-normal">Album by </span>
               <RouterLink
@@ -25,7 +25,7 @@
                 {{ album.artist.name }}
               </RouterLink>
             </p>
-            <p class="text-sm text-gray-500 dark:text-gray-400 tabular-nums mb-4">
+            <p class="text-base md:text-lg text-gray-500 dark:text-gray-400 tabular-nums mb-4">
               {{ albumMetaYear }}
               <span class="mx-1 text-gray-300 dark:text-gray-600">·</span>
               {{ albumSongCount }} 首歌, {{ albumTotalMinutes }} 分钟
@@ -34,7 +34,7 @@
             <!-- 简介 -->
             <div class="mt-4">
               <div
-                  class="text-gray-600 dark:text-gray-400 cursor-pointer"
+                  class="text-base md:text-lg leading-relaxed text-gray-600 dark:text-gray-400 cursor-pointer"
                   @click="showFullDescription = !showFullDescription"
               >
                 {{ displayedDescription }}
@@ -47,15 +47,15 @@
         </div>
 
         <!-- 歌曲列表 -->
-        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-          <div v-if="songDetails.length === 0" class="text-gray-500 py-4">
+        <div class="border-t border-gray-200 px-4 py-4 dark:border-gray-700 sm:px-6">
+          <div v-if="songDetails.length === 0" class="text-base text-gray-500 py-4 md:text-lg">
             暂无歌曲
           </div>
           <div v-else>
             <!-- 按 cd 分组显示 -->
             <template v-for="(discSongs, discNumber) in groupedSongs" :key="discNumber">
               <div v-if="shouldShowDiscTitle(discNumber)" class="mb-4">
-                <h3 class="text-lg font-semibold text-gray-600 dark:text-gray-400 mb-2">
+                <h3 class="text-xl md:text-2xl font-semibold text-gray-600 dark:text-gray-400 mb-2">
                   Disc {{ discNumber }}
                 </h3>
               </div>
@@ -75,11 +75,12 @@
         </div>
       </div>
     </div>
-  </div>
+  </PageContent>
 </template>
 
 <script setup lang="ts">
 import {ref, onMounted, computed} from 'vue'
+import PageContent from '@/components/layout/PageContent.vue'
 import { useRoute, RouterLink } from 'vue-router'
 import { getSongDetail } from '@/api/netease/search'
 import type { SongDetail } from '@/api/netease/result'

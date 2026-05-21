@@ -19,7 +19,12 @@ const basicRoutes = [
     path: '/album',
     name: 'Album',
     component: () => import('@/views/AlbumDetail.vue')
-  }
+  },
+  {
+    path: '/queue',
+    name: 'Queue',
+    component: () => import('@/views/QueuePage.vue'),
+  },
 ]
 
 
