@@ -1,194 +1,128 @@
 // src/util/file.ts
-import {FileType} from '@/api/types/enums';
-import {DocumentTextOutline, FolderOutline, ImageOutline, MusicalNoteOutline} from '@vicons/ionicons5';
+import { FileType } from '@/api/types/enums'
+import {
+  DocumentTextOutline,
+  FolderOutline,
+  ImageOutline,
+  MusicalNoteOutline,
+  VideocamOutline,
+} from '@vicons/ionicons5'
 
-/**
- * 格式化时间戳为可读的日期时间字符串
- * @param timestamp 时间戳（秒）
- * @returns 格式化后的日期时间字符串
- */
 export function formatFileTime(timestamp: number): string {
-    const date = new Date(timestamp * 1000);
-
-    // 检查日期是否有效
-    if (isNaN(date.getTime())) {
-        return '';
-    }
-
-    return date.toLocaleString('zh-CN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
+  const date = new Date(timestamp * 1000)
+  if (isNaN(date.getTime())) return ''
+  return date.toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 
 export function showFileIcon(fileType: FileType): boolean {
-    // 无法预览展示图标
-    return ![
-        FileType.FT_Png,
-    ].includes(fileType);
+  return fileType !== FileType.FT_Image
 }
-
 
 export function getFileIcon(fileType: FileType) {
-    switch (fileType) {
-        case FileType.FT_Folder:
-            return FolderOutline;
-        case FileType.FT_Mp3:
-            return MusicalNoteOutline;
-        case FileType.FT_Lyrics:
-            return DocumentTextOutline;
-        case FileType.FT_Png:
-            return ImageOutline;
-        default:
-            return DocumentTextOutline;
-    }
+  switch (fileType) {
+    case FileType.FT_Folder:
+      return FolderOutline
+    case FileType.FT_Audio:
+      return MusicalNoteOutline
+    case FileType.FT_Image:
+      return ImageOutline
+    case FileType.FT_Video:
+      return VideocamOutline
+    case FileType.FT_Text:
+    case FileType.FT_CSV:
+    case FileType.FT_Code:
+      return DocumentTextOutline
+    default:
+      return DocumentTextOutline
+  }
 }
 
-/**
- * 获取文件大小的显示文本（暂时写死，后续接口返回后可替换）
- * @param fileType 文件类型
- * @returns 文件大小字符串
- */
 export function getFileSize(fileType: FileType): string {
-    if (fileType === FileType.FT_Folder) {
-        return '';
-    }
-
-    // 暂时写死的大小，后续接口返回后可以替换
-    const sizeMap = {
-        [FileType.FT_Mp3]: '3.2 MB',
-        [FileType.FT_Lyrics]: '0.1 MB',
-        [FileType.FT_Png]: '1.5 MB',
-    };
-
-    return sizeMap[fileType] || '0.1 MB';
+  if (fileType === FileType.FT_Folder) return ''
+  const sizeMap: Partial<Record<FileType, string>> = {
+    [FileType.FT_Audio]: '3.2 MB',
+    [FileType.FT_Text]: '0.1 MB',
+    [FileType.FT_Image]: '1.5 MB',
+    [FileType.FT_Video]: '50 MB',
+  }
+  return sizeMap[fileType] || '0.1 MB'
 }
 
-/**
- * 获取文件类型的显示名称
- * @param fileType 文件类型
- * @returns 文件类型名称
- */
 export function getFileTypeName(fileType: FileType): string {
-    const typeMap = {
-        [FileType.FT_Unknown]: '未知文件',
-        [FileType.FT_Mp3]: '音频文件',
-        [FileType.FT_Lyrics]: '歌词文件',
-        [FileType.FT_Png]: '图片文件',
-        [FileType.FT_Folder]: '文件夹',
-    };
-
-    return typeMap[fileType] || '未知文件';
+  const typeMap: Partial<Record<FileType, string>> = {
+    [FileType.FT_Unknown]: '未知文件',
+    [FileType.FT_Audio]: '音频文件',
+    [FileType.FT_Text]: '文本文件',
+    [FileType.FT_Image]: '图片文件',
+    [FileType.FT_Video]: '视频文件',
+    [FileType.FT_Folder]: '文件夹',
+    [FileType.FT_Pdf]: 'PDF',
+    [FileType.FT_Archive]: '压缩包',
+  }
+  return typeMap[fileType] || '未知文件'
 }
 
-/**
- * 检查是否为文件夹
- * @param fileType 文件类型
- * @returns 是否为文件夹
- */
 export function isFolder(fileType: FileType): boolean {
-    return fileType === FileType.FT_Folder;
+  return fileType === FileType.FT_Folder
 }
 
-/**
- * 检查是否为图片文件
- * @param fileType 文件类型
- * @returns 是否为图片文件
- */
 export function isImage(fileType: FileType): boolean {
-    return [
-        // FileType.FT_Jpg,
-        // FileType.FT_Jpeg,
-        FileType.FT_Png,
-        // FileType.FT_Gif,
-        // FileType.FT_Webp,
-        // FileType.FT_Bmp
-    ].includes(fileType);
+  return fileType === FileType.FT_Image
 }
 
-/**
- * 检查是否为音频文件
- * @param fileType 文件类型
- * @returns 是否为音频文件
- */
 export function isAudio(fileType: FileType): boolean {
-    return fileType === FileType.FT_Mp3;
+  return fileType === FileType.FT_Audio
 }
 
-/**
- * 检查是否为文本文件
- * @param fileType 文件类型
- * @returns 是否为文本文件
- */
 export function isText(fileType: FileType): boolean {
-    return fileType === FileType.FT_Lyrics;
+  return fileType === FileType.FT_Text || fileType === FileType.FT_CSV
 }
 
-/**
- * 获取文件扩展名
- * @param filename 文件名
- * @returns 文件扩展名
- */
 export function getFileExtension(filename: string): string {
-    const lastDotIndex = filename.lastIndexOf('.');
-    if (lastDotIndex === -1) {
-        return '';
-    }
-    return filename.substring(lastDotIndex + 1).toLowerCase();
+  const lastDotIndex = filename.lastIndexOf('.')
+  if (lastDotIndex === -1) return ''
+  return filename.substring(lastDotIndex + 1).toLowerCase()
 }
 
-/**
- * 格式化文件大小（字节转换为可读格式）
- * @param bytes 字节数
- * @returns 格式化后的文件大小
- */
 export function formatFileSize(bytes: number): string {
-    if (bytes === 0) return '0 B';
-
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  if (bytes === 0) return '0 B'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`
 }
 
-/**
- * 根据文件类型字符串获取FileType枚举值
- * @param fileType 文件类型字符串（MIME类型或扩展名）
- * @returns FileType枚举值
- */
 export function getFileTypeFromString(fileType: string): FileType {
-    const lowerType = fileType.toLowerCase();
-
-    // 根据MIME类型判断
-    if (lowerType.startsWith('audio/') || lowerType === 'mp3') {
-        return FileType.FT_Mp3;
-    }
-    if (lowerType.startsWith('image/') || lowerType === 'png' || lowerType === 'jpg' || lowerType === 'jpeg') {
-        return FileType.FT_Png;
-    }
-    if (lowerType.startsWith('text/') || lowerType === 'txt' || lowerType === 'lrc') {
-        return FileType.FT_Lyrics;
-    }
-
-    // 根据扩展名判断
-    const extension = getFileExtension(fileType);
-    switch (extension) {
-        case 'mp3':
-            return FileType.FT_Mp3;
-        case 'png':
-        case 'jpg':
-        case 'jpeg':
-        case 'gif':
-        case 'bmp':
-            return FileType.FT_Png;
-        case 'txt':
-        case 'lrc':
-            return FileType.FT_Lyrics;
-        default:
-            return FileType.FT_Unknown;
-    }
+  const lowerType = fileType.toLowerCase()
+  if (lowerType.startsWith('audio/') || lowerType === 'mp3') return FileType.FT_Audio
+  if (lowerType.startsWith('image/') || ['png', 'jpg', 'jpeg'].includes(lowerType)) {
+    return FileType.FT_Image
+  }
+  if (lowerType.startsWith('text/') || ['txt', 'lrc'].includes(lowerType)) return FileType.FT_Text
+  const extension = getFileExtension(fileType)
+  switch (extension) {
+    case 'mp3':
+    case 'wav':
+    case 'flac':
+      return FileType.FT_Audio
+    case 'png':
+    case 'jpg':
+    case 'jpeg':
+    case 'gif':
+    case 'bmp':
+      return FileType.FT_Image
+    case 'txt':
+    case 'lrc':
+      return FileType.FT_Text
+    case 'csv':
+      return FileType.FT_CSV
+    default:
+      return FileType.FT_Unknown
+  }
 }

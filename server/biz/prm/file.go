@@ -91,6 +91,18 @@ type DownloadFileResult struct {
 	Urls []string
 }
 
+func (r *DownloadFileResult) Resp() map[string]interface{} {
+	urls := r.Urls
+	if urls == nil {
+		urls = []string{}
+	}
+	return map[string]interface{}{
+		"code":    util.BaseCodeOK,
+		"message": util.BaseMsgOK,
+		"urls":    urls,
+	}
+}
+
 type DeleteFileParam struct {
 	FileId int64
 }

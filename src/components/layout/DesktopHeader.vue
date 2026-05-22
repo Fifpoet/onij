@@ -1,136 +1,64 @@
-<!-- 桌面端导航栏 -->
 <template>
   <Transition name="slide-fade" appear>
-    <div class="fixed inset-x-0 top-0 z-50 h-[60px] bg-white/95 dark:bg-dark-800/95 backdrop-blur-sm">
-      <div class="h-full flex items-center justify-between px-9">
-        <div class="flex items-center gap-3 min-w-0">
-          <RouterLink to="/" class="text-xl font-bold shrink-0">
-            ONIJ
-          </RouterLink>
+    <header class="desktop-header fixed inset-x-0 top-0 z-50 h-[60px] border-b border-gray-200/80 bg-white/95 backdrop-blur-sm dark:border-dark-600/80 dark:bg-dark-800/95">
+      <div class="desktop-header__inner">
+        <div class="desktop-header__left min-w-0">
+          <RouterLink to="/search" class="desktop-header__logo shrink-0">ONIJ</RouterLink>
           <PlayerHeaderControls />
         </div>
-        <!-- 右上角菜单 -->
-        <div class="flex items-center justify-end space-x-4">
-          <div v-for="(items, group) in menuItems" :key="group" class="flex items-center">
-            <n-dropdown :options="createDropdownOptions(items)" trigger="hover">
-              <n-button>{{ group }}</n-button>
-            </n-dropdown>
-          </div>
+        <div class="desktop-header__right">
+          <SiteNavTools />
+          <HeaderSearch />
         </div>
-        <n-input
-            placeholder="搜索"
-            :style="{ width: '300px' }"
-            @keyup.enter="onSearch"
-            v-model:value="searchValue"
-        >
-          <template #prefix>
-            <n-icon :component="SearchOutline" />
-          </template>
-        </n-input>
       </div>
-    </div>
+    </header>
   </Transition>
 </template>
 
 <script setup lang="ts">
-import { h } from 'vue'
-import { useMusicStore } from '@/store'
 import { RouterLink } from 'vue-router'
-import { NButton, NDropdown, NIcon, NInput } from 'naive-ui'
-import { SearchOutline } from '@vicons/ionicons5'
-import type { DropdownOption } from 'naive-ui'
-import { MidShowWhat } from '@/api/types'
-import {
-  MailOutline,
-  TrendingUpOutline,
-  FootstepsOutline,
-  FolderOutline,
-  RecordingOutline,
-  DocumentTextOutline,
-  BookOutline,
-  DiamondOutline,
-  ChatboxOutline
-} from '@vicons/ionicons5'
-import {useSearch} from "@/composables/searchMusic.ts";
-import {router} from "@/router.ts";
 import PlayerHeaderControls from '@/components/layout/PlayerHeaderControls.vue'
-
-const musicStore = useMusicStore()
-
-interface MenuItem {
-  key: string
-  label: string
-  icon: any
-  onClick?: () => void
-}
-
-const { searchValue } = useSearch()
-
-const onSearch = async () => {
-  if (!searchValue.value) {
-    return
-  }
-  await router.push({
-    name: 'Search',
-    query: {
-      q: searchValue.value
-    }
-  })
-}
-
-const menuItems: Record<string, MenuItem[]> = {
-  "mbox": [
-    { key: 'relay', label: 'relay', icon: MailOutline },
-    { key: 'trending', label: 'trending', icon: TrendingUpOutline },
-    { key: 'footprint', label: 'footprint', icon: FootstepsOutline },
-  ],
-  "goroutine": [
-    { 
-      key: 'file', 
-      label: 'file', 
-      icon: FolderOutline,
-      onClick: () => musicStore.setMidShowWhat(MidShowWhat.ShowFileList)
-    },
-    { key: 'record', label: 'record', icon: RecordingOutline },
-    { 
-      key: 'chat', 
-      label: 'chat', 
-      icon: ChatboxOutline,
-      onClick: () => musicStore.setMidShowWhat(MidShowWhat.ShowChatWindow)
-    },
-  ],
-  "recall": [
-    { 
-      key: 'memo', 
-      label: 'memo', 
-      icon: DocumentTextOutline,
-      onClick: () => musicStore.setMidShowWhat(MidShowWhat.ShowMemoList)
-    },
-    { key: 'poem', label: 'poem', icon: BookOutline },
-    { key: 'treasure', label: 'treasure', icon: DiamondOutline },
-  ]
-}
-
-const createDropdownOptions = (items: MenuItem[]): DropdownOption[] => {
-  return items.map(item => ({
-    key: item.key,
-    label: () => h('div', { class: 'flex items-center' }, [
-      h(NIcon, { class: 'mr-2' }, { default: () => h(item.icon) }),
-      h('span', { class: 'text-sm' }, item.label)
-    ]),
-    ...(item.onClick ? { props: { onClick: item.onClick } } : {})
-  }))
-}
+import SiteNavTools from '@/components/layout/SiteNavTools.vue'
+import HeaderSearch from '@/components/layout/HeaderSearch.vue'
 </script>
 
 <style scoped>
+.desktop-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  height: 100%;
+  padding: 0 2.25rem;
+}
+.desktop-header__left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+.desktop-header__logo {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: rgb(17 24 39);
+  text-decoration: none;
+}
+.dark .desktop-header__logo {
+  color: rgb(243 244 246);
+}
+.desktop-header__right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
 .slide-fade-enter-active,
 .slide-fade-leave-active {
-  transition: all 0.3s ease-out;
+  transition: opacity 0.3s ease;
 }
-
 .slide-fade-enter-from,
 .slide-fade-leave-to {
   opacity: 0;
 }
-</style> 
+</style>
