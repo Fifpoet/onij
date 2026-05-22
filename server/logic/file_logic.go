@@ -16,6 +16,7 @@ import (
 type FileLogic interface {
 	Upload(ctx context.Context, param *prm.UploadFileParam) (*prm.UploadFileResult, error)
 	GetList(ctx context.Context, param *prm.GetFileListParam) (*prm.GetFileListResult, error)
+	Download(ctx context.Context, param *prm.DownloadFileParam) (*prm.DownloadFileResult, error)
 	Delete(ctx context.Context, param *prm.DeleteFileParam) (*prm.DeleteFileResult, error)
 }
 
@@ -50,6 +51,21 @@ func (l *fileLogic) Delete(ctx context.Context, param *prm.DeleteFileParam) (*pr
 	}
 
 	return &prm.DeleteFileResult{}, nil
+}
+
+func (l *fileLogic) Download(ctx context.Context, param *prm.DownloadFileParam) (*prm.DownloadFileResult, error) {
+	files, err := l.FileDal.GetByIds(ctx, param.FileIds...)
+	if err != nil {
+		return nil, err
+	}
+	urls := make([]string, 0, len(files))
+	for _, f := range files {
+		if f == nil || len(f.StoreKey) == 0 {
+			continue
+		}
+		urls = append(urls, util.DownloadFile(f.StoreKey))
+	}
+	return &prm.DownloadFileResult{Urls: urls}, nil
 }
 
 func (l *fileLogic) GetList(ctx context.Context, param *prm.GetFileListParam) (*prm.GetFileListResult, error) {

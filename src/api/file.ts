@@ -1,31 +1,33 @@
 // src/api/file.ts
-import {post} from '../util/http';
-import {
-    DeleteFileReq,
-    DeleteFileResp,
-    GetFileListReq,
-    GetFileListResp,
-    GetUploadTokenResp,
-    UploadFileReq,
-    UploadFileResp
-} from '@/api/types';
+import { post } from '../util/http'
+import type {
+  DeleteFileReq,
+  DeleteFileResp,
+  DownloadFileReq,
+  DownloadFileResp,
+  GetFileListReq,
+  GetFileListResp,
+  GetUploadTokenResp,
+  UploadFileReq,
+  UploadFileResp,
+} from '@/api/types'
 
 export const UploadFile = async (params: UploadFileReq): Promise<UploadFileResp> => {
-    const response = await post<UploadFileResp>('/file/upload', params);
-    return response.data;
-};
+  return post('/file/upload', params) as Promise<UploadFileResp>
+}
 
-// 获取文件列表
 export const GetFileList = async (params: GetFileListReq): Promise<GetFileListResp> => {
-    return (await post<GetFileListResp>('/file/list', params)).data;
-};
+  return post('/file/list', params) as Promise<GetFileListResp>
+}
 
-// 删除文件
 export const DeleteFileById = async (params: DeleteFileReq): Promise<DeleteFileResp> => {
-    return (await post<DeleteFileResp>('/file/delete', params)).data;
-};
+  return post('/file/delete', params) as Promise<DeleteFileResp>
+}
 
-// 获取上传token
+export const DownloadFiles = async (params: DownloadFileReq): Promise<DownloadFileResp> => {
+  return post('/file/download', params) as Promise<DownloadFileResp>
+}
+
 export const GetUploadToken = async (): Promise<GetUploadTokenResp> => {
-    return (await post<GetUploadTokenResp>('/file/upload_token', {})).data;
-};
+  return post('/file/upload_token', {}) as Promise<GetUploadTokenResp>
+}

@@ -25,6 +25,11 @@ const basicRoutes = [
     name: 'Queue',
     component: () => import('@/views/QueuePage.vue'),
   },
+  {
+    path: '/tran',
+    name: 'Tran',
+    component: () => import('@/views/TranPage.vue'),
+  },
 ]
 
 

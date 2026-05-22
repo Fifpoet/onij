@@ -1,7 +1,8 @@
 import { FileType } from './enums'
 
-export interface File {
-  id: number
+export { FileType, FILE_TYPE_LABELS } from './enums'
+
+export interface File {  id: number
   name: string
   format: FileType
   size: number
@@ -12,16 +13,20 @@ export interface File {
   url: string
 }
 
-// 请求和响应类型
+/** 文件列表项（与 File 相同，遗留组件别名） */
+export type FileDetail = File
+
+// 请求和响应类型（字段与后端 JSON 一致）
 export interface UploadFileReq {
-  parentId: number
+  parent_id: number
   files: Array<{
     filename: string
-    storeKey: string
+    store_key: string
     hash: string
     format: FileType
     exif: string
     size: number
+    origin_at?: number
   }>
   url?: string
 }
@@ -29,7 +34,7 @@ export interface UploadFileReq {
 export interface UploadFileResp {
   code: number
   message: string
-  fileIds: number[]
+  file_ids: number[]
 }
 
 export interface GetFileListReq {
@@ -47,7 +52,7 @@ export interface GetFileListResp {
 }
 
 export interface DeleteFileReq {
-  fileId: number
+  file_id: number
 }
 
 export interface DeleteFileResp {
@@ -55,9 +60,20 @@ export interface DeleteFileResp {
   message: string
 }
 
+export interface DownloadFileReq {
+  file_ids: number[]
+}
+
+export interface DownloadFileResp {
+  code: number
+  message: string
+  urls: string[]
+}
+
 export interface GetUploadTokenResp {
   code: number
   message: string
-  uploadToken: string
+  upload_token: string
+  uploadToken?: string
   domain: string
 }
