@@ -3,7 +3,7 @@
     <button
       type="button"
       class="site-nav-tools__trigger"
-      :class="{ 'site-nav-tools__trigger--active': isTranRoute }"
+      :class="{ 'site-nav-tools__trigger--active': toolsActive() }"
       @click="onTriggerClick"
     >
       工具
@@ -14,19 +14,27 @@
         <RouterLink to="/tran" class="site-nav-tools__item" @click="open = false">
           中转站
         </RouterLink>
+        <RouterLink to="/prac" class="site-nav-tools__item" @click="open = false">
+          练习
+        </RouterLink>
       </div>
     </Transition>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
 const open = ref(false)
-const isTranRoute = computed(() => route.path === '/tran')
+
+const TOOL_PATHS = ['/tran', '/prac'] as const
+
+function toolsActive() {
+  return TOOL_PATHS.includes(route.path as (typeof TOOL_PATHS)[number])
+}
 
 function onTriggerClick() {
   if (typeof window !== 'undefined' && window.matchMedia('(hover: none)').matches) {

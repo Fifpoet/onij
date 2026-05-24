@@ -149,6 +149,20 @@ button:focus-visible {
   color: rgb(17 24 39);
 }
 
+/* 练习页日历：覆盖全局 button 样式，避免格子被撑没或看不见 */
+#app .prac-nav-btn,
+#app .prac-day-btn {
+  padding: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  background-color: transparent;
+  border-radius: 0.5rem;
+}
+
+#app .prac-day-btn.prac-day-btn {
+  min-height: 0;
+}
+
 .dark #app .browse-section-title {
   color: rgb(243 244 246);
 }

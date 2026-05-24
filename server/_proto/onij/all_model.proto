@@ -71,3 +71,13 @@ message File {
   int64 updated_at = 8;
   string url = 10;
 }
+
+message Practice {
+  int64 id = 1;
+  PracticeType practice_type = 2;
+  string content = 3;
+  int64 practice_at = 4;
+  int32 duration = 5;
+  int64 created_at = 7;
+  int64 updated_at = 8;
+}

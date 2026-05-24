@@ -66,6 +66,7 @@
       >
         <p class="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-gray-400">工具</p>
         <RouterLink to="/tran" class="mobile-menu-link" @click="isMenuOpen = false">中转站</RouterLink>
+        <RouterLink to="/prac" class="mobile-menu-link" @click="isMenuOpen = false">练习</RouterLink>
       </nav>
     </Transition>
   </div>
