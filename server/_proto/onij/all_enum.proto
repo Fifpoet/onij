@@ -44,7 +44,7 @@ enum AudioQuality {
 }
 
 enum PerformType {
-  PT_Unknown = 0;
+  PFT_Unknown = 0;
 }
 
 // 标签业务
