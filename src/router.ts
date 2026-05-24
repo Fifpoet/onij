@@ -30,6 +30,11 @@ const basicRoutes = [
     name: 'Tran',
     component: () => import('@/views/TranPage.vue'),
   },
+  {
+    path: '/prac',
+    name: 'Prac',
+    component: () => import('@/views/PracPage.vue'),
+  },
 ]
 
 

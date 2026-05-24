@@ -15,3 +15,10 @@ app.use(MateChat)
 app.use(router)
 app.use(pinia.use(piniaPluginPersistedstate))
 app.mount('#app')
+
+// 路由表变更不会走组件 HMR，开发时改 router.ts 后自动整页刷新
+if (import.meta.hot) {
+  import.meta.hot.accept('./router.ts', () => {
+    window.location.reload()
+  })
+}
