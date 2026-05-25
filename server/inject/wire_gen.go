@@ -25,6 +25,7 @@ func InitDalForTest() *infra.AllInfra {
 	albumDal := dal.NewAlbumDal(defaultProxy)
 	albumMusicDal := dal.NewAlbumMusicDal(defaultProxy)
 	artistDal := dal.NewArtistDal(defaultProxy)
+	practiceDal := dal.NewPracticeDal(defaultProxy)
 	allInfra := &infra.AllInfra{
 		TagDal:        tagDal,
 		FileDal:       fileDal,
@@ -32,6 +33,7 @@ func InitDalForTest() *infra.AllInfra {
 		AlbumDal:      albumDal,
 		AlbumMusicDal: albumMusicDal,
 		ArtistDal:     artistDal,
+		PracticeDal:   practiceDal,
 	}
 	return allInfra
 }
@@ -45,6 +47,7 @@ func InitLogicForTest() *logic.AllLogic {
 	albumDal := dal.NewAlbumDal(defaultProxy)
 	albumMusicDal := dal.NewAlbumMusicDal(defaultProxy)
 	artistDal := dal.NewArtistDal(defaultProxy)
+	practiceDal := dal.NewPracticeDal(defaultProxy)
 	allInfra := &infra.AllInfra{
 		TagDal:        tagDal,
 		FileDal:       fileDal,
@@ -52,18 +55,21 @@ func InitLogicForTest() *logic.AllLogic {
 		AlbumDal:      albumDal,
 		AlbumMusicDal: albumMusicDal,
 		ArtistDal:     artistDal,
+		PracticeDal:   practiceDal,
 	}
 	musicLogic := logic.NewMusicLogic(allInfra)
 	fileLogic := logic.NewFileLogic(allInfra)
 	albumLogic := logic.NewAlbumLogic(allInfra)
 	artistLogic := logic.NewArtistLogic(allInfra)
 	tagLogic := logic.NewTagLogic(allInfra)
+	practiceLogic := logic.NewPracticeLogic(allInfra)
 	allLogic := &logic.AllLogic{
-		MusicLogic:  musicLogic,
-		FileLogic:   fileLogic,
-		AlbumLogic:  albumLogic,
-		ArtistLogic: artistLogic,
-		TagLogic:    tagLogic,
+		MusicLogic:    musicLogic,
+		FileLogic:     fileLogic,
+		AlbumLogic:    albumLogic,
+		ArtistLogic:   artistLogic,
+		TagLogic:      tagLogic,
+		PracticeLogic: practiceLogic,
 	}
 	return allLogic
 }
@@ -77,6 +83,7 @@ func InitializeApp() *App {
 	albumDal := dal.NewAlbumDal(defaultProxy)
 	albumMusicDal := dal.NewAlbumMusicDal(defaultProxy)
 	artistDal := dal.NewArtistDal(defaultProxy)
+	practiceDal := dal.NewPracticeDal(defaultProxy)
 	allInfra := &infra.AllInfra{
 		TagDal:        tagDal,
 		FileDal:       fileDal,
@@ -84,18 +91,21 @@ func InitializeApp() *App {
 		AlbumDal:      albumDal,
 		AlbumMusicDal: albumMusicDal,
 		ArtistDal:     artistDal,
+		PracticeDal:   practiceDal,
 	}
 	musicLogic := logic.NewMusicLogic(allInfra)
 	fileLogic := logic.NewFileLogic(allInfra)
 	albumLogic := logic.NewAlbumLogic(allInfra)
 	artistLogic := logic.NewArtistLogic(allInfra)
 	tagLogic := logic.NewTagLogic(allInfra)
+	practiceLogic := logic.NewPracticeLogic(allInfra)
 	allLogic := &logic.AllLogic{
-		MusicLogic:  musicLogic,
-		FileLogic:   fileLogic,
-		AlbumLogic:  albumLogic,
-		ArtistLogic: artistLogic,
-		TagLogic:    tagLogic,
+		MusicLogic:    musicLogic,
+		FileLogic:     fileLogic,
+		AlbumLogic:    albumLogic,
+		ArtistLogic:   artistLogic,
+		TagLogic:      tagLogic,
+		PracticeLogic: practiceLogic,
 	}
 	app := &App{
 		AllInfra: allInfra,
@@ -106,9 +116,9 @@ func InitializeApp() *App {
 
 // wire.go:
 
-var infraSet = wire.NewSet(dal.NewMysqlCli, cdb.NewDefaultProxy, dal.NewTagDal, dal.NewFileDal, dal.NewMusicDal, dal.NewAlbumDal, dal.NewAlbumMusicDal, dal.NewArtistDal, wire.Struct(new(infra.AllInfra), "*"))
+var infraSet = wire.NewSet(dal.NewMysqlCli, cdb.NewDefaultProxy, dal.NewTagDal, dal.NewFileDal, dal.NewMusicDal, dal.NewAlbumDal, dal.NewAlbumMusicDal, dal.NewArtistDal, dal.NewPracticeDal, wire.Struct(new(infra.AllInfra), "*"))
 
-var logicSet = wire.NewSet(logic.NewMusicLogic, logic.NewFileLogic, logic.NewAlbumLogic, logic.NewArtistLogic, logic.NewTagLogic, wire.Struct(new(logic.AllLogic), "*"))
+var logicSet = wire.NewSet(logic.NewMusicLogic, logic.NewFileLogic, logic.NewAlbumLogic, logic.NewArtistLogic, logic.NewTagLogic, logic.NewPracticeLogic, wire.Struct(new(logic.AllLogic), "*"))
 
 var allSet = wire.NewSet(
 	infraSet,

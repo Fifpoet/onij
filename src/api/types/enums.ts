@@ -89,3 +89,30 @@ export enum ResourceType {
   RT_Music = 2,
   RT_Album = 3,
 }
+
+/** 练习类型，与 all_enum.proto PracticeType 一致 */
+export enum PracticeType {
+  PCT_Unknown = 0,
+  PCT_AnaerobicExercise = 1,
+  PCT_AerobicExercise = 2,
+  PCT_Reading = 3,
+  PCT_Language = 4,
+  PCT_Game = 5,
+  PCT_Piano = 6,
+  PCT_Flute = 7,
+  PCT_Singing = 8,
+  PCT_Other = 99,
+}
+
+export const PRACTICE_TYPE_LABELS: Record<PracticeType, string> = {
+  [PracticeType.PCT_Unknown]: '未分类',
+  [PracticeType.PCT_AnaerobicExercise]: '无氧',
+  [PracticeType.PCT_AerobicExercise]: '有氧',
+  [PracticeType.PCT_Reading]: '阅读',
+  [PracticeType.PCT_Language]: '语言',
+  [PracticeType.PCT_Game]: '游戏',
+  [PracticeType.PCT_Piano]: '钢琴',
+  [PracticeType.PCT_Flute]: '长笛',
+  [PracticeType.PCT_Singing]: '歌唱',
+  [PracticeType.PCT_Other]: '其他',
+}

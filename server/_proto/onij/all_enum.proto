@@ -93,14 +93,15 @@ enum ResourceType {
 
 // 练习类型
 enum PracticeType {
-  PT_Unknown = 0;
-  PT_AnaerobicExercise = 1;
-  PT_AerobicExercise = 2;
-  PT_Reading = 3;
-  PT_Language = 4;
-  PT_Game = 5;
-  PT_Piano = 6;
-  PT_Flute = 7;
-  PT_Singing = 8;
-  PT_Other = 99;
+  PCT_Unknown = 0;
+  PCT_AnaerobicExercise = 1;
+  PCT_AerobicExercise = 2;
+  PCT_Reading = 3;
+  PCT_Language = 4;
+  PCT_Game = 5;
+  PCT_Piano = 6;
+  PCT_Flute = 7;
+  PCT_Singing = 8;
+  PCT_Other = 99;
 }
+

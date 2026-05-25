@@ -4,3 +4,4 @@ export * from './file';
 export * from './artist';
 export * from './album';
 export * from './tag';
+export * from './practice';

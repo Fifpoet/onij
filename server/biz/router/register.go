@@ -11,5 +11,6 @@ import (
 func GeneratedRegister(r *server.Hertz) {
 	//INSERT_POINT: DO NOT DELETE THIS LINE!
 	api.Register(r)
+	api.RegisterPractice(r)
 
 }
