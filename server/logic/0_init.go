@@ -6,4 +6,5 @@ type AllLogic struct {
 	AlbumLogic
 	ArtistLogic
 	TagLogic
+	PracticeLogic
 }

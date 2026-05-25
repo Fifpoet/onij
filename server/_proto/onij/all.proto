@@ -201,6 +201,42 @@ message GetUploadTokenResp {
   string domain = 4;
 }
 
+// 上传练习（optional id 用于更新）
+message UploadPracticeReq {
+  PracticeType practice_type = 1;
+  string content = 2;
+  int64 practice_at = 3;
+  int32 duration = 4;
+  optional int64 id = 5;
+}
+message UploadPracticeResp {
+  int32 code = 1;
+  string message = 2;
+  int64 practice_id = 3;
+}
+
+message DeletePracticeReq { int64 id = 1; }
+message DeletePracticeResp {
+  int32 code = 1;
+  string message = 2;
+}
+
+message GetMonthlyPracticeReq {
+  int32 year = 1;
+  int32 month = 2;
+}
+
+message PracticeDay {
+  int32 day = 1;
+  repeated Practice practices = 2;
+}
+
+message GetMonthlyPracticeResp {
+  int32 code = 1;
+  string message = 2;
+  repeated PracticeDay days = 3;
+}
+
 service AllService {
   // 上传文件
   rpc UploadFile(UploadFileReq) returns (UploadFileResp) {
@@ -257,5 +293,17 @@ service AllService {
   // 获取上传token
   rpc GetUploadToken(GetUploadTokenReq) returns (GetUploadTokenResp) {
     option (api.post) = "/file/upload_token";
+  }
+  // 上传练习
+  rpc UploadPractice(UploadPracticeReq) returns (UploadPracticeResp) {
+    option (api.post) = "/practice/upload";
+  }
+  // 删除练习
+  rpc DeletePractice(DeletePracticeReq) returns (DeletePracticeResp) {
+    option (api.post) = "/practice/delete";
+  }
+  // 获取月度练习（按天聚合）
+  rpc GetMonthlyPractice(GetMonthlyPracticeReq) returns (GetMonthlyPracticeResp) {
+    option (api.post) = "/practice/monthly";
   }
 }

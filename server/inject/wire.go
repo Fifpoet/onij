@@ -20,6 +20,7 @@ var infraSet = wire.NewSet(
 	dal.NewAlbumDal,
 	dal.NewAlbumMusicDal,
 	dal.NewArtistDal,
+	dal.NewPracticeDal,
 	wire.Struct(new(infra.AllInfra), "*"),
 )
 
@@ -29,6 +30,7 @@ var logicSet = wire.NewSet(
 	logic.NewAlbumLogic,
 	logic.NewArtistLogic,
 	logic.NewTagLogic,
+	logic.NewPracticeLogic,
 	wire.Struct(new(logic.AllLogic), "*"),
 )
 
