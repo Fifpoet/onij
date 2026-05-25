@@ -4,6 +4,7 @@ package main
 
 import (
 	handler "onij/handler"
+	api "onij/biz/router/api"
 
 	"github.com/cloudwego/hertz/pkg/app/server"
 )
@@ -11,5 +12,12 @@ import (
 // customizeRegister registers customize routers.
 func customizedRegister(r *server.Hertz) {
 	r.GET("/ping", handler.Ping)
-	// your code ...
+
+	// IDL 生成的全部路由（music / file / practice / …）
+	api.Register(r)
+
+	// 未写入 proto 的手动路由
+	root := r.Group("/")
+	file := root.Group("/file")
+	file.POST("/download", handler.DownloadFile)
 }
