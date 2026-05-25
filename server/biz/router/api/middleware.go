@@ -155,3 +155,23 @@ func _getartistlistMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _practiceMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _deletepracticeMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getmonthlypracticeMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _uploadpracticeMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
