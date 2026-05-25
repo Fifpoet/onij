@@ -679,7 +679,7 @@ func (x *Practice) GetPracticeType() PracticeType {
 	if x != nil {
 		return x.PracticeType
 	}
-	return PracticeType_PT_Unknown
+	return PracticeType_PCT_Unknown
 }
 
 func (x *Practice) GetContent() string {
