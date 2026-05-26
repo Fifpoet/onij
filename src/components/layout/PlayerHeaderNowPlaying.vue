@@ -40,14 +40,18 @@
       </template>
     </p>
 
-    <button
-      type="button"
-      class="header-player-btn flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 shadow-none"
-      :aria-label="playQueue.isPlaying ? '暂停' : '播放'"
-      @click="onTogglePlay"
+    <RouterLink
+      to="/ktv"
+      class="header-player-btn flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 shadow-none no-underline"
+      aria-label="KTV 模式"
     >
-      <PlayerHeaderWave :active="playQueue.isPlaying" />
-    </button>
+      <n-icon
+        :component="MicOutline"
+        :size="22"
+        class="text-gray-600 dark:text-gray-400"
+        :class="{ 'text-blue-600 dark:text-blue-400': isKtvRoute }"
+      />
+    </RouterLink>
 
     <button
       type="button"
@@ -62,20 +66,21 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { NIcon } from 'naive-ui'
-import { ListOutline } from '@vicons/ionicons5'
+import { ListOutline, MicOutline } from '@vicons/ionicons5'
 import { usePlayQueueStore } from '@/store/playQueue'
 import { useLyricsPanelStore } from '@/store/lyricsPanel'
 import { useMobileLyricsSheetStore } from '@/store/mobileLyricsSheet'
-import { neteasePlayerControl } from '@/player/neteasePlayerControl'
-import PlayerHeaderWave from '@/components/layout/PlayerHeaderWave.vue'
 
 const defaultAlbumCover =
   'https://p1.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg'
 
 const router = useRouter()
+const route = useRoute()
 const playQueue = usePlayQueueStore()
+
+const isKtvRoute = computed(() => route.path === '/ktv')
 const lyricsPanel = useLyricsPanelStore()
 const mobileSheet = useMobileLyricsSheetStore()
 
@@ -104,10 +109,6 @@ function openSongDetail() {
   }
 }
 
-function onTogglePlay() {
-  if (!playQueue.nowPlaying) return
-  neteasePlayerControl.togglePlay()
-}
 </script>
 
 <style scoped>
@@ -125,10 +126,6 @@ function onTogglePlay() {
   border: none !important;
   box-shadow: none !important;
   background: transparent !important;
-}
-.header-player-btn:focus-visible {
-  outline: 2px solid #3b82f6 !important;
-  outline-offset: 2px;
 }
 
 .player-disc-spin {

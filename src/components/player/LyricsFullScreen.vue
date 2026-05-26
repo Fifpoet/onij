@@ -309,10 +309,6 @@ onBeforeUnmount(() => {
 .lyrics-top-btn :deep(.n-button__state-border) {
   display: none !important;
 }
-.lyrics-top-btn:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.5);
-  outline-offset: 2px;
-}
 
 .lyrics-meta-link {
   color: rgba(255, 255, 255, 0.82) !important;

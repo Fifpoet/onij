@@ -35,6 +35,11 @@ const basicRoutes = [
     name: 'Prac',
     component: () => import('@/views/PracPage.vue'),
   },
+  {
+    path: '/ktv',
+    name: 'Ktv',
+    component: () => import('@/views/KtvPage.vue'),
+  },
 ]
 
 
