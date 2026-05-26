@@ -2,7 +2,7 @@
   <button
     v-if="playQueue.nowPlaying"
     type="button"
-    class="shrink-0 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 overflow-hidden"
+    class="shrink-0 rounded-full overflow-hidden"
     :aria-label="'打开播放队列'"
     @click="router.push('/queue')"
   >

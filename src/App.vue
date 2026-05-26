@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { RouterView } from 'vue-router';
+import { ref, computed } from 'vue';
+import { RouterView, useRoute } from 'vue-router';
 import PageHeader from './components/layout/PageHeader.vue'
 // import lbAudio from './components/audio/index.vue';
 import AudioContainer from "@/components/music/AudioContainer.vue";
@@ -15,6 +15,9 @@ import MobileLyricsSheet from '@/components/player/MobileLyricsSheet.vue'
 import MemoList from './components/memo/MemoList.vue';
 import FileList from './components/file/FileList.vue';
 import { File } from '@/api/types/file';
+
+const route = useRoute()
+const showMobilePlayerBar = computed(() => route.path !== '/ktv')
 
 // 当前文件夹ID
 const currentFolderId = ref(0);
@@ -37,7 +40,7 @@ const handleFileClick = (file: File) => {
   <n-message-provider>
     <NeteaseAudioHost />
     <LyricsFullScreen />
-    <MobileBottomPlayerBar />
+    <MobileBottomPlayerBar v-if="showMobilePlayerBar" />
     <MobileLyricsSheet />
 <!--    <MusicDetail />-->
 <!--      <MusicDetailMobile />-->
