@@ -46,9 +46,22 @@
           :class="{ 'tran-card--pinned': item.pinned }"
         >
           <div class="tran-card__main min-w-0">
-            <span class="tran-card__tag">{{ item.kind === 'text' ? '文本' : '文件' }}</span>
+            <span class="tran-card__tag">{{ itemTag(item) }}</span>
             <span v-if="item.pinned" class="tran-card__pin-badge">置顶</span>
             <p v-if="item.kind === 'text'" class="tran-card__text">{{ item.content }}</p>
+            <div
+              v-else-if="item.kind === 'file' && isTranImage(item)"
+              class="tran-card__media"
+            >
+              <img
+                v-if="imageSrc(item)"
+                :src="imageSrc(item)"
+                :alt="item.name"
+                class="tran-card__img"
+              >
+              <p v-else class="tran-card__meta">图片加载中…</p>
+              <p class="tran-card__meta">{{ item.name }} · {{ formatFileSize(item.size) }}</p>
+            </div>
             <template v-else>
               <p class="tran-card__name">{{ item.name }}</p>
               <p class="tran-card__meta">{{ formatFileSize(item.size) }}</p>
@@ -91,7 +104,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { NIcon } from 'naive-ui'
 import {
   CopyOutline,
@@ -101,10 +114,15 @@ import {
   TrashOutline,
 } from '@vicons/ionicons5'
 import PageContent from '@/components/layout/PageContent.vue'
-import { useTranStationStore, type TranItem } from '@/store/tranStation'
-import { formatFileSize } from '@/util/file'
+import { DownloadFiles } from '@/api/file'
+import { FileType } from '@/api/types/enums'
+import { useTranStationStore, type TranItem, type TranFileItem } from '@/store/tranStation'
+import { formatFileSize, getFileTypeFromString, isImage } from '@/util/file'
 
 const tran = useTranStationStore()
+const imageUrlCache = ref<Record<number, string>>({})
+let alive = true
+let loadingUrls = false
 
 const fileInputRef = ref<HTMLInputElement | null>(null)
 const dropActive = ref(false)
@@ -112,6 +130,54 @@ const textDraft = ref('')
 const uploading = ref(false)
 const uploadPercent = ref(0)
 const uploadLabel = ref('')
+
+function fileFormat(item: TranFileItem): FileType {
+  return item.format ?? getFileTypeFromString(item.name)
+}
+
+function isTranImage(item: TranItem): item is TranFileItem {
+  return item.kind === 'file' && isImage(fileFormat(item))
+}
+
+function itemTag(item: TranItem) {
+  if (item.kind === 'text') return '文本'
+  if (isTranImage(item)) return '图片'
+  return '文件'
+}
+
+function isSignedUrl(url: string): boolean {
+  return /[?&]token=/.test(url)
+}
+
+function imageSrc(item: TranFileItem): string | undefined {
+  const cached = imageUrlCache.value[item.fileId]
+  if (cached) return cached
+  if (item.previewUrl && isSignedUrl(item.previewUrl)) return item.previewUrl
+  return undefined
+}
+
+async function loadMissingImageUrls() {
+  if (!alive || loadingUrls) return
+  const missing = tran.sortedItems.filter(
+    (i): i is TranFileItem => isTranImage(i) && !imageSrc(i),
+  )
+  if (!missing.length) return
+  loadingUrls = true
+  try {
+    const resp = await DownloadFiles({ file_ids: missing.map((i) => i.fileId) })
+    if (!alive) return
+    const urls = resp.urls ?? []
+    const next = { ...imageUrlCache.value }
+    missing.forEach((item, idx) => {
+      if (urls[idx]) next[item.fileId] = urls[idx]
+    })
+    imageUrlCache.value = next
+  } catch {
+    /* ignore */
+  } finally {
+    loadingUrls = false
+  }
+}
 
 function openFilePicker() {
   if (uploading.value) return
@@ -192,8 +258,23 @@ function onPaste(e: ClipboardEvent) {
   }
 }
 
-onMounted(() => window.addEventListener('paste', onPaste))
-onBeforeUnmount(() => window.removeEventListener('paste', onPaste))
+onMounted(() => {
+  window.addEventListener('paste', onPaste)
+  void loadMissingImageUrls()
+})
+
+const stopItemsWatch = watch(
+  () => tran.sortedItems.map((i) => (i.kind === 'file' ? i.fileId : i.id)).join(','),
+  () => {
+    void loadMissingImageUrls()
+  },
+)
+
+onBeforeUnmount(() => {
+  alive = false
+  stopItemsWatch()
+  window.removeEventListener('paste', onPaste)
+})
 </script>
 
 <style scoped>
@@ -368,6 +449,20 @@ onBeforeUnmount(() => window.removeEventListener('paste', onPaste))
   line-height: 1.55;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.tran-card__img {
+  display: block;
+  max-width: 100%;
+  max-height: 20rem;
+  margin-top: 0.35rem;
+  border-radius: 0.5rem;
+  object-fit: contain;
+  background: rgb(243 244 246);
+}
+
+.dark .tran-card__img {
+  background: rgb(17 24 39);
 }
 
 .tran-card__name {

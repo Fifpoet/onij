@@ -1,3 +1,41 @@
+export type PracticeContentBlock =
+  | { type: 'text'; text: string }
+  | { type: 'image'; fileId: number; previewUrl?: string }
+
+/** 解析 content 为可编辑块（编辑态展示图片） */
+export function parseContentToBlocks(
+  content: string,
+  urlMap: Record<number, string> = {},
+): PracticeContentBlock[] {
+  if (!content) return [{ type: 'text', text: '' }]
+
+  const blocks: PracticeContentBlock[] = []
+  const re = /!\[(\d+)\]/g
+  let last = 0
+  let m: RegExpExecArray | null
+
+  while ((m = re.exec(content)) !== null) {
+    if (m.index > last) {
+      blocks.push({ type: 'text', text: content.slice(last, m.index) })
+    }
+    const fileId = Number(m[1])
+    blocks.push({ type: 'image', fileId, previewUrl: urlMap[fileId] })
+    last = m.index + m[0].length
+  }
+  if (last < content.length) {
+    blocks.push({ type: 'text', text: content.slice(last) })
+  }
+  if (!blocks.length) blocks.push({ type: 'text', text: '' })
+  return blocks
+}
+
+/** 块序列还原为 content 字符串 */
+export function blocksToContent(blocks: PracticeContentBlock[]): string {
+  return blocks
+    .map((b) => (b.type === 'text' ? b.text : `![${b.fileId}]`))
+    .join('')
+}
+
 /** 从练习 content 中提取 ![file_id] 图片引用 */
 export function extractImageIds(content: string): number[] {
   const ids = new Set<number>()
