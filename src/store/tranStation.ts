@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { FileType } from '@/api/types/enums'
+import { DownloadFiles } from '@/api/file'
 import { useFileTransfer } from '@/composables/useFileTransfer'
 
 type TranItemBase = {
@@ -20,6 +22,10 @@ export type TranFileItem = TranItemBase & {
   fileId: number
   name: string
   size: number
+  /** 上传时写入；旧数据可从文件名推断 */
+  format?: FileType
+  /** 图片预览用签名链（不持久化，刷新后由页面重新拉取） */
+  previewUrl?: string
 }
 
 export type TranItem = TranTextItem | TranFileItem
@@ -64,12 +70,23 @@ export const useTranStationStore = defineStore(
 
     async function addFile(file: File, onProgress?: (n: number) => void) {
       const meta = await fileTransfer.uploadOne(file, onProgress)
+      let previewUrl: string | undefined
+      if (meta.format === FileType.FT_Image) {
+        try {
+          const resp = await DownloadFiles({ file_ids: [meta.fileId] })
+          previewUrl = resp.urls?.[0]
+        } catch {
+          /* 页面 mount 时会补链 */
+        }
+      }
       const item: TranFileItem = {
         id: String(meta.fileId),
         kind: 'file',
         fileId: meta.fileId,
         name: meta.name,
         size: meta.size,
+        format: meta.format,
+        previewUrl,
         createdAt: Date.now(),
         pinned: false,
       }
@@ -114,5 +131,18 @@ export const useTranStationStore = defineStore(
       togglePin,
     }
   },
-  { persist: { paths: ['items'] } },
+  {
+    persist: {
+      paths: ['items'],
+      serializer: {
+        serialize: (state: { items: TranItem[] }) =>
+          JSON.stringify({
+            items: state.items.map((item) =>
+              item.kind === 'file' ? { ...item, previewUrl: undefined } : item,
+            ),
+          }),
+        deserialize: (value: string) => JSON.parse(value) as { items: TranItem[] },
+      },
+    },
+  },
 )

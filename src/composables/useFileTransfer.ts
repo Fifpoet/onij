@@ -1,4 +1,5 @@
 import { UploadFile, DeleteFileById, DownloadFiles } from '@/api/file'
+import { FileType } from '@/api/types/enums'
 import { uploadToQiniu, getFileTypeFromFile, downloadByPrivateUrl } from '@/util/qiniu'
 
 /** 与 FileUploadModal / FileList 一致的上传、删除、下载流程 */
@@ -6,7 +7,14 @@ export function useFileTransfer(parentId = 0) {
   async function uploadOne(
     file: File,
     onProgress?: (percent: number) => void,
-  ): Promise<{ fileId: number; storeKey: string; name: string; size: number }> {
+  ): Promise<{
+    fileId: number
+    storeKey: string
+    name: string
+    size: number
+    format: FileType
+    previewUrl: string
+  }> {
     const qiniu = await uploadToQiniu(file, ['tran'], onProgress)
 
     const resp = await UploadFile({
@@ -31,6 +39,8 @@ export function useFileTransfer(parentId = 0) {
       storeKey: qiniu.key,
       name: file.name,
       size: file.size,
+      format: getFileTypeFromFile(file),
+      previewUrl: qiniu.url,
     }
   }
 
