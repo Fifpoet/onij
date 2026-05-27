@@ -108,7 +108,7 @@ export const useTranStationStore = defineStore(
     }
 
     async function downloadFile(item: TranFileItem) {
-      await fileTransfer.downloadOne(item.fileId)
+      await fileTransfer.downloadOne(item.fileId, item.name)
     }
 
     function togglePin(item: TranItem) {
