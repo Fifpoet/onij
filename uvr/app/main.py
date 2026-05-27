@@ -74,7 +74,7 @@ async def separate_instrumental_api(
     file: UploadFile = File(..., description="原始音频文件"),
     architecture: str = Form("mdx"),
     model: str | None = Form(None),
-    output_format: str = Form("WAV"),
+    output_format: str = Form("MP3"),
     output_name: str | None = Form(None),
     use_gpu: bool = Form(True),
     device_id: int = Form(0),
