@@ -1,9 +1,13 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 
-const SERVER_URL = import.meta.env.VITE_SERVER_URL;
+// 生产环境默认同域（由 nginx 反代到 Go）；勿写 127.0.0.1，公网页无法访问本机回环地址
+const SERVER_URL = (
+  (import.meta.env.VITE_SERVER_URL as string | undefined)?.replace(/\/$/, '') ||
+  (import.meta.env.PROD ? '' : 'http://127.0.0.1:8889')
+);
 const NETEASE_URL = import.meta.env.VITE_NETEASE_URL;
 
-const apiClient = axios.create({
+export const apiClient = axios.create({
     baseURL: SERVER_URL,
     timeout: 10000, // 请求超时时间
     headers: {
