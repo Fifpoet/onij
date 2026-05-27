@@ -1,24 +1,18 @@
 # -*- mode: python ; coding: utf-8 -*-
 # 在 uvr 目录执行: scripts\build_exe.bat
 #
-# 注意: collect_all('fastapi'/'onnx' 等) 会让 PyInstaller 在分析阶段 import
-# onnx.reference 并触发 access violation。仅收集 torch / onnxruntime 二进制。
+# 仅排除 onnx.reference（打包分析阶段会 access violation）。
+# 勿排除 onnx.helper / external_data_helper 等，onnx2torch 运行时需要。
 
 from PyInstaller.utils.hooks import collect_all, collect_data_files, collect_submodules
 
 block_cipher = None
 
-# 运行时不需要、且会在打包阶段导致崩溃的模块
+# 只排除确定不需要、且会引发打包/体积问题的模块
 EXCLUDES = [
     "onnx.reference",
     "onnx.tools",
     "onnx.backend",
-    "onnx.checker",
-    "onnx.helper",
-    "onnx.shape_inference",
-    "onnx.version_converter",
-    "onnx.numpy_helper",
-    "onnx.external_data_helper",
     "sklearn",
     "torch.testing",
     "torch.distributed",
@@ -30,6 +24,23 @@ EXCLUDES = [
     "sympy.testing",
     "numba.tests",
     "scipy.tests",
+]
+
+# onnx2torch / audio_separator 运行时需要的 onnx 子模块（勿放进 EXCLUDES）
+ONNX_RUNTIME_IMPORTS = [
+    "onnx",
+    "onnx.defs",
+    "onnx.helper",
+    "onnx.numpy_helper",
+    "onnx.external_data_helper",
+    "onnx.checker",
+    "onnx.shape_inference",
+    "onnx.version_converter",
+    "onnx.serialization",
+    "onnx.onnx_pb",
+    "onnx.onnx_ml_pb2",
+    "onnx.onnx_operators_ml_pb2",
+    "onnx.onnx_data_pb2",
 ]
 
 datas = []
@@ -53,15 +64,14 @@ hiddenimports = [
     "uvicorn.lifespan.on",
     "multipart",
     "pydantic_settings",
-    "onnx",
-    "onnx.defs",
     "onnx2torch",
     "onnx2torch.utils",
     "onnx2torch.node_converters",
-]
+] + ONNX_RUNTIME_IMPORTS
 
 hiddenimports += collect_submodules("app")
 hiddenimports += collect_submodules("audio_separator")
+hiddenimports += collect_submodules("onnx2torch")
 datas += collect_data_files("audio_separator")
 
 for pkg in ("torch", "onnxruntime"):
