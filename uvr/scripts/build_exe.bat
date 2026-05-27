@@ -29,7 +29,6 @@ if not exist "%DIST%" (
 
 if exist .env.example copy /Y .env.example "%DIST%\.env.example" >nul
 copy /Y scripts\start_uvr.bat "%DIST%\start_uvr.bat" >nul
-copy /Y scripts\start_uvr_silent.vbs "%DIST%\start_uvr_silent.vbs" >nul
 copy /Y scripts\install_autostart.bat "%DIST%\install_autostart.bat" >nul
 copy /Y scripts\uninstall_autostart.bat "%DIST%\uninstall_autostart.bat" >nul
 

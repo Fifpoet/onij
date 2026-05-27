@@ -226,14 +226,29 @@ def download_instrumental(job_id: str) -> FileResponse:
 
 
 def run() -> None:
+    import copy
     import sys
 
-    kwargs = {
+    from uvicorn.config import LOGGING_CONFIG
+
+    kwargs: dict = {
         "host": settings.host,
         "port": settings.port,
         "reload": False,
     }
     if getattr(sys, "frozen", False):
+        # console=False 打包时 stdout/stderr 为 None，uvicorn 默认日志配置会崩溃
+        import os
+
+        if sys.stdout is None:
+            sys.stdout = open(os.devnull, "w", encoding="utf-8")  # type: ignore[assignment]
+        if sys.stderr is None:
+            sys.stderr = open(os.devnull, "w", encoding="utf-8")  # type: ignore[assignment]
+        log_config = copy.deepcopy(LOGGING_CONFIG)
+        log_config["formatters"]["default"]["use_colors"] = False
+        log_config["formatters"]["access"]["use_colors"] = False
+        kwargs["log_config"] = log_config
+        kwargs["use_colors"] = False
         uvicorn.run(app, **kwargs)
     else:
         uvicorn.run("app.main:app", **kwargs)
