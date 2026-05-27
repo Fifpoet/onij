@@ -302,7 +302,11 @@ const uploadCover = async () => {
         formData.append('file', file);
         formData.append('token', tokenResponse.upload_token);
         
-        const response = await fetch(`${tokenResponse.domain}/upload`, {
+        const uploadUrl =
+          tokenResponse.upload_url ??
+          tokenResponse.uploadUrl ??
+          'https://up-z0.qiniup.com'
+        const response = await fetch(uploadUrl, {
           method: 'POST',
           body: formData
         });

@@ -22,7 +22,20 @@ const (
 	dm = "http://cloud.onij.fun"
 )
 
+// PublicDomain 桶绑定的访问域名（下载/预览）
+func PublicDomain() string {
+	return dm
+}
+
 var zone = &storage.ZoneHuadong
+
+// GetUploadURL 七牛上传域名（与 ZoneHuadong 一致，不能用 cloud.onij.fun 下载域）
+func GetUploadURL() string {
+	if zone != nil && len(zone.SrcUpHosts) > 0 {
+		return "https://" + zone.SrcUpHosts[0]
+	}
+	return "https://up-z0.qiniup.com"
+}
 
 type UploadInfo struct {
 	Name      string
