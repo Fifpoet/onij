@@ -28,17 +28,29 @@ export function randomUUID(): string {
 }
 
 export function isSubtleDigestAvailable(): boolean {
-  return isSecureContext() && typeof crypto?.subtle?.digest === 'function'
+  try {
+    return (
+      isSecureContext() &&
+      typeof crypto !== 'undefined' &&
+      crypto.subtle != null &&
+      typeof crypto.subtle.digest === 'function'
+    )
+  } catch {
+    return false
+  }
 }
 
 export async function sha256Hex(data: ArrayBuffer): Promise<string> {
+  if (!isSubtleDigestAvailable()) {
+    throw new Error('crypto.subtle 仅在 HTTPS 或 localhost 可用')
+  }
   const hashBuffer = await crypto.subtle.digest('SHA-256', data)
   return Array.from(new Uint8Array(hashBuffer))
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('')
 }
 
-/** 上传登记用文件指纹；HTTP 下用本地 fallback，避免阻断上传 */
+/** 上传登记用文件指纹（可选）；HTTP 下请直接用七牛返回的 hash */
 export async function hashFileForUpload(file: File): Promise<string> {
   const fallback = `local-${file.size}-${file.lastModified}-${file.name}`
   if (!isSubtleDigestAvailable()) return fallback
