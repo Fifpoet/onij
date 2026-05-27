@@ -147,23 +147,32 @@ export function delay(ms: number): Promise<void> {
  * @param text 要复制的文本
  * @returns 是否复制成功
  */
+function copyWithExecCommand(text: string): boolean {
+  const textArea = document.createElement('textarea')
+  textArea.value = text
+  textArea.style.position = 'fixed'
+  textArea.style.left = '-9999px'
+  document.body.appendChild(textArea)
+  textArea.focus()
+  textArea.select()
+  let ok = false
+  try {
+    ok = document.execCommand('copy')
+  } finally {
+    document.body.removeChild(textArea)
+  }
+  return ok
+}
+
 export async function copyToClipboard(text: string): Promise<boolean> {
   try {
-    if (navigator.clipboard) {
-      await navigator.clipboard.writeText(text);
-      return true;
-    } else {
-      // 降级方案
-      const textArea = document.createElement('textarea');
-      textArea.value = text;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-      return true;
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText && globalThis.isSecureContext) {
+      await navigator.clipboard.writeText(text)
+      return true
     }
+    return copyWithExecCommand(text)
   } catch (error) {
-    console.error('复制失败:', error);
-    return false;
+    console.error('复制失败:', error)
+    return copyWithExecCommand(text)
   }
 }

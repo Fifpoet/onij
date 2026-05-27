@@ -31,12 +31,21 @@ type UploadInfo struct {
 	OssFolder []string
 }
 
-func getQiniuMac() *qbox.Mac {
-	sk := os.Getenv("sk")
-	if sk == "" {
-		panic("sk is empty")
+func getQiniuSK() string {
+	for _, key := range []string{"QINIU_SK", "sk", "SK"} {
+		if v := strings.TrimSpace(os.Getenv(key)); v != "" {
+			return v
+		}
 	}
-	return qbox.NewMac(ak, sk)
+	panic(
+		"七牛 SecretKey 未注入到 onij-server 进程：" +
+			"请设置环境变量 QINIU_SK（或 sk）。" +
+			"仅在 ssh 里 export 对 systemd/nohup 启动的进程无效，需在服务配置里写 Environment=",
+	)
+}
+
+func getQiniuMac() *qbox.Mac {
+	return qbox.NewMac(ak, getQiniuSK())
 }
 
 func GetFile(key string) ([]byte, error) {
