@@ -6,6 +6,7 @@ import (
 	"github.com/google/wire"
 	"onij/infra"
 	"onij/infra/dal"
+	"onij/infra/uvr"
 	"onij/logic"
 	"onij/util/cdb"
 )
@@ -25,12 +26,14 @@ var infraSet = wire.NewSet(
 )
 
 var logicSet = wire.NewSet(
+	uvr.NewClient,
 	logic.NewMusicLogic,
 	logic.NewFileLogic,
 	logic.NewAlbumLogic,
 	logic.NewArtistLogic,
 	logic.NewTagLogic,
 	logic.NewPracticeLogic,
+	logic.NewUvrLogic,
 	wire.Struct(new(logic.AllLogic), "*"),
 )
 

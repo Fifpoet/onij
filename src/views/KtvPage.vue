@@ -10,7 +10,7 @@
       >
     </div>
 
-    <div v-if="showLyrics && song" class="ktv-lyrics">
+    <div v-if="ktv.lyricsOn && song" class="ktv-lyrics">
       <div v-if="dual.line1" class="ktv-lyric-row">
         <KtvLyricLine :text="dual.line1" :progress="dual.line1Progress" />
       </div>
@@ -40,16 +40,20 @@
           <button
             type="button"
             class="ktv-dock-btn"
-            :class="{ 'ktv-dock-btn--on': showLyrics }"
-            @click="showLyrics = !showLyrics"
+            :class="{ 'ktv-dock-btn--on': ktv.lyricsOn }"
+            @click="ktv.toggleLyrics()"
           >
             词
           </button>
           <button
             type="button"
-            class="ktv-dock-btn ktv-dock-btn--disabled"
-            disabled
-            title="暂未实现"
+            class="ktv-dock-btn"
+            :class="{
+              'ktv-dock-btn--on': ktv.accompanimentOn,
+              'ktv-dock-btn--loading': accompanimentLoading,
+            }"
+            :title="accompanimentTitle"
+            @click="ktv.toggleAccompaniment()"
           >
             伴
           </button>
@@ -100,7 +104,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { NIcon, NSlider } from 'naive-ui'
 import {
   ContractOutline,
@@ -115,17 +119,23 @@ import {
 } from '@vicons/ionicons5'
 import KtvLyricLine from '@/components/ktv/KtvLyricLine.vue'
 import { usePlayQueueStore } from '@/store/playQueue'
+import { useKtvStore } from '@/store/ktv'
 import { usePlayerLyrics } from '@/composables/usePlayerLyrics'
 import { ktvDualLineState } from '@/util/lrc'
 import { neteasePlayerControl } from '@/player/neteasePlayerControl'
+import {
+  getInstrumentalStatus,
+  prefetchInstrumental,
+} from '@/player/instrumentalCache'
+import { prefetchPlayUrl } from '@/player/songPlayUrlCache'
 
 const defaultCover =
   'https://p1.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg'
 
 const playQueue = usePlayQueueStore()
+const ktv = useKtvStore()
 const { lines, lyricError, loading } = usePlayerLyrics()
 
-const showLyrics = ref(true)
 const dockHover = ref(false)
 const dockPinned = ref(false)
 const pageRef = ref<HTMLElement | null>(null)
@@ -166,6 +176,34 @@ const volumeIcon = computed(() => {
   return VolumeHighOutline
 })
 
+const accompanimentLoading = computed(() => {
+  const id = song.value?.id
+  if (!id || !ktv.accompanimentOn) return false
+  return getInstrumentalStatus(id) === 'loading'
+})
+
+const accompanimentTitle = computed(() => {
+  const id = song.value?.id
+  if (!id) return ktv.accompanimentOn ? '伴奏：开' : '伴奏：关'
+  const st = getInstrumentalStatus(id)
+  if (st === 'loading') return '伴奏提取中…'
+  if (st === 'error') return '伴奏提取失败，点击重试'
+  return ktv.accompanimentOn ? '伴奏：开（点击切原唱）' : '原唱：开（点击切伴奏）'
+})
+
+function prefetchKtvAssets() {
+  const current = playQueue.nowPlaying
+  if (current) {
+    prefetchPlayUrl(current.id)
+    prefetchInstrumental(current.id)
+  }
+  const n = Math.min(3, playQueue.queue.length)
+  for (let i = 0; i < n; i++) {
+    prefetchPlayUrl(playQueue.queue[i].id)
+    prefetchInstrumental(playQueue.queue[i].id)
+  }
+}
+
 function onDockLeave() {
   dockHover.value = false
 }
@@ -176,6 +214,23 @@ function onTogglePlay() {
     return
   }
   neteasePlayerControl.togglePlay()
+}
+
+function isSpaceBlockedTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false
+  const tag = target.tagName
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true
+  if (target.isContentEditable) return true
+  return false
+}
+
+function onPageKeydown(e: KeyboardEvent) {
+  if (e.code !== 'Space' && e.key !== ' ') return
+  if (e.repeat) return
+  if (isSpaceBlockedTarget(e.target)) return
+  e.preventDefault()
+  if (!canTogglePlay.value) return
+  onTogglePlay()
 }
 
 function onVolumeChange(v: number | number[]) {
@@ -197,11 +252,24 @@ function toggleFullscreen() {
 }
 
 onMounted(() => {
+  ktv.enterKtv()
+  prefetchKtvAssets()
   document.addEventListener('fullscreenchange', onFullscreenChange)
+  document.addEventListener('keydown', onPageKeydown)
 })
 
+watch(
+  () => playQueue.nowPlaying?.id,
+  () => {
+    if (!ktv.active) return
+    prefetchKtvAssets()
+  },
+)
+
 onBeforeUnmount(() => {
+  ktv.leaveKtv()
   document.removeEventListener('fullscreenchange', onFullscreenChange)
+  document.removeEventListener('keydown', onPageKeydown)
   if (document.fullscreenElement === pageRef.value) {
     void document.exitFullscreen?.()
   }
@@ -328,11 +396,13 @@ onBeforeUnmount(() => {
 
 .ktv-dock-handle:focus,
 .ktv-dock-handle:focus-visible,
-.ktv-dock-handle:active {
+.ktv-dock-handle:active,
+.ktv-dock-handle:hover {
   outline: none !important;
   box-shadow: none !important;
   border: 0 !important;
   border-bottom: 1px solid transparent !important;
+  background: transparent;
 }
 
 .ktv-dock-panel--open .ktv-dock-handle {
@@ -341,12 +411,10 @@ onBeforeUnmount(() => {
 
 .ktv-dock-panel--open .ktv-dock-handle:focus,
 .ktv-dock-panel--open .ktv-dock-handle:focus-visible,
-.ktv-dock-panel--open .ktv-dock-handle:active {
+.ktv-dock-panel--open .ktv-dock-handle:active,
+.ktv-dock-panel--open .ktv-dock-handle:hover {
   border-bottom-color: rgb(255 255 255 / 0.1) !important;
-}
-
-.ktv-dock-handle:hover {
-  background: rgb(255 255 255 / 0.06);
+  background: transparent;
 }
 
 .ktv-dock-handle__chev {
@@ -406,19 +474,31 @@ onBeforeUnmount(() => {
 
 .ktv-dock-btn:focus,
 .ktv-dock-btn:focus-visible,
-.ktv-dock-btn:active {
+.ktv-dock-btn:active,
+.ktv-dock-btn:hover:not(:disabled) {
   outline: none !important;
   box-shadow: none !important;
   border: 0 !important;
 }
 
-.ktv-dock-btn:hover:not(:disabled) {
-  background: rgb(255 255 255 / 0.18);
-}
-
 .ktv-dock-btn--on {
   background: rgb(56 189 248 / 0.35);
   color: #fff;
+}
+
+.ktv-dock-btn--loading {
+  opacity: 0.75;
+  animation: ktv-dock-pulse 1s ease-in-out infinite;
+}
+
+@keyframes ktv-dock-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .ktv-dock-btn--disabled {
