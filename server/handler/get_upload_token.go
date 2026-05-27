@@ -17,7 +17,8 @@ func GetUploadToken(ctx context.Context, c *app.RequestContext) {
 		"code":         util.BaseCodeOK,
 		"message":      util.BaseMsgOK,
 		"upload_token": util.GetUploadToken(),
-		"domain":       "http://cloud.onij.fun",
+		"domain":       util.PublicDomain(),
+		"upload_url":   util.GetUploadURL(),
 	}
 	c.JSON(consts.StatusOK, resp)
 }

@@ -76,4 +76,7 @@ export interface GetUploadTokenResp {
   upload_token: string
   uploadToken?: string
   domain: string
+  /** 七牛上传接口，如 https://up-z0.qiniup.com */
+  upload_url?: string
+  uploadUrl?: string
 }

@@ -2,6 +2,7 @@ import { GetUploadToken } from '@/api/file'
 import { FileType } from '@/api/types/enums'
 
 const DEFAULT_DOMAIN = 'http://cloud.onij.fun'
+const DEFAULT_UPLOAD_URL = 'https://up-z0.qiniup.com'
 
 async function getUploadCredentials(): Promise<{ token: string; uploadUrl: string; publicBase: string }> {
   const response = await GetUploadToken()
@@ -10,9 +11,10 @@ async function getUploadCredentials(): Promise<{ token: string; uploadUrl: strin
     throw new Error(response.message || '获取上传凭证失败')
   }
   const publicBase = (response.domain || DEFAULT_DOMAIN).replace(/\/$/, '')
+  const uploadUrl = (response.upload_url ?? response.uploadUrl ?? DEFAULT_UPLOAD_URL).replace(/\/$/, '')
   return {
     token,
-    uploadUrl: `${publicBase}/upload`,
+    uploadUrl,
     publicBase,
   }
 }
