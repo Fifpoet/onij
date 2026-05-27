@@ -1,8 +1,6 @@
 /** UVR 伴奏服务（经 Go 后端代理） */
 import axios from 'axios'
-import { post } from '../util/http'
-
-const SERVER_URL = (import.meta.env.VITE_SERVER_URL as string | undefined)?.replace(/\/$/, '') || ''
+import { apiClient, post } from '../util/http'
 
 export type UvrSeparateResponse = {
   job_id: string
@@ -55,7 +53,7 @@ export async function separateInstrumentalFromUrl(
 }
 
 export async function downloadInstrumentalBlob(jobId: string): Promise<Blob> {
-  const resp = await axios.get(`${SERVER_URL}/uvr/jobs/${encodeURIComponent(jobId)}/instrumental`, {
+  const resp = await apiClient.get(`/uvr/jobs/${encodeURIComponent(jobId)}/instrumental`, {
     responseType: 'blob',
     timeout: UVR_DOWNLOAD_TIMEOUT_MS,
   })
