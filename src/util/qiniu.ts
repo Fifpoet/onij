@@ -1,6 +1,7 @@
 import * as qiniu from 'qiniu-js'
-import { FileType } from '@/api/types/enums'
 import { GetUploadToken } from '@/api/file'
+import { FileType } from '@/api/types/enums'
+import { hashFileForUpload } from '@/util/crypto'
 
 // 七牛云配置
 const QINIU_CONFIG = {
@@ -16,26 +17,6 @@ async function getUploadToken(): Promise<string> {
     throw new Error(response.message || 'Failed to get upload token')
   }
   return token
-}
-
-// 计算文件hash
-async function calculateFileHash(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = async (e) => {
-      try {
-        const arrayBuffer = e.target?.result as ArrayBuffer
-        const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer)
-        const hashArray = Array.from(new Uint8Array(hashBuffer))
-        const hashHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
-        resolve(hashHex)
-      } catch (error) {
-        reject(error)
-      }
-    }
-    reader.onerror = reject
-    reader.readAsArrayBuffer(file)
-  })
 }
 
 // 生成唯一的文件名
@@ -79,11 +60,15 @@ export async function uploadToQiniu(
           const pct = Math.min(100, Math.max(0, res.total.percent ?? 0))
           onProgress?.(pct)
         },
-        error: (err) => {
-          reject(err)
+        error: (err: unknown) => {
+          const msg =
+            err && typeof err === 'object' && 'message' in err && typeof (err as { message: unknown }).message === 'string'
+              ? (err as { message: string }).message
+              : '七牛上传失败'
+          reject(new Error(msg))
         },
         complete: (res) => {
-          calculateFileHash(file)
+          hashFileForUpload(file)
             .then((hash) => {
               resolve({
                 key: res.key,

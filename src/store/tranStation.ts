@@ -3,7 +3,8 @@ import { ref, computed } from 'vue'
 import { FileType } from '@/api/types/enums'
 import { DownloadFiles } from '@/api/file'
 import { useFileTransfer } from '@/composables/useFileTransfer'
-import { randomUUID } from '@/util/uuid'
+import { copyToClipboard } from '@/util/common'
+import { randomUUID } from '@/util/crypto'
 
 type TranItemBase = {
   id: string
@@ -102,7 +103,8 @@ export const useTranStationStore = defineStore(
     }
 
     async function copyText(item: TranTextItem) {
-      await navigator.clipboard.writeText(item.content)
+      const ok = await copyToClipboard(item.content)
+      if (!ok) throw new Error('复制失败，请检查浏览器权限或使用 HTTPS')
     }
 
     async function downloadFile(item: TranFileItem) {

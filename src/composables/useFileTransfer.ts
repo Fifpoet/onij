@@ -1,4 +1,5 @@
 import { UploadFile, DeleteFileById, DownloadFiles } from '@/api/file'
+import type { UploadFileResp } from '@/api/types'
 import { FileType } from '@/api/types/enums'
 import { uploadToQiniu, getFileTypeFromFile, downloadByPrivateUrl } from '@/util/qiniu'
 
@@ -31,7 +32,8 @@ export function useFileTransfer(parentId = 0) {
       ],
     })
 
-    const fileId = resp.file_ids?.[0]
+    const ids = resp.file_ids ?? (resp as UploadFileResp & { fileIds?: number[] }).fileIds
+    const fileId = ids?.[0]
     if (!fileId) throw new Error(resp.message || '登记文件失败')
 
     return {

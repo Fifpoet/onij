@@ -194,7 +194,8 @@ async function ingestFiles(files: FileList | File[]) {
         uploadPercent.value = n
       })
     } catch (e) {
-      uploadLabel.value = e instanceof Error ? e.message : '上传失败'
+      const msg = e instanceof Error ? e.message : String(e ?? '')
+      uploadLabel.value = msg.trim() || '上传失败'
       await new Promise((r) => setTimeout(r, 1200))
     }
   }

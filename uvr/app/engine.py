@@ -384,6 +384,9 @@ def _run_separator(
     model_filename: str,
     params: SeparateInstrumentalParams,
 ) -> list[str]:
+    from app.pyinstaller_bootstrap import bootstrap_pyinstaller
+
+    bootstrap_pyinstaller()
     try:
         import torch
         from audio_separator.separator import Separator
