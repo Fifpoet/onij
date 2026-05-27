@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	defaultBaseURL        = "http://172.26.250.11:5555"
+	defaultBaseURL         = "http://172.26.250.11:5555"
 	separateRequestTimeout = 30 * time.Minute
 	downloadRequestTimeout = 10 * time.Minute
 	defaultRequestTimeout  = 30 * time.Second
@@ -36,7 +36,7 @@ type Client interface {
 	Health(ctx context.Context) ([]byte, error)
 	ListModels(ctx context.Context) ([]byte, error)
 	SeparateInstrumentalFromURL(ctx context.Context, body []byte) ([]byte, error)
-	DownloadInstrumental(ctx context.Context, jobID string) (data []byte, contentType string, filename string, err error)
+	DownloadInstrumental(ctx context.Context, jobID string) (body io.ReadCloser, contentLength int64, contentType string, filename string, err error)
 }
 
 type client struct {
@@ -67,34 +67,31 @@ func (c *client) SeparateInstrumentalFromURL(ctx context.Context, body []byte) (
 	return c.postJSON(ctx, "/api/v1/separate/instrumental/from-url", body, separateRequestTimeout)
 }
 
-func (c *client) DownloadInstrumental(ctx context.Context, jobID string) ([]byte, string, string, error) {
+func (c *client) DownloadInstrumental(ctx context.Context, jobID string) (io.ReadCloser, int64, string, string, error) {
 	url := fmt.Sprintf("%s/api/v1/jobs/%s/instrumental", c.baseURL, jobID)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return nil, "", "", err
+		return nil, 0, "", "", err
 	}
 
 	httpClient := &http.Client{Timeout: downloadRequestTimeout}
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		return nil, "", "", err
+		return nil, 0, "", "", err
 	}
-	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, "", "", err
-	}
 	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
-		return nil, "", "", newAPIError(resp.StatusCode, data)
+		defer resp.Body.Close()
+		data, _ := io.ReadAll(io.LimitReader(resp.Body, 64*1024))
+		return nil, 0, "", "", newAPIError(resp.StatusCode, data)
 	}
 
 	contentType := resp.Header.Get("Content-Type")
 	if contentType == "" {
-		contentType = "application/octet-stream"
+		contentType = "audio/mpeg"
 	}
 	filename := parseFilename(resp.Header.Get("Content-Disposition"))
-	return data, contentType, filename, nil
+	return resp.Body, resp.ContentLength, contentType, filename, nil
 }
 
 func (c *client) get(ctx context.Context, path string, timeout time.Duration) ([]byte, error) {
@@ -163,17 +160,17 @@ func newAPIError(statusCode int, body []byte) *APIError {
 
 func parseFilename(contentDisposition string) string {
 	if contentDisposition == "" {
-		return "instrumental.wav"
+		return "instrumental.mp3"
 	}
 	const marker = "filename="
 	idx := strings.Index(strings.ToLower(contentDisposition), marker)
 	if idx < 0 {
-		return "instrumental.wav"
+		return "instrumental.mp3"
 	}
 	name := strings.TrimSpace(contentDisposition[idx+len(marker):])
 	name = strings.Trim(name, `"`)
 	if name == "" {
-		return "instrumental.wav"
+		return "instrumental.mp3"
 	}
 	return name
 }

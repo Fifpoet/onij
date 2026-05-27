@@ -79,7 +79,7 @@ func SeparateInstrumentalFromURL(ctx context.Context, c *app.RequestContext) {
 	}
 	outputFormat := req.OutputFormat
 	if outputFormat == "" {
-		outputFormat = "WAV"
+		outputFormat = "MP3"
 	}
 	singleStem := req.SingleStem
 	if singleStem == "" {
@@ -116,7 +116,10 @@ func DownloadInstrumental(ctx context.Context, c *app.RequestContext) {
 		writeUvrAPIError(ctx, c, err)
 		return
 	}
-
+	c.Header("Content-Type", resp.ContentType)
 	c.Header("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, resp.Filename))
-	c.Data(consts.StatusOK, resp.ContentType, resp.Data)
+	if resp.ContentLength >= 0 {
+		c.Header("Content-Length", fmt.Sprintf("%d", resp.ContentLength))
+	}
+	c.SetBodyStream(resp.Body, int(resp.ContentLength))
 }

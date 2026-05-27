@@ -18,7 +18,7 @@ class SeparateInstrumentalParams(BaseModel):
         default=None,
         description="模型文件名，如 UVR-MDX-NET-Inst_HQ_3.onnx；默认使用配置中的 default_model",
     )
-    output_format: OutputFormat = Field(default="WAV", description="输出音频格式")
+    output_format: OutputFormat = Field(default="MP3", description="输出音频格式")
     output_name: str | None = Field(
         default=None,
         description="输出文件基名（不含扩展名）",
@@ -93,7 +93,7 @@ class SeparateFromUrlRequest(BaseModel):
     source_url: str = Field(description="原音频可访问 URL")
     architecture: Architecture = "mdx"
     model: str | None = None
-    output_format: OutputFormat = "WAV"
+    output_format: OutputFormat = "MP3"
     output_name: str | None = None
     use_gpu: bool = True
     device_id: int = 0

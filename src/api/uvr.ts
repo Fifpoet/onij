@@ -28,7 +28,7 @@ export async function separateInstrumentalFromUrl(
       architecture: options?.architecture ?? 'mdx',
       model: options?.model ?? 'UVR-MDX-NET-Inst_HQ_3.onnx',
       use_gpu: options?.use_gpu ?? true,
-      output_format: 'WAV',
+      output_format: 'MP3',
       single_stem: 'Instrumental',
     }
     if (options?.id != null && String(options.id) !== '') {

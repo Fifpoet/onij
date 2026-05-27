@@ -1,6 +1,9 @@
 package prm
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"io"
+)
 
 type SeparateInstrumentalFromURLParam struct {
 	ID           string
@@ -21,7 +24,8 @@ type DownloadInstrumentalParam struct {
 }
 
 type DownloadInstrumentalResult struct {
-	Data        []byte
-	ContentType string
-	Filename    string
+	Body          io.ReadCloser
+	ContentLength int64 // <0 表示未知长度，流式 chunked
+	ContentType   string
+	Filename      string
 }

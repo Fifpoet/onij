@@ -60,13 +60,14 @@ func (l *uvrLogic) SeparateInstrumentalFromURL(ctx context.Context, param *prm.S
 }
 
 func (l *uvrLogic) DownloadInstrumental(ctx context.Context, param *prm.DownloadInstrumentalParam) (*prm.DownloadInstrumentalResult, error) {
-	data, contentType, filename, err := l.client.DownloadInstrumental(ctx, param.JobID)
+	body, contentLength, contentType, filename, err := l.client.DownloadInstrumental(ctx, param.JobID)
 	if err != nil {
 		return nil, err
 	}
 	return &prm.DownloadInstrumentalResult{
-		Data:        data,
-		ContentType: contentType,
-		Filename:    filename,
+		Body:          body,
+		ContentLength: contentLength,
+		ContentType:   contentType,
+		Filename:      filename,
 	}, nil
 }
