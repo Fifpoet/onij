@@ -1,0 +1,3 @@
+# 兼容旧命令: pip install -r requirements.txt
+# 推荐用 run.bat 自动选择 CPU/GPU
+-r requirements-cpu.txt

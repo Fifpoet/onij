@@ -10,6 +10,7 @@ import (
 	"github.com/google/wire"
 	"onij/infra"
 	"onij/infra/dal"
+	"onij/infra/uvr"
 	"onij/logic"
 	"onij/util/cdb"
 )
@@ -63,6 +64,8 @@ func InitLogicForTest() *logic.AllLogic {
 	artistLogic := logic.NewArtistLogic(allInfra)
 	tagLogic := logic.NewTagLogic(allInfra)
 	practiceLogic := logic.NewPracticeLogic(allInfra)
+	client := uvr.NewClient()
+	uvrLogic := logic.NewUvrLogic(client)
 	allLogic := &logic.AllLogic{
 		MusicLogic:    musicLogic,
 		FileLogic:     fileLogic,
@@ -70,6 +73,7 @@ func InitLogicForTest() *logic.AllLogic {
 		ArtistLogic:   artistLogic,
 		TagLogic:      tagLogic,
 		PracticeLogic: practiceLogic,
+		UvrLogic:      uvrLogic,
 	}
 	return allLogic
 }
@@ -99,6 +103,8 @@ func InitializeApp() *App {
 	artistLogic := logic.NewArtistLogic(allInfra)
 	tagLogic := logic.NewTagLogic(allInfra)
 	practiceLogic := logic.NewPracticeLogic(allInfra)
+	client := uvr.NewClient()
+	uvrLogic := logic.NewUvrLogic(client)
 	allLogic := &logic.AllLogic{
 		MusicLogic:    musicLogic,
 		FileLogic:     fileLogic,
@@ -106,6 +112,7 @@ func InitializeApp() *App {
 		ArtistLogic:   artistLogic,
 		TagLogic:      tagLogic,
 		PracticeLogic: practiceLogic,
+		UvrLogic:      uvrLogic,
 	}
 	app := &App{
 		AllInfra: allInfra,
@@ -118,7 +125,7 @@ func InitializeApp() *App {
 
 var infraSet = wire.NewSet(dal.NewMysqlCli, cdb.NewDefaultProxy, dal.NewTagDal, dal.NewFileDal, dal.NewMusicDal, dal.NewAlbumDal, dal.NewAlbumMusicDal, dal.NewArtistDal, dal.NewPracticeDal, wire.Struct(new(infra.AllInfra), "*"))
 
-var logicSet = wire.NewSet(logic.NewMusicLogic, logic.NewFileLogic, logic.NewAlbumLogic, logic.NewArtistLogic, logic.NewTagLogic, logic.NewPracticeLogic, wire.Struct(new(logic.AllLogic), "*"))
+var logicSet = wire.NewSet(uvr.NewClient, logic.NewMusicLogic, logic.NewFileLogic, logic.NewAlbumLogic, logic.NewArtistLogic, logic.NewTagLogic, logic.NewPracticeLogic, logic.NewUvrLogic, wire.Struct(new(logic.AllLogic), "*"))
 
 var allSet = wire.NewSet(
 	infraSet,

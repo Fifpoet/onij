@@ -7,4 +7,5 @@ type AllLogic struct {
 	ArtistLogic
 	TagLogic
 	PracticeLogic
+	UvrLogic
 }

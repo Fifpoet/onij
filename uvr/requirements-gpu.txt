@@ -1,0 +1,6 @@
+# torch 走 CUDA 索引；onnxruntime-gpu 在 PyPI，必须用 extra-index-url 不能只用 index-url
+--extra-index-url https://download.pytorch.org/whl/cu124
+torch==2.6.0
+torchvision==0.21.0
+onnxruntime-gpu==1.20.1
+-r requirements-base.txt
