@@ -4,7 +4,7 @@
 # 注意: collect_all('fastapi'/'onnx' 等) 会让 PyInstaller 在分析阶段 import
 # onnx.reference 并触发 access violation。仅收集 torch / onnxruntime 二进制。
 
-from PyInstaller.utils.hooks import collect_all, collect_submodules
+from PyInstaller.utils.hooks import collect_all, collect_data_files, collect_submodules
 
 block_cipher = None
 
@@ -62,6 +62,7 @@ hiddenimports = [
 
 hiddenimports += collect_submodules("app")
 hiddenimports += collect_submodules("audio_separator")
+datas += collect_data_files("audio_separator")
 
 for pkg in ("torch", "onnxruntime"):
     try:

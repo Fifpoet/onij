@@ -54,11 +54,11 @@ export function useFileTransfer(parentId = 0) {
   }
 
   /** 从后端取签名链接触发下载（同 FileList 的 iframe 方式） */
-  async function downloadOne(fileId: number) {
+  async function downloadOne(fileId: number, filename?: string) {
     const resp = await DownloadFiles({ file_ids: [fileId] })
     const url = resp.urls?.[0]
     if (!url) throw new Error(resp.message || '获取下载链接失败')
-    downloadByPrivateUrl(url)
+    downloadByPrivateUrl(url, filename)
   }
 
   return { uploadOne, removeOne, downloadOne }

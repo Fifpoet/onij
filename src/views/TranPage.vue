@@ -27,13 +27,13 @@
       </div>
 
       <div class="tran-text-row">
-        <input
+        <textarea
           v-model="textDraft"
-          type="text"
           class="tran-text-input"
-          placeholder="输入要中转的文本"
-          @keydown.enter.prevent="submitText"
-        >
+          rows="2"
+          placeholder="输入要中转的文本（Enter 发送，Shift+Enter 换行）"
+          @keydown="onTextKeydown"
+        />
         <button type="button" class="tran-btn tran-btn--primary" @click="submitText">确认</button>
       </div>
 
@@ -219,12 +219,19 @@ function submitText() {
   if (tran.addText(textDraft.value)) textDraft.value = ''
 }
 
+function onTextKeydown(e: KeyboardEvent) {
+  if (e.key !== 'Enter' || e.shiftKey) return
+  e.preventDefault()
+  submitText()
+}
+
 async function onPrimaryAction(item: TranItem) {
   try {
     if (item.kind === 'text') await tran.copyText(item)
     else await tran.downloadFile(item)
-  } catch {
-    // ignore
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : '操作失败'
+    window.alert(msg)
   }
 }
 
@@ -356,6 +363,7 @@ onBeforeUnmount(() => {
 
 .tran-text-row {
   display: flex;
+  align-items: flex-end;
   gap: 0.75rem;
   margin-bottom: 1.75rem;
 }
@@ -363,12 +371,16 @@ onBeforeUnmount(() => {
 .tran-text-input {
   flex: 1;
   min-width: 0;
-  height: 2.75rem;
-  padding: 0 0.85rem;
+  min-height: 2.75rem;
+  max-height: 12rem;
+  padding: 0.55rem 0.85rem;
   border: 1px solid rgb(209 213 219);
   border-radius: 0.5rem;
   font-size: 1rem;
+  line-height: 1.5;
+  resize: vertical;
   outline: none;
+  font-family: inherit;
 }
 
 .tran-text-input:focus {
@@ -562,6 +574,7 @@ onBeforeUnmount(() => {
 
 .tran-btn--primary {
   flex-shrink: 0;
+  height: 2.75rem;
   color: #fff;
   background: rgb(37 99 235);
 }

@@ -175,12 +175,23 @@ export function batchUploadToQiniu(
   )
 }
 
-/** 与 FileList.downloadFile 相同：iframe 打开私有下载链 */
-export function downloadByPrivateUrl(url: string) {
+/** 七牛私有链接触发下载（attname 强制附件名；避免 iframe 只预览不下载） */
+export function downloadByPrivateUrl(url: string, filename?: string) {
   if (!url) return
-  const iframe = document.createElement('iframe')
-  iframe.style.display = 'none'
-  iframe.src = url
-  document.body.appendChild(iframe)
-  setTimeout(() => document.body.removeChild(iframe), 1000)
+
+  let href = url
+  const name = filename?.trim()
+  if (name) {
+    const sep = href.includes('?') ? '&' : '?'
+    href = `${href}${sep}attname=${encodeURIComponent(name)}`
+  }
+
+  const a = document.createElement('a')
+  a.href = href
+  a.style.display = 'none'
+  a.rel = 'noopener noreferrer'
+  if (name) a.download = name
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
 }
