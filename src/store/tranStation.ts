@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { FileType } from '@/api/types/enums'
 import { DownloadFiles } from '@/api/file'
 import { useFileTransfer } from '@/composables/useFileTransfer'
+import { randomUUID } from '@/util/uuid'
 
 type TranItemBase = {
   id: string
@@ -58,7 +59,7 @@ export const useTranStationStore = defineStore(
       const text = content.trim()
       if (!text) return false
       const item: TranTextItem = {
-        id: crypto.randomUUID(),
+        id: randomUUID(),
         kind: 'text',
         content: text,
         createdAt: Date.now(),
