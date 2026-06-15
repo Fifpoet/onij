@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	defaultBaseURL         = "http://172.26.250.11:5555"
+	defaultBaseURL         = "http://172.26.250.1:5555"
 	separateRequestTimeout = 30 * time.Minute
 	downloadRequestTimeout = 10 * time.Minute
 	defaultRequestTimeout  = 30 * time.Second
