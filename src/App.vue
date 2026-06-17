@@ -53,6 +53,17 @@ const handleFileClick = (file: File) => {
         <RouterView />
       </div>
 
+      <footer class="app-icp">
+        <a
+          href="https://beian.miit.gov.cn/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="app-icp__link"
+        >
+          鄂ICP备2024057031号
+        </a>
+      </footer>
+
 <!--      &lt;!&ndash; 文件管理区域 &ndash;&gt;-->
 <!--      <div class="h-full">-->
 <!--        &lt;!&ndash; 文件列表 &ndash;&gt;-->
@@ -70,6 +81,30 @@ const handleFileClick = (file: File) => {
 <style scoped>
 .app-shell {
   text-align: left;
+}
+
+.app-icp {
+  text-align: center;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: rgb(156 163 175);
+  padding: 0.5rem var(--page-gutter-x) calc(var(--app-player-bar-offset) + 0.25rem);
+}
+
+@media (min-width: 1024px) {
+  .app-icp {
+    padding-bottom: 0.75rem;
+  }
+}
+
+.app-icp__link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.app-icp__link:hover {
+  color: rgb(107 114 128);
+  text-decoration: underline;
 }
 
 .logo {

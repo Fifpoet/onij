@@ -25,6 +25,8 @@
           :song="song"
           variant="queuePage"
           :show-queue-add="false"
+          :show-queue-pin="true"
+          :requeue-previous-on-play-now="false"
         />
       </div>
     </section>

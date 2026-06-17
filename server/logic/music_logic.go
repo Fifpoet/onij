@@ -3,11 +3,13 @@ package logic
 import (
 	"context"
 	"errors"
+	"fmt"
 	"onij/biz/biz"
 	"onij/biz/getter"
 	"onij/biz/prm"
 	"onij/infra"
 	"onij/model"
+	"onij/model/api"
 	"onij/util"
 	"onij/util/boost/collection/collext"
 	"onij/util/boost/exp"
@@ -19,6 +21,8 @@ type MusicLogic interface {
 	Upload(ctx context.Context, param *prm.UploadMusicParam) (*prm.UploadMusicResult, error)
 	GetDetail(ctx context.Context, param *prm.GetMusicDetailParam) (*prm.GetMusicDetailResult, error)
 	GetList(ctx context.Context, param *prm.GetMusicListParam) (*prm.GetMusicListResult, error)
+	UpdateMv(ctx context.Context, param *prm.UpdateMusicMvParam) (*prm.UpdateMusicMvResult, error)
+	GetMvBatch(ctx context.Context, param *prm.GetMusicMvBatchParam) (*prm.GetMusicMvBatchResult, error)
 }
 
 type musicLogic struct {
@@ -165,4 +169,79 @@ func (l *musicLogic) getMusicArtistAndTags(ctx context.Context, musics ...*model
 	}
 
 	return artGroup, collext.Group(tags, getter.TagResourceId), nil
+}
+
+func (l *musicLogic) UpdateMv(ctx context.Context, param *prm.UpdateMusicMvParam) (*prm.UpdateMusicMvResult, error) {
+	var music *model.Music
+	var err error
+
+	if param.MusicId > 0 {
+		music, err = l.musicByID(ctx, param.MusicId)
+		if err != nil {
+			return nil, err
+		}
+	} else if param.ThirdId > 0 {
+		musics, err := l.MusicDal.GetByThirdIds(ctx, param.ThirdId)
+		if err != nil {
+			return nil, err
+		}
+		if len(musics) > 0 {
+			music = musics[0]
+		} else {
+			music = &model.Music{
+				Id:        util.IdGen.Generate(),
+				Name:      fmt.Sprintf("#%d", param.ThirdId),
+				FullName:  fmt.Sprintf("#%d", param.ThirdId),
+				ArtistIds: "[]",
+				ThirdId:   param.ThirdId,
+				MvUrl:     param.MvUrl,
+			}
+			if _, err := l.MusicDal.Save(ctx, music); err != nil {
+				return nil, err
+			}
+			return &prm.UpdateMusicMvResult{MusicId: music.Id}, nil
+		}
+	} else {
+		return nil, errors.New("music_id or third_id required")
+	}
+
+	ok, err := l.MusicDal.UpdateById(ctx, func(u model.MusicUpdater) {
+		u.MvUrl(param.MvUrl)
+	}, music.Id)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, errors.New("music update failed")
+	}
+	return &prm.UpdateMusicMvResult{MusicId: music.Id}, nil
+}
+
+func (l *musicLogic) GetMvBatch(ctx context.Context, param *prm.GetMusicMvBatchParam) (*prm.GetMusicMvBatchResult, error) {
+	musics, err := l.MusicDal.GetByThirdIds(ctx, param.ThirdIds...)
+	if err != nil {
+		return nil, err
+	}
+	byThird := collext.Map(musics, getter.MusicThirdId)
+	items := make([]*api.MusicMvItem, 0, len(param.ThirdIds))
+	for _, tid := range param.ThirdIds {
+		item := &api.MusicMvItem{ThirdId: tid}
+		if m := byThird[tid]; m != nil {
+			item.MusicId = m.Id
+			item.MvUrl = m.MvUrl
+		}
+		items = append(items, item)
+	}
+	return &prm.GetMusicMvBatchResult{Items: items}, nil
+}
+
+func (l *musicLogic) musicByID(ctx context.Context, id int64) (*model.Music, error) {
+	musics, err := l.MusicDal.GetByIds(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if len(musics) == 0 {
+		return nil, errors.New("music not found")
+	}
+	return musics[0], nil
 }

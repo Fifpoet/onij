@@ -59,9 +59,16 @@
               </button>
 
               <div v-if="song" class="w-full max-w-md px-1 text-center">
-                <h2 class="text-lg font-bold leading-snug" :style="{ color: theme.fg }">
-                  {{ song.name }}
-                </h2>
+                <div class="flex items-center justify-center gap-1.5">
+                  <h2 class="truncate text-lg font-bold leading-snug" :style="{ color: theme.fg }">
+                    {{ song.name }}
+                  </h2>
+                  <MusicMvButton
+                    :has-mv="hasMv"
+                    :url="mvUrl"
+                    @save="saveMvUrl"
+                  />
+                </div>
                 <p
                   v-if="artistLine"
                   class="mt-0.5 truncate text-sm"
@@ -129,6 +136,8 @@ import { useMobileLyricsSheetStore } from '@/store/mobileLyricsSheet'
 import { usePlayerLyrics } from '@/composables/usePlayerLyrics'
 import { useCoverTheme } from '@/composables/useCoverTheme'
 import PlayTransportStrip from '@/components/player/PlayTransportStrip.vue'
+import MusicMvButton from '@/components/music/MusicMvButton.vue'
+import { useMusicMv } from '@/composables/useMusicMv'
 import type { ViewMusicListItem } from '@/api/view/music'
 
 const defaultCover =
@@ -151,6 +160,13 @@ const coverSrc = computed(
 const { theme, themeStyle } = useCoverTheme(coverSrc)
 
 const song = computed<ViewMusicListItem | null>(() => playQueue.nowPlaying)
+
+const songId = computed(() => song.value?.id ?? null)
+const {
+  mvUrl,
+  hasMv,
+  saveMvUrl,
+} = useMusicMv(songId)
 
 const artistLine = computed(() => {
   const s = song.value

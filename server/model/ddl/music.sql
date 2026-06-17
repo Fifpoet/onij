@@ -9,7 +9,7 @@ CREATE TABLE
     `issue_time` DATETIME NULL COMMENT '发行时间',
     `perform_type` INT NULL COMMENT '表演类型',
     `time_length` INT NULL COMMENT '时长(s)',
-    `mv_url` VARCHAR(1024) NULL COMMENT 'mv链接',
+    `mv_url` VARCHAR(1024) NULL COMMENT 'MV网页链接',
     `audio_file_id` BIGINT NULL COMMENT '音频文件id',
     `audio_quality` INT NULL COMMENT '音频质量类型',
     `lyric_file_id` BIGINT NULL COMMENT '歌词文件id',
@@ -20,5 +20,6 @@ CREATE TABLE
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `deleted_at` DATETIME DEFAULT NULL COMMENT '删除时间',
-    PRIMARY KEY (`id`)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '音乐';
+    PRIMARY KEY (`id`),
+    KEY `idx_music_third_id` (`third_id`)
+  ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '音乐';

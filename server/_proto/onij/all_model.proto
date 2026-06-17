@@ -14,7 +14,7 @@ message Music {
   repeated Artist composers = 4;
   repeated Artist writers = 5;
   int32 issue_time = 6;
-  string mv_url = 7;
+  string mv_url = 7; // MV 内嵌播放地址（如 Bilibili player iframe 的 src）
   string audio_file_url = 8;
   string lyrics_file_url = 9;
   repeated Album album = 10;

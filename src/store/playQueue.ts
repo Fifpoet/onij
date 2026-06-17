@@ -41,6 +41,17 @@ export const usePlayQueueStore = defineStore(
       return 'added'
     }
 
+    /** 按顺序批量加入队列；若当前无在播则第一首立即播放 */
+    function enqueueMany(songs: ViewMusicListItem[]): 'playing' | 'added' | 'empty' {
+      if (songs.length === 0) return 'empty'
+      let result: 'playing' | 'added' = 'added'
+      for (const song of songs) {
+        const r = enqueue(song)
+        if (r === 'playing') result = 'playing'
+      }
+      return result
+    }
+
     /** 从待播队列取下「下一首」（随机模式只随机下标，不整体重排） */
     function takeNextFromQueue(): ViewMusicListItem | null {
       if (queue.value.length === 0) return null
@@ -117,6 +128,14 @@ export const usePlayQueueStore = defineStore(
       queue.value = queue.value.filter((s) => s.id !== id)
     }
 
+    /** 将待播曲目移到队首 */
+    function moveToQueueTop(id: number) {
+      const idx = queue.value.findIndex((s) => s.id === id)
+      if (idx <= 0) return
+      const [item] = queue.value.splice(idx, 1)
+      queue.value.unshift(item)
+    }
+
     function clearQueue() {
       queue.value = []
     }
@@ -128,20 +147,37 @@ export const usePlayQueueStore = defineStore(
       }
     }
 
+    /** 按网易云歌曲 id 更新队列与在播项的 mv_url */
+    function patchMvUrl(thirdId: number, mvUrl: string) {
+      const url = mvUrl.trim()
+      if (nowPlaying.value?.id === thirdId) {
+        nowPlaying.value = {
+          ...nowPlaying.value,
+          mv_url: url || undefined,
+        }
+      }
+      queue.value = queue.value.map((s) =>
+        s.id === thirdId ? { ...s, mv_url: url || undefined } : s,
+      )
+    }
+
     /**
-     * 插队立即播放：当前在播（若有且不同曲）插回队首，目标曲从队列移除并设为在播
+     * 插队立即播放：目标曲从队列移除并设为在播。
+     * requeuePrevious 为 true 时，当前在播（若有且不同曲）插回队首。
      */
-    function playNow(song: ViewMusicListItem) {
+    function playNow(song: ViewMusicListItem, options?: { requeuePrevious?: boolean }) {
+      const requeuePrevious = options?.requeuePrevious !== false
       const incoming = cloneSong(song)
       const prev = nowPlaying.value
 
       removeFromQueue(incoming.id)
 
-      if (prev && prev.id !== incoming.id) {
+      if (requeuePrevious && prev && prev.id !== incoming.id) {
         queue.value.unshift(cloneSong(prev))
       }
 
       nowPlaying.value = incoming
+      resetPlaybackProgress()
     }
 
     return {
@@ -157,6 +193,7 @@ export const usePlayQueueStore = defineStore(
       hasCurrent,
       isInQueueOrPlaying,
       enqueue,
+      enqueueMany,
       takeNextFromQueue,
       startIfIdle,
       advanceAfterEnded,
@@ -168,9 +205,11 @@ export const usePlayQueueStore = defineStore(
       resetPlaybackProgress,
       setVolume,
       removeFromQueue,
+      moveToQueueTop,
       clearQueue,
       playNow,
       skipToNext,
+      patchMvUrl,
     }
   },
   {
