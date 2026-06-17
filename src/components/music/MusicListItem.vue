@@ -106,6 +106,23 @@
 
     <div class="flex items-center shrink-0 gap-1 ml-2">
       <div
+        v-if="showQueuePin"
+        class="w-8 h-8 flex items-center justify-center"
+      >
+        <n-button
+          quaternary
+          circle
+          size="small"
+          :focusable="false"
+          title="置顶"
+          @click.stop="onPinToTop"
+        >
+          <template #icon>
+            <n-icon :component="ArrowUpOutline" :size="18" />
+          </template>
+        </n-button>
+      </div>
+      <div
         v-if="showQueueAdd"
         class="w-8 h-8 flex items-center justify-center"
       >
@@ -137,7 +154,7 @@
 import { computed } from 'vue'
 import { useRouter, RouterLink } from 'vue-router'
 import { useMessage, NButton, NIcon } from 'naive-ui'
-import { AddOutline } from '@vicons/ionicons5'
+import { AddOutline, ArrowUpOutline } from '@vicons/ionicons5'
 import type { ViewMusicListItem } from '@/api/view/music.ts'
 import { usePlayQueueStore } from '@/store/playQueue'
 
@@ -157,17 +174,23 @@ const props = withDefaults(defineProps<{
   variant?: 'default' | 'album' | 'queue' | 'queuePage' | 'browse'
   /** 悬停时在时长前显示加入队列 */
   showQueueAdd?: boolean
+  /** 显示置顶按钮（队列页） */
+  showQueuePin?: boolean
   /** 底部分割线 */
   showRowBorder?: boolean
   /** 双击空白处（非链接/按钮）插队立即播放 */
   dblClickPlayNow?: boolean
+  /** 双击插队播放时，是否把当前在播歌曲插回队首 */
+  requeuePreviousOnPlayNow?: boolean
 }>(), {
   showCover: true,
   showAlbumName: true,
   variant: 'default',
   showQueueAdd: true,
+  showQueuePin: false,
   showRowBorder: true,
   dblClickPlayNow: true,
+  requeuePreviousOnPlayNow: true,
 })
 
 const isLargeRow = computed(
@@ -237,12 +260,19 @@ function onAddToQueue() {
   }
 }
 
+function onPinToTop() {
+  playQueue.moveToQueueTop(props.song.id)
+  message.success('已置顶')
+}
+
 function onRowDblClick(e: MouseEvent) {
   if (!props.dblClickPlayNow) return
   const el = e.target as HTMLElement | null
   if (!el) return
   if (el.closest('a, button, [role="button"], .n-button, .music-list-skip-dblplay, img')) return
-  playQueue.playNow(props.song)
+  playQueue.playNow(props.song, {
+    requeuePrevious: props.requeuePreviousOnPlayNow,
+  })
 }
 
 // 格式化时长 (从秒转换为 x:xx 格式)

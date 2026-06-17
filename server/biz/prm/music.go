@@ -122,3 +122,52 @@ func (p *GetMusicListResult) Resp() *api.GetMusicListResp {
 		}),
 	}
 }
+
+type UpdateMusicMvParam struct {
+	MusicId int64
+	ThirdId int64
+	MvUrl   string
+}
+
+func NewUpdateMusicMvParam(req *api.UpdateMusicMvReq) *UpdateMusicMvParam {
+	p := &UpdateMusicMvParam{MvUrl: req.MvUrl}
+	if req.MusicId != nil {
+		p.MusicId = *req.MusicId
+	}
+	if req.ThirdId != nil {
+		p.ThirdId = *req.ThirdId
+	}
+	return p
+}
+
+type UpdateMusicMvResult struct {
+	MusicId int64
+}
+
+func (p *UpdateMusicMvResult) Resp() *api.UpdateMusicMvResp {
+	return &api.UpdateMusicMvResp{
+		Code:    util.BaseCodeOK,
+		Message: util.BaseMsgOK,
+		MusicId: p.MusicId,
+	}
+}
+
+type GetMusicMvBatchParam struct {
+	ThirdIds []int64
+}
+
+func NewGetMusicMvBatchParam(req *api.GetMusicMvBatchReq) *GetMusicMvBatchParam {
+	return &GetMusicMvBatchParam{ThirdIds: req.ThirdIds}
+}
+
+type GetMusicMvBatchResult struct {
+	Items []*api.MusicMvItem
+}
+
+func (p *GetMusicMvBatchResult) Resp() *api.GetMusicMvBatchResp {
+	return &api.GetMusicMvBatchResp{
+		Code:    util.BaseCodeOK,
+		Message: util.BaseMsgOK,
+		Items:   p.Items,
+	}
+}

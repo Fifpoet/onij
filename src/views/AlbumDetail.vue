@@ -31,6 +31,15 @@
               {{ albumSongCount }} 首歌, {{ albumTotalMinutes }} 分钟
             </p>
 
+            <div v-if="allAlbumSongs.length > 0" class="mb-4">
+              <n-button type="primary" :focusable="false" @click="onPlayAll">
+                <template #icon>
+                  <n-icon :component="PlayOutline" />
+                </template>
+                全部播放
+              </n-button>
+            </div>
+
             <!-- 简介 -->
             <div class="mt-4">
               <div
@@ -82,12 +91,18 @@
 import {ref, onMounted, computed} from 'vue'
 import PageContent from '@/components/layout/PageContent.vue'
 import { useRoute, RouterLink } from 'vue-router'
+import { useMessage, NButton, NIcon } from 'naive-ui'
+import { PlayOutline } from '@vicons/ionicons5'
 import { getSongDetail } from '@/api/netease/search'
 import type { SongDetail } from '@/api/netease/result'
 import SongItem from '@/components/music/MusicListItem.vue'
 import { getAlbumDetail } from '@/api/netease/album'
 import type { AlbumDetail, AlbumSong } from '@/api/netease/album'
 import {ViewMusicListItem} from "@/api/view/music.ts";
+import { usePlayQueueStore } from '@/store/playQueue'
+
+const message = useMessage()
+const playQueue = usePlayQueueStore()
 
 // 默认封面
 const defaultAlbumCover = 'https://p1.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg'
@@ -185,6 +200,19 @@ const groupedSongs = computed(() => {
   
   return sortedGroups
 })
+
+const allAlbumSongs = computed(() => Object.values(groupedSongs.value).flat())
+
+function onPlayAll() {
+  const songs = allAlbumSongs.value
+  if (!songs.length) return
+  const r = playQueue.enqueueMany(songs)
+  if (r === 'playing') {
+    message.success(`开始播放，其余 ${Math.max(0, songs.length - 1)} 首已加入队列`)
+  } else if (r === 'added') {
+    message.success(`已按顺序将 ${songs.length} 首加入队列`)
+  }
+}
 
 // 判断是否应该显示 Disc 标题
 const shouldShowDiscTitle = (discNumber: string) => {

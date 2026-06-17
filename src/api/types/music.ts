@@ -58,6 +58,34 @@ export interface GetMusicDetailResp {
     music: Music
 }
 
+export interface UpdateMusicMvReq {
+    music_id?: number
+    third_id?: number
+    mv_url: string
+}
+
+export interface UpdateMusicMvResp {
+    code: number
+    message: string
+    music_id?: number
+}
+
+export interface GetMusicMvBatchReq {
+    third_ids: number[]
+}
+
+export interface MusicMvItem {
+    third_id: number
+    music_id: number
+    mv_url: string
+}
+
+export interface GetMusicMvBatchResp {
+    code: number
+    message: string
+    items?: MusicMvItem[]
+}
+
 export interface GetMusicListReq {
     keyword: string
     artistIds: number[]

@@ -11,6 +11,10 @@ import { usePlayQueueStore } from '@/store/playQueue'
 import { useKtvStore } from '@/store/ktv'
 import { getOrFetchPlayUrl, prefetchPlayUrl } from '@/player/songPlayUrlCache'
 import {
+  ensureMusicMvLoaded,
+  prefetchMusicMvForQueue,
+} from '@/player/musicMvCache'
+import {
   getCachedInstrumentalUrl,
   getOrFetchInstrumental,
   prefetchInstrumental,
@@ -50,10 +54,13 @@ function isBenignPlayRejection(err: unknown): boolean {
 function prefetchUpcomingFromQueue() {
   const q = playQueue.queue
   const n = Math.min(3, q.length)
+  const ids: number[] = []
   for (let i = 0; i < n; i++) {
     if (ktvActive.value) prefetchInstrumental(q[i].id)
     else prefetchPlayUrl(q[i].id)
+    ids.push(q[i].id)
   }
+  prefetchMusicMvForQueue(ids)
 }
 
 function syncPlaybackFromAudio() {
@@ -291,6 +298,7 @@ watch(
       playQueue.resetPlaybackProgress()
       return
     }
+    void ensureMusicMvLoaded(song.id)
     void loadAndPlay(song.id)
   },
   { immediate: true },

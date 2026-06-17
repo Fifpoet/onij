@@ -21,6 +21,10 @@ func customizedRegister(r *server.Hertz) {
 	file := root.Group("/file")
 	file.POST("/download", handler.DownloadFile)
 
+	music := root.Group("/music")
+	music.POST("/mv", handler.UpdateMusicMv)
+	music.POST("/mv/batch", handler.GetMusicMvBatch)
+
 	uvrGroup := root.Group("/uvr")
 	uvrGroup.GET("/health", handler.UvrHealth)
 	uvrGroup.GET("/models", handler.UvrListModels)

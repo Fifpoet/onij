@@ -64,9 +64,16 @@
                 class="aspect-square w-full rounded-2xl object-cover shadow-2xl"
               >
               <div v-if="song" class="flex w-full flex-col items-center gap-1 px-0.5 text-center">
-                <h2 class="text-lg font-bold leading-snug text-white md:text-xl">
-                  {{ song.name }}
-                </h2>
+                <div class="flex max-w-full items-center justify-center gap-1.5">
+                  <h2 class="truncate text-lg font-bold leading-snug text-white md:text-xl">
+                    {{ song.name }}
+                  </h2>
+                  <MusicMvButton
+                    :has-mv="hasMv"
+                    :url="mvUrl"
+                    @save="saveMvUrl"
+                  />
+                </div>
                 <p
                   v-if="artistEntries.length || song.album_name"
                   class="flex flex-wrap items-center justify-center gap-x-0.5 text-sm leading-relaxed text-white/70"
@@ -133,6 +140,8 @@ import { usePlayQueueStore } from '@/store/playQueue'
 import { fetchLyricRaw } from '@/api/netease/lyric'
 import { parseLrc, activeLrcIndex, type LrcLine } from '@/util/lrc'
 import PlayTransportStrip from '@/components/player/PlayTransportStrip.vue'
+import MusicMvButton from '@/components/music/MusicMvButton.vue'
+import { useMusicMv } from '@/composables/useMusicMv'
 import type { ViewMusicListItem } from '@/api/view/music'
 
 const defaultAlbumCover =
@@ -153,6 +162,13 @@ const followLyrics = ref(true)
 let idleSnapTimer: ReturnType<typeof setTimeout> | null = null
 
 const song = computed<ViewMusicListItem | null>(() => playQueue.nowPlaying)
+
+const songId = computed(() => song.value?.id ?? null)
+const {
+  mvUrl,
+  hasMv,
+  saveMvUrl,
+} = useMusicMv(songId)
 
 const coverSrc = computed(
   () => playQueue.nowPlaying?.cover_file_url || defaultAlbumCover,

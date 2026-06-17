@@ -19,6 +19,15 @@
             </button>
           </div>
 
+          <button
+            type="button"
+            class="prac-stats-btn"
+            :class="{ 'prac-stats-btn--active': panelMode === 'stats' }"
+            @click="openMonthlyStats"
+          >
+            月度统计
+          </button>
+
           <div class="prac-calendar__weekdays">
             <span v-for="w in weekdays" :key="w">{{ w }}</span>
           </div>
@@ -33,15 +42,24 @@
                 v-else
                 type="button"
                 class="prac-day-btn prac-calendar__cell"
-                :class="{ 'prac-calendar__cell--selected': selectedDateKey === cell.dateKey }"
-                :aria-label="isToday(cell.dateKey) ? '今天' : `${cell.day}日`"
+                :class="{
+                  'prac-calendar__cell--selected': selectedDateKey === cell.dateKey,
+                  [`prac-day-btn--heat-${cell.heatLevel}`]: cell.heatLevel > 0,
+                }"
+                :aria-label="cell.ariaLabel"
+                :title="cell.tooltip || undefined"
                 @click="selectDate(cell.dateKey)"
               >
-                {{ dayCellLabel(cell) }}
+                <span class="prac-day-btn__label">{{ dayCellLabel(cell) }}</span>
                 <span
-                  v-if="daysWithPractice.has(cell.day!)"
-                  class="prac-day-dot"
-                  :class="{ 'prac-day-dot--selected': selectedDateKey === cell.dateKey }"
+                  v-if="cell.typeMark === 'triangle'"
+                  class="prac-day-mark prac-day-mark--triangle"
+                  aria-hidden="true"
+                />
+                <span
+                  v-else-if="cell.typeMark === 'circle'"
+                  class="prac-day-mark prac-day-mark--circle"
+                  aria-hidden="true"
                 />
               </button>
             </div>
@@ -49,9 +67,100 @@
         </section>
 
         <section class="prac-card prac-panel">
-          <p class="prac-panel__date">{{ selectedDateLabel }}</p>
+          <p class="prac-panel__date">
+            {{ panelMode === 'stats' ? `${monthTitle} 统计` : selectedDateLabel }}
+          </p>
 
           <p v-if="loading" class="browse-muted py-6 text-center text-sm">加载中…</p>
+          <template v-else-if="panelMode === 'stats'">
+            <div class="prac-stats-type-row">
+              <button
+                type="button"
+                class="prac-stats-type"
+                :class="{ 'prac-stats-type--active': statsTypeFilter === 'all' }"
+                @click="statsTypeFilter = 'all'"
+              >
+                全部
+              </button>
+              <button
+                v-for="type in monthPracticeTypes"
+                :key="type"
+                type="button"
+                class="prac-stats-type"
+                :class="{ 'prac-stats-type--active': statsTypeFilter === type }"
+                @click="statsTypeFilter = type"
+              >
+                <component :is="practiceIcon(type)" class="prac-stats-type__icon" />
+                <span>{{ PRACTICE_TYPE_LABELS[type] }}</span>
+              </button>
+            </div>
+
+            <div class="prac-stats-summary">
+              <div class="prac-stats-summary__item">
+                <span class="prac-stats-summary__value">{{ filteredMonthStats.sessionCount }}</span>
+                <span class="prac-stats-summary__label">练习次数</span>
+              </div>
+              <div class="prac-stats-summary__item">
+                <span class="prac-stats-summary__value">{{ formatDurationShort(filteredMonthStats.durationMin) }}</span>
+                <span class="prac-stats-summary__label">总时长</span>
+              </div>
+              <div class="prac-stats-summary__item">
+                <span class="prac-stats-summary__value">{{ filteredMonthStats.activeDays }}</span>
+                <span class="prac-stats-summary__label">活跃天数</span>
+              </div>
+            </div>
+
+            <div class="prac-panel__divider" />
+
+            <div v-if="filteredMonthStats.sessionCount === 0" class="browse-muted py-12 text-center text-sm">
+              本月暂无该类型练习记录
+            </div>
+            <div v-else class="prac-chart-wrap">
+              <p class="prac-chart__title">每日练习时长（分钟）</p>
+              <svg
+                class="prac-chart__svg"
+                viewBox="0 0 400 180"
+                role="img"
+                :aria-label="`${statsTypeLabel} 本月每日练习时长折线图`"
+              >
+                <line
+                  :x1="chartPad.l"
+                  :y1="chartPad.t"
+                  :x2="chartPad.l"
+                  :y2="180 - chartPad.b"
+                  class="prac-chart__axis"
+                />
+                <line
+                  :x1="chartPad.l"
+                  :y1="180 - chartPad.b"
+                  :x2="400 - chartPad.r"
+                  :y2="180 - chartPad.b"
+                  class="prac-chart__axis"
+                />
+                <text :x="chartPad.l - 4" :y="180 - chartPad.b + 4" class="prac-chart__tick" text-anchor="end">0</text>
+                <text :x="chartPad.l - 4" :y="chartPad.t + 4" class="prac-chart__tick" text-anchor="end">
+                  {{ chartGeometry.maxY }}
+                </text>
+                <polyline
+                  v-if="chartGeometry.polyline"
+                  :points="chartGeometry.polyline"
+                  class="prac-chart__line"
+                />
+                <circle
+                  v-for="pt in chartGeometry.points"
+                  :key="pt.day"
+                  :cx="pt.x"
+                  :cy="pt.y"
+                  r="3"
+                  class="prac-chart__dot"
+                />
+              </svg>
+              <div class="prac-chart__xlabels">
+                <span>1日</span>
+                <span>{{ monthStats.daysInMonth }}日</span>
+              </div>
+            </div>
+          </template>
           <template v-else>
             <div class="prac-tab-row">
               <div class="prac-tab-row__scroll">
@@ -194,7 +303,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { ImageOutline, SaveOutline, TrashOutline } from '@vicons/ionicons5'
 import PageContent from '@/components/layout/PageContent.vue'
 import { GetMonthlyPractice, UploadPractice, DeletePractice } from '@/api/practice'
@@ -212,6 +321,21 @@ import {
 } from '@/util/practiceContent'
 
 const weekdays = ['一', '二', '三', '四', '五', '六', '日'] as const
+
+type PanelMode = 'detail' | 'stats'
+type StatsTypeFilter = 'all' | PracticeType
+type DayTypeMark = 'none' | 'triangle' | 'circle'
+
+interface DayStats {
+  count: number
+  durationMin: number
+  typeCount: number
+}
+
+const chartPad = { l: 36, r: 12, t: 14, b: 28 }
+
+const panelMode = ref<PanelMode>('detail')
+const statsTypeFilter = ref<StatsTypeFilter>('all')
 
 const viewYear = ref(new Date().getFullYear())
 const viewMonth = ref(new Date().getMonth())
@@ -231,6 +355,9 @@ const contentRef = ref<HTMLTextAreaElement | null>(null)
 const imageInputRef = ref<HTMLInputElement | null>(null)
 const editPanelRef = ref<HTMLElement | null>(null)
 
+let pageActive = true
+let fetchSeq = 0
+
 const editForm = ref({
   id: undefined as number | undefined,
   practice_type: PracticeType.PCT_Other,
@@ -248,6 +375,39 @@ interface MonthCell {
   key: string
   day: number | null
   dateKey: string
+  heatLevel: 0 | 1 | 2 | 3 | 4
+  typeMark: DayTypeMark
+  tooltip: string
+  ariaLabel: string
+}
+
+function countPracticeTypes(practices: Practice[]): number {
+  const types = new Set<PracticeType>()
+  for (const p of practices) {
+    types.add(p.practice_type as PracticeType)
+  }
+  return types.size
+}
+
+function typeMarkFromCount(typeCount: number): DayTypeMark {
+  if (typeCount === 1) return 'triangle'
+  if (typeCount >= 2) return 'circle'
+  return 'none'
+}
+
+function filterPracticesByType(practices: Practice[], filter: StatsTypeFilter): Practice[] {
+  if (filter === 'all') return practices
+  return practices.filter((p) => p.practice_type === filter)
+}
+
+function calcHeatLevel(durationMin: number, maxDuration: number): 0 | 1 | 2 | 3 | 4 {
+  if (durationMin <= 0) return 0
+  if (maxDuration <= 0) return 1
+  const ratio = durationMin / maxDuration
+  if (ratio <= 0.25) return 1
+  if (ratio <= 0.5) return 2
+  if (ratio <= 0.75) return 3
+  return 4
 }
 
 const monthCells = computed((): MonthCell[] => {
@@ -256,22 +416,141 @@ const monthCells = computed((): MonthCell[] => {
   const first = new Date(y, m, 1)
   const startOffset = (first.getDay() + 6) % 7
   const daysInMonth = new Date(y, m + 1, 0).getDate()
+  const { dayStatsMap } = monthStats.value
+
+  let maxDuration = 0
+  for (const stats of dayStatsMap.values()) {
+    if (stats.durationMin > maxDuration) maxDuration = stats.durationMin
+  }
+
+  const emptyCell = (key: string): MonthCell => ({
+    key,
+    day: null,
+    dateKey: '',
+    heatLevel: 0,
+    typeMark: 'none',
+    tooltip: '',
+    ariaLabel: '',
+  })
 
   const cells: MonthCell[] = []
   for (let i = 0; i < startOffset; i++) {
-    cells.push({ key: `pad-${y}-${m}-b-${i}`, day: null, dateKey: '' })
+    cells.push(emptyCell(`pad-${y}-${m}-b-${i}`))
   }
   for (let d = 1; d <= daysInMonth; d++) {
     const dateKey = toDateKey(y, m, d)
-    cells.push({ key: dateKey, day: d, dateKey })
+    const stats = dayStatsMap.get(d)
+    const heatLevel = stats ? calcHeatLevel(stats.durationMin, maxDuration) : 0
+    const typeMark = stats ? typeMarkFromCount(stats.typeCount) : 'none'
+    let ariaLabel = isToday(dateKey) ? '今天' : `${d}日`
+    let tooltip = ''
+    if (stats) {
+      tooltip = `${d}日 · ${stats.count}次 · ${formatDurationShort(stats.durationMin)}`
+      ariaLabel = `${d}日，${stats.count}次练习，${formatDurationShort(stats.durationMin)}`
+    }
+    cells.push({
+      key: dateKey,
+      day: d,
+      dateKey,
+      heatLevel,
+      typeMark,
+      tooltip,
+      ariaLabel,
+    })
   }
   while (cells.length % 7 !== 0) {
-    cells.push({ key: `pad-${y}-${m}-a-${cells.length}`, day: null, dateKey: '' })
+    cells.push(emptyCell(`pad-${y}-${m}-a-${cells.length}`))
   }
   return cells
 })
 
-const daysWithPractice = computed(() => new Set(monthlyDays.value.keys()))
+
+function statsForPractices(practices: Practice[]): DayStats {
+  return {
+    count: practices.length,
+    durationMin: practices.reduce((sum, p) => sum + (Number(p.duration) || 0), 0),
+    typeCount: countPracticeTypes(practices),
+  }
+}
+
+function buildMonthStats(filter: StatsTypeFilter) {
+  let sessionCount = 0
+  let durationMin = 0
+  let activeDays = 0
+  const dayStatsMap = new Map<number, DayStats>()
+
+  for (const [day, practices] of monthlyDays.value) {
+    const filtered = filterPracticesByType(practices, filter)
+    const stats = statsForPractices(filtered)
+    if (stats.count <= 0) continue
+    activeDays += 1
+    sessionCount += stats.count
+    durationMin += stats.durationMin
+    dayStatsMap.set(day, stats)
+  }
+
+  const daysInMonth = new Date(viewYear.value, viewMonth.value + 1, 0).getDate()
+  return { sessionCount, durationMin, activeDays, daysInMonth, dayStatsMap }
+}
+
+const monthStats = computed(() => buildMonthStats('all'))
+
+const filteredMonthStats = computed(() => buildMonthStats(statsTypeFilter.value))
+
+const monthPracticeTypes = computed(() => {
+  const durationByType = new Map<PracticeType, number>()
+  for (const practices of monthlyDays.value.values()) {
+    for (const p of practices) {
+      const type = p.practice_type as PracticeType
+      if (type === PracticeType.PCT_Unknown) continue
+      durationByType.set(type, (durationByType.get(type) ?? 0) + (Number(p.duration) || 0))
+    }
+  }
+  return Array.from(durationByType.entries())
+    .sort((a, b) => b[1] - a[1])
+    .map(([type]) => type)
+})
+
+const statsTypeLabel = computed(() => {
+  if (statsTypeFilter.value === 'all') return '全部类型'
+  return PRACTICE_TYPE_LABELS[statsTypeFilter.value]
+})
+
+const chartGeometry = computed(() => {
+  const daysInMonth = filteredMonthStats.value.daysInMonth
+  const series: { day: number; minutes: number }[] = []
+  for (let d = 1; d <= daysInMonth; d++) {
+    const practices = monthlyDays.value.get(d) ?? []
+    const filtered = filterPracticesByType(practices, statsTypeFilter.value)
+    const minutes = filtered.reduce((sum, p) => sum + (Number(p.duration) || 0), 0)
+    series.push({ day: d, minutes })
+  }
+
+  const maxY = Math.max(...series.map((p) => p.minutes), 1)
+  const plotW = 400 - chartPad.l - chartPad.r
+  const plotH = 180 - chartPad.t - chartPad.b
+  const step = daysInMonth > 1 ? plotW / (daysInMonth - 1) : 0
+
+  const points = series.map((p, i) => ({
+    day: p.day,
+    minutes: p.minutes,
+    x: chartPad.l + i * step,
+    y: chartPad.t + plotH - (p.minutes / maxY) * plotH,
+  }))
+
+  const polyline = points.map((p) => `${p.x},${p.y}`).join(' ')
+  return { points, polyline, maxY: Math.round(maxY) }
+})
+
+function formatDurationShort(minutes: number): string {
+  const m = Math.max(0, Math.round(minutes))
+  if (m < 60) return `${m}分钟`
+  const h = Math.floor(m / 60)
+  const rest = m % 60
+  if (rest === 0) return `${h}小时`
+  return `${h}h ${rest}m`
+}
+
 const selectedDay = computed(() => Number(selectedDateKey.value.split('-')[2]))
 const dayPractices = computed(() => monthlyDays.value.get(selectedDay.value) ?? [])
 
@@ -316,7 +595,14 @@ function openPractice(id: number) {
   selectPractice(p)
 }
 
+function openMonthlyStats() {
+  panelMode.value = 'stats'
+  isEditing.value = false
+  editingId.value = null
+}
+
 function selectDate(dateKey: string) {
+  panelMode.value = 'detail'
   selectedDateKey.value = dateKey
   isEditing.value = false
   editingId.value = null
@@ -335,6 +621,7 @@ function selectPractice(p: Practice) {
 }
 
 function startNewPractice() {
+  panelMode.value = 'detail'
   isEditing.value = true
   editingId.value = null
   activeTab.value = '__new__'
@@ -382,9 +669,11 @@ function cancelEdit() {
 }
 
 async function insertImageToken(file: File) {
+  if (!pageActive) return
   uploadingImage.value = true
   try {
     const qiniu = await uploadToQiniu(file, ['practice'])
+    if (!pageActive) return
     const resp = await UploadFile({
       parent_id: 0,
       files: [
@@ -413,7 +702,7 @@ async function insertImageToken(file: File) {
     }
     imageUrlMap.value = { ...imageUrlMap.value, [fileId]: qiniu.url }
   } finally {
-    uploadingImage.value = false
+    if (pageActive) uploadingImage.value = false
   }
 }
 
@@ -441,12 +730,15 @@ async function onEditPaste(e: ClipboardEvent) {
 }
 
 async function fetchMonthly() {
-  loading.value = true
+  const seq = ++fetchSeq
+  if (pageActive) loading.value = true
   try {
     const resp = await GetMonthlyPractice({
       year: viewYear.value,
       month: viewMonth.value + 1,
     })
+    if (!pageActive || seq !== fetchSeq) return
+
     const map = new Map<number, Practice[]>()
     for (const d of resp.days ?? []) {
       map.set(d.day, d.practices ?? [])
@@ -463,7 +755,7 @@ async function fetchMonthly() {
       activeTab.value = null
     }
   } finally {
-    loading.value = false
+    if (pageActive && seq === fetchSeq) loading.value = false
   }
 }
 
@@ -474,6 +766,7 @@ async function loadImageUrls(content: string) {
   if (!missing.length) return
   try {
     const resp = await DownloadFiles({ file_ids: missing })
+    if (!pageActive) return
     const urls = resp.urls ?? []
     const next = { ...imageUrlMap.value }
     missing.forEach((id, i) => {
@@ -525,6 +818,12 @@ async function removePractice() {
   }
 }
 
+function syncSelectedDateToViewMonth() {
+  const day = Number(selectedDateKey.value.split('-')[2])
+  const daysInMonth = new Date(viewYear.value, viewMonth.value + 1, 0).getDate()
+  selectedDateKey.value = toDateKey(viewYear.value, viewMonth.value, Math.min(day, daysInMonth))
+}
+
 function prevMonth() {
   if (viewMonth.value === 0) {
     viewMonth.value = 11
@@ -532,6 +831,7 @@ function prevMonth() {
   } else {
     viewMonth.value -= 1
   }
+  syncSelectedDateToViewMonth()
 }
 
 function nextMonth() {
@@ -541,14 +841,26 @@ function nextMonth() {
   } else {
     viewMonth.value += 1
   }
+  syncSelectedDateToViewMonth()
 }
 
 watch([viewYear, viewMonth], () => {
+  if (
+    statsTypeFilter.value !== 'all'
+    && !monthPracticeTypes.value.includes(statsTypeFilter.value)
+  ) {
+    statsTypeFilter.value = 'all'
+  }
   void fetchMonthly()
 })
 
 onMounted(() => {
   void fetchMonthly()
+})
+
+onBeforeUnmount(() => {
+  pageActive = false
+  fetchSeq += 1
 })
 </script>
 
@@ -589,7 +901,43 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.prac-stats-btn {
+  width: 100%;
+  margin-bottom: 0.85rem;
+  border: 1px solid rgb(187 247 208);
+  border-radius: 0.5rem;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: rgb(22 101 52);
+  background: rgb(240 253 244);
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.prac-stats-btn:hover {
+  background: rgb(220 252 231);
+}
+
+.prac-stats-btn--active {
+  border-color: rgb(34 197 94);
+  background: rgb(34 197 94);
+  color: #fff;
+}
+
+.dark .prac-stats-btn {
+  border-color: rgb(22 101 52 / 0.55);
+  color: rgb(187 247 208);
+  background: rgb(20 83 45 / 0.25);
+}
+
+.dark .prac-stats-btn--active {
+  border-color: rgb(34 197 94);
+  background: rgb(22 163 74);
+  color: rgb(240 253 244);
 }
 
 .prac-calendar__title {
@@ -656,8 +1004,10 @@ onMounted(() => {
 .prac-day-btn {
   position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 0.15rem;
   width: 100%;
   height: 100%;
   border: 1px solid transparent;
@@ -671,16 +1021,105 @@ onMounted(() => {
   box-shadow: none;
 }
 
+.prac-day-btn__label {
+  line-height: 1;
+}
+
+.prac-day-mark {
+  flex-shrink: 0;
+}
+
+.prac-day-mark--triangle {
+  width: 0;
+  height: 0;
+  border-left: 3.5px solid transparent;
+  border-right: 3.5px solid transparent;
+  border-bottom: 5px solid rgb(22 163 74);
+}
+
+.prac-day-mark--circle {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgb(22 163 74);
+}
+
+.prac-calendar__cell--selected .prac-day-mark--triangle {
+  border-bottom-color: rgb(37 99 235);
+}
+
+.prac-calendar__cell--selected .prac-day-mark--circle {
+  background: rgb(37 99 235);
+}
+
+.dark .prac-day-mark--triangle {
+  border-bottom-color: rgb(74 222 128);
+}
+
+.dark .prac-day-mark--circle {
+  background: rgb(74 222 128);
+}
+
+.dark .prac-calendar__cell--selected .prac-day-mark--triangle {
+  border-bottom-color: rgb(96 165 250);
+}
+
+.dark .prac-calendar__cell--selected .prac-day-mark--circle {
+  background: rgb(96 165 250);
+}
+
 .dark .prac-day-btn {
   color: rgb(229 231 235);
 }
 
-.prac-day-btn:hover:not(.prac-calendar__cell--selected) {
+.prac-day-btn:hover:not(.prac-calendar__cell--selected):not([class*='prac-day-btn--heat-']) {
   background: rgb(243 244 246);
 }
 
-.dark .prac-day-btn:hover:not(.prac-calendar__cell--selected) {
+.dark .prac-day-btn:hover:not(.prac-calendar__cell--selected):not([class*='prac-day-btn--heat-']) {
   background: rgb(55 65 81);
+}
+
+.prac-day-btn--heat-1 {
+  background: rgb(220 252 231);
+}
+
+.prac-day-btn--heat-2 {
+  background: rgb(187 247 208);
+}
+
+.prac-day-btn--heat-3 {
+  background: rgb(134 239 172);
+}
+
+.prac-day-btn--heat-4 {
+  background: rgb(74 222 128);
+  color: rgb(20 83 45);
+  font-weight: 600;
+}
+
+.dark .prac-day-btn--heat-1 {
+  background: rgb(20 83 45 / 0.35);
+}
+
+.dark .prac-day-btn--heat-2 {
+  background: rgb(22 101 52 / 0.5);
+}
+
+.dark .prac-day-btn--heat-3 {
+  background: rgb(22 163 74 / 0.55);
+}
+
+.dark .prac-day-btn--heat-4 {
+  background: rgb(34 197 94 / 0.65);
+  color: rgb(240 253 244);
+}
+
+.prac-day-btn--heat-1:hover:not(.prac-calendar__cell--selected),
+.prac-day-btn--heat-2:hover:not(.prac-calendar__cell--selected),
+.prac-day-btn--heat-3:hover:not(.prac-calendar__cell--selected),
+.prac-day-btn--heat-4:hover:not(.prac-calendar__cell--selected) {
+  filter: brightness(0.96);
 }
 
 .prac-day-btn:focus,
@@ -703,21 +1142,6 @@ onMounted(() => {
   background: rgb(30 58 138 / 0.25);
 }
 
-.prac-day-dot {
-  position: absolute;
-  bottom: 4px;
-  left: 50%;
-  width: 4px;
-  height: 4px;
-  transform: translateX(-50%);
-  border-radius: 50%;
-  background: rgb(37 99 235);
-}
-
-.prac-day-dot--selected {
-  background: rgb(37 99 235);
-}
-
 .prac-panel {
   min-height: 22rem;
 }
@@ -725,6 +1149,149 @@ onMounted(() => {
 .prac-panel__date {
   margin: 0 0 0.75rem;
   font-size: 0.8125rem;
+  color: rgb(107 114 128);
+}
+
+.prac-stats-type-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.85rem;
+}
+
+.prac-stats-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border: 1px solid rgb(229 231 235);
+  border-radius: 9999px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: rgb(55 65 81);
+  background: rgb(249 250 251);
+  cursor: pointer;
+}
+
+.dark .prac-stats-type {
+  border-color: rgb(75 85 99);
+  background: rgb(55 65 81);
+  color: rgb(229 231 235);
+}
+
+.prac-stats-type--active {
+  border-color: rgb(34 197 94);
+  background: rgb(220 252 231);
+  color: rgb(22 101 52);
+}
+
+.dark .prac-stats-type--active {
+  border-color: rgb(34 197 94);
+  background: rgb(20 83 45 / 0.45);
+  color: rgb(187 247 208);
+}
+
+.prac-stats-type__icon {
+  width: 0.9rem;
+  height: 0.9rem;
+  flex-shrink: 0;
+}
+
+.prac-stats-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.prac-stats-summary__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.55rem 0.35rem;
+  border-radius: 0.5rem;
+  background: rgb(240 253 244);
+  border: 1px solid rgb(187 247 208);
+}
+
+.dark .prac-stats-summary__item {
+  background: rgb(20 83 45 / 0.2);
+  border-color: rgb(22 101 52 / 0.45);
+}
+
+.prac-stats-summary__value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: rgb(22 101 52);
+  text-align: center;
+}
+
+.dark .prac-stats-summary__value {
+  color: rgb(134 239 172);
+}
+
+.prac-stats-summary__label {
+  font-size: 0.6875rem;
+  color: rgb(107 114 128);
+}
+
+.prac-chart-wrap {
+  margin-top: 0.25rem;
+}
+
+.prac-chart__title {
+  margin: 0 0 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: rgb(107 114 128);
+}
+
+.prac-chart__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.prac-chart__axis {
+  stroke: rgb(209 213 219);
+  stroke-width: 1;
+}
+
+.dark .prac-chart__axis {
+  stroke: rgb(75 85 99);
+}
+
+.prac-chart__tick {
+  fill: rgb(107 114 128);
+  font-size: 10px;
+}
+
+.prac-chart__line {
+  fill: none;
+  stroke: rgb(34 197 94);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.dark .prac-chart__line {
+  stroke: rgb(74 222 128);
+}
+
+.prac-chart__dot {
+  fill: rgb(22 163 74);
+}
+
+.dark .prac-chart__dot {
+  fill: rgb(74 222 128);
+}
+
+.prac-chart__xlabels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.25rem;
+  padding: 0 0.25rem 0 2rem;
+  font-size: 0.6875rem;
   color: rgb(107 114 128);
 }
 
