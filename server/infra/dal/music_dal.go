@@ -17,6 +17,7 @@ type MusicDal interface {
 	cdb.Interface[MusicDal]
 
 	Save(ctx context.Context, musics ...*model.Music) (int64, error)
+	InsertMvStub(ctx context.Context, music *model.Music) error
 	GetByIds(ctx context.Context, ids ...int64) ([]*model.Music, error)
 	GetByThirdIds(ctx context.Context, thirdIds ...int64) ([]*model.Music, error)
 	Search(ctx context.Context, artistIds []int64, tagTypes []int32, keyword string, pageInfo util.Page) ([]*model.Music, error)
@@ -44,6 +45,17 @@ func (d *musicDal) With(tx *gorm.DB) MusicDal {
 
 func (d *musicDal) Save(ctx context.Context, musics ...*model.Music) (int64, error) {
 	return saveUpdatable(ctx, d, musics)
+}
+
+// InsertMvStub 仅写入 MV 占位所需字段，避免 issue_time 等零值日期触发 MySQL 严格模式。
+func (d *musicDal) InsertMvStub(ctx context.Context, music *model.Music) error {
+	err := d.W(ctx).
+		Select("id", "name", "full_name", "artist_ids", "third_id", "mv_url").
+		Create(music).Error
+	if err != nil {
+		logs.Error("musicDal, InsertMvStub error = %v", err)
+	}
+	return err
 }
 
 func (d *musicDal) GetByThirdIds(ctx context.Context, thirdIds ...int64) ([]*model.Music, error) {

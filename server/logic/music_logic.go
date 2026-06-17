@@ -196,7 +196,7 @@ func (l *musicLogic) UpdateMv(ctx context.Context, param *prm.UpdateMusicMvParam
 				ThirdId:   param.ThirdId,
 				MvUrl:     param.MvUrl,
 			}
-			if _, err := l.MusicDal.Save(ctx, music); err != nil {
+			if err := l.MusicDal.InsertMvStub(ctx, music); err != nil {
 				return nil, err
 			}
 			return &prm.UpdateMusicMvResult{MusicId: music.Id}, nil
