@@ -1,10 +1,17 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 
-// 开发环境默认连本机 Go；生产默认同域反代。勿在公网构建里写 127.0.0.1。
-const SERVER_URL = (
-  (import.meta.env.VITE_SERVER_URL as string | undefined)?.replace(/\/$/, '') ||
-  (import.meta.env.DEV ? 'http://127.0.0.1:8889' : '')
-);
+const PROD_API = 'http://onij.fun:8889'
+const DEV_API = 'http://127.0.0.1:8889'
+
+function resolveServerUrl(): string {
+  const fromEnv = (import.meta.env.VITE_SERVER_URL as string | undefined)?.replace(/\/$/, '') || ''
+  if (fromEnv && !import.meta.env.PROD) return fromEnv
+  if (fromEnv && import.meta.env.PROD && !/127\.0\.0\.1|localhost/i.test(fromEnv)) return fromEnv
+  if (import.meta.env.PROD) return PROD_API
+  return fromEnv || DEV_API
+}
+
+const SERVER_URL = resolveServerUrl()
 
 export function getServerBaseUrl(): string {
   return SERVER_URL

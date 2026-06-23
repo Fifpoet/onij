@@ -1,1 +1,0 @@
-import{_ as t,h as n,k as o,ah as s}from"./index-Jp1ipGoT.js";const c={},a={class:"page-content"};function r(e,_){return o(),n("div",a,[s(e.$slots,"default")])}const d=t(c,[["render",r]]);export{d as P};
