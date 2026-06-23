@@ -1,10 +1,14 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 
-// 生产环境默认同域（由 nginx 反代到 Go）；勿写 127.0.0.1，公网页无法访问本机回环地址
+// 开发环境默认连本机 Go；生产默认同域反代。勿在公网构建里写 127.0.0.1。
 const SERVER_URL = (
   (import.meta.env.VITE_SERVER_URL as string | undefined)?.replace(/\/$/, '') ||
-  (import.meta.env.PROD ? '' : 'http://127.0.0.1:8889')
+  (import.meta.env.DEV ? 'http://127.0.0.1:8889' : '')
 );
+
+export function getServerBaseUrl(): string {
+  return SERVER_URL
+}
 const NETEASE_URL = import.meta.env.VITE_NETEASE_URL;
 
 export const apiClient = axios.create({

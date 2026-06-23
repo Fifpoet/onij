@@ -175,11 +175,44 @@ export function batchUploadToQiniu(
   )
 }
 
-/** 七牛私有链接触发下载（attname 强制附件名；避免 iframe 只预览不下载） */
+const QINIU_BIND_ORIGIN = 'http://cloud.onij.fun'
+
+/** 修正误签主站域名的私有链（onij.fun/cloud/... 会走 SPA/nginx 导致 404） */
+export function normalizeFileCdnUrl(url: string): string {
+  if (!url) return url
+  return url.replace(/^https?:\/\/onij\.fun(?=\/)/i, QINIU_BIND_ORIGIN)
+}
+
+/** 开发环境可选替换 CDN 域名（勿设为 onij.fun） */
+export function resolveQiniuCdnUrl(url: string): string {
+  const fixed = normalizeFileCdnUrl(url)
+  if (!fixed || !import.meta.env.DEV) return fixed
+  const origin = (import.meta.env.VITE_QINIU_CDN_ORIGIN as string | undefined)?.replace(/\/$/, '')
+  if (!origin || /onij\.fun/i.test(origin)) return fixed
+  return fixed.replace(/^https?:\/\/cloud\.onij\.fun(?=\/|$)/i, origin)
+}
+
+/** 经后端 /file/preview 拉取并触发本地下载 */
+export async function downloadFileBlob(url: string, filename: string) {
+  const resp = await fetch(url)
+  if (!resp.ok) throw new Error(`download failed: ${resp.status}`)
+  const blob = await resp.blob()
+  const objectUrl = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = objectUrl
+  a.download = filename
+  a.style.display = 'none'
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(objectUrl)
+}
+
+/** 七牛私有链接触发下载（中转站等仍走签名链） */
 export function downloadByPrivateUrl(url: string, filename?: string) {
   if (!url) return
 
-  let href = url
+  let href = resolveQiniuCdnUrl(url)
   const name = filename?.trim()
   if (name) {
     const sep = href.includes('?') ? '&' : '?'

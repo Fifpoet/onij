@@ -1,5 +1,6 @@
 // src/util/file.ts
 import { FileType } from '@/api/types/enums'
+import { normalizeFileCdnUrl, resolveQiniuCdnUrl } from '@/util/qiniu'
 import {
   DocumentTextOutline,
   FolderOutline,
@@ -84,6 +85,23 @@ export function isText(fileType: FileType): boolean {
   return fileType === FileType.FT_Text || fileType === FileType.FT_CSV
 }
 
+/** 本地 dev：同源 /file/preview?proxy=1 经 Vite 代理 + 七牛 SDK 回源，不依赖 cloud.onij.fun DNS */
+export function fileImageSrc(file: { id: number; url: string }): string {
+  if (!file.url || !file.id) return ''
+  if (import.meta.env.DEV) {
+    return `/file/preview?file_id=${file.id}&proxy=1`
+  }
+  return resolveQiniuCdnUrl(file.url)
+}
+
+export function fileDownloadUrl(file: { id: number; name?: string; url: string }): string {
+  if (import.meta.env.DEV && file.id) {
+    const name = file.name ? `&filename=${encodeURIComponent(file.name)}` : ''
+    return `/file/preview?file_id=${file.id}&download=1&proxy=1${name}`
+  }
+  return normalizeFileCdnUrl(file.url)
+}
+
 export function getFileExtension(filename: string): string {
   const lastDotIndex = filename.lastIndexOf('.')
   if (lastDotIndex === -1) return ''
@@ -96,6 +114,24 @@ export function formatFileSize(bytes: number): string {
   const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`
+}
+
+/** 从 file.extra JSON 解析 EXIF 原始拍摄时间（Unix 秒） */
+export function parseFileOriginAt(extra?: string): number {
+  if (!extra) return 0
+  try {
+    const data = JSON.parse(extra) as { origin_at?: number }
+    return data.origin_at && data.origin_at > 0 ? data.origin_at : 0
+  } catch {
+    return 0
+  }
+}
+
+/** 展示时间：优先 EXIF 拍摄时间，否则用 created_at */
+export function formatFileDisplayTime(file: { extra?: string; created_at?: number }): string {
+  const originAt = parseFileOriginAt(file.extra)
+  const ts = originAt > 0 ? originAt : (file.created_at ?? 0)
+  return formatFileTime(ts)
 }
 
 export function getFileTypeFromString(fileType: string): FileType {

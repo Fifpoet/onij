@@ -36,6 +36,11 @@ const basicRoutes = [
     component: () => import('@/views/PracPage.vue'),
   },
   {
+    path: '/cloud',
+    name: 'Cloud',
+    component: () => import('@/views/CloudPage.vue'),
+  },
+  {
     path: '/ktv',
     name: 'Ktv',
     component: () => import('@/views/KtvPage.vue'),

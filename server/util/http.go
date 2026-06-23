@@ -7,6 +7,7 @@ import (
 	"onij/util/logs"
 	"path"
 	"strings"
+	"time"
 )
 
 func GET(url string, param map[string]string) ([]byte, error) {
@@ -24,7 +25,7 @@ func GET(url string, param map[string]string) ([]byte, error) {
 	// 设置请求头
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
+	client := &http.Client{Timeout: 15 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err

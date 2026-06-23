@@ -29,7 +29,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { NModal, NInput, NButton, NIcon, NSpin, NSpace, NForm, NFormItem, useMessage } from 'naive-ui';
+import { NModal, NInput, NButton, NSpin, NSpace, NForm, NFormItem, useMessage } from 'naive-ui';
 import { UploadFile } from '@/api';
 import { FileType } from '@/api/types/file';
 
@@ -60,8 +60,9 @@ const handleCreate = async () => {
         store_key: '',
         hash: '',
         format: FileType.FT_Folder,
-        origin_at: 0
-      }]
+        exif: '',
+        size: 0,
+      }],
     });
 
     if (response.file_ids.length > 0 ) {
