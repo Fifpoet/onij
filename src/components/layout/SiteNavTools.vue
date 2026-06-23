@@ -17,6 +17,9 @@
         <RouterLink to="/prac" class="site-nav-tools__item" @click="open = false">
           练习
         </RouterLink>
+        <RouterLink to="/cloud" class="site-nav-tools__item" @click="open = false">
+          云盘
+        </RouterLink>
       </div>
     </Transition>
   </div>
@@ -30,7 +33,7 @@ const route = useRoute()
 const router = useRouter()
 const open = ref(false)
 
-const TOOL_PATHS = ['/tran', '/prac'] as const
+const TOOL_PATHS = ['/tran', '/prac', '/cloud'] as const
 
 function toolsActive() {
   return TOOL_PATHS.includes(route.path as (typeof TOOL_PATHS)[number])

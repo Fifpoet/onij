@@ -41,8 +41,12 @@ type GetFileListParam struct {
 }
 
 func NewGetFileListParam(req *api.GetFileListReq) *GetFileListParam {
+	parentId := int64(0)
+	if req.ParentId != nil {
+		parentId = *req.ParentId
+	}
 	return &GetFileListParam{
-		ParentId: req.ParentId,
+		ParentId: &parentId,
 		Keyword:  req.Keyword,
 		Page: util.Page{
 			Page:  req.Page,
@@ -62,7 +66,9 @@ func (r *GetFileListResult) Resp() *api.GetFileListResp {
 			Id:        f.Id,
 			Name:      f.Name,
 			Format:    api.FileType(f.Format),
+			Size:      int32(f.Size),
 			ParentId:  f.ParentId,
+			Extra:     f.Extra,
 			CreatedAt: f.CreatedAt.Unix(),
 			UpdatedAt: f.UpdatedAt.Unix(),
 			Url:       util.DownloadFile(f.StoreKey),

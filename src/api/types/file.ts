@@ -2,14 +2,15 @@ import { FileType } from './enums'
 
 export { FileType, FILE_TYPE_LABELS } from './enums'
 
-export interface File {  id: number
+export interface File {
+  id: number
   name: string
   format: FileType
   size: number
-  parentId: number
+  parent_id: number
   extra: string
-  createdAt: number
-  updatedAt: number
+  created_at: number
+  updated_at: number
   url: string
 }
 
@@ -26,7 +27,6 @@ export interface UploadFileReq {
     format: FileType
     exif: string
     size: number
-    origin_at?: number
   }>
   url?: string
 }
@@ -38,7 +38,7 @@ export interface UploadFileResp {
 }
 
 export interface GetFileListReq {
-  parentId?: number
+  parent_id?: number
   keyword?: string
   page: number
   limit: number

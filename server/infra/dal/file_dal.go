@@ -68,14 +68,16 @@ func (d *fileDal) GetByParentAndHash(ctx context.Context, parentId int64, hashes
 }
 
 func (d *fileDal) GetListByParentIdAndKeyword(ctx context.Context, parentId *int64, keyword *string, page util.Page) ([]*model.File, int32, error) {
-	q := d.Q()
+	pid := int64(0)
 	if parentId != nil {
-		q = d.Q().ParentId(parentId)
+		pid = *parentId
 	}
-	if keyword != nil {
+
+	q := d.Q().ParentId(pid)
+	if keyword != nil && len(*keyword) > 0 {
 		q = q.Name(cdb.LIKE("%" + *keyword + "%"))
 	}
-	opts := d.Q().ToOptions()
+	opts := q.ToOptions()
 
 	cnt, err := d.Count(ctx, opts...)
 	if err != nil {

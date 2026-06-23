@@ -27,8 +27,12 @@ export default defineConfig((configEnv) => {
       port: 18968,
       open: false,
       proxy: {
+        '/file': {
+          target: env.VITE_SERVER_URL || 'http://127.0.0.1:8889',
+          changeOrigin: true,
+        },
         '/api': {
-          target: env.VITE_BACKEND_URL,
+          target: env.VITE_SERVER_URL || 'http://127.0.0.1:8889',
           changeOrigin: true,
         },
         // 浏览器直连 music-api 可能受 CORS 限制，开发时走本地代理

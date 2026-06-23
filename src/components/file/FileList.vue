@@ -1,78 +1,95 @@
 <template>
-  <Transition name="fade">
-    <div v-if="musicStore.midShowWhat == MidShowWhat.ShowFileList">
-      <!-- 面包屑导航 -->
-      <div class="px-5 pt-5 pb-3 flex items-center space-x-3">
-        <!-- 返回按钮 -->
-        <n-button size="small" quaternary :disabled="parentId === 0" @click="goBack"
-          class="flex items-center h-8 min-w-[90px] justify-center">
-          <template #icon>
+  <div class="file-list">
+    <div class="px-3 pt-3 pb-3 flex flex-wrap items-center gap-3 lg:px-5 lg:pt-5">
+      <n-button
+        size="small"
+        quaternary
+        :disabled="currentParentId === 0"
+        class="flex items-center h-8 min-w-[90px] justify-center"
+        @click="goBack"
+      >
+        <template #icon>
+          <n-icon>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m15 18-6-6 6-6" />
+            </svg>
+          </n-icon>
+        </template>
+        返回上级
+      </n-button>
+
+      <div class="flex items-center gap-1 shrink-0 min-w-0 flex-wrap">
+        <span class="text-gray-300">|</span>
+        <n-button
+          size="small"
+          text
+          class="px-1"
+          :type="currentParentId === 0 ? 'primary' : 'default'"
+          @click="goToRoot()"
+        >
+          根目录
+        </n-button>
+        <template v-for="(name, idx) in folderNameHistory.slice(1)" :key="`${name}-${idx}`">
+          <span class="text-gray-300">/</span>
+          <span
+            class="text-sm truncate max-w-[8rem]"
+            :class="idx === folderNameHistory.length - 2 ? 'font-medium text-gray-900' : 'text-gray-500'"
+          >
+            {{ name }}
+          </span>
+        </template>
+      </div>
+
+      <div class="flex-1 flex justify-end min-w-[10rem]">
+        <n-input
+          v-model:value="searchKeyword"
+          type="text"
+          placeholder="搜索文件..."
+          size="small"
+          class="max-w-[220px]"
+          @keydown.enter="handleSearch"
+        >
+          <template #prefix>
             <n-icon>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m15 18-6-6 6-6" />
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>
             </n-icon>
           </template>
-          返回上级
-        </n-button>
-
-        <!-- 分隔符和当前目录 -->
-        <div class="flex items-center space-x-3 shrink-0">
-          <span class="text-gray-300">|</span>
-          <n-button size="small" text class="px-2 !text-gray-600">
-            <template #icon>
-              <n-icon>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path
-                    d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
-                </svg>
-              </n-icon>
-            </template>
-            {{ currentFolderName }}
-          </n-button>
-        </div>
-
-        <!-- 搜索框 -->
-        <div class="flex-1 flex justify-end">
-          <n-input v-model:value="searchKeyword" type="text" placeholder="搜索文件..." @keydown.enter="handleSearch"
-            class="max-w-[200px]" size="small">
-            <template #prefix>
-              <n-icon>
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-              </n-icon>
-            </template>
-          </n-input>
-        </div>
+        </n-input>
       </div>
+    </div>
 
-      <!-- 操作按钮区域 -->
-      <div class="flex justify-end space-x-3 mb-4">
-        <n-button quaternary size="small" class="h-8 w-8 flex items-center justify-center" @click="toggleViewMode"
-          :type="viewMode === 'grid' ? 'default' : 'primary'">
-          <n-icon>
-            <svg v-if="viewMode === 'grid'" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-              stroke-linejoin="round">
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="18" x2="21" y2="18" />
-            </svg>
-            <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="7" height="7" />
-              <rect x="14" y="3" width="7" height="7" />
-              <rect x="14" y="14" width="7" height="7" />
-              <rect x="3" y="14" width="7" height="7" />
-            </svg>
-          </n-icon>
-        </n-button>
-        <n-button size="small" quaternary class="h-8 flex items-center space-x-1 px-3" @click="showUploadModal = true">
+    <div class="flex justify-end flex-wrap gap-2 px-3 lg:px-5 mb-4">
+      <n-button
+        quaternary
+        size="small"
+        class="h-8 w-8 flex items-center justify-center"
+        :type="viewMode === 'grid' ? 'default' : 'primary'"
+        @click="toggleViewMode"
+      >
+        <n-icon>
+          <svg v-if="viewMode === 'grid'" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+          <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" />
+            <rect x="14" y="3" width="7" height="7" />
+            <rect x="14" y="14" width="7" height="7" />
+            <rect x="3" y="14" width="7" height="7" />
+          </svg>
+        </n-icon>
+      </n-button>
+      <n-button size="small" quaternary class="h-8 px-3" @click="showUploadModal = true">
+        <template #icon>
           <n-icon>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -81,9 +98,11 @@
               <line x1="12" y1="3" x2="12" y2="15" />
             </svg>
           </n-icon>
-          <span>上传文件</span>
-        </n-button>
-        <n-button size="small" quaternary class="h-8 flex items-center space-x-1 px-3" @click="showFolderModal = true">
+        </template>
+        上传文件
+      </n-button>
+      <n-button size="small" quaternary class="h-8 px-3" @click="showFolderModal = true">
+        <template #icon>
           <n-icon>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -93,191 +112,171 @@
               <line x1="9" y1="13" x2="15" y2="13" />
             </svg>
           </n-icon>
-          <span>新建文件夹</span>
-        </n-button>
-      </div>
+        </template>
+        新建文件夹
+      </n-button>
+    </div>
 
-      <!-- 文件列表区域 -->
-      <div class="p-5" style="width: 100%; min-width: 900px; min-height: 520px; margin: 0 auto; position: relative;">
-        <!-- 文件网格 -->
-        <div v-if="viewMode === 'grid'" class="grid gap-4"
-          style="grid-template-columns: repeat(auto-fit, minmax(160px, 120px));">
-          <div v-for="file in fileList" :key="file.id"
-            class="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:border-gray-300 flex flex-col min-w-0 max-w-full"
-            style="width: 100%; aspect-ratio: 1/1.2; box-sizing: border-box;" @click="handleFileClick(file)">
-            
-            <!-- 预览区域 - 30% -->
-            <div class="w-full mb-3" style="height: 50%;">
-              <!-- 文件图标或图片 -->
-              <div v-if="showFileIcon(file.format)" class="flex justify-center items-center h-full">
-                <n-icon size="40" class="text-gray-500">
-                  <component :is="getFileIcon(file.format)" />
-                </n-icon>
-              </div>
-              <div v-else class="w-full h-full overflow-hidden">
-                <img :src="file.url" :alt="file.name" class="w-full h-full object-cover">
-              </div>
+    <div class="file-list__body p-3 lg:p-5">
+      <div
+        v-if="viewMode === 'grid'"
+        class="grid gap-4"
+        style="grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));"
+      >
+        <div
+          v-for="file in fileList"
+          :key="file.id"
+          class="file-card"
+          @click="handleFileClick(file)"
+        >
+          <div class="file-card__preview">
+            <div v-if="showFileIcon(file.format)" class="flex justify-center items-center h-full">
+              <n-icon size="40" class="text-gray-500">
+                <component :is="getFileIcon(file.format)" />
+              </n-icon>
             </div>
-            
-            <!-- 文件名称 - 25% -->
-            <div class="text-center mb-2 flex flex-col justify-center" style="height: 15%;">
-              <n-ellipsis :line-clamp="2" class="text-sm font-medium text-gray-900 w-full" :title="file.name">
-                {{ file.name }}
-              </n-ellipsis>
-            </div>
+            <img v-else :src="fileImageSrc(file)" :alt="file.name" class="w-full h-full object-cover">
+          </div>
 
-            <!-- 文件信息 - 20% -->
-            <div class="text-center text-xs text-gray-500 mb-2" style="height: 10%;">
-              <template v-if="!isFolder(file.format)">
-                <div class="truncate">{{ getFileSize(file.format) }}</div>
-                <div class="truncate">{{ formatFileTime(file.origin_at) }}</div>
-              </template>
-            </div>
+          <n-ellipsis :line-clamp="2" class="file-card__name" :title="file.name">
+            {{ file.name }}
+          </n-ellipsis>
 
-            <!-- 操作按钮 - 25% -->
-            <div class="flex justify-center items-end mt-auto" style="height: 25%;" @click.stop>
-              <template v-if="!isFolder(file.format)">
-                <n-button size="tiny" type="primary" class="mx-1" @click="downloadFile(file)">
-                  <template #icon><n-icon><DownloadOutline /></n-icon></template>
-                  下载
-                </n-button>
-                <n-button size="tiny" type="error" class="mx-1" @click="deleteFile(file)">
-                  <template #icon><n-icon><TrashOutline /></n-icon></template>
-                  删除
-                </n-button>
-              </template>
-            </div>
+          <div v-if="!isFolder(file.format)" class="file-card__meta">
+            <div class="truncate">{{ formatFileSize(file.size || 0) }}</div>
+            <div class="truncate">{{ formatFileDisplayTime(file) }}</div>
+          </div>
+
+          <div class="file-card__actions" @click.stop>
+            <template v-if="!isFolder(file.format)">
+              <n-button size="tiny" type="primary" @click="downloadFile(file)">下载</n-button>
+            </template>
+            <n-button size="tiny" type="error" @click="deleteFile(file)">删除</n-button>
           </div>
         </div>
+      </div>
 
-        <!-- 文件列表 -->
-        <div v-else class="space-y-2">
-          <div v-for="file in fileList" :key="file.id"
-            class="bg-white rounded-lg border border-gray-200 px-4 py-3 cursor-pointer transition-all duration-200 hover:shadow-md hover:border-gray-300 flex items-center space-x-4"
-            @click="handleFileClick(file)">
-            <!-- 文件图标 -->
-            <n-icon size="24" class="text-gray-500 flex-shrink-0">
+      <div v-else class="space-y-2">
+        <div
+          v-for="file in fileList"
+          :key="file.id"
+          class="file-row"
+          @click="handleFileClick(file)"
+        >
+          <div class="file-row__icon">
+            <img
+              v-if="isImage(file.format) && file.url"
+              :src="fileImageSrc(file)"
+              :alt="file.name"
+              class="w-10 h-10 rounded object-cover"
+            >
+            <n-icon v-else size="24" class="text-gray-500">
               <component :is="getFileIcon(file.format)" />
             </n-icon>
-
-            <!-- 文件名称 -->
-            <div class="flex-1 min-w-0">
-              <n-ellipsis class="text-sm font-medium text-gray-900" :title="file.name">
-                {{ file.name }}
-              </n-ellipsis>
-            </div>
-
-            <!-- 文件信息 -->
-            <div v-if="!isFolder(file.format)" class="text-sm text-gray-500 flex-shrink-0 w-32 text-right">
-              {{ getFileSize(file.format) }}
-            </div>
-            <div v-if="!isFolder(file.format)" class="text-sm text-gray-500 flex-shrink-0 w-48 text-right">
-              {{ formatFileTime(file.origin_at) }}
-            </div>
-
-            <!-- 操作按钮 -->
-            <div v-if="!isFolder(file.format)" class="flex space-x-2 flex-shrink-0" @click.stop>
-              <n-button size="tiny" type="primary" @click="downloadFile(file)">
-                <template #icon>
-                  <n-icon>
-                    <DownloadOutline />
-                  </n-icon>
-                </template>
-                下载
-              </n-button>
-              <n-button size="tiny" type="error" @click="deleteFile(file)">
-                <template #icon>
-                  <n-icon>
-                    <TrashOutline />
-                  </n-icon>
-                </template>
-                删除
-              </n-button>
-            </div>
           </div>
-        </div>
 
-        <!-- 加载状态 - 覆盖在网格上方 -->
-        <div v-if="loading" class="absolute inset-0 bg-white bg-opacity-80 flex justify-center items-center z-10">
-          <n-spin size="large" />
-        </div>
+          <div class="flex-1 min-w-0">
+            <n-ellipsis class="text-sm font-medium text-gray-900" :title="file.name">
+              {{ file.name }}
+            </n-ellipsis>
+          </div>
 
-        <!-- 空状态 -->
-        <div v-if="fileList.length === 0 && !loading" class="flex justify-center py-16">
-          <n-empty description="暂无文件" />
+          <div v-if="!isFolder(file.format)" class="file-row__size">
+            {{ formatFileSize(file.size || 0) }}
+          </div>
+          <div v-if="!isFolder(file.format)" class="file-row__time">
+            {{ formatFileDisplayTime(file) }}
+          </div>
+
+          <div class="file-row__actions" @click.stop>
+            <n-button v-if="!isFolder(file.format)" size="tiny" type="primary" @click="downloadFile(file)">
+              下载
+            </n-button>
+            <n-button size="tiny" type="error" @click="deleteFile(file)">删除</n-button>
+          </div>
         </div>
       </div>
 
-      <!-- 分页控件 -->
-      <div v-if="fileList.length > 0" class="border-t border-gray-200 bg-white p-4">
-        <div class="flex flex-col items-center space-y-2">
-          <!-- 分页信息 -->
-          <div class="text-sm text-gray-600">
-            共 {{ totalCount }} 个文件，
-            第 {{ currentPage }} 页，
-            每页 {{ pageSize }} 个，
-            <span v-if="isLastPage">本页 {{ fileList.length }} 个</span>
-            <span v-else>本页 {{ pageSize }} 个</span>
-          </div>
+      <div v-if="loading" class="file-list__loading">
+        <n-spin size="large" />
+      </div>
 
-          <!-- 分页控件 -->
-          <n-pagination v-model:page="currentPage" :page-count="totalPages" :page-sizes="[10, 20, 50, 100]"
-            :page-size="pageSize" show-size-picker @update:page="handlePageChange"
-            @update:page-size="handlePageSizeChange" />
-        </div>
+      <div v-if="fileList.length === 0 && !loading" class="flex justify-center py-16">
+        <n-empty description="暂无文件" />
       </div>
     </div>
-  </Transition>
 
-  <!-- 文件上传弹框 -->
-  <FileUploadModal v-model:show="showUploadModal" :parent-id="props.parentId" @uploaded="fetchFileList" />
+    <div v-if="totalCount > 0" class="border-t border-gray-200 bg-white p-4">
+      <div class="flex flex-col items-center space-y-2">
+        <div class="text-sm text-gray-600">
+          共 {{ totalCount }} 项，第 {{ currentPage }} / {{ totalPages || 1 }} 页
+        </div>
+        <n-pagination
+          v-model:page="currentPage"
+          :page-count="totalPages"
+          :page-sizes="[10, 20, 50, 100]"
+          :page-size="pageSize"
+          show-size-picker
+          @update:page="handlePageChange"
+          @update:page-size="handlePageSizeChange"
+        />
+      </div>
+    </div>
+  </div>
 
-  <!-- 新建文件夹弹框 -->
-  <FolderCreateModal v-model:show="showFolderModal" :parent-id="props.parentId" @created="fetchFileList" />
+  <FileUploadModal
+    v-model:show="showUploadModal"
+    :parent-id="currentParentId"
+    :folder-path="folderPathSegments"
+    @uploaded="fetchFileList"
+  />
 
-  <!-- 图片预览弹窗 -->
-  <div v-if="previewVisible" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75" @click="closePreview">
+  <FolderCreateModal
+    v-model:show="showFolderModal"
+    :parent-id="currentParentId"
+    @created="fetchFileList"
+  />
+
+  <div
+    v-if="previewVisible"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/75"
+    @click="closePreview"
+  >
     <div class="relative w-full h-full flex items-center justify-center overflow-hidden" @wheel="handleZoom" @click.stop>
-      <img 
-        :src="previewImage" 
+      <img
+        :src="previewImage"
         class="max-w-full max-h-full object-contain transition-transform duration-200"
         :style="{ transform: `scale(${zoomLevel})` }"
-        ref="previewImageRef"
-      />
-      <button @click.stop="closePreview" class="absolute top-5 right-5 bg-white bg-opacity-75 rounded-full p-2 hover:bg-opacity-100 transition-all duration-200">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
+      >
+      <button
+        type="button"
+        class="absolute top-5 right-5 bg-white/75 rounded-full p-2"
+        @click.stop="closePreview"
+      >
+        ✕
       </button>
-      
-      <!-- 左右切换按钮 -->
-      <button 
-        @click.stop="prevImage" 
-        class="absolute left-5 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-75 rounded-full p-3 hover:bg-opacity-100 transition-all duration-200"
-        :class="{ 'opacity-50 cursor-not-allowed': !hasPrevImage }"
+      <button
+        type="button"
+        class="absolute left-5 top-1/2 -translate-y-1/2 bg-white/75 rounded-full p-3 disabled:opacity-50"
         :disabled="!hasPrevImage"
+        @click.stop="prevImage"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="15 18 9 12 15 6"></polyline>
-        </svg>
+        ‹
       </button>
-      <button 
-        @click.stop="nextImage" 
-        class="absolute right-5 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-75 rounded-full p-3 hover:bg-opacity-100 transition-all duration-200"
-        :class="{ 'opacity-50 cursor-not-allowed': !hasNextImage }"
+      <button
+        type="button"
+        class="absolute right-5 top-1/2 -translate-y-1/2 bg-white/75 rounded-full p-3 disabled:opacity-50"
         :disabled="!hasNextImage"
+        @click.stop="nextImage"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="9 18 15 12 9 6"></polyline>
-        </svg>
+        ›
       </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed, onMounted } from 'vue'
 import {
   NIcon,
   NButton,
@@ -286,318 +285,344 @@ import {
   NPagination,
   NEllipsis,
   useMessage,
-  NInput
-} from 'naive-ui';
-import {
-  DownloadOutline,
-  TrashOutline
-} from '@vicons/ionicons5';
-import { GetFileList, DownloadFile, DeleteFileById } from '@/api';
-import { FileType, FileDetail, GetFileListReq, DeleteFileReq } from '@/api/types/file';
-import { MidShowWhat } from '@/api/types';
-import { useMusicStore } from '@/store/music';
+  NInput,
+} from 'naive-ui'
+import { GetFileList, DeleteFileById } from '@/api'
+import { type FileDetail, type GetFileListReq, type DeleteFileReq } from '@/api/types/file'
 import {
   getFileIcon,
-  getFileSize,
-  formatFileTime,
+  formatFileSize,
+  formatFileDisplayTime,
+  fileImageSrc,
+  fileDownloadUrl,
   isFolder,
   showFileIcon,
-  isImage
-} from '@/util';
-import FileUploadModal from './FileUploadModal.vue';
-import FolderCreateModal from './FolderCreateModal.vue';
+  isImage,
+} from '@/util'
+import { downloadByPrivateUrl } from '@/util/qiniu'
+import FileUploadModal from './FileUploadModal.vue'
+import FolderCreateModal from './FolderCreateModal.vue'
 
-// 使用全局状态
-const musicStore = useMusicStore();
+const message = useMessage()
 
-// Props
-interface Props {
-  parentId?: number;
+const fileList = ref<FileDetail[]>([])
+const loading = ref(false)
+const currentPage = ref(1)
+const pageSize = ref(20)
+const totalCount = ref(0)
+const totalPages = ref(0)
+const searchKeyword = ref('')
+
+const currentParentId = ref(0)
+const cloudFolderId = ref<number | null>(null)
+const initialized = ref(false)
+const folderHistory = ref<number[]>([0])
+const folderNameHistory = ref<string[]>(['根目录'])
+
+const showUploadModal = ref(false)
+const showFolderModal = ref(false)
+const viewMode = ref<'grid' | 'list'>('grid')
+
+const previewVisible = ref(false)
+const previewImage = ref('')
+const zoomLevel = ref(1)
+const currentPreviewIndex = ref(-1)
+
+const folderPathSegments = computed(() => folderNameHistory.value.slice(1))
+
+const imageFiles = computed(() => fileList.value.filter((file) => isImage(file.format) && file.url))
+const hasPrevImage = computed(() => currentPreviewIndex.value > 0)
+const hasNextImage = computed(() => currentPreviewIndex.value < imageFiles.value.length - 1)
+
+const prevImage = () => {
+  if (!hasPrevImage.value) return
+  currentPreviewIndex.value -= 1
+  previewImage.value = fileImageSrc(imageFiles.value[currentPreviewIndex.value])
+  zoomLevel.value = 1
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  parentId: 0
-});
-
-// Emits
-const emit = defineEmits<{
-  fileClick: [file: FileDetail];
-}>();
-
-// 响应式数据
-const fileList = ref<FileDetail[]>([]);
-const loading = ref(false);
-const currentPage = ref(1);
-const pageSize = ref(10);
-const hasMore = ref(true);
-const totalCount = ref(0);
-const totalPages = ref(0);
-const isLastPage = ref(false);
-const searchKeyword = ref('');
-
-// 面包屑导航相关
-const currentFolderName = ref('根目录');
-const folderHistory = ref<number[]>([0]);
-const folderNameHistory = ref<string[]>(['根目录']);
-
-// 弹框相关状态
-const showUploadModal = ref(false);
-const showFolderModal = ref(false);
-
-// 视图模式
-const viewMode = ref<'grid' | 'list'>('grid');
-
-// 图片预览相关状态
-const previewVisible = ref(false);
-const previewImage = ref('');
-const zoomLevel = ref(1);
-const previewImageRef = ref<HTMLImageElement | null>(null);
-const currentPreviewIndex = ref(-1);
-
-// 获取当前页的所有图片
-const imageFiles = computed(() => {
-  return fileList.value.filter(file => isImage(file.format) && file.url);
-});
-
-// 是否有上一张图片
-const hasPrevImage = computed(() => {
-  return currentPreviewIndex.value > 0;
-});
-
-// 是否有下一张图片
-const hasNextImage = computed(() => {
-  return currentPreviewIndex.value < imageFiles.value.length - 1;
-});
-
-// 切换到上一张图片
-const prevImage = () => {
-  if (!hasPrevImage.value) return;
-  currentPreviewIndex.value--;
-  previewImage.value = imageFiles.value[currentPreviewIndex.value].url;
-  zoomLevel.value = 1; // 重置缩放级别
-};
-
-// 切换到下一张图片
 const nextImage = () => {
-  if (!hasNextImage.value) return;
-  currentPreviewIndex.value++;
-  previewImage.value = imageFiles.value[currentPreviewIndex.value].url;
-  zoomLevel.value = 1; // 重置缩放级别
-};
+  if (!hasNextImage.value) return
+  currentPreviewIndex.value += 1
+  previewImage.value = fileImageSrc(imageFiles.value[currentPreviewIndex.value])
+  zoomLevel.value = 1
+}
 
-// 获取文件列表
-const fetchFileList = async (page: number = 1, append: boolean = false) => {
-  if (loading.value) return;
+const fetchFileList = async (page: number = currentPage.value) => {
+  if (loading.value) return
 
-  loading.value = true;
+  loading.value = true
   try {
     const req: GetFileListReq = {
-      parent_id: props.parentId,
+      parent_id: currentParentId.value,
       page,
       limit: pageSize.value,
-      keyword: searchKeyword.value.trim()
-    };
+      keyword: searchKeyword.value.trim() || undefined,
+    }
 
-    const response = await GetFileList(req);
+    const response = await GetFileList(req)
+    fileList.value = response.files ?? []
+    currentPage.value = page
+    totalCount.value = response.total || 0
+    totalPages.value = Math.max(1, Math.ceil(totalCount.value / pageSize.value))
+  } catch (error) {
+    console.error('获取文件列表失败:', error)
+    fileList.value = []
+    totalCount.value = 0
+    totalPages.value = 0
+    message.error('获取文件列表失败')
+  } finally {
+    loading.value = false
+  }
+}
 
-    // 直接判断返回的files数组
-    if (response.files) {
-      if (append) {
-        fileList.value.push(...response.files);
-      } else {
-        fileList.value = response.files;
-      }
+watch(currentParentId, () => {
+  if (!initialized.value) return
+  currentPage.value = 1
+  fetchFileList(1)
+})
 
-      hasMore.value = response.files.length === pageSize.value;
-      currentPage.value = page;
-      totalCount.value = response.total || 0;
-      totalPages.value = Math.ceil(totalCount.value / pageSize.value);
-      isLastPage.value = currentPage.value >= totalPages.value;
+const goToRoot = () => {
+  folderHistory.value = [0]
+  folderNameHistory.value = ['根目录']
+  currentParentId.value = 0
+}
+
+const resolveCloudHome = async () => {
+  loading.value = true
+  try {
+    const response = await GetFileList({ parent_id: 0, page: 1, limit: 100 })
+    const cloud = response.files?.find((f) => isFolder(f.format) && f.name === 'cloud')
+    if (cloud) {
+      cloudFolderId.value = cloud.id
+      folderHistory.value = [0, cloud.id]
+      folderNameHistory.value = ['根目录', 'cloud']
+      currentParentId.value = cloud.id
     } else {
-      // 如果没有files字段，清空列表
-      fileList.value = [];
-      hasMore.value = false;
-      totalCount.value = 0;
-      totalPages.value = 0;
-      isLastPage.value = true;
+      cloudFolderId.value = null
+      goToRoot()
+      message.warning('未找到 cloud 文件夹，已显示根目录。需初始化请运行 go run ./cmd/ensure_cloud_folder')
     }
   } catch (error) {
-    console.error('获取文件列表失败:', error);
-    // 出错时清空列表
-    fileList.value = [];
-    hasMore.value = false;
-    totalCount.value = 0;
-    totalPages.value = 0;
-    isLastPage.value = true;
+    console.error('定位 cloud 文件夹失败:', error)
+    goToRoot()
   } finally {
-    loading.value = false;
+    initialized.value = true
+    loading.value = false
+    currentPage.value = 1
+    await fetchFileList(1)
   }
-};
+}
 
-// 监听parentId变化
-watch(() => props.parentId, () => {
-  fetchFileList();
-}, { immediate: true });
+onMounted(() => {
+  resolveCloudHome()
+})
 
-// 处理文件点击
+const enterFolder = (file: FileDetail) => {
+  folderHistory.value.push(file.id)
+  folderNameHistory.value.push(file.name)
+  currentParentId.value = file.id
+}
+
 const handleFileClick = (file: FileDetail) => {
   if (isFolder(file.format)) {
-    // 进入文件夹
-    folderHistory.value.push(file.id);
-    folderNameHistory.value.push(file.name);
-    currentFolderName.value = file.name;
-    emit('fileClick', file);
-  } else if (isImage(file.format) && file.url) {
-    // 如果是图片类型，则打开预览
-    previewImage.value = file.url;
-    previewVisible.value = true;
-    zoomLevel.value = 1; // 重置缩放级别
-    
-    // 找到当前图片在图片列表中的索引
-    currentPreviewIndex.value = imageFiles.value.findIndex(img => img.id === file.id);
-  } else {
-    emit('fileClick', file);
+    enterFolder(file)
+    return
   }
-};
+  if (isImage(file.format) && file.url) {
+    previewImage.value = fileImageSrc(file)
+    previewVisible.value = true
+    zoomLevel.value = 1
+    currentPreviewIndex.value = imageFiles.value.findIndex((img) => img.id === file.id)
+  }
+}
 
-// 返回上级文件夹
 const goBack = () => {
-  if (folderHistory.value.length > 1) {
-    folderHistory.value.pop();
-    folderNameHistory.value.pop();
-    const newParentId = folderHistory.value[folderHistory.value.length - 1];
-    const newFolderName = folderNameHistory.value[folderNameHistory.value.length - 1];
-    currentFolderName.value = newFolderName;
+  if (folderHistory.value.length <= 1) return
+  folderHistory.value.pop()
+  folderNameHistory.value.pop()
+  currentParentId.value = folderHistory.value[folderHistory.value.length - 1]
+}
 
-    // 通知父组件更新parentId
-    emit('fileClick', {
-      id: newParentId,
-      format: FileType.FT_Folder,
-      name: newFolderName
-    } as FileDetail);
-  }
-};
-
-// 新增搜索处理
 const handleSearch = () => {
-  currentPage.value = 1;
-  fetchFileList(1);
-};
+  currentPage.value = 1
+  fetchFileList(1)
+}
 
-// 处理页码变化
 const handlePageChange = (page: number) => {
-  currentPage.value = page;
-  fetchFileList(page);
-};
+  fetchFileList(page)
+}
 
-// 处理每页数量变化
 const handlePageSizeChange = (size: number) => {
-  pageSize.value = size;
-  currentPage.value = 1;
-  fetchFileList(1);
-};
+  pageSize.value = size
+  currentPage.value = 1
+  fetchFileList(1)
+}
 
-// 下载文件
-const downloadFile = async (file: FileDetail) => {
-  try {
-
-    // 直接判断返回的urls数组
-    const fileUrl = file.url;
-
-    // 创建一个隐藏的iframe来强制下载
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.src = fileUrl;
-    document.body.appendChild(iframe);
-
-    // 延迟移除iframe
-    setTimeout(() => {
-      document.body.removeChild(iframe);
-    }, 1000);
-
-  } catch (error) {
-    message.error('下载文件失败');
+const downloadFile = (file: FileDetail) => {
+  if (import.meta.env.DEV) {
+    window.location.href = fileDownloadUrl(file)
+    return
   }
-};
+  downloadByPrivateUrl(fileDownloadUrl(file), file.name)
+}
 
-// 删除文件
 const deleteFile = async (file: FileDetail) => {
+  const label = isFolder(file.format) ? '文件夹' : '文件'
+  const confirmed = window.confirm(`确定要删除${label}「${file.name}」吗？此操作不可恢复。`)
+  if (!confirmed) return
+
   try {
-    // 显示确认对话框
-    const confirmed = window.confirm(`确定要删除文件 "${file.name}" 吗？此操作不可恢复。`);
-    if (!confirmed) {
-      return;
-    }
-
-    const deleteData: DeleteFileReq = {
-      file_id: file.id
-    };
-
-    const response = await DeleteFileById(deleteData);
-
-    // 直接判断返回数据，不依赖状态码
+    const deleteData: DeleteFileReq = { file_id: file.id }
+    const response = await DeleteFileById(deleteData)
     if (response.message === 'ok') {
-      message.success('文件删除成功');
-      fetchFileList(); // 刷新文件列表
+      message.success('删除成功')
+      fetchFileList()
     } else {
-      message.error(response.message || '删除文件失败');
+      message.error(response.message || '删除失败')
     }
-  } catch (error) {
-    message.error('删除文件失败');
+  } catch {
+    message.error('删除失败')
   }
-};
+}
 
-// 切换视图模式
 const toggleViewMode = () => {
-  viewMode.value = viewMode.value === 'grid' ? 'list' : 'grid';
-};
+  viewMode.value = viewMode.value === 'grid' ? 'list' : 'grid'
+}
 
-// 关闭图片预览
 const closePreview = () => {
-  previewVisible.value = false;
-  previewImage.value = '';
-  currentPreviewIndex.value = -1;
-};
+  previewVisible.value = false
+  previewImage.value = ''
+  currentPreviewIndex.value = -1
+}
 
-// 处理图片缩放
 const handleZoom = (e: WheelEvent) => {
-  e.preventDefault();
-  
-  // 向上滚动放大，向下滚动缩小
+  e.preventDefault()
   if (e.deltaY < 0) {
-    zoomLevel.value = Math.min(zoomLevel.value + 0.1, 3); // 最大放大3倍
+    zoomLevel.value = Math.min(zoomLevel.value + 0.1, 3)
   } else {
-    zoomLevel.value = Math.max(zoomLevel.value - 0.1, 0.5); // 最小缩小到0.5倍
+    zoomLevel.value = Math.max(zoomLevel.value - 0.1, 0.5)
   }
-};
-
-const message = useMessage();
-
-defineExpose({
-  fetchFileList,
-  handleFileClick,
-  goBack,
-  handlePageChange,
-  handlePageSizeChange,
-  downloadFile,
-  deleteFile
-});
+}
 </script>
 
 <style scoped>
-.upload-trigger {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100px;
-  border: 2px dashed #d1d5db;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: border-color 0.2s;
+.file-list__body {
+  width: 100%;
+  min-height: 420px;
+  position: relative;
 }
 
-.upload-trigger:hover {
-  border-color: #3b82f6;
+.file-list__loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(255 255 255 / 0.8);
+  z-index: 10;
+}
+
+.file-card {
+  background: #fff;
+  border: 1px solid rgb(229 231 235);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  aspect-ratio: 1 / 1.15;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.file-card:hover {
+  border-color: rgb(209 213 219);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.06);
+}
+
+.file-card__preview {
+  width: 100%;
+  height: 50%;
+  margin-bottom: 0.75rem;
+  overflow: hidden;
+  border-radius: 0.375rem;
+  background: rgb(249 250 251);
+}
+
+.file-card__name {
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgb(17 24 39);
+  margin-bottom: 0.5rem;
+}
+
+.file-card__meta {
+  text-align: center;
+  font-size: 0.75rem;
+  color: rgb(107 114 128);
+  margin-bottom: 0.5rem;
+}
+
+.file-card__actions {
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.file-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #fff;
+  border: 1px solid rgb(229 231 235);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.file-row:hover {
+  border-color: rgb(209 213 219);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.06);
+}
+
+.file-row__icon {
+  flex-shrink: 0;
+  width: 2.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+.file-row__size {
+  flex-shrink: 0;
+  width: 5rem;
+  text-align: right;
+  font-size: 0.875rem;
+  color: rgb(107 114 128);
+}
+
+.file-row__time {
+  flex-shrink: 0;
+  width: 9rem;
+  text-align: right;
+  font-size: 0.875rem;
+  color: rgb(107 114 128);
+}
+
+.file-row__actions {
+  flex-shrink: 0;
+  display: flex;
+  gap: 0.35rem;
+}
+
+@media (max-width: 768px) {
+  .file-row__time,
+  .file-row__size {
+    display: none;
+  }
 }
 </style>

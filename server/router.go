@@ -20,6 +20,7 @@ func customizedRegister(r *server.Hertz) {
 	root := r.Group("/")
 	file := root.Group("/file")
 	file.POST("/download", handler.DownloadFile)
+	file.GET("/preview", handler.PreviewFile)
 
 	music := root.Group("/music")
 	music.POST("/mv", handler.UpdateMusicMv)

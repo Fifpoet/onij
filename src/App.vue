@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { RouterView, useRoute } from 'vue-router';
 import PageHeader from './components/layout/PageHeader.vue'
 // import lbAudio from './components/audio/index.vue';
@@ -13,23 +13,9 @@ import LyricsFullScreen from '@/components/player/LyricsFullScreen.vue'
 import MobileBottomPlayerBar from '@/components/player/MobileBottomPlayerBar.vue'
 import MobileLyricsSheet from '@/components/player/MobileLyricsSheet.vue'
 import MemoList from './components/memo/MemoList.vue';
-import FileList from './components/file/FileList.vue';
-import { File } from '@/api/types/file';
 
 const route = useRoute()
 const showMobilePlayerBar = computed(() => route.path !== '/ktv')
-
-// 当前文件夹ID
-const currentFolderId = ref(0);
-
-// 处理文件点击事件
-const handleFileClick = (file: File) => {
-  if (file.format === 99) { // FileType.FT_Folder
-    // 更新当前文件夹ID
-    currentFolderId.value = file.id;
-    console.log('切换到文件夹:', file.name, 'ID:', file.id);
-  }
-};
 </script>
 
 <template>
@@ -63,15 +49,6 @@ const handleFileClick = (file: File) => {
           鄂ICP备2024057031号
         </a>
       </footer>
-
-<!--      &lt;!&ndash; 文件管理区域 &ndash;&gt;-->
-<!--      <div class="h-full">-->
-<!--        &lt;!&ndash; 文件列表 &ndash;&gt;-->
-<!--        <FileList -->
-<!--          :parent-id="currentFolderId"-->
-<!--          @file-click="handleFileClick"-->
-<!--        />-->
-<!--      </div>-->
       
 <!--  <AudioContainer></AudioContainer>-->
   </n-message-provider>

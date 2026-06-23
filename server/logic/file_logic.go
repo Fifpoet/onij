@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 	"fmt"
+	"onij/biz/biz"
 	"onij/biz/errdef"
 	"onij/biz/getter"
 	"onij/biz/prm"
@@ -16,6 +17,8 @@ import (
 type FileLogic interface {
 	Upload(ctx context.Context, param *prm.UploadFileParam) (*prm.UploadFileResult, error)
 	GetList(ctx context.Context, param *prm.GetFileListParam) (*prm.GetFileListResult, error)
+	PreviewRedirect(ctx context.Context, fileId int64, attname string) (string, error)
+	PreviewContent(ctx context.Context, fileId int64) (name string, data []byte, err error)
 	Download(ctx context.Context, param *prm.DownloadFileParam) (*prm.DownloadFileResult, error)
 	Delete(ctx context.Context, param *prm.DeleteFileParam) (*prm.DeleteFileResult, error)
 }
@@ -36,7 +39,7 @@ func (l *fileLogic) Delete(ctx context.Context, param *prm.DeleteFileParam) (*pr
 		return nil, err
 	}
 	if len(fis) == 0 {
-		return nil, fmt.Errorf("file not found")
+		return &prm.DeleteFileResult{}, nil
 	}
 	fi := fis[0]
 
@@ -45,9 +48,8 @@ func (l *fileLogic) Delete(ctx context.Context, param *prm.DeleteFileParam) (*pr
 		return nil, err
 	}
 
-	err = util.DeleteFile(fi.StoreKey)
-	if err != nil {
-		return nil, err
+	if len(fi.StoreKey) > 0 {
+		_ = util.DeleteFile(fi.StoreKey)
 	}
 
 	return &prm.DeleteFileResult{}, nil
@@ -80,19 +82,66 @@ func (l *fileLogic) GetList(ctx context.Context, param *prm.GetFileListParam) (*
 	}, nil
 }
 
+func (l *fileLogic) PreviewRedirect(ctx context.Context, fileId int64, attname string) (string, error) {
+	fis, err := l.FileDal.GetByIds(ctx, fileId)
+	if err != nil {
+		return "", err
+	}
+	if len(fis) == 0 || len(fis[0].StoreKey) == 0 {
+		return "", fmt.Errorf("file not found")
+	}
+	return util.BrowserFileURL(fis[0].StoreKey, attname), nil
+}
+
+func (l *fileLogic) PreviewContent(ctx context.Context, fileId int64) (string, []byte, error) {
+	fis, err := l.FileDal.GetByIds(ctx, fileId)
+	if err != nil {
+		return "", nil, err
+	}
+	if len(fis) == 0 || len(fis[0].StoreKey) == 0 {
+		return "", nil, fmt.Errorf("file not found")
+	}
+	fi := fis[0]
+	data, err := util.GetFile(fi.StoreKey)
+	if err != nil {
+		return "", nil, err
+	}
+	return fi.Name, data, nil
+}
+
 func (l *fileLogic) Upload(ctx context.Context, param *prm.UploadFileParam) (*prm.UploadFileResult, error) {
 	if param.Url == nil {
-		fis := collext.Pick(param.Files, func(f *api.UploadFileReq_FileInfo) *model.File {
-			return &model.File{
+		fis := make([]*model.File, 0, len(param.Files))
+		for _, f := range param.Files {
+			storeKey := f.StoreKey
+			if f.Format == api.FileType_FT_Folder && len(storeKey) == 0 {
+				folder, err := l.FileDal.GetFolderPathByParentId(ctx, param.ParentId)
+				if err != nil {
+					return nil, err
+				}
+				key, err := util.UploadFile(ctx, util.UploadInfo{
+					Name:      f.Filename + "/.keep",
+					Bytes:     []byte(" "),
+					OssFolder: folder,
+				})
+				if err != nil {
+					return nil, err
+				}
+				storeKey = key
+			}
+
+			originAt := biz.ParseOriginAtFromExifField(f.Exif)
+			fis = append(fis, &model.File{
 				Id:       util.IdGen.Generate(),
 				Name:     f.Filename,
 				Format:   int32(f.Format),
-				StoreKey: f.StoreKey,
+				StoreKey: storeKey,
 				ParentId: param.ParentId,
 				Hash:     f.Hash,
 				Size:     f.Size,
-			}
-		})
+				Extra:    biz.BuildFileExtra(originAt, f.Exif),
+			})
+		}
 		_, err := l.FileDal.Save(ctx, fis...)
 		if err != nil {
 			return nil, err
