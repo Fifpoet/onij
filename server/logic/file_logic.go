@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 	"fmt"
+	"time"
 	"onij/biz/biz"
 	"onij/biz/errdef"
 	"onij/biz/getter"
@@ -131,7 +132,7 @@ func (l *fileLogic) Upload(ctx context.Context, param *prm.UploadFileParam) (*pr
 			}
 
 			originAt := biz.ParseOriginAtFromExifField(f.Exif)
-			fis = append(fis, &model.File{
+			fi := &model.File{
 				Id:       util.IdGen.Generate(),
 				Name:     f.Filename,
 				Format:   int32(f.Format),
@@ -140,7 +141,11 @@ func (l *fileLogic) Upload(ctx context.Context, param *prm.UploadFileParam) (*pr
 				Hash:     f.Hash,
 				Size:     f.Size,
 				Extra:    biz.BuildFileExtra(originAt, f.Exif),
-			})
+			}
+			if originAt > 0 {
+				fi.CreatedAt = time.Unix(originAt, 0)
+			}
+			fis = append(fis, fi)
 		}
 		_, err := l.FileDal.Save(ctx, fis...)
 		if err != nil {

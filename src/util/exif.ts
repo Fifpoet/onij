@@ -12,6 +12,18 @@ export async function readPhotoOriginAt(file: File): Promise<number | undefined>
   }
 }
 
+/** 优先 EXIF 拍摄时间，否则用浏览器提供的文件 lastModified（Unix 秒） */
+export async function readFileOriginAt(
+  file: File,
+): Promise<{ sec: number; source: 'exif' | 'mtime' } | undefined> {
+  const exifSec = await readPhotoOriginAt(file)
+  if (exifSec && exifSec > 0) return { sec: exifSec, source: 'exif' }
+  if (file.lastModified > 0) {
+    return { sec: Math.floor(file.lastModified / 1000), source: 'mtime' }
+  }
+  return undefined
+}
+
 export function buildExifPayload(originAt?: number): string {
   if (!originAt || originAt <= 0) return ''
   return JSON.stringify({ origin_at: originAt })

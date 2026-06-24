@@ -101,7 +101,7 @@ import type { UploadFileInfo, UploadInst } from 'naive-ui'
 import { UploadFile } from '@/api'
 import { uploadToQiniu, getFileTypeFromFile } from '@/util/qiniu'
 import { formatFileSize } from '@/util'
-import { buildExifPayload, readPhotoOriginAt } from '@/util/exif'
+import { buildExifPayload, readFileOriginAt } from '@/util/exif'
 
 type UploadItem = UploadFileInfo & {
   customName?: string
@@ -137,10 +137,11 @@ const handleFileChange = async (options: { fileList: UploadFileInfo[] }) => {
     }
 
     if (file.file) {
-      const originAt = await readPhotoOriginAt(file.file)
-      if (originAt) {
-        item.customDate = originAt * 1000
-        item.exifHint = '已从 EXIF 读取拍摄时间'
+      const origin = await readFileOriginAt(file.file)
+      if (origin) {
+        item.customDate = origin.sec * 1000
+        item.exifHint =
+          origin.source === 'exif' ? '已从 EXIF 读取拍摄时间' : '已从文件修改时间读取'
       }
     }
 
@@ -159,7 +160,11 @@ const handleUpload = async () => {
       if (!fileInfo.file) continue
 
       const result = await uploadToQiniu(fileInfo.file, props.folderPath ?? [])
-      const originAt = fileInfo.customDate ? Math.floor(fileInfo.customDate / 1000) : 0
+      const originAt = fileInfo.customDate
+        ? Math.floor(fileInfo.customDate / 1000)
+        : fileInfo.file.lastModified > 0
+          ? Math.floor(fileInfo.file.lastModified / 1000)
+          : 0
       const exif = buildExifPayload(originAt)
 
       const response = await UploadFile({
