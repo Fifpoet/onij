@@ -1,0 +1,28 @@
+---
+description: Go 后端结构、IDL、handler 与 API 约定
+globs: server/**
+alwaysApply: false
+---
+
+# Go 后端约定
+
+## 代码组织
+- 新 API 结构优先定义在 `server/model/api/struct.go`，保持**最小可用**；命名尽量与 pb 一致（如 `FileType_FT_Unknown`）。
+- 不必保留 pb 生成的冗余 map（如 `FileType_name = map[int32]string`）。
+- `hz`/IDL 生成路由在 `server/biz/router/api/`；**未写入 proto 的路由**在 `server/router.go` 的 `customizedRegister` 手动注册（如 `GET /file/preview`、music mv、uvr）。
+
+## 环境变量（七牛）
+- `QINIU_SK`（或 `sk`）必须在进程环境中注入（systemd 服务配置里写 `Environment=`，ssh 里 export 对 nohup 无效）。
+- `QINIU_PUBLIC_DOMAIN`：仅七牛 CDN 绑定域（默认 `http://cloud.onij.fun`），**勿填主站 `onij.fun`**。
+- `QINIU_FETCH_DOMAIN`：服务端拉取对象用（默认 `http://onij.bkt.clouddn.com`），与浏览器访问域分离。
+
+## 文件与错误处理
+- 删除文件/对象：不存在则跳过，返回成功。
+- 日期字段写入 MySQL 时避免 `'0000-00-00'`（如 MV 的 `issue_time` 用 NULL 或合法时间）。
+
+## 本地服务
+- 默认监听 `:8889`；健康检查 `GET /ping`。
+
+## 发布
+- 交叉编译：`build-release.sh` → `release/bin/onij-server` + `release/web/`。
+- 改 handler/router 后需**重启** `onij-server`；仅改前端则需重新 `build:vite` 并更新 `release/web`。

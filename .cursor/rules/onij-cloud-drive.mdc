@@ -1,0 +1,45 @@
+---
+description: 云盘 /cloud 功能、七牛 URL、文件管理与预览约定
+globs: src/views/CloudPage.vue,src/components/file/**,src/util/file.ts,src/util/qiniu.ts,src/util/exif.ts,server/**/file*,server/cmd/ensure_cloud_folder/**
+alwaysApply: false
+---
+
+# 云盘（/cloud）功能约定
+
+## 路由与导航
+- 路由 `/cloud`，与「工具」同级入口（`SiteNavTools`、`MobileHeader`）。
+- 页面组件：`CloudPage.vue` + `FileList.vue`。
+
+## 默认目录与根目录
+- **默认进入 `cloud` 文件夹**（启动时 `GetFileList(parent_id=0)` 查找名为 `cloud` 的文件夹）。
+- 面包屑保留 **「根目录」** 按钮，点击 `parent_id=0` 可管理全部历史文件（含 `tran`、`practice` 等）。
+
+## 必备功能
+- 文件上传 / 删除；文件夹创建（七牛同步 + `file` 表记录，复用现有 upload 接口）。
+- 图片缩略图与大图预览；**网格（大图标）/ 列表** 两种视图切换。
+- 分页（翻页 + page size）。
+- 上传图片时读取 **EXIF 拍摄时间**，写入 `file.extra.origin_at`；展示优先 EXIF，否则 `created_at`。
+- 工具栏：`返回上级`（在根目录时置灰）、路径面包屑、搜索框、视图切换、上传、新建文件夹；样式需协调统一。
+
+## 七牛 URL 与裂图（关键）
+- 私有链签名域名必须是七牛**桶绑定域** `http://cloud.onij.fun`。
+- **禁止**将 `QINIU_PUBLIC_DOMAIN` 或 `VITE_QINIU_CDN_ORIGIN` 设为 `http://onij.fun`：`onij.fun/cloud/...` 会走主站 nginx/SPA，返回 **404**，导致裂图。
+- 生产环境：list 返回的 `url` 直接用 `cloud.onij.fun`；前端 `normalizeFileCdnUrl` 把误签的 `onij.fun` 改回 `cloud.onij.fun`。
+- 本地开发：图片/下载走 **`GET /file/preview?file_id=`**（302 到 `cloud.onij.fun`），不要 body 代理大文件（会卡住）。
+- 预览接口：`PreviewRedirect` 使用 `BrowserFileURL`（`PublicDomain`），不用 `onij.bkt.clouddn.com`（会 404）。
+- `<img>` 不要使用 `loading="lazy"`（Edge Intervention 与裂图无关，但已统一去掉）。
+
+## 下载
+- 生产：`downloadByPrivateUrl(normalizeFileCdnUrl(file.url), file.name)`，带 `attname`。
+- 本地：`/file/preview?file_id=&download=1&filename=`。
+- 不要直接用主站相对路径访问七牛对象；线上 nginx 需反代 `GET /file/preview`（若使用该路由）。
+
+## 后端文件逻辑
+- 列表默认 `parent_id=0`；DAL 过滤 `parent_id` 条件勿写错（避免 `empty conditions` 500）。
+- **删除**：DB 无记录或七牛对象不存在时**跳过**，不返回 500；七牛 612（不存在）忽略。
+- 文件夹七牛路径用 `GetFolderPathByParentId`，避免重复 `cloud` 前缀。
+- 列表响应需包含 `size`、`extra`、`url`（签名私有链）。
+
+## 数据库初始化（需谨慎）
+- 初始化 `cloud` 文件夹：`go run ./cmd/ensure_cloud_folder`（`server/cmd/ensure_cloud_folder`）。
+- **任何写库的基础操作（建文件夹、批量改数据）执行前必须征求用户同意**，不要擅自跑。
