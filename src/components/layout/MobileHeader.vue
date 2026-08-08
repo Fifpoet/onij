@@ -68,6 +68,7 @@
         <RouterLink to="/tran" class="mobile-menu-link" @click="isMenuOpen = false">中转站</RouterLink>
         <RouterLink to="/prac" class="mobile-menu-link" @click="isMenuOpen = false">练习</RouterLink>
         <RouterLink to="/cloud" class="mobile-menu-link" @click="isMenuOpen = false">云盘</RouterLink>
+        <RouterLink to="/monitor" class="mobile-menu-link" @click="isMenuOpen = false">监控</RouterLink>
       </nav>
     </Transition>
   </div>

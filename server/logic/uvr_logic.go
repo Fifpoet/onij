@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"onij/biz/prm"
 	"onij/infra/uvr"
 )
@@ -12,6 +13,8 @@ type UvrLogic interface {
 	ListModels(ctx context.Context) (json.RawMessage, error)
 	SeparateInstrumentalFromURL(ctx context.Context, param *prm.SeparateInstrumentalFromURLParam) (*prm.SeparateInstrumentalFromURLResult, error)
 	DownloadInstrumental(ctx context.Context, param *prm.DownloadInstrumentalParam) (*prm.DownloadInstrumentalResult, error)
+	WhisperHealth(ctx context.Context) (json.RawMessage, error)
+	WhisperTranscribe(ctx context.Context, filename string, file io.Reader, language string, vadFilter bool) (json.RawMessage, error)
 }
 
 type uvrLogic struct {
@@ -24,6 +27,22 @@ func NewUvrLogic(client uvr.Client) UvrLogic {
 
 func (l *uvrLogic) Health(ctx context.Context) (json.RawMessage, error) {
 	data, err := l.client.Health(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return json.RawMessage(data), nil
+}
+
+func (l *uvrLogic) WhisperHealth(ctx context.Context) (json.RawMessage, error) {
+	data, err := l.client.WhisperHealth(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return json.RawMessage(data), nil
+}
+
+func (l *uvrLogic) WhisperTranscribe(ctx context.Context, filename string, file io.Reader, language string, vadFilter bool) (json.RawMessage, error) {
+	data, err := l.client.WhisperTranscribe(ctx, filename, file, language, vadFilter)
 	if err != nil {
 		return nil, err
 	}

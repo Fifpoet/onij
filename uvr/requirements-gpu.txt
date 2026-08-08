@@ -2,5 +2,7 @@
 --extra-index-url https://download.pytorch.org/whl/cu124
 torch==2.6.0
 torchvision==0.21.0
-onnxruntime-gpu==1.20.1
+onnxruntime-gpu==1.20.2
 -r requirements-base.txt
+# faster-whisper 会顺带装 CPU onnxruntime，装完后卸掉以免覆盖 GPU 包
+# 由 run.bat / repair_torch.bat 执行: pip uninstall -y onnxruntime

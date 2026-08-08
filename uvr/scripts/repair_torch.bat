@@ -19,6 +19,14 @@ if errorlevel 1 (
   echo [repair] 安装失败
   exit /b 1
 )
+REM faster-whisper 可能再次拉入 CPU 版 onnxruntime，卸掉以免冲掉 GPU
+call .venv\Scripts\pip.exe uninstall -y onnxruntime 2>nul
+call .venv\Scripts\pip.exe install --default-timeout=300 "onnxruntime-gpu==1.20.2"
+if errorlevel 1 (
+  echo [repair] 恢复 onnxruntime-gpu 失败
+  exit /b 1
+)
+call .venv\Scripts\pip.exe install "setuptools>=69,<81" "numpy>=1.26,<2.5"
 
 call .venv\Scripts\python.exe scripts\check_deps.py
 exit /b %errorlevel%

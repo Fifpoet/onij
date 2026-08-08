@@ -26,11 +26,22 @@ class Settings(BaseSettings):
     work_dir: Path = default_work_dir()
     output_dir: Path = default_output_dir()
 
+    # Whisper / faster-whisper
+    whisper_model: str = "small"
+    whisper_device: str = "cuda"  # cuda | cpu | auto
+    whisper_compute_type: str = "float16"
+    whisper_download_root: Path | None = None
+    # 国内可设 https://hf-mirror.com ，写入 HF_ENDPOINT
+    hf_endpoint: str = "https://hf-mirror.com"
+
     def model_post_init(self, __context: object) -> None:
         if self.uvr_exe is None:
             self.uvr_exe = self.uvr_root / "UVR.exe"
+        if self.whisper_download_root is None:
+            self.whisper_download_root = self.work_dir / "whisper-models"
         self.work_dir.mkdir(parents=True, exist_ok=True)
         self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.whisper_download_root.mkdir(parents=True, exist_ok=True)
 
     @property
     def models_root(self) -> Path:

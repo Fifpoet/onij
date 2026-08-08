@@ -34,6 +34,12 @@ copy /Y scripts\uninstall_autostart.bat "%DIST%\uninstall_autostart.bat" >nul
 
 echo.
 echo [build] 完成: %CD%\%DIST%
-echo [build] 请运行 dist\uvr-api\start_uvr.bat 或 dist\uvr-api\uvr-api.exe
+echo [build] 同步到 Application\uvr-api ...
+call scripts\deploy_to_application.bat
+if errorlevel 1 (
+  echo [build] 打包成功但部署失败，可手动运行 scripts\deploy_to_application.bat
+  exit /b 1
+)
+echo [build] 请运行 C:\Users\onij\Downloads\Application\uvr-api\start_uvr.bat
 echo [build] 注意: build\uvr-api\ 是中间目录，不能直接双击其中的 exe
 exit /b 0

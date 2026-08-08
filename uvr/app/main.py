@@ -23,15 +23,20 @@ from app.schemas import (
     SeparateFromUrlRequest,
     SeparateInstrumentalParams,
     SeparateResponse,
+    WhisperHealthResponse,
+    WhisperSegment,
+    WhisperTranscribeResponse,
 )
+from app.whisper_engine import get_status as whisper_status
+from app.whisper_engine import transcribe_file
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger("uvr-api")
 
 app = FastAPI(
     title="ONIJ UVR API",
-    description="将本机 Ultimate Vocal Remover 模型通过 HTTP 暴露为伴奏提取服务",
-    version="0.1.0",
+    description="本机 UVR 伴奏提取 + Whisper 语音识别（faster-whisper）",
+    version="0.2.0",
 )
 
 app.add_middleware(
@@ -54,13 +59,77 @@ def _startup() -> None:
 @app.get("/health", response_model=HealthResponse)
 def health() -> HealthResponse:
     ffmpeg = settings.uvr_root / "ffmpeg.exe"
+    wh = whisper_status()
+    uvr_ok = settings.uvr_exe.is_file() and settings.models_root.is_dir()
     return HealthResponse(
-        ok=settings.uvr_exe.is_file() and settings.models_root.is_dir(),
+        ok=uvr_ok,
         uvr_exe=str(settings.uvr_exe),
         uvr_exe_exists=settings.uvr_exe.is_file(),
         models_root=str(settings.models_root),
         ffmpeg=str(ffmpeg),
         ffmpeg_exists=ffmpeg.is_file(),
+        whisper_ok=wh.ok,
+        whisper_model=wh.model,
+        whisper_device=wh.device,
+        whisper_compute_type=wh.compute_type,
+        whisper_loaded=wh.loaded,
+        whisper_error=wh.error,
+    )
+
+
+@app.get("/api/v1/whisper/health", response_model=WhisperHealthResponse)
+def whisper_health() -> WhisperHealthResponse:
+    wh = whisper_status()
+    return WhisperHealthResponse(
+        ok=wh.ok,
+        model=wh.model,
+        device=wh.device,
+        compute_type=wh.compute_type,
+        loaded=wh.loaded,
+        error=wh.error,
+    )
+
+
+@app.post("/api/v1/whisper/transcribe", response_model=WhisperTranscribeResponse)
+async def whisper_transcribe(
+    file: UploadFile = File(..., description="音频文件，如 wav/mp3/webm/m4a"),
+    language: str = Form("zh"),
+    vad_filter: bool = Form(True),
+) -> WhisperTranscribeResponse:
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="缺少文件名")
+
+    job_id = uuid.uuid4().hex
+    job_dir = settings.work_dir / "whisper" / job_id
+    job_dir.mkdir(parents=True, exist_ok=True)
+    suffix = Path(file.filename).suffix or ".wav"
+    input_path = job_dir / f"input{suffix}"
+
+    try:
+        with input_path.open("wb") as f:
+            shutil.copyfileobj(file.file, f)
+        result = transcribe_file(
+            input_path,
+            language=language or None,
+            vad_filter=vad_filter,
+        )
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Whisper 转写失败 job=%s", job_id)
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    finally:
+        try:
+            shutil.rmtree(job_dir, ignore_errors=True)
+        except Exception:
+            pass
+
+    return WhisperTranscribeResponse(
+        text=result.text,
+        language=result.language,
+        duration=result.duration,
+        elapsed_sec=result.elapsed_sec,
+        segments=[WhisperSegment(**s) for s in result.segments],
     )
 
 

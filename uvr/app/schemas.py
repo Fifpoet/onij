@@ -69,6 +69,35 @@ class HealthResponse(BaseModel):
     models_root: str
     ffmpeg: str
     ffmpeg_exists: bool
+    whisper_ok: bool = False
+    whisper_model: str = "small"
+    whisper_device: str = ""
+    whisper_compute_type: str = ""
+    whisper_loaded: bool = False
+    whisper_error: str | None = None
+
+
+class WhisperHealthResponse(BaseModel):
+    ok: bool
+    model: str
+    device: str
+    compute_type: str
+    loaded: bool
+    error: str | None = None
+
+
+class WhisperSegment(BaseModel):
+    start: float
+    end: float
+    text: str
+
+
+class WhisperTranscribeResponse(BaseModel):
+    text: str
+    language: str | None = None
+    duration: float | None = None
+    elapsed_sec: float
+    segments: list[WhisperSegment] = Field(default_factory=list)
 
 
 class ModelInfo(BaseModel):

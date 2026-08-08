@@ -1,11 +1,14 @@
 package handler
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"onij/biz/prm"
 	"onij/infra/uvr"
+	"strconv"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
@@ -38,6 +41,58 @@ func writeUvrAPIError(ctx context.Context, c *app.RequestContext, err error) {
 // @router /uvr/health [GET]
 func UvrHealth(ctx context.Context, c *app.RequestContext) {
 	data, err := ser.UvrLogic.Health(ctx)
+	if err != nil {
+		writeUvrAPIError(ctx, c, err)
+		return
+	}
+	c.Data(consts.StatusOK, "application/json", data)
+}
+
+// WhisperHealth 代理 Whisper 健康检查
+// @router /uvr/whisper/health [GET]
+func WhisperHealth(ctx context.Context, c *app.RequestContext) {
+	data, err := ser.UvrLogic.WhisperHealth(ctx)
+	if err != nil {
+		writeUvrAPIError(ctx, c, err)
+		return
+	}
+	c.Data(consts.StatusOK, "application/json", data)
+}
+
+// WhisperTranscribe 代理 Whisper 转写
+// @router /uvr/whisper/transcribe [POST]
+func WhisperTranscribe(ctx context.Context, c *app.RequestContext) {
+	fh, err := c.FormFile("file")
+	if err != nil || fh == nil {
+		c.String(consts.StatusBadRequest, "missing file")
+		return
+	}
+	f, err := fh.Open()
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+	defer f.Close()
+
+	var buf bytes.Buffer
+	if _, err := io.Copy(&buf, f); err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	language := string(c.FormValue("language"))
+	if language == "" {
+		language = "zh"
+	}
+	vadFilter := true
+	if v := string(c.FormValue("vad_filter")); v != "" {
+		parsed, err := strconv.ParseBool(v)
+		if err == nil {
+			vadFilter = parsed
+		}
+	}
+
+	data, err := ser.UvrLogic.WhisperTranscribe(ctx, fh.Filename, bytes.NewReader(buf.Bytes()), language, vadFilter)
 	if err != nil {
 		writeUvrAPIError(ctx, c, err)
 		return
