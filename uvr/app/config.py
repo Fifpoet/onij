@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     output_dir: Path = default_output_dir()
 
     # Whisper / faster-whisper
-    whisper_model: str = "small"
+    whisper_model: str = "medium"
     whisper_device: str = "cuda"  # cuda | cpu | auto
     whisper_compute_type: str = "float16"
     whisper_download_root: Path | None = None

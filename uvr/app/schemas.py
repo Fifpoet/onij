@@ -70,7 +70,7 @@ class HealthResponse(BaseModel):
     ffmpeg: str
     ffmpeg_exists: bool
     whisper_ok: bool = False
-    whisper_model: str = "small"
+    whisper_model: str = "medium"
     whisper_device: str = ""
     whisper_compute_type: str = ""
     whisper_loaded: bool = False

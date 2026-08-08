@@ -33,4 +33,7 @@ func customizedRegister(r *server.Hertz) {
 	uvrGroup.GET("/jobs/:job_id/instrumental", handler.DownloadInstrumental)
 	uvrGroup.GET("/whisper/health", handler.WhisperHealth)
 	uvrGroup.POST("/whisper/transcribe", handler.WhisperTranscribe)
+
+	voice := root.Group("/voice")
+	voice.POST("/intent", handler.VoiceIntent)
 }

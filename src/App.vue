@@ -13,6 +13,7 @@ import LyricsFullScreen from '@/components/player/LyricsFullScreen.vue'
 import MobileBottomPlayerBar from '@/components/player/MobileBottomPlayerBar.vue'
 import MobileLyricsSheet from '@/components/player/MobileLyricsSheet.vue'
 import MemoList from './components/memo/MemoList.vue';
+import VoiceTranscriptBar from '@/components/voice/VoiceTranscriptBar.vue'
 
 const route = useRoute()
 const showMobilePlayerBar = computed(() => route.path !== '/ktv')
@@ -20,6 +21,7 @@ const showMobilePlayerBar = computed(() => route.path !== '/ktv')
 
 <template>
   <div class="app-shell min-h-screen w-full text-left">
+    <VoiceTranscriptBar />
     <!-- 顶部导航栏 -->
   <PageHeader />
 
