@@ -4,3 +4,9 @@ python-multipart>=0.0.12
 pydantic>=2.0
 pydantic-settings>=2.0
 audio-separator>=0.30.0
+# ctranslate2 依赖 pkg_resources；setuptools 81+ 默认不再提供
+setuptools>=69,<81
+numpy>=1.26,<2.5
+# faster-whisper 会拉 CPU 版 onnxruntime，GPU 环境需在安装后 pip uninstall onnxruntime
+faster-whisper>=1.1.0
+ctranslate2>=4.5.0,<5

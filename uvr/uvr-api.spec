@@ -52,6 +52,7 @@ hiddenimports = [
     "app.config",
     "app.paths",
     "app.schemas",
+    "app.whisper_engine",
     "uvicorn.logging",
     "uvicorn.loops",
     "uvicorn.loops.auto",
@@ -67,14 +68,21 @@ hiddenimports = [
     "onnx2torch",
     "onnx2torch.utils",
     "onnx2torch.node_converters",
+    "faster_whisper",
+    "ctranslate2",
+    "av",
+    "tokenizers",
+    "huggingface_hub",
 ] + ONNX_RUNTIME_IMPORTS
 
 hiddenimports += collect_submodules("app")
 hiddenimports += collect_submodules("audio_separator")
 hiddenimports += collect_submodules("onnx2torch")
+hiddenimports += collect_submodules("faster_whisper")
+hiddenimports += collect_submodules("ctranslate2")
 datas += collect_data_files("audio_separator")
 
-for pkg in ("torch", "onnxruntime"):
+for pkg in ("torch", "onnxruntime", "ctranslate2", "faster_whisper", "av"):
     try:
         tmp = collect_all(pkg)
         datas += tmp[0]

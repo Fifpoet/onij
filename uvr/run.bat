@@ -32,6 +32,9 @@ if errorlevel 1 (
   echo [uvr] 依赖仍不可用，请检查网络后重试
   exit /b 1
 )
+if /i "%TORCH_REQ%"=="requirements-gpu.txt" (
+  call .venv\Scripts\pip.exe uninstall -y onnxruntime 2>nul
+)
 
 :start_server
 set "UVR_ROOT=C:\Users\onij\Downloads\Application\Ultimate Vocal Remover"
@@ -39,5 +42,6 @@ set "UVR_EXE=%UVR_ROOT%\UVR.exe"
 set "WORK_DIR=C:\Users\onij\Downloads\Workbench\data\uvr"
 if not exist "%WORK_DIR%" mkdir "%WORK_DIR%"
 
-echo [uvr] 启动 API http://0.0.0.0:5555  data=%WORK_DIR%
+if not defined HF_ENDPOINT set "HF_ENDPOINT=https://hf-mirror.com"
+echo [uvr] 启动 API http://0.0.0.0:5555  data=%WORK_DIR%  HF_ENDPOINT=%HF_ENDPOINT%
 call .venv\Scripts\python.exe -m app.main

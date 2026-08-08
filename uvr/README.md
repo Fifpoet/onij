@@ -46,6 +46,29 @@ set UVR_ROOT=C:\Users\onij\Downloads\Application\Ultimate Vocal Remover
 GET /health
 ```
 
+响应含 UVR 与 Whisper 状态字段（`whisper_ok` / `whisper_device` 等）。
+
+### Whisper 健康检查
+
+```http
+GET /api/v1/whisper/health
+```
+
+### Whisper 转写
+
+```http
+POST /api/v1/whisper/transcribe
+Content-Type: multipart/form-data
+```
+
+| 字段 | 类型 | 默认 | 说明 |
+|------|------|------|------|
+| `file` | file | 必填 | 音频文件 |
+| `language` | str | `zh` | 语言；空字符串则自动检测 |
+| `vad_filter` | bool | `true` | VAD 过滤静音 |
+
+默认模型：`faster-whisper` **small** + **CUDA**（`float16`）。模型缓存目录：`{WORK_DIR}/whisper-models/`。
+
 ### 列出本机模型
 
 ```http

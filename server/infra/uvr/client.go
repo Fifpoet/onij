@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"strings"
@@ -17,6 +18,7 @@ const (
 	separateRequestTimeout = 30 * time.Minute
 	downloadRequestTimeout = 10 * time.Minute
 	defaultRequestTimeout  = 30 * time.Second
+	whisperRequestTimeout  = 3 * time.Minute
 )
 
 type APIError struct {
@@ -37,6 +39,8 @@ type Client interface {
 	ListModels(ctx context.Context) ([]byte, error)
 	SeparateInstrumentalFromURL(ctx context.Context, body []byte) ([]byte, error)
 	DownloadInstrumental(ctx context.Context, jobID string) (body io.ReadCloser, contentLength int64, contentType string, filename string, err error)
+	WhisperHealth(ctx context.Context) ([]byte, error)
+	WhisperTranscribe(ctx context.Context, filename string, file io.Reader, language string, vadFilter bool) ([]byte, error)
 }
 
 type client struct {
@@ -57,6 +61,56 @@ func NewClient() Client {
 
 func (c *client) Health(ctx context.Context) ([]byte, error) {
 	return c.get(ctx, "/health", defaultRequestTimeout)
+}
+
+func (c *client) WhisperHealth(ctx context.Context) ([]byte, error) {
+	return c.get(ctx, "/api/v1/whisper/health", defaultRequestTimeout)
+}
+
+func (c *client) WhisperTranscribe(ctx context.Context, filename string, file io.Reader, language string, vadFilter bool) ([]byte, error) {
+	var buf bytes.Buffer
+	w := multipart.NewWriter(&buf)
+	part, err := w.CreateFormFile("file", filename)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := io.Copy(part, file); err != nil {
+		return nil, err
+	}
+	if language != "" {
+		_ = w.WriteField("language", language)
+	}
+	if vadFilter {
+		_ = w.WriteField("vad_filter", "true")
+	} else {
+		_ = w.WriteField("vad_filter", "false")
+	}
+	if err := w.Close(); err != nil {
+		return nil, err
+	}
+
+	url := c.baseURL + "/api/v1/whisper/transcribe"
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, &buf)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", w.FormDataContentType())
+
+	httpClient := &http.Client{Timeout: whisperRequestTimeout}
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
+		return nil, newAPIError(resp.StatusCode, data)
+	}
+	return data, nil
 }
 
 func (c *client) ListModels(ctx context.Context) ([]byte, error) {

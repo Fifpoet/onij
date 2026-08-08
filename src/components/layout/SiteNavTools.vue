@@ -20,6 +20,9 @@
         <RouterLink to="/cloud" class="site-nav-tools__item" @click="open = false">
           云盘
         </RouterLink>
+        <RouterLink to="/monitor" class="site-nav-tools__item" @click="open = false">
+          监控
+        </RouterLink>
       </div>
     </Transition>
   </div>
@@ -33,7 +36,7 @@ const route = useRoute()
 const router = useRouter()
 const open = ref(false)
 
-const TOOL_PATHS = ['/tran', '/prac', '/cloud'] as const
+const TOOL_PATHS = ['/tran', '/prac', '/cloud', '/monitor'] as const
 
 function toolsActive() {
   return TOOL_PATHS.includes(route.path as (typeof TOOL_PATHS)[number])

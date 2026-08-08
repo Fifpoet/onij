@@ -31,4 +31,6 @@ func customizedRegister(r *server.Hertz) {
 	uvrGroup.GET("/models", handler.UvrListModels)
 	uvrGroup.POST("/instrumental/from-url", handler.SeparateInstrumentalFromURL)
 	uvrGroup.GET("/jobs/:job_id/instrumental", handler.DownloadInstrumental)
+	uvrGroup.GET("/whisper/health", handler.WhisperHealth)
+	uvrGroup.POST("/whisper/transcribe", handler.WhisperTranscribe)
 }
