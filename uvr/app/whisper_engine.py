@@ -1,4 +1,4 @@
-"""faster-whisper 推理（默认 small + CUDA，懒加载）。"""
+"""faster-whisper 推理（默认 medium + CUDA，懒加载）。"""
 from __future__ import annotations
 
 import logging
@@ -72,7 +72,7 @@ def resolve_device_and_compute() -> tuple[str, str]:
 
 def get_status() -> WhisperStatus:
     global _last_error
-    model_name = settings.whisper_model or "small"
+    model_name = settings.whisper_model or "medium"
     try:
         import faster_whisper  # noqa: F401
         import ctranslate2  # noqa: F401
@@ -153,7 +153,7 @@ def get_model() -> Any:
 
 def _resolve_model_ref(model: str, download_root: Path) -> str:
     """优先使用本机已下载目录，避免启动时再走 Hub。"""
-    raw = (model or "small").strip()
+    raw = (model or "medium").strip()
     as_path = Path(raw)
     if as_path.is_dir() and (as_path / "model.bin").is_file():
         return str(as_path.resolve())

@@ -67,7 +67,7 @@ Content-Type: multipart/form-data
 | `language` | str | `zh` | 语言；空字符串则自动检测 |
 | `vad_filter` | bool | `true` | VAD 过滤静音 |
 
-默认模型：`faster-whisper` **small** + **CUDA**（`float16`）。模型缓存目录：`{WORK_DIR}/whisper-models/`。
+默认模型：`faster-whisper` **medium** + **CUDA**（`float16`）。模型缓存目录：`{WORK_DIR}/whisper-models/`。
 
 ### 列出本机模型
 
