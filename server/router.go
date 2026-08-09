@@ -36,4 +36,11 @@ func customizedRegister(r *server.Hertz) {
 
 	voice := root.Group("/voice")
 	voice.POST("/intent", handler.VoiceIntent)
+
+	tran := root.Group("/tran")
+	tran.POST("/list", handler.ListTran)
+	tran.POST("/text", handler.AddTranText)
+	tran.POST("/file", handler.AddTranFile)
+	tran.POST("/pin", handler.PinTran)
+	tran.POST("/delete", handler.DeleteTran)
 }

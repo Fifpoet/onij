@@ -73,7 +73,7 @@
               class="tran-icon-btn"
               :class="{ 'tran-icon-btn--pinned': item.pinned }"
               :aria-label="item.pinned ? '取消置顶' : '置顶'"
-              @click="tran.togglePin(item)"
+              @click="onTogglePin(item)"
             >
               <n-icon :component="item.pinned ? PinSharp : PinOutline" :size="20" />
             </button>
@@ -215,8 +215,13 @@ function onDrop(e: DragEvent) {
   if (files?.length) void ingestFiles(files)
 }
 
-function submitText() {
-  if (tran.addText(textDraft.value)) textDraft.value = ''
+async function submitText() {
+  try {
+    if (await tran.addText(textDraft.value)) textDraft.value = ''
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : '发送失败'
+    window.alert(msg)
+  }
 }
 
 function onTextKeydown(e: KeyboardEvent) {
@@ -235,11 +240,21 @@ async function onPrimaryAction(item: TranItem) {
   }
 }
 
+async function onTogglePin(item: TranItem) {
+  try {
+    await tran.togglePin(item)
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : '置顶失败'
+    window.alert(msg)
+  }
+}
+
 async function onRemove(item: TranItem) {
   try {
     await tran.removeItem(item)
-  } catch {
-    // ignore
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : '删除失败'
+    window.alert(msg)
   }
 }
 
@@ -262,13 +277,16 @@ function onPaste(e: ClipboardEvent) {
   const text = dt.getData('text/plain')?.trim()
   if (text) {
     e.preventDefault()
-    tran.addText(text)
+    void tran.addText(text).catch((err) => {
+      const msg = err instanceof Error ? err.message : '粘贴失败'
+      window.alert(msg)
+    })
   }
 }
 
 onMounted(() => {
   window.addEventListener('paste', onPaste)
-  void loadMissingImageUrls()
+  void tran.fetchList().then(() => loadMissingImageUrls())
 })
 
 const stopItemsWatch = watch(

@@ -8,4 +8,5 @@ type AllLogic struct {
 	TagLogic
 	PracticeLogic
 	UvrLogic
+	TranLogic
 }
