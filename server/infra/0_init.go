@@ -13,4 +13,5 @@ type AllInfra struct {
 	dal.AlbumMusicDal
 	dal.ArtistDal
 	dal.PracticeDal
+	dal.TranItemDal
 }

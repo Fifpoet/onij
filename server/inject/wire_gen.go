@@ -27,6 +27,7 @@ func InitDalForTest() *infra.AllInfra {
 	albumMusicDal := dal.NewAlbumMusicDal(defaultProxy)
 	artistDal := dal.NewArtistDal(defaultProxy)
 	practiceDal := dal.NewPracticeDal(defaultProxy)
+	tranItemDal := dal.NewTranItemDal(defaultProxy)
 	allInfra := &infra.AllInfra{
 		TagDal:        tagDal,
 		FileDal:       fileDal,
@@ -35,6 +36,7 @@ func InitDalForTest() *infra.AllInfra {
 		AlbumMusicDal: albumMusicDal,
 		ArtistDal:     artistDal,
 		PracticeDal:   practiceDal,
+		TranItemDal:   tranItemDal,
 	}
 	return allInfra
 }
@@ -49,6 +51,7 @@ func InitLogicForTest() *logic.AllLogic {
 	albumMusicDal := dal.NewAlbumMusicDal(defaultProxy)
 	artistDal := dal.NewArtistDal(defaultProxy)
 	practiceDal := dal.NewPracticeDal(defaultProxy)
+	tranItemDal := dal.NewTranItemDal(defaultProxy)
 	allInfra := &infra.AllInfra{
 		TagDal:        tagDal,
 		FileDal:       fileDal,
@@ -57,6 +60,7 @@ func InitLogicForTest() *logic.AllLogic {
 		AlbumMusicDal: albumMusicDal,
 		ArtistDal:     artistDal,
 		PracticeDal:   practiceDal,
+		TranItemDal:   tranItemDal,
 	}
 	musicLogic := logic.NewMusicLogic(allInfra)
 	fileLogic := logic.NewFileLogic(allInfra)
@@ -66,6 +70,7 @@ func InitLogicForTest() *logic.AllLogic {
 	practiceLogic := logic.NewPracticeLogic(allInfra)
 	client := uvr.NewClient()
 	uvrLogic := logic.NewUvrLogic(client)
+	tranLogic := logic.NewTranLogic(allInfra, fileLogic)
 	allLogic := &logic.AllLogic{
 		MusicLogic:    musicLogic,
 		FileLogic:     fileLogic,
@@ -74,6 +79,7 @@ func InitLogicForTest() *logic.AllLogic {
 		TagLogic:      tagLogic,
 		PracticeLogic: practiceLogic,
 		UvrLogic:      uvrLogic,
+		TranLogic:     tranLogic,
 	}
 	return allLogic
 }
@@ -88,6 +94,7 @@ func InitializeApp() *App {
 	albumMusicDal := dal.NewAlbumMusicDal(defaultProxy)
 	artistDal := dal.NewArtistDal(defaultProxy)
 	practiceDal := dal.NewPracticeDal(defaultProxy)
+	tranItemDal := dal.NewTranItemDal(defaultProxy)
 	allInfra := &infra.AllInfra{
 		TagDal:        tagDal,
 		FileDal:       fileDal,
@@ -96,6 +103,7 @@ func InitializeApp() *App {
 		AlbumMusicDal: albumMusicDal,
 		ArtistDal:     artistDal,
 		PracticeDal:   practiceDal,
+		TranItemDal:   tranItemDal,
 	}
 	musicLogic := logic.NewMusicLogic(allInfra)
 	fileLogic := logic.NewFileLogic(allInfra)
@@ -105,6 +113,7 @@ func InitializeApp() *App {
 	practiceLogic := logic.NewPracticeLogic(allInfra)
 	client := uvr.NewClient()
 	uvrLogic := logic.NewUvrLogic(client)
+	tranLogic := logic.NewTranLogic(allInfra, fileLogic)
 	allLogic := &logic.AllLogic{
 		MusicLogic:    musicLogic,
 		FileLogic:     fileLogic,
@@ -113,6 +122,7 @@ func InitializeApp() *App {
 		TagLogic:      tagLogic,
 		PracticeLogic: practiceLogic,
 		UvrLogic:      uvrLogic,
+		TranLogic:     tranLogic,
 	}
 	app := &App{
 		AllInfra: allInfra,
@@ -123,9 +133,9 @@ func InitializeApp() *App {
 
 // wire.go:
 
-var infraSet = wire.NewSet(dal.NewMysqlCli, cdb.NewDefaultProxy, dal.NewTagDal, dal.NewFileDal, dal.NewMusicDal, dal.NewAlbumDal, dal.NewAlbumMusicDal, dal.NewArtistDal, dal.NewPracticeDal, wire.Struct(new(infra.AllInfra), "*"))
+var infraSet = wire.NewSet(dal.NewMysqlCli, cdb.NewDefaultProxy, dal.NewTagDal, dal.NewFileDal, dal.NewMusicDal, dal.NewAlbumDal, dal.NewAlbumMusicDal, dal.NewArtistDal, dal.NewPracticeDal, dal.NewTranItemDal, wire.Struct(new(infra.AllInfra), "*"))
 
-var logicSet = wire.NewSet(uvr.NewClient, logic.NewMusicLogic, logic.NewFileLogic, logic.NewAlbumLogic, logic.NewArtistLogic, logic.NewTagLogic, logic.NewPracticeLogic, logic.NewUvrLogic, wire.Struct(new(logic.AllLogic), "*"))
+var logicSet = wire.NewSet(uvr.NewClient, logic.NewMusicLogic, logic.NewFileLogic, logic.NewAlbumLogic, logic.NewArtistLogic, logic.NewTagLogic, logic.NewPracticeLogic, logic.NewUvrLogic, logic.NewTranLogic, wire.Struct(new(logic.AllLogic), "*"))
 
 var allSet = wire.NewSet(
 	infraSet,
