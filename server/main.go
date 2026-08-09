@@ -3,7 +3,9 @@
 package main
 
 import (
+	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -12,21 +14,80 @@ import (
 	"onij/handler"
 )
 
-func corsAllowOrigins() []string {
+func corsAllowOrigin(origin string) bool {
+	origin = strings.TrimSpace(origin)
+	if origin == "" {
+		return false
+	}
+	// 显式白名单（可用环境变量追加，逗号分隔）
+	allowed := []string{
+		"http://onij.fun",
+		"https://onij.fun",
+		"http://localhost:18968",
+		"http://127.0.0.1:18968",
+	}
 	if v := strings.TrimSpace(os.Getenv("CORS_ALLOW_ORIGINS")); v != "" {
-		parts := strings.Split(v, ",")
-		out := make([]string, 0, len(parts))
-		for _, p := range parts {
-			p = strings.TrimSpace(p)
-			if p != "" {
-				out = append(out, p)
+		for _, p := range strings.Split(v, ",") {
+			if p = strings.TrimSpace(p); p != "" {
+				allowed = append(allowed, p)
 			}
 		}
-		if len(out) > 0 {
-			return out
+	}
+	for _, a := range allowed {
+		if origin == a {
+			return true
 		}
 	}
-	return []string{"http://onij.fun", "http://localhost:18968"}
+
+	u, err := url.Parse(origin)
+	if err != nil || u.Scheme == "" || u.Host == "" {
+		return false
+	}
+	if u.Scheme != "http" && u.Scheme != "https" {
+		return false
+	}
+	host := strings.ToLower(u.Hostname())
+	// 本地 Vite / 开发机
+	if host == "localhost" || host == "127.0.0.1" {
+		return true
+	}
+	// 站点域名
+	if host == "onij.fun" || strings.HasSuffix(host, ".onij.fun") {
+		return true
+	}
+	// 局域网访问 Vite Network 地址（如 192.168.x.x:18968）
+	if isPrivateHost(host) {
+		return true
+	}
+	return false
+}
+
+func isPrivateHost(host string) bool {
+	parts := strings.Split(host, ".")
+	if len(parts) != 4 {
+		return false
+	}
+	nums := make([]int, 4)
+	for i, p := range parts {
+		n, err := strconv.Atoi(p)
+		if err != nil || n < 0 || n > 255 {
+			return false
+		}
+		nums[i] = n
+	}
+	// 10.0.0.0/8
+	if nums[0] == 10 {
+		return true
+	}
+	// 192.168.0.0/16
+	if nums[0] == 192 && nums[1] == 168 {
+		return true
+	}
+	// 172.16.0.0/12
+	if nums[0] == 172 && nums[1] >= 16 && nums[1] <= 31 {
+		return true
+	}
+	return false
 }
 
 func listenAddr() string {
@@ -40,7 +101,7 @@ func main() {
 	h := server.Default(server.WithHostPorts(listenAddr()))
 
 	h.Use(cors.New(cors.Config{
-		AllowOrigins:     corsAllowOrigins(),
+		AllowOriginFunc:  corsAllowOrigin,
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization", "X-Requested-With"},
 		ExposeHeaders:    []string{"Content-Length", "X-Custom-Header"},

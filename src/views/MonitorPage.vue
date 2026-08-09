@@ -193,11 +193,16 @@ async function probeCard(tabId: string, card: MonitorCard) {
       body: text || undefined,
     }
   } catch (err) {
+    let msg = err instanceof Error ? err.message : String(err)
+    // 浏览器对跨域失败只抛 Failed to fetch；常见原因是 CORS 未放行当前 Origin
+    if (/failed to fetch|networkerror|load failed/i.test(msg)) {
+      msg = `${msg}（若接口本身正常，多为 CORS 未放行当前页面 Origin：${location.origin}）`
+    }
     results[key] = {
       status: 'fail',
       latencyMs: Math.round(performance.now() - started),
       checkedAt: Date.now(),
-      error: err instanceof Error ? err.message : String(err),
+      error: msg,
     }
   }
 }
