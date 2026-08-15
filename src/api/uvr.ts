@@ -59,3 +59,30 @@ export async function downloadInstrumentalBlob(jobId: string): Promise<Blob> {
   })
   return resp.data as Blob
 }
+
+export type PitchNote = {
+  t0: number
+  t1: number
+  midi: number
+}
+
+export type SongPitch = {
+  song_id: string
+  version: number
+  algo: string
+  hop_ms: number
+  duration_ms: number
+  ref_midi: number
+  notes: PitchNote[]
+}
+
+export async function fetchSongPitch(jobId: string): Promise<SongPitch> {
+  const resp = await apiClient.get(`/uvr/jobs/${encodeURIComponent(jobId)}/pitch`, {
+    timeout: UVR_SEPARATE_TIMEOUT_MS,
+  })
+  const data = resp.data as SongPitch
+  if (!data || !Array.isArray(data.notes)) {
+    throw new Error('音高数据无效')
+  }
+  return data
+}

@@ -12,6 +12,8 @@ from fastapi.responses import FileResponse
 
 from app.config import settings
 from app.engine import (
+    _sanitize_job_id,
+    ensure_job_pitch,
     list_local_models,
     separate_instrumental,
     separate_instrumental_from_url,
@@ -35,8 +37,8 @@ logger = logging.getLogger("uvr-api")
 
 app = FastAPI(
     title="ONIJ UVR API",
-    description="本机 UVR 伴奏提取 + Whisper 语音识别（faster-whisper）",
-    version="0.2.0",
+    description="本机 UVR 伴奏提取 + Whisper 语音识别 + RMVPE 音高",
+    version="0.3.0",
 )
 
 app.add_middleware(
@@ -292,6 +294,15 @@ def download_instrumental(job_id: str) -> FileResponse:
 
     target = inst_files[0]
     return FileResponse(path=target, filename=target.name, media_type="application/octet-stream")
+
+
+@app.get("/api/v1/jobs/{job_id}/pitch")
+def download_pitch(job_id: str):
+    safe_id = _sanitize_job_id(job_id)
+    dest = ensure_job_pitch(safe_id)
+    if dest is None or not dest.is_file():
+        raise HTTPException(status_code=404, detail="未找到音高数据（需要人声模型 UVR-MDX-NET-Voc_FT.onnx）")
+    return FileResponse(path=dest, filename="pitch.json", media_type="application/json")
 
 
 def run() -> None:

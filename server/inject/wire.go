@@ -3,12 +3,13 @@
 package inject
 
 import (
-	"github.com/google/wire"
 	"onij/infra"
 	"onij/infra/dal"
 	"onij/infra/uvr"
 	"onij/logic"
 	"onij/util/cdb"
+
+	"github.com/google/wire"
 )
 
 var infraSet = wire.NewSet(
@@ -23,6 +24,11 @@ var infraSet = wire.NewSet(
 	dal.NewArtistDal,
 	dal.NewPracticeDal,
 	dal.NewTranItemDal,
+	dal.NewAiSessionDal,
+	dal.NewAiMessageDal,
+	dal.NewAiConfirmPendingDal,
+	dal.NewMusicCollectionDal,
+	dal.NewMusicCollectionItemDal,
 	wire.Struct(new(infra.AllInfra), "*"),
 )
 
@@ -36,6 +42,8 @@ var logicSet = wire.NewSet(
 	logic.NewPracticeLogic,
 	logic.NewUvrLogic,
 	logic.NewTranLogic,
+	logic.NewAiLogic,
+	logic.NewCollectionLogic,
 	wire.Struct(new(logic.AllLogic), "*"),
 )
 

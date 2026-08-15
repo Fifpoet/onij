@@ -21,6 +21,11 @@ const basicRoutes = [
     component: () => import('@/views/AlbumDetail.vue')
   },
   {
+    path: '/collection',
+    name: 'Collection',
+    component: () => import('@/views/CollectionDetail.vue'),
+  },
+  {
     path: '/queue',
     name: 'Queue',
     component: () => import('@/views/QueuePage.vue'),
@@ -49,6 +54,11 @@ const basicRoutes = [
     path: '/ktv',
     name: 'Ktv',
     component: () => import('@/views/KtvPage.vue'),
+  },
+  {
+    path: '/ai',
+    name: 'Ai',
+    component: () => import('@/views/AiPage.vue'),
   },
 ]
 

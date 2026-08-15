@@ -3,8 +3,8 @@
 package main
 
 import (
-	handler "onij/handler"
 	api "onij/biz/router/api"
+	handler "onij/handler"
 
 	"github.com/cloudwego/hertz/pkg/app/server"
 )
@@ -31,11 +31,30 @@ func customizedRegister(r *server.Hertz) {
 	uvrGroup.GET("/models", handler.UvrListModels)
 	uvrGroup.POST("/instrumental/from-url", handler.SeparateInstrumentalFromURL)
 	uvrGroup.GET("/jobs/:job_id/instrumental", handler.DownloadInstrumental)
+	uvrGroup.GET("/jobs/:job_id/pitch", handler.DownloadPitch)
 	uvrGroup.GET("/whisper/health", handler.WhisperHealth)
 	uvrGroup.POST("/whisper/transcribe", handler.WhisperTranscribe)
 
 	voice := root.Group("/voice")
 	voice.POST("/intent", handler.VoiceIntent)
+
+	ai := root.Group("/ai")
+	ai.POST("/session/create", handler.CreateAiSession)
+	ai.POST("/session/list", handler.ListAiSessions)
+	ai.POST("/session/messages", handler.ListAiMessages)
+	ai.POST("/session/delete", handler.DeleteAiSession)
+	ai.POST("/chat", handler.AiChat)
+	ai.POST("/chat/stream", handler.AiChatStream)
+	ai.POST("/confirm/stream", handler.AiConfirmStream)
+
+	collection := root.Group("/collection")
+	collection.POST("/list", handler.ListCollection)
+	collection.POST("/create", handler.CreateCollection)
+	collection.POST("/update", handler.UpdateCollection)
+	collection.POST("/detail", handler.DetailCollection)
+	collection.POST("/delete", handler.DeleteCollection)
+	collection.POST("/add_songs", handler.AddCollectionSongs)
+	collection.POST("/remove_song", handler.RemoveCollectionSong)
 
 	tran := root.Group("/tran")
 	tran.POST("/list", handler.ListTran)

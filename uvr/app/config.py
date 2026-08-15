@@ -22,6 +22,7 @@ class Settings(BaseSettings):
 
     default_architecture: str = "mdx"
     default_model: str = "UVR-MDX-NET-Inst_HQ_3.onnx"
+    default_vocals_model: str = "UVR-MDX-NET-Voc_FT.onnx"
 
     work_dir: Path = default_work_dir()
     output_dir: Path = default_output_dir()

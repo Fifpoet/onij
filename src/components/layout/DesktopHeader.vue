@@ -7,6 +7,13 @@
           <PlayerHeaderControls />
         </div>
         <div class="desktop-header__right">
+          <RouterLink
+            to="/ai"
+            class="desktop-header__ai"
+            :class="{ 'desktop-header__ai--active': isAi }"
+          >
+            AI
+          </RouterLink>
           <SiteNavTools />
           <HeaderSearch />
         </div>
@@ -16,10 +23,14 @@
 </template>
 
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
+import { computed } from 'vue'
+import { RouterLink, useRoute } from 'vue-router'
 import PlayerHeaderControls from '@/components/layout/PlayerHeaderControls.vue'
 import SiteNavTools from '@/components/layout/SiteNavTools.vue'
 import HeaderSearch from '@/components/layout/HeaderSearch.vue'
+
+const route = useRoute()
+const isAi = computed(() => route.path === '/ai')
 </script>
 
 <style scoped>
@@ -52,6 +63,28 @@ import HeaderSearch from '@/components/layout/HeaderSearch.vue'
   align-items: center;
   gap: 1rem;
   flex-shrink: 0;
+}
+.desktop-header__ai {
+  display: inline-flex;
+  align-items: center;
+  height: 2.25rem;
+  padding: 0 0.85rem;
+  border-radius: 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: rgb(55 65 81);
+  text-decoration: none;
+}
+.dark .desktop-header__ai {
+  color: rgb(229 231 235);
+}
+.desktop-header__ai:hover,
+.desktop-header__ai--active {
+  background: rgb(243 244 246);
+}
+.dark .desktop-header__ai:hover,
+.dark .desktop-header__ai--active {
+  background: rgb(55 65 81);
 }
 .slide-fade-enter-active,
 .slide-fade-leave-active {

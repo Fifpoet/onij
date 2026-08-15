@@ -35,9 +35,9 @@ export default defineConfig((configEnv) => {
           target: env.VITE_SERVER_URL || 'http://127.0.0.1:8889',
           changeOrigin: true,
         },
-        // 浏览器直连 music-api 可能受 CORS 限制，开发时走本地代理
+        // 备用代理；播放直链默认由浏览器直连 music.gdstudio.org（该站已放行 localhost CORS）
         '/gdstudio-music': {
-          target: 'https://music-api.gdstudio.xyz',
+          target: 'https://music.gdstudio.org',
           changeOrigin: true,
           rewrite: (p) => p.replace(/^\/gdstudio-music/, ''),
         },

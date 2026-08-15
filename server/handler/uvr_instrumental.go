@@ -178,3 +178,19 @@ func DownloadInstrumental(ctx context.Context, c *app.RequestContext) {
 	}
 	c.SetBodyStream(resp.Body, int(resp.ContentLength))
 }
+
+// DownloadPitch 代理 UVR 音高 JSON
+// @router /uvr/jobs/:job_id/pitch [GET]
+func DownloadPitch(ctx context.Context, c *app.RequestContext) {
+	jobID := c.Param("job_id")
+	if jobID == "" {
+		c.String(consts.StatusBadRequest, "job_id is empty")
+		return
+	}
+	data, err := ser.UvrLogic.GetPitch(ctx, jobID)
+	if err != nil {
+		writeUvrAPIError(ctx, c, err)
+		return
+	}
+	c.Data(consts.StatusOK, "application/json", data)
+}

@@ -2,12 +2,23 @@
   <div ref="pageRef" class="ktv-page">
     <div class="ktv-cover-wrap">
       <img
-        v-if="coverUrl"
+        v-if="coverUrl && !pitchView"
         :src="coverUrl"
         :alt="song?.name ?? ''"
-        class="ktv-cover"
+        class="ktv-cover ktv-cover--hit"
         crossorigin="anonymous"
+        @click.stop="togglePitchView"
       >
+      <div v-else-if="pitchView" class="ktv-pitch-hit" @click.stop="togglePitchView">
+        <KtvPitchLane
+          :pitch="pitchData"
+          :current-sec="playQueue.playbackCurrentSec"
+          :playing="playQueue.isPlaying"
+          :loading="pitchLoading"
+          :error="pitchError"
+          :octave-down="ktv.octaveDown"
+        />
+      </div>
     </div>
 
     <div v-if="ktv.lyricsOn && song" class="ktv-lyrics">
@@ -56,6 +67,15 @@
             @click="ktv.toggleAccompaniment()"
           >
             伴
+          </button>
+          <button
+            type="button"
+            class="ktv-dock-btn"
+            :class="{ 'ktv-dock-btn--on': ktv.octaveDown }"
+            :title="ktv.octaveDown ? '低八度：开（音高线降 12 度，伴奏不移调）' : '低八度：关（显示原调音高）'"
+            @click.stop="ktv.toggleOctaveDown()"
+          >
+            低
           </button>
           <button
             type="button"
@@ -118,6 +138,7 @@ import {
   VolumeMuteOutline,
 } from '@vicons/ionicons5'
 import KtvLyricLine from '@/components/ktv/KtvLyricLine.vue'
+import KtvPitchLane from '@/components/ktv/KtvPitchLane.vue'
 import { usePlayQueueStore } from '@/store/playQueue'
 import { useKtvStore } from '@/store/ktv'
 import { usePlayerLyrics } from '@/composables/usePlayerLyrics'
@@ -127,6 +148,12 @@ import {
   getInstrumentalStatus,
   prefetchInstrumental,
 } from '@/player/instrumentalCache'
+import {
+  getCachedPitch,
+  getOrFetchPitch,
+  getPitchStatus,
+  prefetchPitch,
+} from '@/player/pitchCache'
 import { prefetchPlayUrl } from '@/player/songPlayUrlCache'
 
 const defaultCover =
@@ -140,6 +167,8 @@ const dockHover = ref(false)
 const dockPinned = ref(false)
 const pageRef = ref<HTMLElement | null>(null)
 const isFullscreen = ref(false)
+const pitchView = ref(false)
+const pitchTick = ref(0)
 
 const dockOpen = computed(() => dockHover.value || dockPinned.value)
 
@@ -191,16 +220,46 @@ const accompanimentTitle = computed(() => {
   return ktv.accompanimentOn ? '伴奏：开（点击切原唱）' : '原唱：开（点击切伴奏）'
 })
 
+const pitchData = computed(() => {
+  pitchTick.value
+  const id = song.value?.id
+  return id ? getCachedPitch(id) : null
+})
+
+const pitchLoading = computed(() => {
+  pitchTick.value
+  const id = song.value?.id
+  if (!id || !pitchView.value) return false
+  return getPitchStatus(id) === 'loading'
+})
+
+const pitchError = computed(() => {
+  pitchTick.value
+  const id = song.value?.id
+  if (!id || !pitchView.value) return ''
+  return getPitchStatus(id) === 'error' ? '音高提取失败，点封面重试' : ''
+})
+
 function prefetchKtvAssets() {
   const current = playQueue.nowPlaying
   if (current) {
     prefetchPlayUrl(current.id)
     prefetchInstrumental(current.id)
+    prefetchPitch(current.id)
   }
   const n = Math.min(3, playQueue.queue.length)
   for (let i = 0; i < n; i++) {
     prefetchPlayUrl(playQueue.queue[i].id)
     prefetchInstrumental(playQueue.queue[i].id)
+  }
+}
+
+async function togglePitchView() {
+  pitchView.value = !pitchView.value
+  const id = song.value?.id
+  if (pitchView.value && id) {
+    await getOrFetchPitch(id)
+    pitchTick.value += 1
   }
 }
 
@@ -260,9 +319,10 @@ onMounted(() => {
 
 watch(
   () => playQueue.nowPlaying?.id,
-  () => {
+  (id) => {
     if (!ktv.active) return
     prefetchKtvAssets()
+    if (pitchView.value && id) void getOrFetchPitch(id).then(() => { pitchTick.value += 1 })
   },
 )
 
@@ -307,6 +367,20 @@ onBeforeUnmount(() => {
   object-fit: contain;
   user-select: none;
   box-shadow: 0 20px 48px rgb(0 0 0 / 0.35);
+}
+
+.ktv-cover--hit,
+.ktv-pitch-hit {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.ktv-pitch-hit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .ktv-lyrics {

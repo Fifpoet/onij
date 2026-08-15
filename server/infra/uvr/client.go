@@ -39,6 +39,7 @@ type Client interface {
 	ListModels(ctx context.Context) ([]byte, error)
 	SeparateInstrumentalFromURL(ctx context.Context, body []byte) ([]byte, error)
 	DownloadInstrumental(ctx context.Context, jobID string) (body io.ReadCloser, contentLength int64, contentType string, filename string, err error)
+	GetPitch(ctx context.Context, jobID string) ([]byte, error)
 	WhisperHealth(ctx context.Context) ([]byte, error)
 	WhisperTranscribe(ctx context.Context, filename string, file io.Reader, language string, vadFilter bool) ([]byte, error)
 }
@@ -146,6 +147,10 @@ func (c *client) DownloadInstrumental(ctx context.Context, jobID string) (io.Rea
 	}
 	filename := parseFilename(resp.Header.Get("Content-Disposition"))
 	return resp.Body, resp.ContentLength, contentType, filename, nil
+}
+
+func (c *client) GetPitch(ctx context.Context, jobID string) ([]byte, error) {
+	return c.get(ctx, "/api/v1/jobs/"+jobID+"/pitch", separateRequestTimeout)
 }
 
 func (c *client) get(ctx context.Context, path string, timeout time.Duration) ([]byte, error) {
