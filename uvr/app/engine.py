@@ -4,6 +4,7 @@ import logging
 import os
 import re
 import subprocess
+import threading
 import time
 import uuid
 from pathlib import Path
@@ -148,6 +149,26 @@ def _pick_instrumental(outputs: list[str], single_stem: str | None) -> str:
         # 常见输出为 [vocals, instrumental]，取第二个
         return outputs[-1]
     return best_path
+
+
+def _pick_vocals(outputs: list[str]) -> str | None:
+    ranked: list[tuple[int, str]] = []
+    for item in outputs:
+        name = Path(item).name.lower()
+        if "diff" in name:
+            continue
+        score = 0
+        if "voc_ft" in name:
+            score += 14
+        if "vocal" in name:
+            score += 10
+        if "instrumental" in name or "(inst" in name or "_inst_" in name:
+            score -= 10
+        ranked.append((score, item))
+    ranked.sort(key=lambda x: x[0], reverse=True)
+    if not ranked or ranked[0][0] <= 0:
+        return None
+    return ranked[0][1]
 
 
 def separate_instrumental(
@@ -299,6 +320,9 @@ def separate_instrumental_from_url(
     if cached is not None:
         inst_path, all_paths = cached
         logger.info("复用已有伴奏 job_id=%s path=%s", job_id, inst_path)
+        dest = ensure_job_pitch(job_id)
+        if dest is None:
+            logger.warning("复用伴奏后抽 F0 失败 job_id=%s", job_id)
         return inst_path, all_paths, 0.0, job_id
 
     raw_path = download_url_to_file(source_url, job_dir)
@@ -307,7 +331,84 @@ def separate_instrumental_from_url(
         params,
         job_output_dir=job_output_dir or job_dir / "out",
     )
+    dest = ensure_job_pitch(job_id)
+    if dest is None:
+        logger.warning("分离完成但抽 F0 失败 job_id=%s", job_id)
     return inst_path, all_paths, elapsed, job_id
+
+
+def _local_input_audio(job_dir: Path) -> Path | None:
+    if not job_dir.is_dir():
+        return None
+    for p in job_dir.iterdir():
+        if p.is_file() and p.stem.lower().startswith("input") and p.suffix.lower() in _AUDIO_EXTS:
+            return p
+    wav = job_dir / "input.wav"
+    return wav if wav.is_file() else None
+
+
+def _ensure_vocals_stem(job_dir: Path) -> Path | None:
+    """用 Voc_FT 分人声；已有 vocal stem 则复用。"""
+    out_dir = job_dir / "out"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    outputs = _collect_output_files(out_dir)
+    existing = _pick_vocals(outputs)
+    if existing:
+        return Path(existing)
+
+    src = _local_input_audio(job_dir)
+    if src is None:
+        logger.warning("无人声模型输入 job=%s", job_dir.name)
+        return None
+
+    setup_uvr_runtime()
+    voc_name = settings.default_vocals_model
+    try:
+        model_dir, model_filename = resolve_model_path("mdx", voc_name)
+    except FileNotFoundError:
+        logger.warning("未找到人声模型 %s，请放到 %s", voc_name, settings.mdx_models_dir)
+        return None
+
+    voc_params = SeparateInstrumentalParams(
+        architecture="mdx",
+        model=model_filename,
+        output_format="WAV",
+        use_gpu=True,
+        single_stem="Vocals",
+    )
+    src = _ensure_wav_input(src)
+    logger.info("开始 Voc_FT 人声分离 job=%s model=%s", job_dir.name, model_filename)
+    started = time.perf_counter()
+    outputs = _run_separator(src, out_dir, model_dir, model_filename, voc_params)
+    logger.info("Voc_FT 完成 job=%s elapsed=%.1fs", job_dir.name, time.perf_counter() - started)
+    picked = _pick_vocals([str(p) if not isinstance(p, str) else p for p in outputs])
+    if not picked:
+        picked = _pick_vocals(_collect_output_files(out_dir))
+    return Path(picked) if picked else None
+
+
+_pitch_job_lock = threading.Lock()
+
+
+def ensure_job_pitch(job_id: str) -> Path | None:
+    """GET /pitch 与 from-url 共用：Voc_FT 人声 → RMVPE → pitch.json。"""
+    from app.pitch_engine import ensure_pitch_json, pitch_json_path, pitch_json_stale
+
+    with _pitch_job_lock:
+        job_dir = settings.work_dir / job_id
+        if not job_dir.is_dir():
+            return None
+        vocals_path = _ensure_vocals_stem(job_dir)
+        dest = pitch_json_path(job_dir)
+
+        if (
+            dest.is_file()
+            and not pitch_json_stale(dest)
+            and vocals_path is not None
+            and dest.stat().st_mtime >= vocals_path.stat().st_mtime
+        ):
+            return dest
+        return ensure_pitch_json(job_dir, vocals_path, song_id=job_id, overwrite=True)
 
 
 # 与 audio_separator.Separator 默认 arch 参数对齐；勿只传部分字段以免覆盖后缺 hop_length 等

@@ -64,7 +64,8 @@
         class="mobile-menu-panel fixed inset-x-0 z-40 border-b border-gray-200/90 bg-white/98 px-3 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 shadow-lg backdrop-blur-md dark:border-dark-600 dark:bg-dark-800/98"
         :style="{ top: menuTop }"
       >
-        <p class="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-gray-400">工具</p>
+        <RouterLink to="/ai" class="mobile-menu-link" @click="isMenuOpen = false">AI</RouterLink>
+        <p class="mb-2 mt-3 px-1 text-xs font-semibold uppercase tracking-wide text-gray-400">工具</p>
         <RouterLink to="/tran" class="mobile-menu-link" @click="isMenuOpen = false">中转站</RouterLink>
         <RouterLink to="/prac" class="mobile-menu-link" @click="isMenuOpen = false">练习</RouterLink>
         <RouterLink to="/cloud" class="mobile-menu-link" @click="isMenuOpen = false">云盘</RouterLink>

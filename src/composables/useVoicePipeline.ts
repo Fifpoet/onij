@@ -1,19 +1,22 @@
 import { onMounted, onBeforeUnmount, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { parseVoiceIntent, transcribeAudio } from '@/api/voice'
-import { getSongDetail } from '@/api/netease/search'
-import { usePlayQueueStore } from '@/store/playQueue'
+import * as OpenCC from 'opencc-js'
+import { transcribeAudio } from '@/api/voice'
 import { neteasePlayerControl } from '@/player/neteasePlayerControl'
-import { useSearch } from '@/composables/searchMusic'
-import type { ViewMusicListItem } from '@/api/view/music'
+import { usePlayQueueStore } from '@/store/playQueue'
+import { useAiChatStore } from '@/store/aiChat'
 
-const LOUDNESS_THRESHOLD = 0.045
-const SPEECH_START_MS = 180
-const SPEECH_END_MS = 900
-const MIN_RECORD_MS = 450
-const MAX_RECORD_MS = 12000
+const toSimplified = OpenCC.Converter({ from: 'tw', to: 'cn' })
 
-type LocalAction = 'player_next' | 'player_toggle' | 'search'
+/** 仅用于判断一句是否说完 / 是否有声，不再作为「要不要进 LLM」的开关 */
+const SILENCE_RMS = 0.01
+const SPEECH_END_MS = 800
+const MIN_RECORD_MS = 400
+const MAX_RECORD_MS = 8000
+const DUPLICATE_TTL_MS = 2500
+
+type LocalAction = 'player_next' | 'player_toggle'
+
+const WAKE_RE = /(小雪|晓雪|小薛|小靴|xiaoxue)/i
 
 function pickMimeType(): string {
   const candidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4']
@@ -32,21 +35,21 @@ function rmsFromTimeDomain(data: Float32Array): number {
   return Math.sqrt(sum / Math.max(data.length, 1))
 }
 
+function extractWakeCommand(text: string): string | null {
+  const t = text.replace(/\s+/g, '')
+  if (!t) return null
+  const m = t.match(WAKE_RE)
+  if (!m || m.index == null) return null
+  if (m.index > 6) return null
+  return t.slice(m.index + m[0].length).replace(/^[,，。.!！、？?]+/, '').trim()
+}
+
 function matchLocalAction(text: string): LocalAction | null {
   const t = text.replace(/\s+/g, '')
   if (!t) return null
   if (/下一曲|下一首|切歌/.test(t)) return 'player_next'
-  if (t === '暂停' || t === '播放' || t === '继续播放') return 'player_toggle'
-  if (t.includes('搜索')) return 'search'
+  if (t === '暂停' || t === '播放' || t === '继续播放' || t === '继续') return 'player_toggle'
   return null
-}
-
-function buildSearchQuery(args: Record<string, unknown>): string {
-  const query = String(args.query ?? '').trim()
-  if (query) return query
-  const artist = String(args.artist ?? '').trim()
-  const title = String(args.title ?? '').trim()
-  return [artist, title].filter(Boolean).join(' ').trim()
 }
 
 export function useVoicePipeline() {
@@ -55,9 +58,8 @@ export function useVoicePipeline() {
   const listening = ref(false)
   const error = ref('')
 
-  const router = useRouter()
   const playQueue = usePlayQueueStore()
-  const { searchValue, handleSearch } = useSearch()
+  const aiChat = useAiChatStore()
 
   let stream: MediaStream | null = null
   let audioCtx: AudioContext | null = null
@@ -66,40 +68,28 @@ export function useVoicePipeline() {
   let rafId = 0
   let recorder: MediaRecorder | null = null
   let chunks: BlobPart[] = []
-  let aboveSince = 0
   let belowSince = 0
   let recordingStartedAt = 0
+  let peaked = false
   let busy = false
   let maxTimer: ReturnType<typeof setTimeout> | null = null
-
-  async function searchAndEnqueueFirst(query: string) {
-    searchValue.value = query
-    await router.push({ path: '/search', query: { q: query } })
-    const results = await handleSearch([1], 0, 10)
-    const first = results?.[0]?.result?.songs?.[0]
-    if (!first) return
-    const detailResp = await getSongDetail([first.id])
-    const detail = detailResp.songs?.[0]
-    if (!detail) return
-    const item: ViewMusicListItem = {
-      id: detail.id,
-      name: detail.name,
-      time_long: detail.dt / 1000,
-      album_id: detail.al.id,
-      album_name: detail.al.name,
-      cover_file_url: detail.al.picUrl,
-      artists: detail.ar.map((artist) => ({
-        artist_id: artist.id,
-        artist_name: artist.name,
-      })),
-    }
-    playQueue.enqueue(item)
-  }
+  let lastCommand = ''
+  let lastCommandAt = 0
 
   async function handleUtterance(text: string) {
-    const action = matchLocalAction(text)
-    if (!action) return
+    const command = extractWakeCommand(text)
+    if (command == null) return
+    if (!command) {
+      status.value = 'listening'
+      return
+    }
 
+    const now = Date.now()
+    if (command === lastCommand && now - lastCommandAt < DUPLICATE_TTL_MS) return
+    lastCommand = command
+    lastCommandAt = now
+
+    const action = matchLocalAction(command)
     if (action === 'player_next') {
       playQueue.skipToNext()
       return
@@ -109,12 +99,9 @@ export function useVoicePipeline() {
       return
     }
 
+    if (aiChat.sending || aiChat.pendingConfirm) return
     status.value = 'intent'
-    const intent = await parseVoiceIntent(text)
-    const searchAction = intent.actions.find((a) => a.name === 'search_music')
-    const query = buildSearchQuery(searchAction?.args ?? {})
-    if (!query) return
-    await searchAndEnqueueFirst(query)
+    await aiChat.sendVoice(command)
   }
 
   async function processBlob(blob: Blob) {
@@ -125,7 +112,7 @@ export function useVoicePipeline() {
       const mime = blob.type || 'audio/webm'
       const ext = mime.includes('mp4') ? 'm4a' : 'webm'
       const result = await transcribeAudio(blob, `voice.${ext}`)
-      const text = (result.text || '').trim()
+      const text = toSimplified((result.text || '').trim())
       if (!text) {
         status.value = 'listening'
         return
@@ -148,12 +135,14 @@ export function useVoicePipeline() {
     }
     const rec = recorder
     recorder = null
+    const hadPeak = peaked
+    peaked = false
     if (!rec || rec.state === 'inactive') return
     rec.onstop = () => {
       const blob = new Blob(chunks, { type: rec.mimeType || 'audio/webm' })
       chunks = []
       const dur = Date.now() - recordingStartedAt
-      if (send && dur >= MIN_RECORD_MS && blob.size > 800) {
+      if (send && hadPeak && dur >= MIN_RECORD_MS && blob.size > 800) {
         void processBlob(blob)
       }
     }
@@ -176,6 +165,8 @@ export function useVoicePipeline() {
       return
     }
     chunks = []
+    peaked = false
+    belowSince = 0
     recordingStartedAt = Date.now()
     status.value = 'recording'
     recorder.ondataavailable = (ev) => {
@@ -192,15 +183,15 @@ export function useVoicePipeline() {
     const rms = rmsFromTimeDomain(buf)
     const now = performance.now()
 
-    if (rms >= LOUDNESS_THRESHOLD) {
-      belowSince = 0
-      if (!aboveSince) aboveSince = now
-      if (!recorder && !busy && now - aboveSince >= SPEECH_START_MS) {
-        startRecorder()
-      }
-    } else {
-      aboveSince = 0
-      if (recorder) {
+    if (!recorder && !busy) {
+      startRecorder()
+    }
+
+    if (recorder) {
+      if (rms >= SILENCE_RMS) {
+        peaked = true
+        belowSince = 0
+      } else if (peaked) {
         if (!belowSince) belowSince = now
         if (now - belowSince >= SPEECH_END_MS) {
           stopRecorder(true)

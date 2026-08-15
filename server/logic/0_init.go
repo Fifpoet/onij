@@ -9,4 +9,6 @@ type AllLogic struct {
 	PracticeLogic
 	UvrLogic
 	TranLogic
+	AiLogic
+	CollectionLogic
 }

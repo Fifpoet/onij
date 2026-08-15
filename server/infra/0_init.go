@@ -14,4 +14,9 @@ type AllInfra struct {
 	dal.ArtistDal
 	dal.PracticeDal
 	dal.TranItemDal
+	dal.AiSessionDal
+	dal.AiMessageDal
+	dal.AiConfirmPendingDal
+	dal.MusicCollectionDal
+	dal.MusicCollectionItemDal
 }

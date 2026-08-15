@@ -23,6 +23,9 @@ importers:
       nprogress:
         specifier: ^0.2.0
         version: 0.2.0
+      opencc-js:
+        specifier: ^1.4.1
+        version: 1.4.1
       pinia:
         specifier: 2.0.0-rc.10
         version: 2.0.0-rc.10(typescript@5.8.3)(vue@3.5.13(typescript@5.8.3))
@@ -1652,6 +1655,9 @@ packages:
   open@8.4.2:
     resolution: {integrity: sha512-7x81NCL719oNbsq/3mh+hVrAWmFuEYUqrq/Iw3kUzH8ReypT9QQ0BLoJS7/G9k6N81XjW4qHWtjWwe/9eLy1EQ==}
     engines: {node: '>=12'}
+
+  opencc-js@1.4.1:
+    resolution: {integrity: sha512-2lPLcrg7cnh1ATSduOxhnk/jq6KlR6w+5Ihl4wF7Z5e5Rva4vxTyugV5rZ7EiUCOZl+EDOLetIix+BhgYDCC+A==}
 
   package-manager-detector@0.2.11:
     resolution: {integrity: sha512-BEnLolu+yuz22S56CU1SUKq3XC3PkwD5wv4ikR4MfGvnRVcmzXR9DwSlW2fEamyTPyXHomBJRzgapeuBvRNzJQ==}
@@ -3661,6 +3667,8 @@ snapshots:
       define-lazy-prop: 2.0.0
       is-docker: 2.2.1
       is-wsl: 2.2.0
+
+  opencc-js@1.4.1: {}
 
   package-manager-detector@0.2.11:
     dependencies:

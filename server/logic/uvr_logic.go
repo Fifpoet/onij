@@ -13,6 +13,7 @@ type UvrLogic interface {
 	ListModels(ctx context.Context) (json.RawMessage, error)
 	SeparateInstrumentalFromURL(ctx context.Context, param *prm.SeparateInstrumentalFromURLParam) (*prm.SeparateInstrumentalFromURLResult, error)
 	DownloadInstrumental(ctx context.Context, param *prm.DownloadInstrumentalParam) (*prm.DownloadInstrumentalResult, error)
+	GetPitch(ctx context.Context, jobID string) (json.RawMessage, error)
 	WhisperHealth(ctx context.Context) (json.RawMessage, error)
 	WhisperTranscribe(ctx context.Context, filename string, file io.Reader, language string, vadFilter bool) (json.RawMessage, error)
 }
@@ -59,13 +60,13 @@ func (l *uvrLogic) ListModels(ctx context.Context) (json.RawMessage, error) {
 
 func (l *uvrLogic) SeparateInstrumentalFromURL(ctx context.Context, param *prm.SeparateInstrumentalFromURLParam) (*prm.SeparateInstrumentalFromURLResult, error) {
 	body, err := json.Marshal(map[string]any{
-		"id":             param.ID,
-		"source_url":     param.SourceURL,
-		"architecture":   param.Architecture,
-		"model":          param.Model,
-		"use_gpu":        param.UseGPU,
-		"output_format":  param.OutputFormat,
-		"single_stem":    param.SingleStem,
+		"id":            param.ID,
+		"source_url":    param.SourceURL,
+		"architecture":  param.Architecture,
+		"model":         param.Model,
+		"use_gpu":       param.UseGPU,
+		"output_format": param.OutputFormat,
+		"single_stem":   param.SingleStem,
 	})
 	if err != nil {
 		return nil, err
@@ -89,4 +90,12 @@ func (l *uvrLogic) DownloadInstrumental(ctx context.Context, param *prm.Download
 		ContentType:   contentType,
 		Filename:      filename,
 	}, nil
+}
+
+func (l *uvrLogic) GetPitch(ctx context.Context, jobID string) (json.RawMessage, error) {
+	data, err := l.client.GetPitch(ctx, jobID)
+	if err != nil {
+		return nil, err
+	}
+	return json.RawMessage(data), nil
 }

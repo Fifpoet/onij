@@ -15,7 +15,7 @@ export function useSearch() {
             if (tps.length > 1) {
                 switch (typ) {
                     case 1:
-                        li = 24;
+                        li = 18;
                         break;
                     case 10:
                         li = 6;

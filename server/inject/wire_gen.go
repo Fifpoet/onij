@@ -28,15 +28,25 @@ func InitDalForTest() *infra.AllInfra {
 	artistDal := dal.NewArtistDal(defaultProxy)
 	practiceDal := dal.NewPracticeDal(defaultProxy)
 	tranItemDal := dal.NewTranItemDal(defaultProxy)
+	aiSessionDal := dal.NewAiSessionDal(defaultProxy)
+	aiMessageDal := dal.NewAiMessageDal(defaultProxy)
+	aiConfirmPendingDal := dal.NewAiConfirmPendingDal(defaultProxy)
+	musicCollectionDal := dal.NewMusicCollectionDal(defaultProxy)
+	musicCollectionItemDal := dal.NewMusicCollectionItemDal(defaultProxy)
 	allInfra := &infra.AllInfra{
-		TagDal:        tagDal,
-		FileDal:       fileDal,
-		MusicDal:      musicDal,
-		AlbumDal:      albumDal,
-		AlbumMusicDal: albumMusicDal,
-		ArtistDal:     artistDal,
-		PracticeDal:   practiceDal,
-		TranItemDal:   tranItemDal,
+		TagDal:                 tagDal,
+		FileDal:                fileDal,
+		MusicDal:               musicDal,
+		AlbumDal:               albumDal,
+		AlbumMusicDal:          albumMusicDal,
+		ArtistDal:              artistDal,
+		PracticeDal:            practiceDal,
+		TranItemDal:            tranItemDal,
+		AiSessionDal:           aiSessionDal,
+		AiMessageDal:           aiMessageDal,
+		AiConfirmPendingDal:    aiConfirmPendingDal,
+		MusicCollectionDal:     musicCollectionDal,
+		MusicCollectionItemDal: musicCollectionItemDal,
 	}
 	return allInfra
 }
@@ -52,15 +62,25 @@ func InitLogicForTest() *logic.AllLogic {
 	artistDal := dal.NewArtistDal(defaultProxy)
 	practiceDal := dal.NewPracticeDal(defaultProxy)
 	tranItemDal := dal.NewTranItemDal(defaultProxy)
+	aiSessionDal := dal.NewAiSessionDal(defaultProxy)
+	aiMessageDal := dal.NewAiMessageDal(defaultProxy)
+	aiConfirmPendingDal := dal.NewAiConfirmPendingDal(defaultProxy)
+	musicCollectionDal := dal.NewMusicCollectionDal(defaultProxy)
+	musicCollectionItemDal := dal.NewMusicCollectionItemDal(defaultProxy)
 	allInfra := &infra.AllInfra{
-		TagDal:        tagDal,
-		FileDal:       fileDal,
-		MusicDal:      musicDal,
-		AlbumDal:      albumDal,
-		AlbumMusicDal: albumMusicDal,
-		ArtistDal:     artistDal,
-		PracticeDal:   practiceDal,
-		TranItemDal:   tranItemDal,
+		TagDal:                 tagDal,
+		FileDal:                fileDal,
+		MusicDal:               musicDal,
+		AlbumDal:               albumDal,
+		AlbumMusicDal:          albumMusicDal,
+		ArtistDal:              artistDal,
+		PracticeDal:            practiceDal,
+		TranItemDal:            tranItemDal,
+		AiSessionDal:           aiSessionDal,
+		AiMessageDal:           aiMessageDal,
+		AiConfirmPendingDal:    aiConfirmPendingDal,
+		MusicCollectionDal:     musicCollectionDal,
+		MusicCollectionItemDal: musicCollectionItemDal,
 	}
 	musicLogic := logic.NewMusicLogic(allInfra)
 	fileLogic := logic.NewFileLogic(allInfra)
@@ -71,15 +91,19 @@ func InitLogicForTest() *logic.AllLogic {
 	client := uvr.NewClient()
 	uvrLogic := logic.NewUvrLogic(client)
 	tranLogic := logic.NewTranLogic(allInfra, fileLogic)
+	aiLogic := logic.NewAiLogic(allInfra)
+	collectionLogic := logic.NewCollectionLogic(allInfra)
 	allLogic := &logic.AllLogic{
-		MusicLogic:    musicLogic,
-		FileLogic:     fileLogic,
-		AlbumLogic:    albumLogic,
-		ArtistLogic:   artistLogic,
-		TagLogic:      tagLogic,
-		PracticeLogic: practiceLogic,
-		UvrLogic:      uvrLogic,
-		TranLogic:     tranLogic,
+		MusicLogic:       musicLogic,
+		FileLogic:        fileLogic,
+		AlbumLogic:       albumLogic,
+		ArtistLogic:      artistLogic,
+		TagLogic:         tagLogic,
+		PracticeLogic:    practiceLogic,
+		UvrLogic:         uvrLogic,
+		TranLogic:        tranLogic,
+		AiLogic:          aiLogic,
+		CollectionLogic:  collectionLogic,
 	}
 	return allLogic
 }
@@ -95,15 +119,25 @@ func InitializeApp() *App {
 	artistDal := dal.NewArtistDal(defaultProxy)
 	practiceDal := dal.NewPracticeDal(defaultProxy)
 	tranItemDal := dal.NewTranItemDal(defaultProxy)
+	aiSessionDal := dal.NewAiSessionDal(defaultProxy)
+	aiMessageDal := dal.NewAiMessageDal(defaultProxy)
+	aiConfirmPendingDal := dal.NewAiConfirmPendingDal(defaultProxy)
+	musicCollectionDal := dal.NewMusicCollectionDal(defaultProxy)
+	musicCollectionItemDal := dal.NewMusicCollectionItemDal(defaultProxy)
 	allInfra := &infra.AllInfra{
-		TagDal:        tagDal,
-		FileDal:       fileDal,
-		MusicDal:      musicDal,
-		AlbumDal:      albumDal,
-		AlbumMusicDal: albumMusicDal,
-		ArtistDal:     artistDal,
-		PracticeDal:   practiceDal,
-		TranItemDal:   tranItemDal,
+		TagDal:                 tagDal,
+		FileDal:                fileDal,
+		MusicDal:               musicDal,
+		AlbumDal:               albumDal,
+		AlbumMusicDal:          albumMusicDal,
+		ArtistDal:              artistDal,
+		PracticeDal:            practiceDal,
+		TranItemDal:            tranItemDal,
+		AiSessionDal:           aiSessionDal,
+		AiMessageDal:           aiMessageDal,
+		AiConfirmPendingDal:    aiConfirmPendingDal,
+		MusicCollectionDal:     musicCollectionDal,
+		MusicCollectionItemDal: musicCollectionItemDal,
 	}
 	musicLogic := logic.NewMusicLogic(allInfra)
 	fileLogic := logic.NewFileLogic(allInfra)
@@ -114,15 +148,19 @@ func InitializeApp() *App {
 	client := uvr.NewClient()
 	uvrLogic := logic.NewUvrLogic(client)
 	tranLogic := logic.NewTranLogic(allInfra, fileLogic)
+	aiLogic := logic.NewAiLogic(allInfra)
+	collectionLogic := logic.NewCollectionLogic(allInfra)
 	allLogic := &logic.AllLogic{
-		MusicLogic:    musicLogic,
-		FileLogic:     fileLogic,
-		AlbumLogic:    albumLogic,
-		ArtistLogic:   artistLogic,
-		TagLogic:      tagLogic,
-		PracticeLogic: practiceLogic,
-		UvrLogic:      uvrLogic,
-		TranLogic:     tranLogic,
+		MusicLogic:       musicLogic,
+		FileLogic:        fileLogic,
+		AlbumLogic:       albumLogic,
+		ArtistLogic:      artistLogic,
+		TagLogic:         tagLogic,
+		PracticeLogic:    practiceLogic,
+		UvrLogic:         uvrLogic,
+		TranLogic:        tranLogic,
+		AiLogic:          aiLogic,
+		CollectionLogic:  collectionLogic,
 	}
 	app := &App{
 		AllInfra: allInfra,
@@ -133,9 +171,9 @@ func InitializeApp() *App {
 
 // wire.go:
 
-var infraSet = wire.NewSet(dal.NewMysqlCli, cdb.NewDefaultProxy, dal.NewTagDal, dal.NewFileDal, dal.NewMusicDal, dal.NewAlbumDal, dal.NewAlbumMusicDal, dal.NewArtistDal, dal.NewPracticeDal, dal.NewTranItemDal, wire.Struct(new(infra.AllInfra), "*"))
+var infraSet = wire.NewSet(dal.NewMysqlCli, cdb.NewDefaultProxy, dal.NewTagDal, dal.NewFileDal, dal.NewMusicDal, dal.NewAlbumDal, dal.NewAlbumMusicDal, dal.NewArtistDal, dal.NewPracticeDal, dal.NewTranItemDal, dal.NewAiSessionDal, dal.NewAiMessageDal, dal.NewAiConfirmPendingDal, dal.NewMusicCollectionDal, dal.NewMusicCollectionItemDal, wire.Struct(new(infra.AllInfra), "*"))
 
-var logicSet = wire.NewSet(uvr.NewClient, logic.NewMusicLogic, logic.NewFileLogic, logic.NewAlbumLogic, logic.NewArtistLogic, logic.NewTagLogic, logic.NewPracticeLogic, logic.NewUvrLogic, logic.NewTranLogic, wire.Struct(new(logic.AllLogic), "*"))
+var logicSet = wire.NewSet(uvr.NewClient, logic.NewMusicLogic, logic.NewFileLogic, logic.NewAlbumLogic, logic.NewArtistLogic, logic.NewTagLogic, logic.NewPracticeLogic, logic.NewUvrLogic, logic.NewTranLogic, logic.NewAiLogic, logic.NewCollectionLogic, wire.Struct(new(logic.AllLogic), "*"))
 
 var allSet = wire.NewSet(
 	infraSet,
