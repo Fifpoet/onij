@@ -22,7 +22,7 @@ MIN_NOTE_MS = 80.0
 GAP_FILL_MS = 60.0
 MERGE_GAP_MS = 100.0
 STICKY_HOLD_MS = 100.0
-PITCH_VERSION = 3
+PITCH_VERSION = 4
 PITCH_FILENAME = "pitch.json"
 
 _lock = threading.RLock()
@@ -35,7 +35,7 @@ def pitch_json_path(job_dir: Path) -> Path:
 
 
 def pitch_json_stale(dest: Path) -> bool:
-    """旧版合并过狠，version < 3 的 json 需要用现有人声重抽 F0。"""
+    """旧版未滤 Live 观众/讲话，version < 4 的 json 需要用现有人声重抽 F0。"""
     if not dest.is_file() or dest.stat().st_size <= 20:
         return True
     try:
@@ -161,11 +161,86 @@ def _sticky_merge(notes: list[dict[str, float]]) -> list[dict[str, float]]:
     return _merge_close_notes(notes, MERGE_GAP_MS / 1000.0)
 
 
+def _frame_rms(audio: np.ndarray, hop: int, n_frames: int, win: int = 320) -> np.ndarray:
+    rms = np.zeros(n_frames, dtype=np.float64)
+    n = len(audio)
+    for i in range(n_frames):
+        a = i * hop
+        b = min(n, a + win)
+        if b > a:
+            sl = audio[a:b]
+            rms[i] = float(np.sqrt(np.mean(sl * sl)))
+    return rms
+
+
+def _gate_f0_by_energy(f0: np.ndarray, audio: np.ndarray, hop: int = 160) -> np.ndarray:
+    """观众声通常比主唱弱，按人声帧能量丢掉偏弱的 F0。"""
+    n = len(f0)
+    rms = _frame_rms(audio, hop, n)
+    voiced = f0 > 0
+    if not np.any(voiced):
+        return f0
+    vrms = rms[voiced]
+    floor = float(np.percentile(vrms, 55)) * 0.42
+    out = f0.copy()
+    out[rms < max(floor, 1e-4)] = 0.0
+    return out
+
+
+def _run_lengths(midi: np.ndarray) -> np.ndarray:
+    runs = np.zeros(len(midi), dtype=np.int32)
+    n = len(midi)
+    i = 0
+    while i < n:
+        j = i + 1
+        while j < n and midi[j] == midi[i]:
+            j += 1
+        runs[i:j] = j - i
+        i = j
+    return runs
+
+
+def _suppress_speech(midi: np.ndarray, hop_ms: float) -> np.ndarray:
+    """讲话段音高又碎又跳，没有稳定横条，整段抹掉。"""
+    out = midi.copy()
+    runs = _run_lengths(out)
+    win = max(3, int(round(240.0 / hop_ms)))
+    min_sing = max(2, int(round(80.0 / hop_ms)))
+    n = len(out)
+    for i in range(n):
+        if out[i] <= 0 or runs[i] >= min_sing:
+            continue
+        a = max(0, i - win // 2)
+        b = min(n, i + win // 2)
+        seg = out[a:b]
+        voiced = seg[seg > 0]
+        if voiced.size < 6 or float(np.std(voiced)) >= 1.4:
+            out[i] = 0.0
+    return out
+
+
+def _clip_to_singing_range(midi: np.ndarray) -> np.ndarray:
+    """主体音域外的短高音多半是观众尖叫。"""
+    voiced = midi[midi > 0]
+    if voiced.size < 30:
+        return midi
+    runs = _run_lengths(midi)
+    core = midi[(midi > 0) & (runs >= 8)]
+    if core.size < 20:
+        core = voiced
+    lo, hi = np.percentile(core, [10, 90])
+    out = midi.copy()
+    out[(out > 0) & ((out < lo - 5) | (out > hi + 5))] = 0.0
+    return out
+
+
 def _notes_from_f0(f0: np.ndarray, hop_ms: float) -> list[dict[str, float]]:
     midi = np.zeros(len(f0), dtype=np.float64)
     voiced = f0 > 0
     if np.any(voiced):
         midi[voiced] = np.round(69.0 + 12.0 * np.log2(np.maximum(f0[voiced], 1e-6) / 440.0))
+    midi = _suppress_speech(midi, hop_ms)
+    midi = _clip_to_singing_range(midi)
     midi = _fill_short_gaps(midi, hop_ms, GAP_FILL_MS)
 
     notes: list[dict[str, float]] = []
@@ -208,10 +283,11 @@ def extract_pitch_dict(vocals_path: Path, song_id: str | None = None) -> dict[st
     started = time.perf_counter()
     audio = _load_mono_16k(vocals_path)
     model = _get_rmvpe()
-    f0 = model.infer_from_audio(audio, thred=0.03)
+    f0 = model.infer_from_audio(audio, thred=0.08)
+    f0 = _gate_f0_by_energy(np.asarray(f0, dtype=np.float64), audio, hop=160)
     hop_ms = HOP_MS
     duration_ms = int(round(len(audio) / 16000 * 1000))
-    notes = _notes_from_f0(np.asarray(f0, dtype=np.float64), hop_ms)
+    notes = _notes_from_f0(f0, hop_ms)
     voiced_midi = [_hz_to_midi(float(h)) for h in f0 if h > 0]
     ref_midi = float(np.median(voiced_midi)) if voiced_midi else 60.0
     elapsed = time.perf_counter() - started

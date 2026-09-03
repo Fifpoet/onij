@@ -16,7 +16,13 @@
           :playing="playQueue.isPlaying"
           :loading="pitchLoading"
           :error="pitchError"
-          :octave-down="ktv.octaveDown"
+          :user-midi="userMidi"
+          :user-voiced="voiced"
+          :in-tune="inTune"
+          :hit-keys="hitKeys"
+          :phrase-score="phraseScore"
+          :avg-score="avgScore"
+          :mic-error="micError"
         />
       </div>
     </div>
@@ -67,15 +73,6 @@
             @click="ktv.toggleAccompaniment()"
           >
             伴
-          </button>
-          <button
-            type="button"
-            class="ktv-dock-btn"
-            :class="{ 'ktv-dock-btn--on': ktv.octaveDown }"
-            :title="ktv.octaveDown ? '低八度：开（音高线降 12 度，伴奏不移调）' : '低八度：关（显示原调音高）'"
-            @click.stop="ktv.toggleOctaveDown()"
-          >
-            低
           </button>
           <button
             type="button"
@@ -155,6 +152,7 @@ import {
   prefetchPitch,
 } from '@/player/pitchCache'
 import { prefetchPlayUrl } from '@/player/songPlayUrlCache'
+import { useSingPitch } from '@/composables/useSingPitch'
 
 const defaultCover =
   'https://p1.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg'
@@ -238,6 +236,21 @@ const pitchError = computed(() => {
   const id = song.value?.id
   if (!id || !pitchView.value) return ''
   return getPitchStatus(id) === 'error' ? '音高提取失败，点封面重试' : ''
+})
+
+const {
+  userMidi,
+  voiced,
+  inTune,
+  phraseScore,
+  avgScore,
+  hitKeys,
+  micError,
+} = useSingPitch({
+  enabled: pitchView,
+  currentSec: () => playQueue.playbackCurrentSec,
+  notes: () => pitchData.value?.notes ?? [],
+  songKey: () => song.value?.id ?? '',
 })
 
 function prefetchKtvAssets() {
