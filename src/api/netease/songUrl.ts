@@ -10,8 +10,8 @@ const API_ORIGIN = (
 const API_HOST = 'music.gdstudio.org'
 const PLAYER_VERSION = '2026.08.01'
 
-/** 与官网默认一致：999 = 24bit 无损（实际返回以接口为准） */
-export const DEFAULT_PLAY_BR = 999
+/** 浏览器直连网易 FLAC 常 206 断连，播放用 320k MP3 */
+export const DEFAULT_PLAY_BR = 320
 
 function normalizeVersion(version: string): string {
   return version
@@ -159,34 +159,46 @@ interface GdStudioUrlBody {
 /**
  * 获取单曲可播放 URL
  */
+function isFragilePlayUrl(url: string): boolean {
+  return /\.flac(\?|$)/i.test(url)
+}
+
+async function requestPlayUrl(id: number, br: number): Promise<string | null> {
+  const timeRes = await fetch(`${API_ORIGIN}/time`)
+  if (!timeRes.ok) return null
+  const serverTime = (await timeRes.text()).trim()
+  if (!serverTime) return null
+
+  const sid = String(id)
+  const body = new URLSearchParams({
+    types: 'url',
+    id: sid,
+    source: 'netease',
+    br: String(br),
+    s: makeSign(sid, serverTime),
+  })
+  const res = await fetch(`${API_ORIGIN}/api.php`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+      'X-Requested-With': 'XMLHttpRequest',
+      Accept: 'application/json, text/javascript, */*; q=0.01',
+    },
+    body,
+  })
+  if (!res.ok) return null
+  const data = (await res.json()) as GdStudioUrlBody
+  const u = data?.url
+  return typeof u === 'string' && u.length > 0 ? u : null
+}
+
 export async function fetchSongPlayUrl(id: number, br: number = DEFAULT_PLAY_BR): Promise<string | null> {
   try {
-    const timeRes = await fetch(`${API_ORIGIN}/time`)
-    if (!timeRes.ok) return null
-    const serverTime = (await timeRes.text()).trim()
-    if (!serverTime) return null
-
-    const sid = String(id)
-    const body = new URLSearchParams({
-      types: 'url',
-      id: sid,
-      source: 'netease',
-      br: String(br),
-      s: makeSign(sid, serverTime),
-    })
-    const res = await fetch(`${API_ORIGIN}/api.php`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-        'X-Requested-With': 'XMLHttpRequest',
-        Accept: 'application/json, text/javascript, */*; q=0.01',
-      },
-      body,
-    })
-    if (!res.ok) return null
-    const data = (await res.json()) as GdStudioUrlBody
-    const u = data?.url
-    return typeof u === 'string' && u.length > 0 ? u : null
+    const url = await requestPlayUrl(id, br)
+    if (url && isFragilePlayUrl(url)) {
+      return (await requestPlayUrl(id, 192)) ?? url
+    }
+    return url
   } catch {
     return null
   }
