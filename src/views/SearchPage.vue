@@ -68,6 +68,38 @@
         </div>
       </div>
 
+      <!-- 合集 -->
+      <div class="mb-8 min-w-0">
+        <h3 v-if="!isLoading" class="browse-section-title mb-4 border-l-4 border-purple-500 pl-2">合集</h3>
+        <div class="collections-container min-w-0">
+          <div v-if="isLoading"></div>
+          <div v-else-if="searchResults.collections.length === 0" class="browse-muted py-4">
+            没有找到相关合集
+          </div>
+          <div
+            v-else
+            class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4"
+          >
+            <div
+              v-for="col in searchResults.collections"
+              :key="col.id"
+              class="min-w-0 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer"
+              @click="goToCollection(col.id)"
+            >
+              <img
+                :src="col.cover_url || defaultAlbumCover"
+                :alt="col.name"
+                class="w-full aspect-square object-cover rounded"
+              >
+              <div class="mt-2 min-w-0 text-center">
+                <div class="font-bold text-base md:text-lg truncate">{{ col.name }}</div>
+                <div class="text-base text-gray-500">{{ col.song_count }} 首</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- 单曲 -->
       <div class="mb-8 min-w-0">
         <h3 v-if="!isLoading" class="browse-section-title mb-4 border-l-4 border-red-500 pl-2">单曲</h3>
@@ -105,6 +137,7 @@ import { getSongDetail } from '@/api/netease/search'
 import type { SongDetail } from '@/api/netease/result'
 import SongItem from '@/components/music/MusicListItem.vue'
 import type { ViewMusicListItem } from '@/api/view/music'
+import { ListCollections, type CollectionDTO } from '@/api/collection'
 
 const route = useRoute()
 const { searchValue, handleSearch } = useSearch()
@@ -121,7 +154,8 @@ const searchResults = reactive({
   songs: [] as SongSearchItem[],
   albums: [] as AlbumSearchItem[],
   artists: [] as ArtistSearchItem[],
-  songDetails: [] as SongDetail[]
+  songDetails: [] as SongDetail[],
+  collections: [] as CollectionDTO[],
 })
 
 // 将歌曲详情转换为通用列表项结构，供 MusicListItem 使用
@@ -152,6 +186,10 @@ const goToArtist = (artistId: number) => {
   router.push(`/artist?ids=${artistId}`)
 }
 
+const goToCollection = (id: string) => {
+  router.push({ path: '/collection', query: { id } })
+}
+
 // 执行搜索
 const performSearch = async (keywords: string) => {
   if (!keywords.trim()) return
@@ -163,9 +201,14 @@ const performSearch = async (keywords: string) => {
   searchResults.albums = []
   searchResults.artists = []
   searchResults.songDetails = []
+  searchResults.collections = []
 
   try {
-    const results = await handleSearch([1, 10, 100], 0, 20)
+    const [results, colResp] = await Promise.all([
+      handleSearch([1, 10, 100], 0, 20),
+      ListCollections(keywords).catch(() => ({ items: [] as CollectionDTO[] })),
+    ])
+    searchResults.collections = colResp.items ?? []
     const allSongIds: number[] = []
     
     results?.forEach(res => {
@@ -222,7 +265,8 @@ onMounted(() => {
 <style scoped>
 .artists-container,
 .albums-container,
-.songs-container {
+.songs-container,
+.collections-container {
   min-height: 200px;
 }
 

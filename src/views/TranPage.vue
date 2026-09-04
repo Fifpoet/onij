@@ -48,7 +48,7 @@
           <div class="tran-card__main min-w-0">
             <span class="tran-card__tag">{{ itemTag(item) }}</span>
             <span v-if="item.pinned" class="tran-card__pin-badge">置顶</span>
-            <p v-if="item.kind === 'text'" class="tran-card__text">{{ item.content }}</p>
+            <p v-if="item.kind === 'text'" class="tran-card__text select-text">{{ item.content }}</p>
             <div
               v-else-if="item.kind === 'file' && isTranImage(item)"
               class="tran-card__media"
@@ -58,6 +58,7 @@
                 :src="imageSrc(item)"
                 :alt="item.name"
                 class="tran-card__img"
+                @click.stop="openPreview(imageSrc(item)!)"
               >
               <p v-else class="tran-card__meta">图片加载中…</p>
               <p class="tran-card__meta">{{ item.name }} · {{ formatFileSize(item.size) }}</p>
@@ -100,6 +101,24 @@
         </li>
       </ul>
     </div>
+
+    <Teleport to="body">
+      <div
+        v-if="previewSrc"
+        class="tran-lightbox"
+        role="dialog"
+        aria-modal="true"
+        aria-label="图片预览"
+        @click="closePreview"
+      >
+        <img
+          :src="previewSrc"
+          alt=""
+          class="tran-lightbox__img"
+          @click.stop
+        >
+      </div>
+    </Teleport>
   </PageContent>
 </template>
 
@@ -130,6 +149,19 @@ const textDraft = ref('')
 const uploading = ref(false)
 const uploadPercent = ref(0)
 const uploadLabel = ref('')
+const previewSrc = ref('')
+
+function openPreview(src: string) {
+  previewSrc.value = src
+}
+
+function closePreview() {
+  previewSrc.value = ''
+}
+
+function onPreviewKey(e: KeyboardEvent) {
+  if (e.key === 'Escape') closePreview()
+}
 
 function fileFormat(item: TranFileItem): FileType {
   return item.format ?? getFileTypeFromString(item.name)
@@ -286,6 +318,7 @@ function onPaste(e: ClipboardEvent) {
 
 onMounted(() => {
   window.addEventListener('paste', onPaste)
+  window.addEventListener('keydown', onPreviewKey)
   void tran.fetchList().then(() => loadMissingImageUrls())
 })
 
@@ -300,6 +333,7 @@ onBeforeUnmount(() => {
   alive = false
   stopItemsWatch()
   window.removeEventListener('paste', onPaste)
+  window.removeEventListener('keydown', onPreviewKey)
 })
 </script>
 
@@ -480,6 +514,9 @@ onBeforeUnmount(() => {
   line-height: 1.55;
   white-space: pre-wrap;
   word-break: break-word;
+  user-select: text;
+  -webkit-user-select: text;
+  cursor: text;
 }
 
 .tran-card__img {
@@ -490,6 +527,7 @@ onBeforeUnmount(() => {
   border-radius: 0.5rem;
   object-fit: contain;
   background: rgb(243 244 246);
+  cursor: zoom-in;
 }
 
 .dark .tran-card__img {
@@ -606,5 +644,25 @@ onBeforeUnmount(() => {
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   border: 0;
+}
+
+.tran-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgb(0 0 0 / 0.72);
+  cursor: zoom-out;
+}
+
+.tran-lightbox__img {
+  max-width: min(96vw, 1200px);
+  max-height: 92vh;
+  border-radius: 0.5rem;
+  object-fit: contain;
+  cursor: default;
 }
 </style>

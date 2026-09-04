@@ -1,1 +1,0 @@
-import{_ as t,h as n,l as o,ak as s}from"./index-CHiEBY3k.js";const c={},a={class:"page-content"};function r(e,_){return o(),n("div",a,[s(e.$slots,"default")])}const d=t(c,[["render",r]]);export{d as P};

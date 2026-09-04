@@ -300,8 +300,15 @@ export function useSingPitch(opts: {
   async function start() {
     if (listening.value) return
     micError.value = ''
+    const gum = navigator.mediaDevices?.getUserMedia?.bind(navigator.mediaDevices)
+    if (!gum) {
+      micError.value = window.isSecureContext
+        ? '当前浏览器不支持麦克风'
+        : '麦克风需要 HTTPS，当前 HTTP 页面无法打开（请用 https://onij.fun 或本机 localhost）'
+      return
+    }
     try {
-      stream = await navigator.mediaDevices.getUserMedia({
+      stream = await gum({
         audio: {
           echoCancellation: false,
           noiseSuppression: false,

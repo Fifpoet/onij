@@ -47,7 +47,7 @@
               v-model="searchValue"
               type="search"
               class="min-w-0 flex-1 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-base outline-none focus:border-blue-500 dark:border-dark-600 dark:bg-dark-900 dark:text-gray-100"
-              placeholder="搜索歌曲、歌手、专辑"
+              placeholder="搜索歌曲、歌手、专辑、合集"
               @keydown.enter="submitSearch"
             >
             <button type="button" class="shrink-0 px-3 py-2 text-[15px] font-medium text-gray-600" @click="closeSearchOverlay">
@@ -65,7 +65,7 @@
         :style="{ top: menuTop }"
       >
         <RouterLink to="/ai" class="mobile-menu-link" @click="isMenuOpen = false">AI</RouterLink>
-        <p class="mb-2 mt-3 px-1 text-xs font-semibold uppercase tracking-wide text-gray-400">工具</p>
+        <p class="mb-2 mt-3 px-1 text-xs font-semibold tracking-wide text-gray-400 whitespace-nowrap">工具</p>
         <RouterLink to="/tran" class="mobile-menu-link" @click="isMenuOpen = false">中转站</RouterLink>
         <RouterLink to="/prac" class="mobile-menu-link" @click="isMenuOpen = false">练习</RouterLink>
         <RouterLink to="/cloud" class="mobile-menu-link" @click="isMenuOpen = false">云盘</RouterLink>
