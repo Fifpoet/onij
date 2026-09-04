@@ -3,37 +3,38 @@
     <div class="ai-page">
       <aside class="ai-sidebar">
         <div class="ai-sidebar__head">
-          <h1 class="browse-section-title border-l-4 border-blue-500 pl-2">AI</h1>
-          <button type="button" class="ai-btn" :disabled="busy" @click="startNewChat">新对话</button>
+          <button type="button" class="ai-btn ai-sidebar__new" :disabled="busy" @click="startNewChat">新对话</button>
         </div>
-        <p v-if="sessionsLoading" class="browse-muted px-1 text-sm">加载会话…</p>
-        <ul v-else class="ai-session-list">
-          <li v-for="s in sessions" :key="s.id" class="ai-session-row">
-            <button
-              type="button"
-              class="ai-session-item"
-              :class="{
-                'ai-session-item--active': s.id === currentSessionId,
-                'ai-session-item--voice': isVoiceSession(s),
-              }"
-              @click="selectSession(s.id)"
-            >
-              <span class="ai-session-item__title">{{ s.title || '新对话' }}</span>
-              <span class="ai-session-item__meta">{{ isVoiceSession(s) ? '语音 · ' : '' }}{{ formatTokens(s.token_total) }}</span>
-            </button>
-            <button
-              v-if="!isVoiceSession(s)"
-              type="button"
-              class="ai-session-del"
-              title="删除会话"
-              :disabled="busy || deletingId === s.id"
-              @click.stop="deleteSession(s.id)"
-            >
-              ×
-            </button>
-          </li>
-          <li v-if="!sessions.length" class="browse-muted px-1 py-4 text-sm">暂无会话</li>
-        </ul>
+        <div class="ai-sidebar__scroll">
+          <p v-if="sessionsLoading" class="browse-muted px-1 text-sm">加载会话…</p>
+          <ul v-else class="ai-session-list">
+            <li v-for="s in sessions" :key="s.id" class="ai-session-row">
+              <button
+                type="button"
+                class="ai-session-item"
+                :class="{
+                  'ai-session-item--active': s.id === currentSessionId,
+                  'ai-session-item--voice': isVoiceSession(s),
+                }"
+                @click="selectSession(s.id)"
+              >
+                <span class="ai-session-item__title">{{ s.title || '新对话' }}</span>
+                <span class="ai-session-item__meta">{{ isVoiceSession(s) ? '语音 · ' : '' }}{{ formatTokens(s.token_total) }}</span>
+              </button>
+              <button
+                v-if="!isVoiceSession(s)"
+                type="button"
+                class="ai-session-del"
+                title="删除会话"
+                :disabled="busy || deletingId === s.id"
+                @click.stop="deleteSession(s.id)"
+              >
+                ×
+              </button>
+            </li>
+            <li v-if="!sessions.length" class="browse-muted px-1 py-4 text-sm">暂无会话</li>
+          </ul>
+        </div>
       </aside>
 
       <section class="ai-main">
@@ -503,13 +504,15 @@ onMounted(() => {
   display: grid;
   grid-template-columns: minmax(200px, 260px) minmax(0, 1fr);
   gap: 1rem;
-  min-height: calc(100vh - 140px);
+  height: calc(100dvh - var(--app-header-offset-desktop) - var(--page-gutter-y) * 2 - 2.5rem);
+  min-height: 0;
 }
 .ai-sidebar,
 .ai-main {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  overflow: hidden;
   border: 1px solid rgb(229 231 235);
   border-radius: 0.75rem;
   background: rgb(255 255 255 / 0.7);
@@ -521,17 +524,29 @@ onMounted(() => {
 }
 .ai-sidebar__head {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
-  justify-content: flex-end;
-  gap: 0.75rem;
-  padding: 0.85rem 0.9rem 0.5rem;
+  justify-content: center;
+  padding: 0.85rem 0.9rem 0.65rem;
+  border-bottom: 1px solid rgb(229 231 235);
+}
+.dark .ai-sidebar__head {
+  border-bottom-color: rgb(55 65 81);
+}
+.ai-sidebar__new {
+  width: 100%;
+  text-align: center;
+}
+.ai-sidebar__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 .ai-session-list {
   list-style: none;
   margin: 0;
   padding: 0.35rem 0.5rem 0.75rem;
-  overflow-y: auto;
-  flex: 1;
 }
 .ai-session-row {
   display: flex;
@@ -622,7 +637,9 @@ onMounted(() => {
 }
 .ai-messages {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 1rem;
   display: flex;
   flex-direction: column;
@@ -799,10 +816,16 @@ onMounted(() => {
   color: rgb(220 38 38);
   text-align: left;
 }
+@media (max-width: 1023px) {
+  .ai-page {
+    height: calc(100dvh - var(--app-header-offset-mobile) - var(--page-gutter-y) * 2 - var(--app-player-bar-offset) - 2.5rem);
+  }
+}
 @media (max-width: 900px) {
   .ai-page {
     grid-template-columns: 1fr;
-    min-height: auto;
+    height: auto;
+    min-height: 0;
   }
   .ai-sidebar {
     max-height: 220px;
