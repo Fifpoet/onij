@@ -10,7 +10,7 @@ import paramiko
 HOST = "117.72.33.136"
 USER = "root"
 BRANCH = "feat/onij"
-ENV_KEYS = ("ip", "mypwd", "sk", "QINIU_SK")
+ENV_KEYS = ("ip", "mypwd", "sk", "QINIU_SK", "dskey")
 
 
 def user_env(name: str) -> str:

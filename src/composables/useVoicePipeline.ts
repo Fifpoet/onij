@@ -205,8 +205,16 @@ export function useVoicePipeline() {
   async function startListening() {
     if (listening.value) return
     error.value = ''
+    const gum = navigator.mediaDevices?.getUserMedia?.bind(navigator.mediaDevices)
+    if (!gum) {
+      error.value = window.isSecureContext
+        ? '当前浏览器不支持麦克风'
+        : '麦克风需要 HTTPS，当前 HTTP 页面无法打开'
+      console.warn('microphone unavailable:', error.value)
+      return
+    }
     try {
-      stream = await navigator.mediaDevices.getUserMedia({
+      stream = await gum({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,

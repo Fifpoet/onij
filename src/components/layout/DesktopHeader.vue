@@ -66,9 +66,11 @@ const isAi = computed(() => route.path === '/ai')
 }
 .desktop-header__ai {
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   height: 2.25rem;
   padding: 0 0.85rem;
+  white-space: nowrap;
   border-radius: 0.5rem;
   font-size: 0.9375rem;
   font-weight: 500;

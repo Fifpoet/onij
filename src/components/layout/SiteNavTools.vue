@@ -6,7 +6,7 @@
       :class="{ 'site-nav-tools__trigger--active': toolsActive() }"
       @click="onTriggerClick"
     >
-      工具
+      <span class="site-nav-tools__label">工具</span>
       <span class="site-nav-tools__caret" aria-hidden="true" />
     </button>
     <Transition name="site-nav-drop">
@@ -54,13 +54,18 @@ function onTriggerClick() {
 <style scoped>
 .site-nav-tools {
   position: relative;
+  flex-shrink: 0;
 }
 .site-nav-tools__trigger {
   display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 0.35rem;
   height: 2.25rem;
   padding: 0 0.85rem;
+  white-space: nowrap;
+  writing-mode: horizontal-tb;
   border: 0;
   border-radius: 0.5rem;
   background: transparent;
@@ -80,7 +85,13 @@ function onTriggerClick() {
 .dark .site-nav-tools__trigger--active {
   background: rgb(55 65 81);
 }
+.site-nav-tools__label {
+  display: inline;
+  white-space: nowrap;
+  writing-mode: horizontal-tb;
+}
 .site-nav-tools__caret {
+  flex-shrink: 0;
   width: 0;
   height: 0;
   border-left: 4px solid transparent;

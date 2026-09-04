@@ -1,0 +1,1 @@
+import{H as n}from"./index-B5Onj5KF.js";const c=async(o="")=>n("/collection/list",{keyword:o}),e=async o=>n("/collection/update",o),s=async o=>n("/collection/detail",{id:o}),l=async o=>n("/collection/add_songs",o),a=async o=>n("/collection/remove_song",o);export{l as A,s as D,c as L,a as R,e as U};
