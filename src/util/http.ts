@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 
-const PROD_API = 'http://onij.fun:8889'
+const PROD_API = 'https://onij.fun/go'
 const DEV_API = 'http://127.0.0.1:8889'
 
 function resolveServerUrl(): string {
