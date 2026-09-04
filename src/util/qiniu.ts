@@ -1,5 +1,8 @@
 import { GetUploadToken } from '@/api/file'
 import { FileType } from '@/api/types/enums'
+import { normalizeFileCdnUrl } from '@/util/qiniuCdn'
+
+export { normalizeFileCdnUrl }
 
 const DEFAULT_DOMAIN = 'http://cloud.onij.fun'
 const DEFAULT_UPLOAD_URL = 'https://up-z0.qiniup.com'
@@ -95,7 +98,7 @@ export async function uploadToQiniu(
   return {
     key: res.key,
     hash: res.hash,
-    url: `${publicBase}/${res.key}`,
+    url: normalizeFileCdnUrl(`${publicBase}/${res.key}`),
   }
 }
 
@@ -175,15 +178,6 @@ export function batchUploadToQiniu(
   )
 }
 
-const QINIU_BIND_ORIGIN = 'http://cloud.onij.fun'
-
-/** 修正误签主站域名的私有链（onij.fun/cloud/... 会走 SPA/nginx 导致 404） */
-export function normalizeFileCdnUrl(url: string): string {
-  if (!url) return url
-  return url.replace(/^https?:\/\/onij\.fun(?=\/)/i, QINIU_BIND_ORIGIN)
-}
-
-/** 开发环境可选替换 CDN 域名（勿设为 onij.fun） */
 export function resolveQiniuCdnUrl(url: string): string {
   const fixed = normalizeFileCdnUrl(url)
   if (!fixed || !import.meta.env.DEV) return fixed

@@ -1,0 +1,41 @@
+---
+description: 前端技术栈、目录、UI 与改动约定。改 src 时应用。
+globs: src/**
+alwaysApply: false
+---
+
+# 前端约定
+
+## 技术栈
+
+- Vue 3 + TypeScript + Vite；路径别名 `@` → `src/`。
+- 状态：Pinia + `pinia-plugin-persistedstate`（`src/store/`）。
+- 路由：`src/router.ts`，页面在 `src/views/`，懒加载。
+- 请求：`src/util/http.ts` 的 `apiClient` / `post`；业务封装放 `src/api/`。
+- 样式：**UnoCSS 工具类**做间距/显示/断点；**组件 scoped CSS** 做布局与主题。不要新加 UI 框架。
+- 组件库：交互控件优先 **naive-ui**（按文件 import，无全局自动注册）。AI 页才用 MateChat / DevUI 图标。
+- 图标：已有 `@vicons/ionicons5`、`@iconify/vue`、DevUI icon font，不要再引一套。
+
+## 目录习惯
+
+- 页面：`src/views/*Page.vue` / `*Detail.vue`
+- 可复用 UI：`src/components/<领域>/`
+- 组合逻辑：`src/composables/`
+- 播放器运行时：`src/player/`（缓存、宿主音频，不要把播放核心塞进某个页面）
+- 纯函数：`src/util/`
+
+新页面：路由 + `PageContent` 包一层；导航入口放 `SiteNavTools` / `MobileHeader`，不要只改一边。
+
+## 布局与风格
+
+- 壳在 `App.vue`：顶栏 `PageHeader`（`MobileHeader` + `lg:` 以上 `DesktopHeader`）、主区、页脚备案 **鄂ICP备2024057031号**。
+- 桌面断点：`lg`（1024px）。移动端有底栏播放器；`/ktv` 除外。
+- 全局渐变背景、自定义 cursor、滚动条在 `src/styles` / `style.css`，**不要当普通页面样式改**。
+- 文案用中文。按钮/链接保持现有圆角与字号节奏，不要整页换肤。
+- 改 `App.vue`、`PageHeader`、`HeaderSearch`、搜索结果样式时必须最小 diff；无关页面保持原样。
+
+## 实现注意
+
+- 图片 EXIF 只用 `src/util/exif.ts`，不要加 `exifr`。
+- 全局播放由 `NeteaseAudioHost` 驱动 `playQueue`；页面只调 store，不要再挂一套 `<audio>`。
+- 优先复用已有 composable / store 字段，避免平行实现同一状态。
