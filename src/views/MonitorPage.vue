@@ -98,7 +98,7 @@ const MONITOR_TABS: MonitorTab[] = [
       {
         id: 'ping',
         title: 'Ping',
-        url: 'http://onij.fun:8889/ping',
+        url: 'https://onij.fun/go/ping',
       },
     ],
   },
