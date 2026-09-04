@@ -1,28 +1,41 @@
 ---
-description: Go 后端结构、IDL、handler 与 API 约定
+description: Go 后端分层、IDL、DDL 与本地/发布约定。改 server 时应用。
 globs: server/**
 alwaysApply: false
 ---
 
-# Go 后端约定
+# 后端约定
 
-## 代码组织
-- 新 API 结构优先定义在 `server/model/api/struct.go`，保持**最小可用**；命名尽量与 pb 一致（如 `FileType_FT_Unknown`）。
-- 不必保留 pb 生成的冗余 map（如 `FileType_name = map[int32]string`）。
-- `hz`/IDL 生成路由在 `server/biz/router/api/`；**未写入 proto 的路由**在 `server/router.go` 的 `customizedRegister` 手动注册（如 `GET /file/preview`、music mv、uvr）。
+## 分层
 
-## 环境变量（七牛）
-- `QINIU_SK`（或 `sk`）必须在进程环境中注入（systemd 服务配置里写 `Environment=`，ssh 里 export 对 nohup 无效）。
-- `QINIU_PUBLIC_DOMAIN`：仅七牛 CDN 绑定域（默认 `http://cloud.onij.fun`），**勿填主站 `onij.fun`**。
-- `QINIU_FETCH_DOMAIN`：服务端拉取对象用（默认 `http://onij.bkt.clouddn.com`），与浏览器访问域分离。
+Hertz 服务。新接口按现有层走，不要在 handler 里堆业务：
 
-## 文件与错误处理
-- 删除文件/对象：不存在则跳过，返回成功。
-- 日期字段写入 MySQL 时避免 `'0000-00-00'`（如 MV 的 `issue_time` 用 NULL 或合法时间）。
+1. `handler/`：BindAndValidate → 调 logic → JSON；保持瘦。
+2. `biz/prm/`：请求参数 / 结果包装（`NewXxxParam`、`Resp()`）。
+3. `logic/`：业务编排。
+4. `infra/dal/`、`biz/biz/`、`biz/getter/`：落库、领域对象、查询组装。
 
-## 本地服务
-- 默认监听 `:8889`；健康检查 `GET /ping`。
+## API 与路由
 
-## 发布
-- 交叉编译：`build-release.sh` → `release/bin/onij-server` + `release/web/`。
-- 改 handler/router 后需**重启** `onij-server`；仅改前端则需重新 `build:vite` 并更新 `release/web`。
+- 结构优先写在 `server/model/api/struct.go`，**最小可用**；命名尽量与 pb 一致（如 `FileType_FT_Unknown`）。不必保留 pb 生成的冗余 map。
+- `hz` / IDL 生成路由在 `server/biz/router/api/`。
+- **未进 proto 的路由**在 `server/router.go` 的 `customizedRegister` 手动注册（`/file/preview`、`/music/mv*`、`/uvr*`、`/voice`、`/ai*`、`/collection*`、`/tran*`）。
+
+## DDL
+
+- `server/model/ddl/` **只放表结构**，不要塞业务脚本或杂项。
+- 要改表：**先告知用户**，等用户决定是否在库上执行；不要擅自加 migration 文件。
+- 写 MySQL 日期避免 `'0000-00-00'`（如 MV `issue_time` 用 NULL 或合法时间）。
+
+## 文件与七牛
+
+- 删除文件/对象：DB 或七牛不存在则跳过，返回成功（七牛 612 忽略）。
+- `QINIU_SK`（或 `sk`）必须在**进程环境**里（部署脚本写入 env 再启动；ssh 里 `export` 对已有进程无效）。
+- `QINIU_PUBLIC_DOMAIN`：仅桶绑定域（默认 `http://cloud.onij.fun`），**勿填主站 `onij.fun`**。
+- `QINIU_FETCH_DOMAIN`：服务端拉对象（默认 `http://onij.bkt.clouddn.com`），与浏览器访问域分离。
+
+## 本地与发布
+
+- 监听 `:8889`；健康检查 `GET /ping`。
+- 交叉编译：`build-release.sh` / `build:release:win` → `release/bin/onij-server` + `release/web/`。
+- 改 handler / router / logic 后必须**重启** `onij-server`；只改前端则重建并更新 `release/web`。

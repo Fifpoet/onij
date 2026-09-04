@@ -1,54 +1,57 @@
 ---
-description: onij 项目通用约定：开发环境、对话工作模式、部署与改动范围
+description: onij 项目统领：环境、对话模式、规则路由。始终应用。
 alwaysApply: true
 ---
 
-# onij 项目通用约定
+# onij 统领
 
-## 语言与沟通
-- 与用户沟通使用**简体中文**。
-- 未经明确要求，不要主动创建 commit / push / PR。
+与用户沟通用**简体中文**。未经明确要求，不要 commit / push / PR。
 
-## 开发环境
-- **本地**：Windows + 高性能单张显卡；日常开发与测试在本机完成。
-- **线上**：Linux 云服务器（`117.72.33.136`，域名 `onij.fun`）。
-- **主站 Go API（本地）**：`VITE_SERVER_URL=http://127.0.0.1:8889`（`.env.development`）。
-- **网易云代理**：本地也固定走线上 `VITE_NETEASE_URL=http://onij.fun:3000/`，不要改成本地代理。
-- **生产构建**：`VITE_SERVER_URL` 留空或填 `https://onij.fun/`；**禁止**在公网前端包里写 `127.0.0.1`。
-- 线下开发时主站接口必须调本地 Go；第三方代理（网易）仍走线上。
+## 1 开发环境
 
-## 对话工作模式（重要）
-用户每次对话会（或应）标明当前模式；**未标明时根据意图自行判断**，并默认按最保守方式执行。
+- **本地**：Windows + 单卡 GPU。日常开发与验证都在本机。Vite `18968`，主站 Go `127.0.0.1:8889`，UVR `5555`。
+- **线下改完先查服务**：不要默认它们在跑。改完先探活，没起来再启动，再验页面。
+  - 前端 Vite：`http://127.0.0.1:18968`；未启动则仓库根 `pnpm dev`。
+  - 主站 Go：`GET http://127.0.0.1:8889/ping`；未启动则 `server/` 下 `go run .`。
+  - UVR：`GET http://127.0.0.1:5555/health`；未启动则 `uvr/run.bat`（本机 GPU；Go 默认 `UVR_API_BASE=http://172.26.250.1:5555`）。
+- **线上**：`117.72.33.136`（`onij.fun`），仓库 `~/workbench/go/onij`，分支 `feat/onij`。
+- **主站 API**：本地必须走 `VITE_SERVER_URL=http://127.0.0.1:8889`（`.env.development`）。
+- **网易云代理**：本地也固定 `VITE_NETEASE_URL=http://onij.fun:3000/`，不要改成本地代理。
+- **播放直链**：浏览器直连 GD Studio（`VITE_GDSTUDIO_MUSIC_URL`），不走主站。
+- **生产构建**：`VITE_SERVER_URL` 填 `https://onij.fun/go`（nginx 反代到本机 `:8889`）；**禁止**公网前端包写 `127.0.0.1`。站点 `https://onij.fun`，网易代理 `https://onij.fun/netease/`。
 
-| 模式 | 含义 | Agent 行为 |
-|------|------|------------|
-| **讨论** | 探讨方案、排错思路 | **不修改仓库代码**；最多给出思路、伪代码或示例片段（不直接落盘改文件） |
-| **测试性修改** | 本地验证 | 可改代码并在**本地测试环境**验证（本机 Go `:8889` + Vite dev）；**不** commit / push / SSH 上线 |
-| **部署上线** | 发布生产 | 本地构建 → git push → 服务器 `git pull` → 重启 `onij-server` → 同步静态资源 → `nginx reload` → 验证 |
+### SSH（仅部署模式）
 
-**自行判断参考**：
-- 问「为什么」「怎么做」「帮我看看」→ 讨论
-- 说「改一下」「试试」「本地跑一下」→ 测试性修改
-- 说「部署」「上线」「发布到线上」→ 部署上线
-- 不确定时：先讨论或本地改，**不要**主动 SSH / push
+- 用户 `root`；密码只读本机环境变量 **`sshpwd`**（或 `DEPLOY_SSH_PWD`）。PowerShell 用 `$env:sshpwd`，**禁止**写入 rules / 代码 / commit / 日志，禁止 echo 明文。
+- 非「部署」模式：**不要**为排查主动 SSH。
+- 二进制：`release/bin/onij-server`，启动前 `chmod +x`。勿用 `pkill -f`（会误杀部署脚本）。
+- 静态：nginx 根 `/var/www/onij/web`；目录 `755`、文件 `644`（`assets/` 缺 `+x` 会 403）。
+- 完整发布：`scripts/remote_deploy.py`（git pull → 重启进程 → rsync web → `nginx reload`）。
 
-## 排错与部署
-- 非「部署上线」模式：**不要**为排查问题主动 SSH 登录服务器。
-- SSH 凭据：使用本机环境变量 **`sshpwd`**；**禁止**把密码写入 rules、代码、commit 或日志。
-- 需要 SSH 时通过 `$env:sshpwd`（PowerShell）引用，勿 echo 明文密码。
-- 二进制部署后若启动失败，检查 `chmod +x release/bin/onij-server`。
+## 2 对话模式
 
-## 改动范围（重要）
-- **保持改动范围可控**：只改与任务直接相关的文件，不顺手重构无关模块。
-- 曾发生过云盘改动误伤搜索页样式；修改 `App.vue`、布局、全局样式时务必最小 diff。
-- 清理残余代码时，只删与任务相关的残留，不恢复/重写无关页面。
+未标明时按意图判断，**默认更保守**。方案不清楚时不要跳到实现。
 
-## 部署与静态资源
-- 前端产物：`pnpm build:release:win`（或 `build:release`）→ `release/web/`。
-- 服务器 nginx 静态根目录：`/var/www/onij/web`；`git pull` 后需确认文件已更新。
-- 线上静态资源 403 时检查目录权限（目录需 `755`，如 `assets/` 缺 `+x` 会 403）。
-- 可用 `scripts/remote_deploy.py` 执行完整发布（仅「部署上线」模式）。
+| 模式 | 何时 | Agent 做什么 |
+|------|------|----------------|
+| **闲聊 / 八股** | 闲聊、概念题、对比、面试向问答 | 简明作答；能结合本仓库时用项目里的真实例子，**不改代码** |
+| **方案讨论** | 怎么做、为何、帮我看看；需求或方案不完整 | **不改产品代码**。问清目标/范围/非目标。收口时写入 `docs/feat/<slug>.md`（格式见该目录 README），并用固定格式列出大体方案与相关未做；等人说「做 feat \<slug\>」再实现 |
+| **测试修改** | 做 feat xxx、改一下、试试、本地跑 | 有对应 feat md 则走工作流；否则方案仍模糊时回到讨论，不要擅自开工。改完先确认本机 Vite / Go / UVR 已启动，再验证。**不** commit / push / SSH |
+| **部署** | 部署、上线、发布到线上 | 本地构建 → push → 服务器 pull → 重启 `onij-server` → 同步静态 → `nginx reload` → 验证 |
 
-## 数据库 DDL
-- `server/model/ddl/` **只放表结构定义**；不要在此目录加业务脚本或杂项文件。
-- 需要改表时：**先告知用户**，由用户决定是否在库上执行，不要擅自加 migration 杂项。
+意图对照：问「为什么/怎么做/帮我看看」→ 方案讨论；说「就这样/定了/收口」→ 写 feat md；说「做 feat xxx / 改/试试」→ 测试修改；说「部署/上线」→ 部署。不确定则先讨论。
+
+## 3 何时读其他规则
+
+本文件只统领。动手前按改动面打开对应 mdc（Agent 未自动带上时主动 Read）：
+
+- 改 `src/**` 的结构、样式、组件、状态 → `.cursor/rules/onij-frontend.mdc`
+- 改 `server/**` 的分层、API、DDL、发布二进制 → `.cursor/rules/onij-backend.mdc`
+- 改已有产品面（播放/MV/队列/歌单/中转/练习/云盘/KTV/AI/语音/监控）→ `.cursor/rules/onij-features.mdc`，避免踩已知链路
+- 方案收口或「做 feat \<slug\>」/「按工作流」→ 读 `.cursor/skills/feature-workflow/SKILL.md` 与 `docs/feat/README.md`。实现时委派 `.cursor/agents/` 下 planner、implementer、tester、reviewer、verifier。**未说做 feat / 工作流时不要自动实现**；讨论未收口不要写 feat md
+
+## 4 改动纪律
+
+- 只改任务直接相关的文件，不顺手重构。
+- `App.vue`、布局、全局样式必须最小 diff（曾误伤搜索页）。
+- 清理残留只删本次相关代码，不恢复/重写无关页面。

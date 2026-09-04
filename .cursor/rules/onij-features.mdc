@@ -1,0 +1,52 @@
+---
+description: 已实现功能链路与不可破坏的技术约束。改播放、云盘、KTV、AI 等现有产品面时应用。
+globs: src/views/**,src/components/**,src/store/**,src/player/**,src/composables/**,src/api/**,src/util/**,server/handler/**,server/logic/**,server/router.go,uvr/**
+alwaysApply: false
+---
+
+# 已实现功能链路
+
+改现有功能时先对上这条链路，不要平行再做一套。
+
+## 播放
+
+- 状态：`playQueue`；音频宿主：`NeteaseAudioHost`。页面只调 store。
+- **搜索 / 歌词 / 详情**：生产走同源 `https://onij.fun/netease/`（nginx 反代 `:3000`）；本地开发仍可直连 `onij.fun:3000`。
+- **可播 URL**：浏览器直连 GD Studio `music.gdstudio.org`（`src/api/netease/songUrl.ts`）。默认 320k MP3；若返回 `.flac` 再降码率（浏览器 FLAC 易 206 断连）。缓存：`src/player/songPlayUrlCache.ts`。
+- 专辑页「全部播放」按序入队。队列页有置顶。
+- **双击播放其他歌时，当前正在播放的歌不要加回队列**。
+
+## MV
+
+- `mvUrl` 持久化后端：`POST /music/mv`、`POST /music/mv/batch`。
+- **不做 B 站 iframe**（跨域无法可靠监听结束/音量/seek）；输入 URL 后**新窗口打开**。
+- 输入：单行气泡；失焦或 Enter 保存；前端校验 URL。无 MV 点小电视输入，有 MV 高亮可跳转。
+
+## 歌单 / 中转 / 练习
+
+- **歌单** `/collection`：后端 `customizedRegister` 的 `/collection/*`，前端 `src/api/collection.ts`。
+- **中转** `/tran`：文本/文件多端同步（`tranStation` + `/tran/*`）。图片预览走签名链或本地 `/file/preview`，不要用主站相对路径当七牛地址。
+- **练习** `/prac`：无顶部统计卡片；「月度统计」开右侧卡。按练习类型切维度 + 时长折线。日历：一种类型日期下**小实心三角**，两种及以上**小实心圆**。
+
+## 云盘 `/cloud`
+
+- 默认进名为 `cloud` 的文件夹（`parent_id=0` 列表里找）；面包屑「根目录」可看全部历史（含 `tran`、`practice`）。
+- 上传/删/建文件夹走现有 file 接口 + 七牛；列表要有 `size`、`extra`、`url`。
+- 图片 EXIF 拍摄时间写入 `file.extra.origin_at`，展示优先 EXIF 否则 `created_at`。
+- **裂图关键**：签名域名必须是桶绑定域 `http://cloud.onij.fun`。禁止签成主站 `onij.fun`（会走 SPA 404）。
+- 生产浏览器走同源 `https://onij.fun/cdn/...`（nginx HTTP 反代到七牛）；不要直连 `https://cloud.onij.fun`（自定义域证书目前是 `*.qbox.me`，会 `ERR_CERT_COMMON_NAME_INVALID`）。
+- 本地：`<img>` / 下载走 `GET /file/preview?file_id=`（302 或 `proxy=1`），**不要**默认 body 代理大文件。
+- `<img>` 不要 `loading="lazy"`。初始化 `cloud` 文件夹：`go run ./cmd/ensure_cloud_folder`，**写库前先问用户**。
+
+## KTV `/ktv`
+
+- 伴奏/音高：UVR job → `pitch.json`（`uvr/app/pitch_engine.py`，RMVPE）。前端 `pitchCache` 预取。
+- 人声跟踪：`useSingPitch` + `pitchDetect`（16k YIN）对 F0 横条打分；`KtvPitchLane` 画参考条与命中。
+- Live 杂质在 `pitchNotes.mergePitchNotes` / 后端 version 过滤；不要再加「整曲降八度」开关（已去掉）。
+- 词/伴开关在 `ktv` store；该页隐藏移动端底栏播放器。
+
+## AI / 语音 / 监控
+
+- **AI** `/ai`：MateChat；流式 `POST /ai/chat/stream`，确认 `POST /ai/confirm/stream`。客户端工具 `useAiClientTools`，状态 `aiChat`。
+- **语音**：唤醒词「小雪」；STT `POST /uvr/whisper/transcribe`；意图 `POST /voice/intent`。切歌/暂停可本地直控播放器，不必每次走 LLM。
+- **监控** `/monitor`：按标签探测依赖 URL，只是前端健康卡片，不要做成第二套部署系统。

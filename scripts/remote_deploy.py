@@ -129,6 +129,7 @@ rm -f /tmp/onij-deploy.env /tmp/start-onij.sh
             client,
             r"""
 set -e
+cp ~/workbench/go/onij/deploy/nginx/web-vue.conf /etc/nginx/conf.d/web-vue.conf
 sudo rsync -av --delete ~/workbench/go/onij/release/web/ /var/www/onij/web/
 sudo chown -R www-data:www-data /var/www/onij/web
 sudo find /var/www/onij/web -type d -exec chmod 755 {} \;
