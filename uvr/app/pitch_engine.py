@@ -17,13 +17,17 @@ from app.config import settings
 
 logger = logging.getLogger("uvr-api.pitch")
 
-HOP_MS = 10.0  # RMVPE hop 160 @ 16kHz
+HOP_MS = 10.0  # hop 160 @ 16kHz
 MIN_NOTE_MS = 80.0
 GAP_FILL_MS = 60.0
 MERGE_GAP_MS = 100.0
 STICKY_HOLD_MS = 100.0
-PITCH_VERSION = 4
+PITCH_VERSION = 5
 PITCH_FILENAME = "pitch.json"
+# RMVPE 在 Live 人声上常锁到低五度（E3→A2）；pyin 更稳，RMVPE 仅作回退
+PYIN_FMIN_NOTE = "C2"
+PYIN_FMAX_NOTE = "G5"
+_PERIOD_FACTORS = (1.0, 0.5, 2.0, 2.0 / 3.0, 1.5)
 
 _lock = threading.RLock()
 _rmvpe = None
@@ -35,7 +39,7 @@ def pitch_json_path(job_dir: Path) -> Path:
 
 
 def pitch_json_stale(dest: Path) -> bool:
-    """旧版未滤 Live 观众/讲话，version < 4 的 json 需要用现有人声重抽 F0。"""
+    """version < 5 的 json 用 RMVPE，Live 开口常低五度且缺横条，需重抽。"""
     if not dest.is_file() or dest.stat().st_size <= 20:
         return True
     try:
@@ -147,6 +151,7 @@ def _merge_close_notes(notes: list[dict[str, float]], max_gap_s: float) -> list[
 
 
 def _sticky_merge(notes: list[dict[str, float]]) -> list[dict[str, float]]:
+    """只抹 1–2 半音的短抖动；跨三度以上的短音保留，避免 E3 被前一个 A2 吞掉。"""
     if not notes:
         return notes
     hold_s = STICKY_HOLD_MS / 1000.0
@@ -154,7 +159,7 @@ def _sticky_merge(notes: list[dict[str, float]]) -> list[dict[str, float]]:
     for n in notes:
         if n["midi"] == cur:
             continue
-        if n["t1"] - n["t0"] >= hold_s:
+        if abs(n["midi"] - cur) >= 3 or n["t1"] - n["t0"] >= hold_s:
             cur = n["midi"]
         else:
             n["midi"] = cur
@@ -174,17 +179,73 @@ def _frame_rms(audio: np.ndarray, hop: int, n_frames: int, win: int = 320) -> np
 
 
 def _gate_f0_by_energy(f0: np.ndarray, audio: np.ndarray, hop: int = 160) -> np.ndarray:
-    """观众声通常比主唱弱，按人声帧能量丢掉偏弱的 F0。"""
+    """按约 4s 窗口的局部能量门限，避免整曲后段大声把 Live 轻开口抹掉。"""
     n = len(f0)
     rms = _frame_rms(audio, hop, n)
     voiced = f0 > 0
     if not np.any(voiced):
         return f0
-    vrms = rms[voiced]
-    floor = float(np.percentile(vrms, 55)) * 0.42
     out = f0.copy()
-    out[rms < max(floor, 1e-4)] = 0.0
+    win = max(50, int(round(4000.0 / HOP_MS)))
+    step = max(1, win // 2)
+    for i0 in range(0, n, step):
+        i1 = min(n, i0 + win)
+        loc = voiced[i0:i1]
+        if not np.any(loc):
+            continue
+        vrms = rms[i0:i1][loc]
+        floor = float(np.percentile(vrms, 30)) * 0.28
+        weak = rms[i0:i1] < max(floor, 1e-5)
+        sl = out[i0:i1]
+        sl[weak] = 0.0
+        out[i0:i1] = sl
     return out
+
+
+def _correct_period_errors(f0: np.ndarray) -> np.ndarray:
+    """把明显的低八度 / 低五度帧扳回主体音域（RMVPE 回退用）。"""
+    voiced = f0 > 0
+    if int(np.count_nonzero(voiced)) < 40:
+        return f0
+    midi = np.zeros(len(f0), dtype=np.float64)
+    midi[voiced] = 69.0 + 12.0 * np.log2(np.maximum(f0[voiced], 1e-6) / 440.0)
+    core = midi[(midi >= 50.0) & (midi <= 72.0)]
+    if core.size < 40:
+        return f0
+    ref = float(np.median(core))
+    out = f0.copy()
+    for i in np.flatnonzero(voiced):
+        hz = float(f0[i])
+        best_hz = hz
+        best_d = abs(_hz_to_midi(hz) - ref)
+        for fac in _PERIOD_FACTORS:
+            cand = hz * fac
+            if cand < 65.0 or cand > 900.0:
+                continue
+            d = abs(_hz_to_midi(cand) - ref)
+            if d + 0.45 < best_d:
+                best_d = d
+                best_hz = cand
+        out[i] = best_hz
+    return out
+
+
+def _infer_f0(audio: np.ndarray) -> tuple[np.ndarray, str]:
+    try:
+        import librosa
+
+        f0, _voiced, _prob = librosa.pyin(
+            audio,
+            fmin=float(librosa.note_to_hz(PYIN_FMIN_NOTE)),
+            fmax=float(librosa.note_to_hz(PYIN_FMAX_NOTE)),
+            sr=16000,
+            hop_length=160,
+        )
+        return np.where(np.isfinite(f0), f0.astype(np.float64), 0.0), "pyin"
+    except Exception:
+        logger.exception("pyin 失败，回退 RMVPE")
+        raw = np.asarray(_get_rmvpe().infer_from_audio(audio, thred=0.08), dtype=np.float64)
+        return _correct_period_errors(raw), "rmvpe"
 
 
 def _run_lengths(midi: np.ndarray) -> np.ndarray:
@@ -282,9 +343,8 @@ def _load_mono_16k(path: Path) -> np.ndarray:
 def extract_pitch_dict(vocals_path: Path, song_id: str | None = None) -> dict[str, Any]:
     started = time.perf_counter()
     audio = _load_mono_16k(vocals_path)
-    model = _get_rmvpe()
-    f0 = model.infer_from_audio(audio, thred=0.08)
-    f0 = _gate_f0_by_energy(np.asarray(f0, dtype=np.float64), audio, hop=160)
+    f0, algo = _infer_f0(audio)
+    f0 = _gate_f0_by_energy(f0, audio, hop=160)
     hop_ms = HOP_MS
     duration_ms = int(round(len(audio) / 16000 * 1000))
     notes = _notes_from_f0(f0, hop_ms)
@@ -292,8 +352,9 @@ def extract_pitch_dict(vocals_path: Path, song_id: str | None = None) -> dict[st
     ref_midi = float(np.median(voiced_midi)) if voiced_midi else 60.0
     elapsed = time.perf_counter() - started
     logger.info(
-        "F0 完成 song=%s notes=%d voiced=%d elapsed=%.2fs src=%s",
+        "F0 完成 song=%s algo=%s notes=%d voiced=%d elapsed=%.2fs src=%s",
         song_id,
+        algo,
         len(notes),
         len(voiced_midi),
         elapsed,
@@ -302,7 +363,7 @@ def extract_pitch_dict(vocals_path: Path, song_id: str | None = None) -> dict[st
     return {
         "song_id": song_id or "",
         "version": PITCH_VERSION,
-        "algo": "rmvpe",
+        "algo": algo,
         "hop_ms": hop_ms,
         "duration_ms": duration_ms,
         "ref_midi": round(ref_midi, 2),

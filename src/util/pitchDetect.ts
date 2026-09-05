@@ -26,12 +26,13 @@ export function octaveAwareCents(user: number, ref: number): number {
   return (semi - 12 * Math.round(semi / 12)) * 100
 }
 
-/** 0~100：±30 音分满分，±200 音分零分 */
+/** 0~100：碰到约 ±150 音分即 60，±50 满分，±280 才到 0 */
 export function scoreCents(cents: number): number {
   const a = Math.abs(cents)
-  if (a <= 30) return 100
-  if (a >= 200) return 0
-  return Math.round(100 * (1 - (a - 30) / 170))
+  if (a <= 50) return 100
+  if (a <= 150) return Math.round(60 + (40 * (150 - a)) / 100)
+  if (a >= 280) return 0
+  return Math.round((60 * (280 - a)) / 130)
 }
 
 export function bufferRms(buf: Float32Array): number {
@@ -75,7 +76,7 @@ export class VoicePitchTracker {
 
   detect(buf: Float32Array, sampleRate: number): PitchDetectResult | null {
     const rms = bufferRms(buf)
-    if (rms < 0.012) return null
+    if (rms < 0.007) return null
 
     const n = downsample(buf, sampleRate, this.work)
     const sr = sampleRate <= TARGET_SR * 1.05 ? sampleRate : TARGET_SR
