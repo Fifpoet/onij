@@ -1,6 +1,7 @@
 import type { PitchNote } from '@/api/uvr'
 
 const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'] as const
+const NATURAL_PC = new Set([0, 2, 4, 5, 7, 9, 11])
 
 /** MIDI 60 = C4（科学音高记谱） */
 export function midiToNoteName(midi: number): string {
@@ -10,8 +11,16 @@ export function midiToNoteName(midi: number): string {
   return `${name}${octave}`
 }
 
+export function pitchClass(midi: number): number {
+  return ((Math.round(midi) % 12) + 12) % 12
+}
+
+export function isNaturalNote(midi: number): boolean {
+  return NATURAL_PC.has(pitchClass(midi))
+}
+
 export function isNaturalC(midi: number): boolean {
-  return ((Math.round(midi) % 12) + 12) % 12 === 0
+  return pitchClass(midi) === 0
 }
 
 /** Live：丢掉观众尖叫（短、离主体音域远）和讲话（密、跳、时值短） */
@@ -62,10 +71,13 @@ function cleanLiveNotes(notes: PitchNote[]): PitchNote[] {
   return kept.filter((_, i) => !drop.has(i))
 }
 
-/** 后端已切段；前端清 Live 杂质后只 round。 */
+/** 后端 v5 已切段并滤 Live；前端只 round，避免再滤掉轻开口。 */
 export function mergePitchNotes(notes: PitchNote[]): PitchNote[] {
   if (!notes.length) return notes
-  return cleanLiveNotes(notes)
+  return notes
+    .filter((n) => n.t1 > n.t0)
+    .map((n) => ({ t0: n.t0, t1: n.t1, midi: Math.round(n.midi) }))
+    .sort((a, b) => a.t0 - b.t0)
 }
 
 export type PitchPhrase = {
@@ -100,7 +112,7 @@ export function pitchNoteKey(n: PitchNote): string {
   return `${n.t0.toFixed(3)}:${n.t1.toFixed(3)}:${n.midi}`
 }
 
-const RANGE_PAD = 2
+const RANGE_PAD = 0.7
 const MIN_NOTE_DUR = 0.08
 
 function weightedPercentile(items: { midi: number; w: number }[], p: number): number {
@@ -116,34 +128,34 @@ function weightedPercentile(items: { midi: number; w: number }[], p: number): nu
   return sorted[sorted.length - 1]!.midi
 }
 
-/** 按 F0 横条时长加权取主体音域，忽略短暂飞点，只留一点边距 */
+/** 一屏铺满本曲实际最高/最低横条，只留一点边 */
 export function songPitchExtent(notes: PitchNote[]): { lo: number; hi: number } {
   const solid = notes.filter((n) => n.t1 - n.t0 >= MIN_NOTE_DUR)
   const src = solid.length ? solid : notes
   if (!src.length) return { lo: 55, hi: 72 }
-  const items = src.map((n) => ({ midi: n.midi, w: Math.max(n.t1 - n.t0, 0.02) }))
-  let lo = weightedPercentile(items, 0.04)
-  let hi = weightedPercentile(items, 0.96)
-  if (hi < lo) {
-    const t = lo
-    lo = hi
-    hi = t
+  let lo = src[0]!.midi
+  let hi = src[0]!.midi
+  for (const n of src) {
+    if (n.midi < lo) lo = n.midi
+    if (n.midi > hi) hi = n.midi
   }
   lo -= RANGE_PAD
   hi += RANGE_PAD
-  if (hi - lo < 10) {
+  if (hi - lo < 7) {
     const mid = (lo + hi) / 2
-    lo = mid - 5
-    hi = mid + 5
+    lo = mid - 3.5
+    hi = mid + 3.5
   }
   return { lo, hi }
 }
 
-/** 左侧标尺：范围内每个半音 */
+/** 左侧标尺：只标自然音（C D E F G A B），E–F / B–C 仍是半音间距 */
 export function pitchScaleLabels(lo: number, hi: number): number[] {
   const a = Math.ceil(lo)
   const b = Math.floor(hi)
   const out: number[] = []
-  for (let m = a; m <= b; m++) out.push(m)
+  for (let m = a; m <= b; m++) {
+    if (isNaturalNote(m)) out.push(m)
+  }
   return out.length ? out : [Math.round((lo + hi) / 2)]
 }

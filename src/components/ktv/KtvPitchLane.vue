@@ -20,6 +20,9 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { SongPitch } from '@/api/uvr'
 import { isNaturalC, mergePitchNotes, midiToNoteName, pitchNoteKey, pitchScaleLabels, songPitchExtent } from '@/util/pitchNotes'
 
+const BEAN_SMOOTH_SEC = 0.09
+const LIT_HOLD_MS = 420
+
 const props = defineProps<{
   pitch: SongPitch | null
   currentSec: number
@@ -51,6 +54,7 @@ let stampSec = 0
 let stampMs = 0
 let lastDrawMs = 0
 let lastBeanMidi: number | null = null
+let lastLitMs = 0
 const sparks: Spark[] = []
 
 const hint = computed(() => {
@@ -92,6 +96,7 @@ watch(
   () => props.pitch?.song_id,
   () => {
     lastBeanMidi = null
+    lastLitMs = 0
   },
 )
 
@@ -110,7 +115,7 @@ function displaySec() {
 }
 
 function midiToY(midi: number, lo: number, hi: number, height: number) {
-  const span = Math.max(hi - lo, 12)
+  const span = Math.max(hi - lo, 7)
   const t = (hi - midi) / span
   return Math.min(height - 8, Math.max(8, t * height))
 }
@@ -183,14 +188,11 @@ function draw() {
   const now = displaySec()
   const windowSec = 8
   const labelW = 44
-  const playX = Math.max(w * 0.22, labelW + 18)
+  const playX = Math.max(w * 0.14, labelW + 16)
   const pxPerSec = w / windowSec
-  let lo = extent.value.lo
-  let hi = extent.value.hi
-  if (!props.inTune && props.userMidi != null && Number.isFinite(props.userMidi)) {
-    if (props.userMidi < lo + 0.8) lo = props.userMidi - 1.5
-    if (props.userMidi > hi - 0.8) hi = props.userMidi + 1.5
-  }
+  const pastSec = Math.max(playX / pxPerSec, 2.4)
+  const lo = extent.value.lo
+  const hi = extent.value.hi
   const labels = pitchScaleLabels(lo, hi)
   const barH = Math.max(8, Math.min(16, h / 24))
 
@@ -204,9 +206,8 @@ function draw() {
     ctx.stroke()
   }
 
-  let activeY: number | null = null
   for (const note of list) {
-    if (note.t1 < now - 1 || note.t0 > now + windowSec) continue
+    if (note.t1 < now - pastSec || note.t0 > now + windowSec) continue
     const x = playX + (note.t0 - now) * pxPerSec
     const width = Math.max(4, (note.t1 - note.t0) * pxPerSec)
     const y = midiToY(note.midi, lo, hi, h)
@@ -216,7 +217,6 @@ function draw() {
     const rr = Math.min(4, barH / 2)
 
     if (active) {
-      activeY = y
       const passed = Math.max(0, Math.min(width, (now - note.t0) * pxPerSec))
       ctx.fillStyle = 'rgba(186, 230, 253, 0.55)'
       roundRect(ctx, x, y - barH / 2, width, barH, rr)
@@ -251,9 +251,26 @@ function draw() {
     }
   }
 
-  if (props.inTune && activeY != null) {
-    spawnSparks(playX, activeY, 3)
+  const activeNote = list.find((n) => now >= n.t0 && now <= n.t1)
+  const mid = (extent.value.lo + extent.value.hi) / 2
+  const onPitch = !!(props.inTune && activeNote)
+  if (onPitch || props.userVoiced) lastLitMs = nowMs
+  const lit = nowMs - lastLitMs < LIT_HOLD_MS
+
+  let targetMidi: number
+  if (props.userVoiced && props.userMidi != null && Number.isFinite(props.userMidi)) {
+    targetMidi = props.userMidi
+  } else {
+    targetMidi = lastBeanMidi ?? mid
   }
+  if (lastBeanMidi == null) lastBeanMidi = targetMidi
+  else {
+    const k = 1 - Math.exp(-dt / BEAN_SMOOTH_SEC)
+    lastBeanMidi += (targetMidi - lastBeanMidi) * k
+  }
+  const beanY = midiToY(lastBeanMidi, lo, hi, h)
+
+  if (onPitch) spawnSparks(playX, beanY, 2)
   stepSparks(dt)
   drawSparks(ctx)
 
@@ -264,21 +281,8 @@ function draw() {
   ctx.lineTo(playX, h - 10)
   ctx.stroke()
 
-  const activeNote = list.find((n) => now >= n.t0 && now <= n.t1)
-  const mid = (extent.value.lo + extent.value.hi) / 2
-  const adsorbed = !!(props.inTune && activeNote)
-  let beanMidi: number
-  if (adsorbed) {
-    beanMidi = activeNote.midi
-  } else if (props.userVoiced && props.userMidi != null) {
-    beanMidi = props.userMidi
-  } else {
-    beanMidi = lastBeanMidi ?? activeNote?.midi ?? mid
-  }
-  lastBeanMidi = beanMidi
-  const beanY = midiToY(beanMidi, lo, hi, h)
-  const beanR = adsorbed ? 9 : 7
-  if (adsorbed) {
+  const beanR = onPitch ? 9 : 7
+  if (onPitch) {
     ctx.beginPath()
     ctx.arc(playX, beanY, 16, 0, Math.PI * 2)
     ctx.fillStyle = 'rgba(253, 224, 71, 0.22)'
@@ -286,16 +290,16 @@ function draw() {
   }
   ctx.beginPath()
   ctx.arc(playX, beanY, beanR, 0, Math.PI * 2)
-  ctx.fillStyle = adsorbed
+  ctx.fillStyle = onPitch
     ? 'rgba(253, 224, 71, 0.98)'
-    : props.userVoiced
+    : lit
       ? 'rgba(250, 204, 21, 0.92)'
       : 'rgba(250, 204, 21, 0.42)'
   ctx.fill()
-  ctx.lineWidth = adsorbed ? 2.5 : 2
-  ctx.strokeStyle = adsorbed
+  ctx.lineWidth = onPitch ? 2.5 : 2
+  ctx.strokeStyle = onPitch
     ? 'rgba(255,255,255,1)'
-    : props.userVoiced
+    : lit
       ? 'rgba(255,255,255,0.95)'
       : 'rgba(255,255,255,0.45)'
   ctx.stroke()

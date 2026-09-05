@@ -3,14 +3,17 @@ import type { PitchNote } from '@/api/uvr'
 import { VoicePitchTracker, midiCents, octaveAwareCents, scoreCents } from '@/util/pitchDetect'
 import { groupPitchPhrases, pitchNoteKey, type PitchPhrase } from '@/util/pitchNotes'
 
-const RMS_GATE = 0.012
-const HOLD_MS = 450
-const CONFIRM_FRAMES = 2
+const RMS_ENTER = 0.018
+const RMS_STAY = 0.008
+const HOLD_MS = 700
+const TAIL_HOLD_MS = 120
+const CONFIRM_FRAMES = 3
 const STICKY_CENTS = 80
-const JUMP_CENTS = 180
+const JUMP_CENTS = 220
 const IN_TUNE_CENTS = 70
 const HIT_SCORE = 60
 const PHRASE_GAP_RESET = 1.2
+const WILD_SEMI = 8
 
 export function useSingPitch(opts: {
   enabled: Ref<boolean>
@@ -44,6 +47,8 @@ export function useSingPitch(opts: {
   let holdUntil = 0
   let lastSec = 0
   let noiseRms = 0.008
+  let peakRms = 0.02
+  let lastRawMidi: number | null = null
 
   let phrases: PitchPhrase[] = []
   let phraseIdx = -1
@@ -51,6 +56,7 @@ export function useSingPitch(opts: {
   let barSum = 0
   let barFrames = 0
   let barVoiced = 0
+  let barTouched = false
   let barLocked: number[] = []
   let finishedPhrases: number[] = []
   let finishedMask: boolean[] = []
@@ -88,10 +94,9 @@ export function useSingPitch(opts: {
   function finalizeBar(phrase: PitchPhrase, idx: number) {
     const note = phrase.notes[idx]
     if (!note) return
-    const dur = Math.max(note.t1 - note.t0, 0.04)
     const quality = barFrames > 0 ? barSum / barFrames : 0
-    const cover = Math.min(1, barVoiced / (dur * 0.5))
-    const locked = Math.round(quality * (0.65 + 0.35 * cover))
+    const touched = barTouched || (barFrames > 0 && quality >= 45)
+    const locked = touched ? Math.max(HIT_SCORE, Math.round(quality)) : Math.round(quality * 0.35)
     barLocked[idx] = locked
     if (locked >= HIT_SCORE) {
       hits.add(pitchNoteKey(note))
@@ -100,6 +105,7 @@ export function useSingPitch(opts: {
     barSum = 0
     barFrames = 0
     barVoiced = 0
+    barTouched = false
   }
 
   function updateAvg() {
@@ -131,6 +137,7 @@ export function useSingPitch(opts: {
     barSum = 0
     barFrames = 0
     barVoiced = 0
+    barTouched = false
   }
 
   function missPhrase(i: number) {
@@ -150,6 +157,7 @@ export function useSingPitch(opts: {
     barSum = 0
     barFrames = 0
     barVoiced = 0
+    barTouched = false
   }
 
   function advanceByTime(sec: number) {
@@ -176,6 +184,7 @@ export function useSingPitch(opts: {
     barSum = 0
     barFrames = 0
     barVoiced = 0
+    barTouched = false
     finishedPhrases = []
     phraseScore.value = null
     avgScore.value = null
@@ -191,6 +200,8 @@ export function useSingPitch(opts: {
     pendingCount = 0
     holdUntil = 0
     lastSec = 0
+    peakRms = 0.02
+    lastRawMidi = null
     inTune.value = false
     userMidi.value = null
     voiced.value = false
@@ -248,6 +259,11 @@ export function useSingPitch(opts: {
     barSum += frame
     barFrames += 1
     barVoiced += dt
+    if (frame >= HIT_SCORE) {
+      barTouched = true
+      hits.add(pitchNoteKey(note))
+      publishHits()
+    }
   }
 
   function tick() {
@@ -264,20 +280,39 @@ export function useSingPitch(opts: {
     const note = refNoteAt(now)
     const ref = note?.midi ?? null
     const found = tracker.detect(buf, audioCtx?.sampleRate || 48000)
-    const loud = !!(found && found.rms >= RMS_GATE)
+    if (found) {
+      if (found.rms > peakRms) peakRms = found.rms
+      else peakRms = peakRms * 0.97 + found.rms * 0.03
+    }
+    const stay = voiced.value
+    const gate = stay ? Math.max(RMS_STAY, noiseRms * 1.2) : Math.max(RMS_ENTER, noiseRms * 2.1)
+    const loud = !!(found && found.rms >= gate)
     if (found && !loud) {
       noiseRms = noiseRms * 0.96 + found.rms * 0.04
     }
-    const aboveNoise = !found || found.rms > noiseRms * 1.35
+    const aboveNoise = !found || found.rms > noiseRms * 1.55
+    const tail = !!(found && peakRms > 0.03 && found.rms < peakRms * 0.32)
+    const jumped = !!(
+      found &&
+      lastRawMidi != null &&
+      Math.abs(found.midi - lastRawMidi) >= WILD_SEMI
+    )
+    const usable = !!(loud && aboveNoise && found && found.prob >= (stay ? 0.55 : 0.68) && !(tail && jumped))
 
     let shown: number | null = null
-    if (loud && aboveNoise && found) {
+    if (usable && found) {
       shown = acceptPitch(found.midi, nowMs)
-    } else if (nowMs < holdUntil && stableMidi != null) {
+      lastRawMidi = found.midi
+      holdUntil = nowMs + (ref != null ? HOLD_MS : 380)
+    } else if (!tail && nowMs < holdUntil && stableMidi != null) {
       shown = stableMidi
     } else {
       pendingMidi = null
       pendingCount = 0
+      if (tail) {
+        holdUntil = Math.min(holdUntil, nowMs + TAIL_HOLD_MS)
+        lastRawMidi = null
+      }
     }
 
     if (shown != null) {
