@@ -19,4 +19,5 @@ type AllInfra struct {
 	dal.AiConfirmPendingDal
 	dal.MusicCollectionDal
 	dal.MusicCollectionItemDal
+	dal.FileVideoMarkerDal
 }

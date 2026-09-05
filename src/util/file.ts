@@ -85,9 +85,18 @@ export function isText(fileType: FileType): boolean {
   return fileType === FileType.FT_Text || fileType === FileType.FT_CSV
 }
 
+export function isVideo(fileType: FileType): boolean {
+  return fileType === FileType.FT_Video
+}
+
+export function isMp4Name(name: string): boolean {
+  return getFileExtension(name) === 'mp4'
+}
+
 /** 本地 dev：同源 /file/preview?proxy=1 经 Vite 代理 + 七牛 SDK 回源，不依赖 cloud.onij.fun DNS */
-export function fileImageSrc(file: { id: number; url: string }): string {
+export function fileImageSrc(file: { id: number; url: string; format?: FileType; name?: string }): string {
   if (!file.url || !file.id) return ''
+  if (file.format === FileType.FT_Video || isMp4Name(file.name || '')) return ''
   if (import.meta.env.DEV) {
     return `/file/preview?file_id=${file.id}&proxy=1`
   }

@@ -8,7 +8,7 @@
     transform-origin="center"
     @update:show="handleClose"
   >
-    <n-spin :show="loading">
+    <n-spin :show="loading && overallPercent === 0">
       <n-form>
         <n-form-item label="文件选择">
           <n-upload
@@ -49,6 +49,13 @@
                   <n-text style="font-weight: 500; color: #374151;">{{ fileInfo.name }}</n-text>
                   <n-text depth="3" style="font-size: 12px;">{{ formatFileSize(fileInfo.file?.size || 0) }}</n-text>
                 </n-space>
+                <n-progress
+                  v-if="loading && fileInfo.percent != null"
+                  type="line"
+                  :percentage="fileInfo.percent"
+                  :show-indicator="true"
+                  :height="8"
+                />
 
                 <n-space size="small" align="center" wrap>
                   <n-input
@@ -80,7 +87,7 @@
         <n-form-item>
           <n-space justify="end">
             <n-button :loading="loading" type="primary" :disabled="uploadFileList.length === 0" @click="handleUpload">
-              {{ loading ? '上传中...' : '开始上传' }}
+              {{ uploadButtonLabel }}
             </n-button>
             <n-button @click="handleReset">重置</n-button>
             <n-button @click="handleClose">取消</n-button>
@@ -92,10 +99,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import {
   NModal, NUpload, NButton, NIcon, NSpin, NSpace, NForm, NFormItem,
-  NInput, NDatePicker, NDivider, NText, NCard, useMessage,
+  NInput, NDatePicker, NDivider, NText, NCard, NProgress, useMessage,
 } from 'naive-ui'
 import type { UploadFileInfo, UploadInst } from 'naive-ui'
 import { UploadFile } from '@/api'
@@ -107,6 +114,7 @@ type UploadItem = UploadFileInfo & {
   customName?: string
   customDate?: number | null
   exifHint?: string
+  percent?: number
 }
 
 const props = defineProps<{
@@ -124,6 +132,15 @@ const message = useMessage()
 const loading = ref(false)
 const uploadRef = ref<UploadInst | null>(null)
 const uploadFileList = ref<UploadItem[]>([])
+const overallPercent = computed(() => {
+  const items = uploadFileList.value.filter((f) => f.file)
+  if (!items.length) return 0
+  return Math.round(items.reduce((s, f) => s + (f.percent ?? 0), 0) / items.length)
+})
+const uploadButtonLabel = computed(() => {
+  if (!loading.value) return '开始上传'
+  return overallPercent.value > 0 ? `上传中 ${overallPercent.value}%` : '上传中...'
+})
 
 const handleFileChange = async (options: { fileList: UploadFileInfo[] }) => {
   const next: UploadItem[] = []
@@ -159,7 +176,11 @@ const handleUpload = async () => {
     for (const fileInfo of uploadFileList.value) {
       if (!fileInfo.file) continue
 
-      const result = await uploadToQiniu(fileInfo.file, props.folderPath ?? [])
+      const item = fileInfo
+      item.percent = 0
+      const result = await uploadToQiniu(fileInfo.file, props.folderPath ?? [], (p) => {
+        item.percent = p
+      })
       const originAt = fileInfo.customDate
         ? Math.floor(fileInfo.customDate / 1000)
         : fileInfo.file.lastModified > 0

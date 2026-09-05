@@ -9,24 +9,28 @@ import MusicDetailMobile from "@/components/music/MusicDetailMobile.vue";
 import MusicLike from "@/components/music/MusicLike.vue";
 import {NMessageProvider} from "naive-ui"
 import NeteaseAudioHost from '@/components/player/NeteaseAudioHost.vue'
+import VideoPlayerHost from '@/components/player/VideoPlayerHost.vue'
 import LyricsFullScreen from '@/components/player/LyricsFullScreen.vue'
 import MobileBottomPlayerBar from '@/components/player/MobileBottomPlayerBar.vue'
 import MobileLyricsSheet from '@/components/player/MobileLyricsSheet.vue'
 import MemoList from './components/memo/MemoList.vue';
 import VoiceTranscriptBar from '@/components/voice/VoiceTranscriptBar.vue'
+import { useVideoPlayerStore } from '@/store/videoPlayer'
 
 const route = useRoute()
 const showMobilePlayerBar = computed(() => route.path !== '/ktv')
+const videoPlayer = useVideoPlayerStore()
 </script>
 
 <template>
   <div class="app-shell min-h-screen w-full text-left">
-    <VoiceTranscriptBar />
+    <VoiceTranscriptBar v-if="!videoPlayer.opened" />
     <!-- 顶部导航栏 -->
   <PageHeader />
 
   <n-message-provider>
     <NeteaseAudioHost />
+    <VideoPlayerHost />
     <LyricsFullScreen />
     <MobileBottomPlayerBar v-if="showMobilePlayerBar" />
     <MobileLyricsSheet />

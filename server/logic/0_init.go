@@ -11,4 +11,5 @@ type AllLogic struct {
 	TranLogic
 	AiLogic
 	CollectionLogic
+	FileVideoLogic
 }

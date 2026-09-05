@@ -2,11 +2,13 @@ package biz
 
 import (
 	"encoding/json"
+	"strings"
 )
 
 type fileExtraMeta struct {
 	OriginAt int64  `json:"origin_at,omitempty"`
 	Exif     string `json:"exif,omitempty"`
+	HlsPid   string `json:"hls_pid,omitempty"`
 }
 
 func BuildFileExtra(originAt int64, exifRaw string) string {
@@ -32,6 +34,30 @@ func ParseFileOriginAt(extra string) int64 {
 		return 0
 	}
 	return m.OriginAt
+}
+
+func ParseHlsPid(extra string) string {
+	if extra == "" {
+		return ""
+	}
+	var m fileExtraMeta
+	if err := json.Unmarshal([]byte(extra), &m); err != nil {
+		return ""
+	}
+	return strings.TrimSpace(m.HlsPid)
+}
+
+func SetHlsPid(extra, pid string) string {
+	var m fileExtraMeta
+	if extra != "" {
+		_ = json.Unmarshal([]byte(extra), &m)
+	}
+	m.HlsPid = strings.TrimSpace(pid)
+	b, err := json.Marshal(m)
+	if err != nil {
+		return extra
+	}
+	return string(b)
 }
 
 func ParseOriginAtFromExifField(exif string) int64 {

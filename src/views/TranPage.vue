@@ -63,6 +63,14 @@
               <p v-else class="tran-card__meta">图片加载中…</p>
               <p class="tran-card__meta">{{ item.name }} · {{ formatFileSize(item.size) }}</p>
             </div>
+            <div
+              v-else-if="item.kind === 'file' && isTranVideo(item)"
+              class="tran-card__media"
+              @click.stop="openVideo(item)"
+            >
+              <p class="tran-card__name">{{ item.name }}</p>
+              <p class="tran-card__meta">{{ formatFileSize(item.size) }} · 点击播放</p>
+            </div>
             <template v-else>
               <p class="tran-card__name">{{ item.name }}</p>
               <p class="tran-card__meta">{{ formatFileSize(item.size) }}</p>
@@ -136,9 +144,11 @@ import PageContent from '@/components/layout/PageContent.vue'
 import { DownloadFiles } from '@/api/file'
 import { FileType } from '@/api/types/enums'
 import { useTranStationStore, type TranItem, type TranFileItem } from '@/store/tranStation'
-import { formatFileSize, getFileTypeFromString, isImage } from '@/util/file'
+import { formatFileSize, getFileTypeFromString, isImage, isMp4Name } from '@/util/file'
+import { useVideoPlayerStore } from '@/store/videoPlayer'
 
 const tran = useTranStationStore()
+const videoPlayer = useVideoPlayerStore()
 const imageUrlCache = ref<Record<number, string>>({})
 let alive = true
 let loadingUrls = false
@@ -169,6 +179,14 @@ function fileFormat(item: TranFileItem): FileType {
 
 function isTranImage(item: TranItem): item is TranFileItem {
   return item.kind === 'file' && isImage(fileFormat(item))
+}
+
+function isTranVideo(item: TranItem): item is TranFileItem {
+  return item.kind === 'file' && isMp4Name(item.name)
+}
+
+function openVideo(item: TranFileItem) {
+  if (item.fileId) videoPlayer.open(item.fileId)
 }
 
 function itemTag(item: TranItem) {

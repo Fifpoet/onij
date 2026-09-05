@@ -33,6 +33,7 @@ func InitDalForTest() *infra.AllInfra {
 	aiConfirmPendingDal := dal.NewAiConfirmPendingDal(defaultProxy)
 	musicCollectionDal := dal.NewMusicCollectionDal(defaultProxy)
 	musicCollectionItemDal := dal.NewMusicCollectionItemDal(defaultProxy)
+	fileVideoMarkerDal := dal.NewFileVideoMarkerDal(defaultProxy)
 	allInfra := &infra.AllInfra{
 		TagDal:                 tagDal,
 		FileDal:                fileDal,
@@ -47,6 +48,7 @@ func InitDalForTest() *infra.AllInfra {
 		AiConfirmPendingDal:    aiConfirmPendingDal,
 		MusicCollectionDal:     musicCollectionDal,
 		MusicCollectionItemDal: musicCollectionItemDal,
+		FileVideoMarkerDal:     fileVideoMarkerDal,
 	}
 	return allInfra
 }
@@ -67,6 +69,7 @@ func InitLogicForTest() *logic.AllLogic {
 	aiConfirmPendingDal := dal.NewAiConfirmPendingDal(defaultProxy)
 	musicCollectionDal := dal.NewMusicCollectionDal(defaultProxy)
 	musicCollectionItemDal := dal.NewMusicCollectionItemDal(defaultProxy)
+	fileVideoMarkerDal := dal.NewFileVideoMarkerDal(defaultProxy)
 	allInfra := &infra.AllInfra{
 		TagDal:                 tagDal,
 		FileDal:                fileDal,
@@ -81,6 +84,7 @@ func InitLogicForTest() *logic.AllLogic {
 		AiConfirmPendingDal:    aiConfirmPendingDal,
 		MusicCollectionDal:     musicCollectionDal,
 		MusicCollectionItemDal: musicCollectionItemDal,
+		FileVideoMarkerDal:     fileVideoMarkerDal,
 	}
 	musicLogic := logic.NewMusicLogic(allInfra)
 	fileLogic := logic.NewFileLogic(allInfra)
@@ -93,17 +97,19 @@ func InitLogicForTest() *logic.AllLogic {
 	tranLogic := logic.NewTranLogic(allInfra, fileLogic)
 	aiLogic := logic.NewAiLogic(allInfra)
 	collectionLogic := logic.NewCollectionLogic(allInfra)
+	fileVideoLogic := logic.NewFileVideoLogic(allInfra)
 	allLogic := &logic.AllLogic{
-		MusicLogic:       musicLogic,
-		FileLogic:        fileLogic,
-		AlbumLogic:       albumLogic,
-		ArtistLogic:      artistLogic,
-		TagLogic:         tagLogic,
-		PracticeLogic:    practiceLogic,
-		UvrLogic:         uvrLogic,
-		TranLogic:        tranLogic,
-		AiLogic:          aiLogic,
-		CollectionLogic:  collectionLogic,
+		MusicLogic:      musicLogic,
+		FileLogic:       fileLogic,
+		AlbumLogic:      albumLogic,
+		ArtistLogic:     artistLogic,
+		TagLogic:        tagLogic,
+		PracticeLogic:   practiceLogic,
+		UvrLogic:        uvrLogic,
+		TranLogic:       tranLogic,
+		AiLogic:         aiLogic,
+		CollectionLogic: collectionLogic,
+		FileVideoLogic:  fileVideoLogic,
 	}
 	return allLogic
 }
@@ -124,6 +130,7 @@ func InitializeApp() *App {
 	aiConfirmPendingDal := dal.NewAiConfirmPendingDal(defaultProxy)
 	musicCollectionDal := dal.NewMusicCollectionDal(defaultProxy)
 	musicCollectionItemDal := dal.NewMusicCollectionItemDal(defaultProxy)
+	fileVideoMarkerDal := dal.NewFileVideoMarkerDal(defaultProxy)
 	allInfra := &infra.AllInfra{
 		TagDal:                 tagDal,
 		FileDal:                fileDal,
@@ -138,6 +145,7 @@ func InitializeApp() *App {
 		AiConfirmPendingDal:    aiConfirmPendingDal,
 		MusicCollectionDal:     musicCollectionDal,
 		MusicCollectionItemDal: musicCollectionItemDal,
+		FileVideoMarkerDal:     fileVideoMarkerDal,
 	}
 	musicLogic := logic.NewMusicLogic(allInfra)
 	fileLogic := logic.NewFileLogic(allInfra)
@@ -150,17 +158,19 @@ func InitializeApp() *App {
 	tranLogic := logic.NewTranLogic(allInfra, fileLogic)
 	aiLogic := logic.NewAiLogic(allInfra)
 	collectionLogic := logic.NewCollectionLogic(allInfra)
+	fileVideoLogic := logic.NewFileVideoLogic(allInfra)
 	allLogic := &logic.AllLogic{
-		MusicLogic:       musicLogic,
-		FileLogic:        fileLogic,
-		AlbumLogic:       albumLogic,
-		ArtistLogic:      artistLogic,
-		TagLogic:         tagLogic,
-		PracticeLogic:    practiceLogic,
-		UvrLogic:         uvrLogic,
-		TranLogic:        tranLogic,
-		AiLogic:          aiLogic,
-		CollectionLogic:  collectionLogic,
+		MusicLogic:      musicLogic,
+		FileLogic:       fileLogic,
+		AlbumLogic:      albumLogic,
+		ArtistLogic:     artistLogic,
+		TagLogic:        tagLogic,
+		PracticeLogic:   practiceLogic,
+		UvrLogic:        uvrLogic,
+		TranLogic:       tranLogic,
+		AiLogic:         aiLogic,
+		CollectionLogic: collectionLogic,
+		FileVideoLogic:  fileVideoLogic,
 	}
 	app := &App{
 		AllInfra: allInfra,
@@ -171,9 +181,9 @@ func InitializeApp() *App {
 
 // wire.go:
 
-var infraSet = wire.NewSet(dal.NewMysqlCli, cdb.NewDefaultProxy, dal.NewTagDal, dal.NewFileDal, dal.NewMusicDal, dal.NewAlbumDal, dal.NewAlbumMusicDal, dal.NewArtistDal, dal.NewPracticeDal, dal.NewTranItemDal, dal.NewAiSessionDal, dal.NewAiMessageDal, dal.NewAiConfirmPendingDal, dal.NewMusicCollectionDal, dal.NewMusicCollectionItemDal, wire.Struct(new(infra.AllInfra), "*"))
+var infraSet = wire.NewSet(dal.NewMysqlCli, cdb.NewDefaultProxy, dal.NewTagDal, dal.NewFileDal, dal.NewMusicDal, dal.NewAlbumDal, dal.NewAlbumMusicDal, dal.NewArtistDal, dal.NewPracticeDal, dal.NewTranItemDal, dal.NewAiSessionDal, dal.NewAiMessageDal, dal.NewAiConfirmPendingDal, dal.NewMusicCollectionDal, dal.NewMusicCollectionItemDal, dal.NewFileVideoMarkerDal, wire.Struct(new(infra.AllInfra), "*"))
 
-var logicSet = wire.NewSet(uvr.NewClient, logic.NewMusicLogic, logic.NewFileLogic, logic.NewAlbumLogic, logic.NewArtistLogic, logic.NewTagLogic, logic.NewPracticeLogic, logic.NewUvrLogic, logic.NewTranLogic, logic.NewAiLogic, logic.NewCollectionLogic, wire.Struct(new(logic.AllLogic), "*"))
+var logicSet = wire.NewSet(uvr.NewClient, logic.NewMusicLogic, logic.NewFileLogic, logic.NewAlbumLogic, logic.NewArtistLogic, logic.NewTagLogic, logic.NewPracticeLogic, logic.NewUvrLogic, logic.NewTranLogic, logic.NewAiLogic, logic.NewCollectionLogic, logic.NewFileVideoLogic, wire.Struct(new(logic.AllLogic), "*"))
 
 var allSet = wire.NewSet(
 	infraSet,
