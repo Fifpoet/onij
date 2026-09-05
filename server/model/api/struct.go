@@ -32,3 +32,55 @@ type GetMusicMvBatchResp struct {
 	Message string         `json:"message"`
 	Items   []*MusicMvItem `json:"items,omitempty"`
 }
+
+// --- 云盘视频播放 / 打点 ---
+
+type PlayFileVideoReq struct {
+	FileId int64 `json:"file_id"`
+}
+
+type PlayFileVideoResp struct {
+	Code       int32  `json:"code"`
+	Message    string `json:"message"`
+	Mode       string `json:"mode"`
+	Url        string `json:"url,omitempty"`
+	Playlist   string `json:"playlist,omitempty"`
+	DurationMs int64  `json:"duration_ms"`
+}
+
+type FileVideoMarkerItem struct {
+	Id     int64  `json:"id"`
+	FileId int64  `json:"file_id"`
+	TimeMs int64  `json:"time_ms"`
+	Label  string `json:"label"`
+}
+
+type ListFileVideoMarkerReq struct {
+	FileId int64 `json:"file_id"`
+}
+
+type ListFileVideoMarkerResp struct {
+	Code    int32                  `json:"code"`
+	Message string                 `json:"message"`
+	Markers []*FileVideoMarkerItem `json:"markers"`
+}
+
+type SaveFileVideoMarkerReq struct {
+	FileId  int64                  `json:"file_id"`
+	Markers []*FileVideoMarkerItem `json:"markers"`
+}
+
+type SaveFileVideoMarkerResp struct {
+	Code    int32                  `json:"code"`
+	Message string                 `json:"message"`
+	Markers []*FileVideoMarkerItem `json:"markers"`
+}
+
+type DeleteFileVideoMarkerReq struct {
+	Id int64 `json:"id"`
+}
+
+type DeleteFileVideoMarkerResp struct {
+	Code    int32  `json:"code"`
+	Message string `json:"message"`
+}

@@ -29,6 +29,7 @@ var infraSet = wire.NewSet(
 	dal.NewAiConfirmPendingDal,
 	dal.NewMusicCollectionDal,
 	dal.NewMusicCollectionItemDal,
+	dal.NewFileVideoMarkerDal,
 	wire.Struct(new(infra.AllInfra), "*"),
 )
 
@@ -44,6 +45,7 @@ var logicSet = wire.NewSet(
 	logic.NewTranLogic,
 	logic.NewAiLogic,
 	logic.NewCollectionLogic,
+	logic.NewFileVideoLogic,
 	wire.Struct(new(logic.AllLogic), "*"),
 )
 

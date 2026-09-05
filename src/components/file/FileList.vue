@@ -298,12 +298,16 @@ import {
   isFolder,
   showFileIcon,
   isImage,
+  isVideo,
+  isMp4Name,
 } from '@/util'
 import { downloadByPrivateUrl } from '@/util/qiniu'
+import { useVideoPlayerStore } from '@/store/videoPlayer'
 import FileUploadModal from './FileUploadModal.vue'
 import FolderCreateModal from './FolderCreateModal.vue'
 
 const message = useMessage()
+const videoPlayer = useVideoPlayerStore()
 
 const fileList = ref<FileDetail[]>([])
 const loading = ref(false)
@@ -427,6 +431,10 @@ const enterFolder = (file: FileDetail) => {
 const handleFileClick = (file: FileDetail) => {
   if (isFolder(file.format)) {
     enterFolder(file)
+    return
+  }
+  if (isVideo(file.format) && isMp4Name(file.name)) {
+    videoPlayer.open(file.id)
     return
   }
   if (isImage(file.format) && file.url) {

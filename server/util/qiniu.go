@@ -3,12 +3,15 @@ package util
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
+	"net/http"
 	"net/url"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -239,4 +242,209 @@ func GetUploadToken() string {
 	putPolicy := storage.PutPolicy{Scope: bk}
 	upToken := putPolicy.UploadToken(getQiniuMac())
 	return upToken
+}
+
+const (
+	hlsSegFop        = "avthumb/m3u8/noDomain/1/segtime/10/vcodec/copy/acodec/copy"
+	faststartFop     = "avthumb/mp4/vcodec/copy/acodec/copy"
+	headProbeBytes   = 262144
+	qiniuHTTPTimeout = 30 * time.Second
+)
+
+func qiniuPipeline() string {
+	return strings.TrimSpace(os.Getenv("QINIU_PIPELINE"))
+}
+
+func newOperationManager() *storage.OperationManager {
+	cfg := storage.Config{
+		Zone:          zone,
+		UseHTTPS:      false,
+		UseCdnDomains: false,
+	}
+	return storage.NewOperationManager(getQiniuMac(), &cfg)
+}
+
+// HLSKey 约定：原对象 key 后追加 .m3u8
+func HLSKey(storeKey string) string {
+	return storeKey + ".m3u8"
+}
+
+func privateFopURL(key, domain, fop string) string {
+	if len(key) == 0 {
+		return ""
+	}
+	deadline := time.Now().Add(time.Hour).Unix()
+	publicURL := storage.MakePublicURL(domain, key)
+	urlToSign := fmt.Sprintf("%s?%s&e=%d", publicURL, fop, deadline)
+	token := getQiniuMac().Sign([]byte(urlToSign))
+	return urlToSign + "&token=" + token
+}
+
+func qiniuHTTPGet(rawURL string, extra http.Header) ([]byte, int, error) {
+	req, err := http.NewRequest(http.MethodGet, rawURL, nil)
+	if err != nil {
+		return nil, 0, err
+	}
+	for k, vs := range extra {
+		for _, v := range vs {
+			req.Header.Add(k, v)
+		}
+	}
+	client := &http.Client{Timeout: qiniuHTTPTimeout}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer resp.Body.Close()
+	data, err := io.ReadAll(io.LimitReader(resp.Body, 8<<20))
+	if err != nil {
+		return nil, resp.StatusCode, err
+	}
+	return data, resp.StatusCode, nil
+}
+
+type AvinfoFormat struct {
+	Duration   string `json:"duration"`
+	Size       string `json:"size"`
+	FormatName string `json:"format_name"`
+}
+
+type AvinfoResult struct {
+	Format AvinfoFormat `json:"format"`
+}
+
+func (a *AvinfoResult) DurationMs() int64 {
+	if a == nil {
+		return 0
+	}
+	sec, err := strconv.ParseFloat(strings.TrimSpace(a.Format.Duration), 64)
+	if err != nil || sec <= 0 {
+		return 0
+	}
+	return int64(sec * 1000)
+}
+
+// Avinfo 拉七牛音视频元信息（服务端走 FetchDomain）
+func Avinfo(key string) (*AvinfoResult, error) {
+	if len(key) == 0 {
+		return nil, fmt.Errorf("empty key")
+	}
+	raw := privateFopURL(key, FetchDomain(), "avinfo")
+	data, code, err := qiniuHTTPGet(raw, nil)
+	if err != nil {
+		return nil, err
+	}
+	if code >= 400 {
+		return nil, fmt.Errorf("avinfo http %d: %s", code, strings.TrimSpace(string(data)))
+	}
+	var ret AvinfoResult
+	if err := json.Unmarshal(data, &ret); err != nil {
+		return nil, err
+	}
+	return &ret, nil
+}
+
+// ObjectExists 对象是否在桶中（612 视为不存在）
+func ObjectExists(key string) bool {
+	if len(key) == 0 {
+		return false
+	}
+	_, err := getManager().Stat(bk, key)
+	return err == nil
+}
+
+// ObjectHeadHasMoovFirst 读对象头部，判断 moov 是否在 mdat 之前（faststart）
+func ObjectHeadHasMoovFirst(key string) (bool, error) {
+	if len(key) == 0 {
+		return false, fmt.Errorf("empty key")
+	}
+	raw := privateFileURL(key, FetchDomain(), "")
+	h := http.Header{}
+	h.Set("Range", fmt.Sprintf("bytes=0-%d", headProbeBytes-1))
+	data, code, err := qiniuHTTPGet(raw, h)
+	if err != nil {
+		return false, err
+	}
+	if code >= 400 && code != http.StatusPartialContent {
+		return false, fmt.Errorf("head probe http %d", code)
+	}
+	moov := bytes.Index(data, []byte("moov"))
+	mdat := bytes.Index(data, []byte("mdat"))
+	if moov >= 0 && (mdat < 0 || moov < mdat) {
+		return true, nil
+	}
+	return false, nil
+}
+
+func Pfop(key, fops string) (string, error) {
+	om := newOperationManager()
+	pid, err := om.Pfop(bk, key, fops, qiniuPipeline(), "", false)
+	if err != nil {
+		log.Printf("Pfop failed: key=%s err=%v\n", key, err)
+		return "", err
+	}
+	return pid, nil
+}
+
+func Prefop(persistentID string) (storage.PrefopRet, error) {
+	om := newOperationManager()
+	return om.Prefop(persistentID)
+}
+
+// PfopFaststart 把 moov 挪到文件头，覆盖原 key
+func PfopFaststart(key string) (string, error) {
+	saveas := storage.EncodedEntry(bk, key)
+	return Pfop(key, faststartFop+"|saveas/"+saveas)
+}
+
+// PfopHLS 单码率 m3u8，输出 key 为 HLSKey(src)
+func PfopHLS(srcKey string) (string, error) {
+	m3u8Key := HLSKey(srcKey)
+	saveas := storage.EncodedEntry(bk, m3u8Key)
+	return Pfop(srcKey, hlsSegFop+"|saveas/"+saveas)
+}
+
+func PrefopBusy(code int) bool {
+	return code == 1 || code == 2
+}
+
+func PrefopOK(code int) bool {
+	return code == 0
+}
+
+// SignKeyURL 用桶绑定域签发私有链（浏览器经 /cdn 反代）
+func SignKeyURL(key string) string {
+	return BrowserFileURL(key, "")
+}
+
+// RewriteM3U8 把清单里的 ts 行改成签名 URL（文本，不是视频 body）
+func RewriteM3U8(playlist, m3u8Key string) string {
+	dir := path.Dir(m3u8Key)
+	lines := strings.Split(strings.ReplaceAll(playlist, "\r\n", "\n"), "\n")
+	for i, line := range lines {
+		trim := strings.TrimSpace(line)
+		if trim == "" || strings.HasPrefix(trim, "#") {
+			continue
+		}
+		segKey := trim
+		if strings.HasPrefix(trim, "http://") || strings.HasPrefix(trim, "https://") {
+			u, err := url.Parse(trim)
+			if err == nil {
+				segKey = strings.TrimPrefix(u.Path, "/")
+			}
+		} else if dir != "." && dir != "/" && !strings.Contains(trim, "/") {
+			segKey = dir + "/" + trim
+		}
+		lines[i] = SignKeyURL(segKey)
+	}
+	return strings.Join(lines, "\n")
+}
+
+// FetchM3U8Text 拉 m3u8 清单文本
+func FetchM3U8Text(m3u8Key string) (string, error) {
+	data, err := FetchObject(m3u8Key)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
 }

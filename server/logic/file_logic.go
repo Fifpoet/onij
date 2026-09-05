@@ -3,7 +3,6 @@ package logic
 import (
 	"context"
 	"fmt"
-	"time"
 	"onij/biz/biz"
 	"onij/biz/errdef"
 	"onij/biz/getter"
@@ -13,6 +12,8 @@ import (
 	"onij/model/api"
 	"onij/util"
 	"onij/util/boost/collection/collext"
+	"onij/util/logs"
+	"time"
 )
 
 type FileLogic interface {
@@ -47,6 +48,10 @@ func (l *fileLogic) Delete(ctx context.Context, param *prm.DeleteFileParam) (*pr
 	err = l.FileDal.DeleteById(ctx, param.FileId)
 	if err != nil {
 		return nil, err
+	}
+
+	if delErr := l.FileVideoMarkerDal.DeleteByFileId(ctx, param.FileId); delErr != nil {
+		logs.Error("fileLogic Delete markers file_id=%d: %v", param.FileId, delErr)
 	}
 
 	if len(fi.StoreKey) > 0 {

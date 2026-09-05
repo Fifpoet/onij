@@ -3,9 +3,11 @@
  */
 type ToggleFn = () => void
 type SeekPercentFn = (percent: number) => void
+type PauseFn = () => void
 
 let togglePlayImpl: ToggleFn | null = null
 let seekPercentImpl: SeekPercentFn | null = null
+let pauseImpl: PauseFn | null = null
 
 export const neteasePlayerControl = {
   bindTogglePlay(fn: ToggleFn) {
@@ -20,5 +22,11 @@ export const neteasePlayerControl = {
   /** 0–100，对应整首进度 */
   seekToPercent(percent: number) {
     seekPercentImpl?.(percent)
+  },
+  bindPause(fn: PauseFn) {
+    pauseImpl = fn
+  },
+  pause() {
+    pauseImpl?.()
   },
 }

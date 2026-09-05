@@ -82,6 +82,120 @@ function uploadViaFormData(
   })
 }
 
+const RESUME_THRESHOLD = 32 * 1024 * 1024
+const BLOCK_SIZE = 4 * 1024 * 1024
+const BLOCK_CONCURRENCY = 4
+
+function urlSafeBase64(str: string): string {
+  const bytes = new TextEncoder().encode(str)
+  let binary = ''
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i])
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_')
+}
+
+function normalizeUpHost(host: string, fallback: string): string {
+  const raw = (host || fallback).replace(/\/$/, '')
+  if (/^https?:\/\//i.test(raw)) return raw
+  return `https://${raw}`
+}
+
+type ResumeRet = { ctx?: string; host?: string; key?: string; hash?: string }
+
+function xhrBinary(
+  url: string,
+  token: string,
+  body: Blob,
+  contentType: string,
+  onBytes?: (loaded: number) => void,
+): Promise<ResumeRet> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open('POST', url)
+    xhr.setRequestHeader('Authorization', `UpToken ${token}`)
+    xhr.setRequestHeader('Content-Type', contentType)
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) onBytes?.(e.loaded)
+    }
+    xhr.onload = () => {
+      onBytes?.(body.size)
+      if (xhr.status < 200 || xhr.status >= 300) {
+        reject(new Error(xhr.responseText?.trim() || `七牛分片失败 (${xhr.status})`))
+        return
+      }
+      try {
+        resolve(JSON.parse(xhr.responseText) as ResumeRet)
+      } catch {
+        reject(new Error('七牛分片响应解析失败'))
+      }
+    }
+    xhr.onerror = () => reject(new Error('七牛分片网络错误'))
+    xhr.send(body)
+  })
+}
+
+async function mapPool<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T, index: number) => Promise<R>,
+): Promise<R[]> {
+  const out = new Array<R>(items.length)
+  let next = 0
+  async function worker() {
+    while (next < items.length) {
+      const idx = next
+      next += 1
+      out[idx] = await fn(items[idx], idx)
+    }
+  }
+  const n = Math.min(Math.max(1, limit), items.length)
+  await Promise.all(Array.from({ length: n }, () => worker()))
+  return out
+}
+
+/** ≥32MB 按 4MB 块并行 mkblk，避免 1MB 串行把带宽打成几 MB/s */
+async function uploadViaResume(
+  file: File,
+  token: string,
+  key: string,
+  uploadUrl: string,
+  onProgress?: (percent: number) => void,
+): Promise<{ key: string; hash: string }> {
+  const host = normalizeUpHost(uploadUrl, uploadUrl)
+  const blocks: Array<{ offset: number; size: number }> = []
+  for (let offset = 0; offset < file.size; offset += BLOCK_SIZE) {
+    blocks.push({ offset, size: Math.min(BLOCK_SIZE, file.size - offset) })
+  }
+  const loaded = new Array(blocks.length).fill(0)
+  const bump = () => {
+    const sum = loaded.reduce((a, b) => a + b, 0)
+    onProgress?.(Math.min(99, Math.max(0, Math.round((sum / file.size) * 100))))
+  }
+
+  const ctxs = await mapPool(blocks, BLOCK_CONCURRENCY, async (block, idx) => {
+    const blob = file.slice(block.offset, block.offset + block.size)
+    const ret = await xhrBinary(
+      `${host}/mkblk/${block.size}`,
+      token,
+      blob,
+      'application/octet-stream',
+      (n) => {
+        loaded[idx] = n
+        bump()
+      },
+    )
+    if (!ret.ctx) throw new Error('七牛分片缺少 ctx')
+    return ret.ctx
+  })
+
+  const mkfileUrl = `${host}/mkfile/${file.size}/key/${urlSafeBase64(key)}`
+  const done = await xhrBinary(mkfileUrl, token, new Blob([ctxs.join(',')]), 'text/plain')
+  onProgress?.(100)
+  return {
+    key: done.key || key,
+    hash: done.hash || localFileFingerprint(file),
+  }
+}
+
 export type QiniuUploadProgress = (percent: number) => void
 
 export async function uploadToQiniu(
@@ -94,7 +208,10 @@ export async function uploadToQiniu(
   const key =
     folderPath.length > 0 ? `${folderPath.join('/')}/${uniqueFileName}` : uniqueFileName
 
-  const res = await uploadViaFormData(file, token, key, uploadUrl, onProgress)
+  const res =
+    file.size >= RESUME_THRESHOLD
+      ? await uploadViaResume(file, token, key, uploadUrl, onProgress)
+      : await uploadViaFormData(file, token, key, uploadUrl, onProgress)
   return {
     key: res.key,
     hash: res.hash,

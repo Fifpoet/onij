@@ -375,11 +375,15 @@ onMounted(() => {
   bindAudioListeners()
   neteasePlayerControl.bindTogglePlay(togglePlay)
   neteasePlayerControl.bindSeekPercent(seekToPercent)
+  neteasePlayerControl.bindPause(() => {
+    activeEl()?.pause()
+  })
 })
 
 onBeforeUnmount(() => {
   unbindAudioListeners()
   neteasePlayerControl.bindTogglePlay(() => {})
   neteasePlayerControl.bindSeekPercent(() => {})
+  neteasePlayerControl.bindPause(() => {})
 })
 </script>

@@ -62,4 +62,9 @@ func customizedRegister(r *server.Hertz) {
 	tran.POST("/file", handler.AddTranFile)
 	tran.POST("/pin", handler.PinTran)
 	tran.POST("/delete", handler.DeleteTran)
+
+	file.POST("/video/play", handler.PlayFileVideo)
+	file.POST("/video/marker/list", handler.ListFileVideoMarker)
+	file.POST("/video/marker/save", handler.SaveFileVideoMarker)
+	file.POST("/video/marker/delete", handler.DeleteFileVideoMarker)
 }

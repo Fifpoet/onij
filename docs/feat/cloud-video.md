@@ -1,7 +1,7 @@
 ---
 slug: cloud-video
 title: 云盘视频本页播放与打点
-status: proposed
+status: in_progress
 ---
 
 # 云盘视频本页播放与打点
@@ -48,18 +48,20 @@ status: proposed
 
 ## 本轮任务
 
-- [ ] `/cdn` 支持视频 Range（206），`proxy_buffering off`，超时足够切片/拖动
-- [ ] 大 MP4 分片上传 + 现有 `file` 落库（`FT_Video`）；小文件可维持现上传
-- [ ] 本页拉起视频播放器（云盘 + 中转视频）；暂停音乐；不跳路由
-- [ ] 短片：签名 MP4 边下边播、可拖进度（faststart 不够则 pfop）
-- [ ] 长片（>20min 或 >512MB）：单码率 HLS，切片 URL 可签名经 `/cdn` 播放
-- [ ] `file_video_marker` DDL + 列表/批量保存/删除 API（改表等用户执行）
-- [ ] 进度条展示密集打点；悬停局部放大；点击标记 seek
-- [ ] 播放中可新增/改名/删除当前时间点的标记并写回后端
+- [x] `/cdn` 支持视频 Range（206），`proxy_buffering off`，超时足够切片/拖动
+- [x] 大 MP4 分片上传 + 现有 `file` 落库（`FT_Video`）；小文件可维持现上传
+- [x] 本页拉起视频播放器（云盘 + 中转视频）；暂停音乐；不跳路由
+- [x] 短片：签名 MP4 边下边播、可拖进度（faststart 不够则 pfop）
+- [x] 长片（>20min 或 >512MB）：单码率 HLS，切片 URL 可签名经 `/cdn` 播放
+- [x] `file_video_marker` DDL + 列表/批量保存/删除 API（改表等用户执行）
+- [x] 进度条展示密集打点；悬停局部放大；点击标记 seek
+- [x] 播放中可新增/改名/删除当前时间点的标记并写回后端
 
 ## 相关未做
 
 - 多码率 ABR、非 MP4 转码（原因：范围外）
+- 云盘上传大文件进度条（中转已接 onProgress；FileUploadModal 未接）
+- 删除原片时清理 HLS m3u8/ts 产物
 - 悬停缩略图 / 雪碧图（原因：用局部放大代替）
 - 独立视频页、弹幕、直播
 - HLS 转码完成前的「处理中」精细队列 UI 以外的运营工具
@@ -81,3 +83,7 @@ status: proposed
 - 视频与音乐两套宿主并存，避免两个声音同时出
 
 ## 实现备注
+
+- 2026-09-04：本轮任务已实现。`deploy/nginx/web-vue.conf` 的 `/cdn` 转发 Range、关缓冲、超时 3600s、gzip off。后端新增 `file_video_marker` DDL（未执行）、Dal/Logic、`/file/video/play` 与三个 marker 接口；短片签 MP4（moov 不在前则 pfop faststart），长片（时长>20min 或 DB size>512MB）异步 pfop 单码率 HLS 并改写 m3u8 切片为签名 URL。删除文件时顺带软删标记。前端 `hls.js`；≥8MB 七牛 mkblk/bput/mkfile；`VideoPlayerHost` + `VideoMarkerBar` 本页播放与打点；开视频 `pause` 停音乐，关播放器不恢复。`wire ./inject` 已生成，`go build` 可通过。打点表需用户在库上执行 `server/model/ddl/file_video_marker.sql` 后 marker API 才可用；线上 `/cdn` 需同步 nginx 配置。
+- 2026-09-05：标记点改绿色；回车+失焦不再重复保存；去掉关闭按钮；全屏工具条贴底，鼠标下移唤出、3s 无悬停收起；中央 ‹ › 跳转相邻标记。
+
