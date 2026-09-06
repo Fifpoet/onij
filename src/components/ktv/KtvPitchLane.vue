@@ -3,8 +3,8 @@
     <canvas ref="canvasRef" class="ktv-pitch__canvas" />
     <p v-if="hint" class="ktv-pitch__hint">{{ hint }}</p>
     <div v-if="!hint" class="ktv-pitch__hud">
-      <div v-if="judgeText" :key="`${phraseScore}-${avgScore}`" class="ktv-pitch__judge" :class="judgeClass">
-        {{ judgeText }}
+      <div v-if="phraseScore != null" :key="`${phraseScore}-${avgScore}`" class="ktv-pitch__judge" :class="judgeClass">
+        <span v-if="judgeText">{{ judgeText }}</span>
         <span class="ktv-pitch__judge-num">{{ phraseScore }}</span>
       </div>
       <div class="ktv-pitch__avg" :class="scoreTone(avgScore)">
@@ -70,7 +70,7 @@ const judgeText = computed(() => {
   if (s == null) return ''
   if (s >= 90) return 'Perfect'
   if (s >= 60) return 'Good'
-  return ''
+  return '本句'
 })
 
 const judgeClass = computed(() => {

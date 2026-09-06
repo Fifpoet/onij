@@ -1,5 +1,13 @@
+import { ref } from 'vue'
 import { separateInstrumentalFromUrl, downloadInstrumentalBlob } from '@/api/uvr'
 import { getOrFetchPlayUrl } from '@/player/songPlayUrlCache'
+
+/** KTV 页用来刷新「提取中」状态 */
+export const instrumentalEpoch = ref(0)
+
+function bumpInstrumentalEpoch() {
+  instrumentalEpoch.value += 1
+}
 
 export type InstrumentalStatus = 'idle' | 'loading' | 'ready' | 'error'
 
@@ -41,10 +49,12 @@ async function extractInstrumental(songId: number): Promise<string | null> {
   const originalUrl = await getOrFetchPlayUrl(songId)
   if (!originalUrl) {
     entryById.set(songId, { status: 'error', error: '无法获取原音频' })
+    bumpInstrumentalEpoch()
     return null
   }
 
   entryById.set(songId, { status: 'loading' })
+  bumpInstrumentalEpoch()
 
   try {
     const sep = await separateInstrumentalFromUrl(originalUrl, { id: songId })
@@ -52,11 +62,13 @@ async function extractInstrumental(songId: number): Promise<string | null> {
     const blobUrl = URL.createObjectURL(instBlob)
     blobUrls.add(blobUrl)
     entryById.set(songId, { status: 'ready', blobUrl })
+    bumpInstrumentalEpoch()
     trimCacheIfNeeded()
     return blobUrl
   } catch (e) {
     const msg = e instanceof Error ? e.message : '伴奏提取失败'
     entryById.set(songId, { status: 'error', error: msg })
+    bumpInstrumentalEpoch()
     return null
   }
 }

@@ -20,6 +20,7 @@ export function useSingPitch(opts: {
   currentSec: () => number
   notes: () => PitchNote[]
   songKey: () => string | number
+  lyricTimes?: () => number[]
 }) {
   const userMidi = ref<number | null>(null)
   const voiced = ref(false)
@@ -91,12 +92,20 @@ export function useSingPitch(opts: {
     hitKeys.value = [...hits]
   }
 
+  function phraseFromBars(): number | null {
+    const vals = barLocked.filter((v): v is number => v != null && Number.isFinite(v))
+    if (!vals.length) return null
+    const avg = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length)
+    if (vals.some((v) => v >= HIT_SCORE)) return Math.max(HIT_SCORE, avg)
+    return avg
+  }
+
   function finalizeBar(phrase: PitchPhrase, idx: number) {
     const note = phrase.notes[idx]
     if (!note) return
     const quality = barFrames > 0 ? barSum / barFrames : 0
     const touched = barTouched || (barFrames > 0 && quality >= 45)
-    const locked = touched ? Math.max(HIT_SCORE, Math.round(quality)) : Math.round(quality * 0.35)
+    const locked = touched ? Math.max(HIT_SCORE, Math.round(quality)) : Math.round(quality)
     barLocked[idx] = locked
     if (locked >= HIT_SCORE) {
       hits.add(pitchNoteKey(note))
@@ -106,6 +115,8 @@ export function useSingPitch(opts: {
     barFrames = 0
     barVoiced = 0
     barTouched = false
+    const running = phraseFromBars()
+    if (running != null) phraseScore.value = running
   }
 
   function updateAvg() {
@@ -122,15 +133,13 @@ export function useSingPitch(opts: {
     const phrase = phrases[phraseIdx]
     if (!phrase) return
     if (barIdx >= 0) finalizeBar(phrase, barIdx)
-    for (let i = 0; i < phrase.notes.length; i++) {
-      if (barLocked[i] == null) barLocked[i] = 0
-    }
-    const vals = phrase.notes.map((_, i) => barLocked[i] ?? 0)
-    const locked = Math.round(vals.reduce((a, b) => a + b, 0) / Math.max(vals.length, 1))
-    finishedPhrases.push(locked)
+    const locked = phraseFromBars()
     finishedMask[phraseIdx] = true
-    phraseScore.value = locked
-    updateAvg()
+    if (locked != null) {
+      finishedPhrases.push(locked)
+      phraseScore.value = locked
+      updateAvg()
+    }
     phraseIdx = -1
     barIdx = -1
     barLocked = []
@@ -138,14 +147,6 @@ export function useSingPitch(opts: {
     barFrames = 0
     barVoiced = 0
     barTouched = false
-  }
-
-  function missPhrase(i: number) {
-    if (finishedMask[i]) return
-    finishedMask[i] = true
-    finishedPhrases.push(0)
-    phraseScore.value = 0
-    updateAvg()
   }
 
   function enterPhrase(idx: number) {
@@ -161,20 +162,23 @@ export function useSingPitch(opts: {
   }
 
   function advanceByTime(sec: number) {
-    for (let i = 0; i < phrases.length; i++) {
-      if (finishedMask[i]) continue
-      if (sec > (phrases[i]?.t1 ?? Infinity)) {
-        if (phraseIdx === i) closePhrase()
-        else missPhrase(i)
-      }
+    if (phraseIdx >= 0 && sec > (phrases[phraseIdx]?.t1 ?? Infinity)) {
+      closePhrase()
     }
     const idx = phraseAt(sec)
     if (idx >= 0 && !finishedMask[idx] && phraseIdx !== idx) enterPhrase(idx)
   }
 
   function syncPhrases() {
-    phrases = groupPitchPhrases(opts.notes())
+    phrases = groupPitchPhrases(opts.notes(), opts.lyricTimes?.())
     finishedMask = phrases.map(() => false)
+    phraseIdx = -1
+    barIdx = -1
+    barLocked = []
+    barSum = 0
+    barFrames = 0
+    barVoiced = 0
+    barTouched = false
   }
 
   function resetScoresOnly() {
@@ -420,7 +424,7 @@ export function useSingPitch(opts: {
   )
 
   watch(
-    () => opts.notes().length,
+    () => [opts.notes().length, opts.lyricTimes?.().length ?? 0] as const,
     () => syncPhrases(),
   )
 

@@ -1,1 +1,0 @@
-import{_ as t,h as n,l as o,an as s}from"./index-BzjSw0KY.js";const c={},a={class:"page-content"};function r(e,_){return o(),n("div",a,[s(e.$slots,"default")])}const d=t(c,[["render",r]]);export{d as P};

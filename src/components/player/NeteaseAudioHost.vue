@@ -16,6 +16,7 @@ import {
 } from '@/player/musicMvCache'
 import {
   getCachedInstrumentalUrl,
+  getInstrumentalStatus,
   getOrFetchInstrumental,
   prefetchInstrumental,
 } from '@/player/instrumentalCache'
@@ -333,6 +334,10 @@ function togglePlay() {
   const el = activeEl()
   if (!el || !playQueue.nowPlaying) return
   if (el.paused) {
+    if (ktvActive.value) {
+      const st = getInstrumentalStatus(playQueue.nowPlaying.id)
+      if (st === 'idle' || st === 'loading') return
+    }
     el.play().catch((err: unknown) => {
       if (isBenignPlayRejection(err)) return
       message.error('播放失败')
