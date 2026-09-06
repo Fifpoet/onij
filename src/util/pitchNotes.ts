@@ -86,12 +86,15 @@ export type PitchPhrase = {
   notes: PitchNote[]
 }
 
-/** 相邻 F0 横条间隔超过该值则另起一句 */
-const PHRASE_GAP_SEC = 0.45
+/** 无歌词时：相邻 F0 横条间隔超过该值则另起一句 */
+const PHRASE_GAP_SEC = 0.8
 
-export function groupPitchPhrases(notes: PitchNote[]): PitchPhrase[] {
+export function groupPitchPhrases(notes: PitchNote[], lyricStarts?: number[]): PitchPhrase[] {
   const list = mergePitchNotes(notes)
   if (!list.length) return []
+  const starts = [...new Set((lyricStarts ?? []).filter((t) => Number.isFinite(t)))].sort((a, b) => a - b)
+  if (starts.length >= 2) return groupByLyricStarts(list, starts)
+
   const phrases: PitchPhrase[] = []
   let cur: PitchNote[] = [list[0]!]
   for (let i = 1; i < list.length; i++) {
@@ -105,6 +108,21 @@ export function groupPitchPhrases(notes: PitchNote[]): PitchPhrase[] {
     }
   }
   phrases.push({ t0: cur[0]!.t0, t1: cur[cur.length - 1]!.t1, notes: cur })
+  return phrases
+}
+
+function groupByLyricStarts(list: PitchNote[], starts: number[]): PitchPhrase[] {
+  const phrases: PitchPhrase[] = []
+  for (let i = 0; i < starts.length; i++) {
+    const a = starts[i]!
+    const b = starts[i + 1] ?? Number.POSITIVE_INFINITY
+    const chunk = list.filter((n) => {
+      const mid = (n.t0 + n.t1) / 2
+      return mid >= a && mid < b
+    })
+    if (!chunk.length) continue
+    phrases.push({ t0: chunk[0]!.t0, t1: chunk[chunk.length - 1]!.t1, notes: chunk })
+  }
   return phrases
 }
 

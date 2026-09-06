@@ -82,15 +82,22 @@
           >
             <n-icon :component="isFullscreen ? ContractOutline : ExpandOutline" :size="22" />
           </button>
-          <button
-            type="button"
-            class="ktv-dock-btn ktv-dock-btn--icon"
-            :disabled="!canTogglePlay"
-            :aria-label="playQueue.isPlaying ? '暂停' : '播放'"
-            @click="onTogglePlay"
-          >
-            <n-icon :component="playIcon" :size="28" />
-          </button>
+          <n-tooltip :disabled="!instPending">
+            <template #trigger>
+              <span class="ktv-dock-play-wrap">
+                <button
+                  type="button"
+                  class="ktv-dock-btn ktv-dock-btn--icon"
+                  :disabled="!canTogglePlay || instPending"
+                  :aria-label="instPending ? '伴奏提取中' : playQueue.isPlaying ? '暂停' : '播放'"
+                  @click="onTogglePlay"
+                >
+                  <n-icon :component="playIcon" :size="28" />
+                </button>
+              </span>
+            </template>
+            伴奏提取中
+          </n-tooltip>
           <button
             type="button"
             class="ktv-dock-btn ktv-dock-btn--icon"
@@ -122,7 +129,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
-import { NIcon, NSlider } from 'naive-ui'
+import { NIcon, NSlider, NTooltip } from 'naive-ui'
 import {
   ContractOutline,
   ExpandOutline,
@@ -143,6 +150,7 @@ import { ktvDualLineState } from '@/util/lrc'
 import { neteasePlayerControl } from '@/player/neteasePlayerControl'
 import {
   getInstrumentalStatus,
+  instrumentalEpoch,
   prefetchInstrumental,
 } from '@/player/instrumentalCache'
 import {
@@ -204,9 +212,18 @@ const volumeIcon = computed(() => {
 })
 
 const accompanimentLoading = computed(() => {
+  instrumentalEpoch.value
   const id = song.value?.id
-  if (!id || !ktv.accompanimentOn) return false
+  if (!id) return false
   return getInstrumentalStatus(id) === 'loading'
+})
+
+const instPending = computed(() => {
+  instrumentalEpoch.value
+  const id = song.value?.id
+  if (!id) return false
+  const st = getInstrumentalStatus(id)
+  return st === 'idle' || st === 'loading'
 })
 
 const accompanimentTitle = computed(() => {
@@ -251,6 +268,7 @@ const {
   currentSec: () => playQueue.playbackCurrentSec,
   notes: () => pitchData.value?.notes ?? [],
   songKey: () => song.value?.id ?? '',
+  lyricTimes: () => lines.value.filter((l) => l.text.trim()).map((l) => l.time),
 })
 
 function prefetchKtvAssets() {
@@ -281,6 +299,7 @@ function onDockLeave() {
 }
 
 function onTogglePlay() {
+  if (instPending.value) return
   if (!playQueue.nowPlaying && playQueue.queue.length > 0) {
     playQueue.startIfIdle()
     return
@@ -301,7 +320,7 @@ function onPageKeydown(e: KeyboardEvent) {
   if (e.repeat) return
   if (isSpaceBlockedTarget(e.target)) return
   e.preventDefault()
-  if (!canTogglePlay.value) return
+  if (!canTogglePlay.value || instPending.value) return
   onTogglePlay()
 }
 
@@ -338,6 +357,10 @@ watch(
     if (pitchView.value && id) void getOrFetchPitch(id).then(() => { pitchTick.value += 1 })
   },
 )
+
+watch(instPending, (pending) => {
+  if (pending && playQueue.isPlaying) neteasePlayerControl.pause()
+})
 
 onBeforeUnmount(() => {
   ktv.leaveKtv()
@@ -599,6 +622,10 @@ onBeforeUnmount(() => {
   justify-content: center;
   width: 2.5rem;
   padding: 0;
+}
+
+.ktv-dock-play-wrap {
+  display: inline-flex;
 }
 
 .ktv-dock-volume {
