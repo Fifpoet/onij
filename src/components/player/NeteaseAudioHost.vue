@@ -9,7 +9,7 @@ import { storeToRefs } from 'pinia'
 import { useMessage } from 'naive-ui'
 import { usePlayQueueStore } from '@/store/playQueue'
 import { useKtvStore } from '@/store/ktv'
-import { getOrFetchPlayUrl, prefetchPlayUrl } from '@/player/songPlayUrlCache'
+import { forgetPlayUrl, getOrFetchPlayUrl, prefetchPlayUrl } from '@/player/songPlayUrlCache'
 import {
   ensureMusicMvLoaded,
   prefetchMusicMvForQueue,
@@ -30,6 +30,7 @@ const origRef = ref<HTMLAudioElement | null>(null)
 const instRef = ref<HTMLAudioElement | null>(null)
 
 let loadToken = 0
+let origErrorRetriedForSongId: number | null = null
 let tailPrefetchDoneForSongId: number | null = null
 /** 当前对外可听的轨：原唱 false / 伴奏 true */
 let usingInstrumental = false
@@ -262,10 +263,17 @@ function onEnded() {
 }
 
 function onOrigError() {
-  if (!usingInstrumental) {
-    message.error('音频加载失败')
-    playQueue.advanceAfterEnded()
+  if (usingInstrumental) return
+  if (!origUrlForSong) return
+  const song = playQueue.nowPlaying
+  if (song && origErrorRetriedForSongId !== song.id) {
+    origErrorRetriedForSongId = song.id
+    forgetPlayUrl(song.id)
+    void loadAndPlay(song.id)
+    return
   }
+  message.error('音频加载失败')
+  playQueue.advanceAfterEnded()
 }
 
 function onInstError() {
@@ -284,6 +292,7 @@ watch(
   () => playQueue.nowPlaying,
   (song) => {
     tailPrefetchDoneForSongId = null
+    origErrorRetriedForSongId = null
     if (!song) {
       loadToken++
       usingInstrumental = false

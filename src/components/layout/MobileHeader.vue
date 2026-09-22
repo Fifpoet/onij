@@ -5,12 +5,6 @@
         class="mobile-top-bar fixed inset-x-0 top-0 z-50 flex items-center justify-between gap-2 border-b border-gray-200/80 bg-white/95 px-3 shadow-sm backdrop-blur-md dark:border-dark-600/80 dark:bg-dark-800/95"
       >
         <div class="flex min-w-0 flex-1 items-center gap-2">
-          <RouterLink
-            to="/search"
-            class="shrink-0 text-[17px] font-bold tracking-tight text-gray-900 dark:text-gray-100"
-          >
-            ONIJ
-          </RouterLink>
           <PlayerHeaderControls />
         </div>
         <div class="flex shrink-0 items-center gap-1">
@@ -19,7 +13,13 @@
               <circle cx="11" cy="11" r="7" /><path d="M20 20L17 17" />
             </svg>
           </button>
-          <button type="button" class="mobile-header-icon-btn" aria-label="菜单" @click="toggleMenu">
+          <button
+            v-if="navToolsVisible"
+            type="button"
+            class="mobile-header-icon-btn"
+            aria-label="菜单"
+            @click="toggleMenu"
+          >
             <svg v-if="isMenuOpen" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M6 6l12 12M18 6L6 18" />
             </svg>
@@ -80,9 +80,11 @@ import { ref, watch, onUnmounted } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import PlayerHeaderControls from '@/components/layout/PlayerHeaderControls.vue'
 import { useSearch } from '@/composables/searchMusic'
+import { useNavToolsVisible } from '@/composables/useNavToolsUnlock'
 
 const router = useRouter()
 const { searchValue } = useSearch()
+const { navToolsVisible } = useNavToolsVisible()
 const isMenuOpen = ref(false)
 const isSearchOverlayOpen = ref(false)
 const searchInputRef = ref<HTMLInputElement | null>(null)
@@ -104,6 +106,10 @@ async function submitSearch() {
 function toggleMenu() {
   if (!isSearchOverlayOpen.value) isMenuOpen.value = !isMenuOpen.value
 }
+
+watch(navToolsVisible, (visible) => {
+  if (!visible) isMenuOpen.value = false
+})
 
 watch(isSearchOverlayOpen, (open) => {
   document.body.style.overflow = open ? 'hidden' : ''

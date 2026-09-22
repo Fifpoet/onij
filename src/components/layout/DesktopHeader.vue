@@ -3,18 +3,18 @@
     <header class="desktop-header fixed inset-x-0 top-0 z-50 h-[60px] border-b border-gray-200/80 bg-white/95 backdrop-blur-sm dark:border-dark-600/80 dark:bg-dark-800/95">
       <div class="desktop-header__inner">
         <div class="desktop-header__left min-w-0">
-          <RouterLink to="/search" class="desktop-header__logo shrink-0">ONIJ</RouterLink>
           <PlayerHeaderControls />
         </div>
         <div class="desktop-header__right">
           <RouterLink
+            v-if="navToolsVisible"
             to="/ai"
             class="desktop-header__ai"
             :class="{ 'desktop-header__ai--active': isAi }"
           >
             AI
           </RouterLink>
-          <SiteNavTools />
+          <SiteNavTools v-if="navToolsVisible" />
           <HeaderSearch />
         </div>
       </div>
@@ -28,9 +28,11 @@ import { RouterLink, useRoute } from 'vue-router'
 import PlayerHeaderControls from '@/components/layout/PlayerHeaderControls.vue'
 import SiteNavTools from '@/components/layout/SiteNavTools.vue'
 import HeaderSearch from '@/components/layout/HeaderSearch.vue'
+import { useNavToolsVisible } from '@/composables/useNavToolsUnlock'
 
 const route = useRoute()
 const isAi = computed(() => route.path === '/ai')
+const { navToolsVisible } = useNavToolsVisible()
 </script>
 
 <style scoped>
@@ -48,15 +50,6 @@ const isAi = computed(() => route.path === '/ai')
   gap: 0.75rem;
   flex: 1;
   min-width: 0;
-}
-.desktop-header__logo {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: rgb(17 24 39);
-  text-decoration: none;
-}
-.dark .desktop-header__logo {
-  color: rgb(243 244 246);
 }
 .desktop-header__right {
   display: flex;

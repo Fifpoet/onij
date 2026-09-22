@@ -12,7 +12,7 @@ alwaysApply: false
 
 - 状态：`playQueue`；音频宿主：`NeteaseAudioHost`。页面只调 store。
 - **搜索 / 歌词 / 详情**：生产走同源 `https://onij.fun/netease/`（nginx 反代 `:3000`）；本地开发仍可直连 `onij.fun:3000`。
-- **可播 URL**：取链走 GD Studio 公开 API `music-api.gdstudio.xyz`（生产同源 `https://onij.fun/gdstudio`，本地 Vite `/gdstudio-music`）。**不要**直连 `music.gdstudio.org`（Cloudflare 校验，签名 POST 已失效）。音频文件仍由浏览器直连返回的网易 CDN。默认 320k MP3；若返回 `.flac` 再降码率（浏览器 FLAC 易 206 断连）。缓存：`src/player/songPlayUrlCache.ts`。
+- **可播 URL**：取链走 GD Studio 公开 API `music-api.gdstudio.xyz`（生产同源 `https://onij.fun/gdstudio`，本地 Vite `/gdstudio-music`）。**不要**直连 `music.gdstudio.org`（Cloudflare 校验，签名 POST 已失效）。音频文件仍由浏览器直连返回的网易 CDN。默认 320k MP3；若返回 `.flac` 再降码率（浏览器 FLAC 易 206 断连）。缓存：`src/player/songPlayUrlCache.ts`（约 8 分钟 TTL；过期或音频 error 会重新取链，避免标签挂后台后直链失效）。
 - 专辑页「全部播放」按序入队。队列页有置顶。
 - **双击播放其他歌时，当前正在播放的歌不要加回队列**。
 
@@ -48,5 +48,5 @@ alwaysApply: false
 ## AI / 语音 / 监控
 
 - **AI** `/ai`：MateChat；流式 `POST /ai/chat/stream`，确认 `POST /ai/confirm/stream`。客户端工具 `useAiClientTools`，状态 `aiChat`。
-- **语音**：唤醒词「小雪」；STT `POST /uvr/whisper/transcribe`；意图 `POST /voice/intent`。切歌/暂停可本地直控播放器，不必每次走 LLM。
+- **语音**：唤醒词「小雪」；STT `POST /uvr/whisper/transcribe`；意图 `POST /voice/intent`。切歌/暂停可本地直控播放器，不必每次走 LLM。语音条与麦克风申请跟导航 AI/工具同一套 `onij` 开关，默认不挂载。
 - **监控** `/monitor`：按标签探测依赖 URL，只是前端健康卡片，不要做成第二套部署系统。

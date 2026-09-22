@@ -28,7 +28,7 @@ alwaysApply: false
 
 ## 布局与风格
 
-- 壳在 `App.vue`：顶栏 `PageHeader`（`MobileHeader` + `lg:` 以上 `DesktopHeader`）、主区、页脚备案 **鄂ICP备2024057031号**。
+- 壳在 `App.vue`：顶栏 `PageHeader`（`MobileHeader` + `lg:` 以上 `DesktopHeader`）、主区、页脚备案 **鄂ICP备2024057031号**（短页贴视口底）。顶栏无 ONIJ 标题；AI / 工具 / 语音条默认隐藏（不申请麦克风），首页非输入框连续输入 `onij` 切换。
 - 桌面断点：`lg`（1024px）。移动端有底栏播放器；`/ktv` 除外。
 - 全局渐变背景、自定义 cursor、滚动条在 `src/styles` / `style.css`，**不要当普通页面样式改**。
 - 文案用中文。按钮/链接保持现有圆角与字号节奏，不要整页换肤。
