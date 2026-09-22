@@ -12,7 +12,7 @@ alwaysApply: false
 
 - 状态：`playQueue`；音频宿主：`NeteaseAudioHost`。页面只调 store。
 - **搜索 / 歌词 / 详情**：生产走同源 `https://onij.fun/netease/`（nginx 反代 `:3000`）；本地开发仍可直连 `onij.fun:3000`。
-- **可播 URL**：浏览器直连 GD Studio `music.gdstudio.org`（`src/api/netease/songUrl.ts`）。默认 320k MP3；若返回 `.flac` 再降码率（浏览器 FLAC 易 206 断连）。缓存：`src/player/songPlayUrlCache.ts`。
+- **可播 URL**：取链走 GD Studio 公开 API `music-api.gdstudio.xyz`（生产同源 `https://onij.fun/gdstudio`，本地 Vite `/gdstudio-music`）。**不要**直连 `music.gdstudio.org`（Cloudflare 校验，签名 POST 已失效）。音频文件仍由浏览器直连返回的网易 CDN。默认 320k MP3；若返回 `.flac` 再降码率（浏览器 FLAC 易 206 断连）。缓存：`src/player/songPlayUrlCache.ts`。
 - 专辑页「全部播放」按序入队。队列页有置顶。
 - **双击播放其他歌时，当前正在播放的歌不要加回队列**。
 

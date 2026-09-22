@@ -17,7 +17,7 @@ alwaysApply: true
 - **线上**：`117.72.33.136`（`onij.fun`），仓库 `~/workbench/go/onij`，分支 `feat/onij`。
 - **主站 API**：本地必须走 `VITE_SERVER_URL=http://127.0.0.1:8889`（`.env.development`）。
 - **网易云代理**：本地也固定 `VITE_NETEASE_URL=http://onij.fun:3000/`，不要改成本地代理。
-- **播放直链**：浏览器直连 GD Studio（`VITE_GDSTUDIO_MUSIC_URL`），不走主站。
+- **播放直链**：音频由浏览器直连返回的网易 CDN；取链走同源 `/gdstudio`（GD Studio `music-api.gdstudio.xyz`），不要直连 `music.gdstudio.org`。
 - **生产构建**：`VITE_SERVER_URL` 填 `https://onij.fun/go`（nginx 反代到本机 `:8889`）；**禁止**公网前端包写 `127.0.0.1`。站点 `https://onij.fun`，网易代理 `https://onij.fun/netease/`。
 
 ### SSH（仅部署模式）

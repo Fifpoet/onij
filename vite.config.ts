@@ -35,11 +35,17 @@ export default defineConfig((configEnv) => {
           target: env.VITE_SERVER_URL || 'http://127.0.0.1:8889',
           changeOrigin: true,
         },
-        // 备用代理；播放直链默认由浏览器直连 music.gdstudio.org（该站已放行 localhost CORS）
+        // 取链走公开 API；不直连 music.gdstudio.org（Cloudflare 校验）
         '/gdstudio-music': {
-          target: 'https://music.gdstudio.org',
+          target: 'https://music-api.gdstudio.xyz',
           changeOrigin: true,
           rewrite: (p) => p.replace(/^\/gdstudio-music/, ''),
+          configure: (proxy) => {
+            proxy.on('proxyReq', (proxyReq) => {
+              proxyReq.setHeader('Origin', 'https://music-api.gdstudio.xyz')
+              proxyReq.setHeader('Referer', 'https://music-api.gdstudio.xyz/')
+            })
+          },
         },
       },
     },
