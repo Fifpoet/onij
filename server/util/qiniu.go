@@ -3,6 +3,7 @@ package util
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -184,16 +185,18 @@ func urlEncode(s string) string {
 	return strings.ReplaceAll(url.QueryEscape(s), "+", "%20")
 }
 
-// FetchObject 服务端经私有链拉取对象（不依赖 cloud.onij.fun 本地 DNS）
+// FetchObject 服务端拉对象：优先源站 Get（不依赖未绑定的 bkt 域名），再回退绑定域签名链。
 func FetchObject(key string) ([]byte, error) {
 	if len(key) == 0 {
 		return nil, fmt.Errorf("empty key")
 	}
-	deadline := time.Now().Add(time.Hour).Unix()
-	url := storage.MakePrivateURL(getQiniuMac(), FetchDomain(), key, deadline)
-	data, err := GET(url, nil)
-	if err != nil {
-		return nil, err
+	data, err := fetchViaSrcGet(key)
+	if err == nil {
+		return data, nil
+	}
+	data, _, err2 := signedObjectGET(key, nil, "")
+	if err2 != nil {
+		return nil, fmt.Errorf("fetch %s: %v; fallback: %w", key, err, err2)
 	}
 	if len(data) == 0 {
 		return nil, fmt.Errorf("empty object")
@@ -213,6 +216,107 @@ func DeleteFile(key string) error {
 		return fmt.Errorf("file deletion failed: %v", err)
 	}
 	return nil
+}
+
+func ListCommonPrefixes(prefix, delimiter string) ([]string, error) {
+	var all []string
+	marker := ""
+	for {
+		_, prefixes, next, hasNext, err := getManager().ListFiles(bk, prefix, delimiter, marker, 1000)
+		if err != nil {
+			return nil, err
+		}
+		all = append(all, prefixes...)
+		if !hasNext {
+			break
+		}
+		marker = next
+	}
+	return all, nil
+}
+
+func ListKeys(prefix string) ([]string, error) {
+	var keys []string
+	marker := ""
+	for {
+		entries, _, next, hasNext, err := getManager().ListFiles(bk, prefix, "", marker, 1000)
+		if err != nil {
+			return nil, err
+		}
+		for _, e := range entries {
+			if e.Key != "" {
+				keys = append(keys, e.Key)
+			}
+		}
+		if !hasNext {
+			break
+		}
+		marker = next
+	}
+	return keys, nil
+}
+
+func DeleteKeys(keys []string) error {
+	if len(keys) == 0 {
+		return nil
+	}
+	mgr := getManager()
+	const batch = 1000
+	for i := 0; i < len(keys); i += batch {
+		end := i + batch
+		if end > len(keys) {
+			end = len(keys)
+		}
+		ops := make([]string, 0, end-i)
+		for _, k := range keys[i:end] {
+			ops = append(ops, storage.URIDelete(bk, k))
+		}
+		if _, err := mgr.Batch(ops); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func IsLegacyHlsPlaylistKey(key string) bool {
+	key = strings.TrimSpace(key)
+	if key == "" || strings.HasPrefix(key, hlsPrefix) {
+		return false
+	}
+	return strings.HasSuffix(strings.ToLower(key), ".mp4.m3u8")
+}
+
+var keepBucketRootPrefixes = map[string]struct{}{
+	"album":    {},
+	"artist":   {},
+	"cloud":    {},
+	"tran":     {},
+	"practice": {},
+	"music":    {},
+	"ts":       {},
+}
+
+func IsHlsHashRootPrefix(p string) bool {
+	p = strings.Trim(p, "/")
+	if p == "" || strings.Contains(p, "/") {
+		return false
+	}
+	if _, ok := keepBucketRootPrefixes[p]; ok {
+		return false
+	}
+	if strings.Contains(p, "=") {
+		return true
+	}
+	if len(p) < 20 {
+		return false
+	}
+	for _, c := range p {
+		if (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_' || c == '-' {
+			continue
+		}
+		return false
+	}
+	return true
 }
 
 func isQiniuNoSuchKey(err error) bool {
@@ -245,11 +349,66 @@ func GetUploadToken() string {
 }
 
 const (
-	hlsSegFop        = "avthumb/m3u8/noDomain/1/segtime/10/vcodec/copy/acodec/copy"
-	faststartFop     = "avthumb/mp4/vcodec/copy/acodec/copy"
-	headProbeBytes   = 262144
-	qiniuHTTPTimeout = 30 * time.Second
+	hlsPrefix          = "ts/"
+	hlsSavePatternRaw  = "$(saveas.keyPrefix)$(count).ts"
+	faststartFop       = "avthumb/mp4/vcodec/copy/acodec/copy"
+	headProbeBytes     = 262144
+	qiniuHTTPTimeout   = 30 * time.Second
+	objectGetMax       = 8 << 20
 )
+
+func hlsPfopSpec() string {
+	pat := base64.URLEncoding.EncodeToString([]byte(hlsSavePatternRaw))
+	return "avthumb/m3u8/noDomain/1/segtime/10/vcodec/copy/acodec/copy/savePattern/" + pat
+}
+
+func qiniuObjectDomains() []string {
+	var out []string
+	seen := map[string]struct{}{}
+	for _, d := range []string{PublicDomain(), FetchDomain()} {
+		d = strings.TrimRight(strings.TrimSpace(d), "/")
+		if d == "" {
+			continue
+		}
+		if _, ok := seen[d]; ok {
+			continue
+		}
+		seen[d] = struct{}{}
+		out = append(out, d)
+	}
+	return out
+}
+
+func isQiniuErrorJSON(data []byte) bool {
+	trim := bytes.TrimSpace(data)
+	if len(trim) == 0 || trim[0] != '{' {
+		return false
+	}
+	var m struct {
+		Error string `json:"error"`
+	}
+	if err := json.Unmarshal(trim, &m); err != nil {
+		return false
+	}
+	return strings.TrimSpace(m.Error) != ""
+}
+
+func qiniuErrorMessage(data []byte) string {
+	var m struct {
+		Error string `json:"error"`
+	}
+	if err := json.Unmarshal(bytes.TrimSpace(data), &m); err != nil {
+		return strings.TrimSpace(string(data))
+	}
+	if strings.TrimSpace(m.Error) != "" {
+		return m.Error
+	}
+	return strings.TrimSpace(string(data))
+}
+
+func isM3U8Playlist(text string) bool {
+	return strings.HasPrefix(strings.TrimSpace(text), "#EXTM3U")
+}
 
 func qiniuPipeline() string {
 	return strings.TrimSpace(os.Getenv("QINIU_PIPELINE"))
@@ -264,9 +423,10 @@ func newOperationManager() *storage.OperationManager {
 	return storage.NewOperationManager(getQiniuMac(), &cfg)
 }
 
-// HLSKey 约定：原对象 key 后追加 .m3u8
+// HLSKey 切片清单落在 ts/ 下，避免七牛默认把 ts 写到桶根哈希目录
 func HLSKey(storeKey string) string {
-	return storeKey + ".m3u8"
+	storeKey = strings.TrimPrefix(strings.TrimSpace(storeKey), "/")
+	return hlsPrefix + storeKey + ".m3u8"
 }
 
 func privateFopURL(key, domain, fop string) string {
@@ -303,6 +463,61 @@ func qiniuHTTPGet(rawURL string, extra http.Header) ([]byte, int, error) {
 	return data, resp.StatusCode, nil
 }
 
+func signedObjectGET(key string, extra http.Header, fop string) ([]byte, int, error) {
+	var lastErr error
+	for _, domain := range qiniuObjectDomains() {
+		var raw string
+		if fop != "" {
+			raw = privateFopURL(key, domain, fop)
+		} else {
+			raw = privateFileURL(key, domain, "")
+		}
+		if raw == "" {
+			continue
+		}
+		data, code, err := qiniuHTTPGet(raw, extra)
+		if err != nil {
+			lastErr = err
+			continue
+		}
+		if isQiniuErrorJSON(data) {
+			lastErr = fmt.Errorf("qiniu %s: %s", domain, qiniuErrorMessage(data))
+			continue
+		}
+		if code >= 400 && code != http.StatusPartialContent {
+			lastErr = fmt.Errorf("qiniu %s http %d: %s", domain, code, strings.TrimSpace(string(data)))
+			continue
+		}
+		return data, code, nil
+	}
+	if lastErr != nil {
+		return nil, 0, lastErr
+	}
+	return nil, 0, fmt.Errorf("no qiniu download domain")
+}
+
+func fetchViaSrcGet(key string) ([]byte, error) {
+	r, err := getManager().Get(bk, key, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer r.Body.Close()
+	data, err := io.ReadAll(io.LimitReader(r.Body, objectGetMax+1))
+	if err != nil {
+		return nil, err
+	}
+	if len(data) > objectGetMax {
+		return nil, fmt.Errorf("object too large")
+	}
+	if len(data) == 0 {
+		return nil, fmt.Errorf("empty object")
+	}
+	if isQiniuErrorJSON(data) {
+		return nil, fmt.Errorf("qiniu: %s", qiniuErrorMessage(data))
+	}
+	return data, nil
+}
+
 type AvinfoFormat struct {
 	Duration   string `json:"duration"`
 	Size       string `json:"size"`
@@ -324,18 +539,17 @@ func (a *AvinfoResult) DurationMs() int64 {
 	return int64(sec * 1000)
 }
 
-// Avinfo 拉七牛音视频元信息（服务端走 FetchDomain）
+// Avinfo 拉七牛音视频元信息（绑定域优先，避免未绑定的 bkt 域名 no such domain）
 func Avinfo(key string) (*AvinfoResult, error) {
 	if len(key) == 0 {
 		return nil, fmt.Errorf("empty key")
 	}
-	raw := privateFopURL(key, FetchDomain(), "avinfo")
-	data, code, err := qiniuHTTPGet(raw, nil)
+	data, _, err := signedObjectGET(key, nil, "avinfo")
 	if err != nil {
 		return nil, err
 	}
-	if code >= 400 {
-		return nil, fmt.Errorf("avinfo http %d: %s", code, strings.TrimSpace(string(data)))
+	if isQiniuErrorJSON(data) {
+		return nil, fmt.Errorf("avinfo: %s", qiniuErrorMessage(data))
 	}
 	var ret AvinfoResult
 	if err := json.Unmarshal(data, &ret); err != nil {
@@ -358,15 +572,11 @@ func ObjectHeadHasMoovFirst(key string) (bool, error) {
 	if len(key) == 0 {
 		return false, fmt.Errorf("empty key")
 	}
-	raw := privateFileURL(key, FetchDomain(), "")
 	h := http.Header{}
 	h.Set("Range", fmt.Sprintf("bytes=0-%d", headProbeBytes-1))
-	data, code, err := qiniuHTTPGet(raw, h)
+	data, _, err := signedObjectGET(key, h, "")
 	if err != nil {
 		return false, err
-	}
-	if code >= 400 && code != http.StatusPartialContent {
-		return false, fmt.Errorf("head probe http %d", code)
 	}
 	moov := bytes.Index(data, []byte("moov"))
 	mdat := bytes.Index(data, []byte("mdat"))
@@ -401,7 +611,7 @@ func PfopFaststart(key string) (string, error) {
 func PfopHLS(srcKey string) (string, error) {
 	m3u8Key := HLSKey(srcKey)
 	saveas := storage.EncodedEntry(bk, m3u8Key)
-	return Pfop(srcKey, hlsSegFop+"|saveas/"+saveas)
+	return Pfop(srcKey, hlsPfopSpec()+"|saveas/"+saveas)
 }
 
 func PrefopBusy(code int) bool {
@@ -423,17 +633,21 @@ func RewriteM3U8(playlist, m3u8Key string) string {
 	lines := strings.Split(strings.ReplaceAll(playlist, "\r\n", "\n"), "\n")
 	for i, line := range lines {
 		trim := strings.TrimSpace(line)
-		if trim == "" || strings.HasPrefix(trim, "#") {
+		if trim == "" || strings.HasPrefix(trim, "#") || isQiniuErrorJSON([]byte(trim)) {
 			continue
 		}
 		segKey := trim
 		if strings.HasPrefix(trim, "http://") || strings.HasPrefix(trim, "https://") {
 			u, err := url.Parse(trim)
 			if err == nil {
-				segKey = strings.TrimPrefix(u.Path, "/")
+				segKey = strings.TrimLeft(u.Path, "/")
 			}
 		} else if dir != "." && dir != "/" && !strings.Contains(trim, "/") {
 			segKey = dir + "/" + trim
+		}
+		segKey = strings.TrimLeft(segKey, "/")
+		if segKey == "" {
+			continue
 		}
 		lines[i] = SignKeyURL(segKey)
 	}
@@ -446,5 +660,9 @@ func FetchM3U8Text(m3u8Key string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return string(data), nil
+	text := string(data)
+	if !isM3U8Playlist(text) {
+		return "", fmt.Errorf("not m3u8: %s", qiniuErrorMessage(data))
+	}
+	return text, nil
 }

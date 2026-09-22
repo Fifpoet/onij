@@ -35,9 +35,66 @@ func TestRewriteM3U8(t *testing.T) {
 	assertSignedCloudURL(t, "absolute ts", lines[5], "videos/concert/seg1.ts")
 }
 
+func TestRewriteM3U8TrimsLeadingSlashes(t *testing.T) {
+	t.Setenv("QINIU_SK", "unit-test-sk-not-real")
+	t.Setenv("QINIU_PUBLIC_DOMAIN", "http://cloud.onij.fun")
+
+	got := RewriteM3U8("http://iovip.qbox.me//abc/000000.ts\n", "cloud/live/a.mp4.m3u8")
+	assertSignedCloudURL(t, "iodomain ts", strings.TrimSpace(got), "abc/000000.ts")
+}
+
+func TestIsQiniuErrorJSON(t *testing.T) {
+	if !isQiniuErrorJSON([]byte(`{"error":"no such domain"}`)) {
+		t.Fatal("should detect qiniu error json")
+	}
+	if isQiniuErrorJSON([]byte("#EXTM3U\nseg0.ts\n")) {
+		t.Fatal("m3u8 is not error json")
+	}
+	if isQiniuErrorJSON([]byte(`{"format":{"duration":"1.0"}}`)) {
+		t.Fatal("avinfo json without error field is not an error body")
+	}
+}
+
+func TestIsM3U8Playlist(t *testing.T) {
+	if !isM3U8Playlist("\n#EXTM3U\n#EXTINF:10,\nseg.ts\n") {
+		t.Fatal("want m3u8")
+	}
+	if isM3U8Playlist(`{"error":"no such domain"}`) {
+		t.Fatal("error json must not pass as m3u8")
+	}
+}
+
+func TestRewriteM3U8IgnoresErrorJSON(t *testing.T) {
+	t.Setenv("QINIU_SK", "unit-test-sk-not-real")
+	t.Setenv("QINIU_PUBLIC_DOMAIN", "http://cloud.onij.fun")
+
+	got := RewriteM3U8(`{"error":"no such domain"}`, "cloud/live/concert.mp4.m3u8")
+	if strings.Contains(got, "token=") || strings.Contains(got, "cloud/live/%7B") {
+		t.Fatalf("error json should not become a signed ts url: %q", got)
+	}
+}
+
 func TestHLSKey(t *testing.T) {
-	if got := HLSKey("videos/a.mp4"); got != "videos/a.mp4.m3u8" {
+	if got := HLSKey("videos/a.mp4"); got != "ts/videos/a.mp4.m3u8" {
 		t.Fatalf("HLSKey = %q", got)
+	}
+}
+
+func TestIsHlsHashRootPrefix(t *testing.T) {
+	if !IsHlsHashRootPrefix("cmIt1FPt0ihZ7qw8ztQZlSOPRco=") {
+		t.Fatal("want hash prefix")
+	}
+	if IsHlsHashRootPrefix("cloud") || IsHlsHashRootPrefix("ts") || IsHlsHashRootPrefix("tran") {
+		t.Fatal("app folders must be kept")
+	}
+}
+
+func TestIsLegacyHlsPlaylistKey(t *testing.T) {
+	if !IsLegacyHlsPlaylistKey("cloud/live/a.mp4.m3u8") {
+		t.Fatal("old sidecar m3u8")
+	}
+	if IsLegacyHlsPlaylistKey("ts/cloud/live/a.mp4.m3u8") {
+		t.Fatal("new ts/ playlist is not legacy")
 	}
 }
 
