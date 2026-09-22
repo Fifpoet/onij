@@ -23,6 +23,8 @@ function isFragilePlayUrl(url: string): boolean {
   return /\.flac(\?|$)/i.test(url)
 }
 
+const FETCH_TIMEOUT_MS = 12_000
+
 async function requestPlayUrl(id: number, br: number): Promise<string | null> {
   const qs = new URLSearchParams({
     types: 'url',
@@ -30,7 +32,17 @@ async function requestPlayUrl(id: number, br: number): Promise<string | null> {
     id: String(id),
     br: String(br),
   })
-  const res = await fetch(`${API_ORIGIN}/api.php?${qs.toString()}`)
+  const ac = new AbortController()
+  const timer = setTimeout(() => ac.abort(), FETCH_TIMEOUT_MS)
+  let res: Response
+  try {
+    res = await fetch(`${API_ORIGIN}/api.php?${qs.toString()}`, {
+      signal: ac.signal,
+      cache: 'no-store',
+    })
+  } finally {
+    clearTimeout(timer)
+  }
   if (!res.ok) return null
   const text = await res.text()
   let data: GdStudioUrlBody

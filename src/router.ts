@@ -6,6 +6,10 @@ import './styles/nprogress.css'
 
 const basicRoutes = [
   {
+    path: '/',
+    redirect: '/search',
+  },
+  {
     path: '/search',
     name: 'Search',
     component: () => import('@/views/SearchPage.vue')

@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { RouterView, useRoute } from 'vue-router';
 import PageHeader from './components/layout/PageHeader.vue'
+import { useOnijNavToggle } from '@/composables/useNavToolsUnlock'
 // import lbAudio from './components/audio/index.vue';
 import AudioContainer from "@/components/music/AudioContainer.vue";
 import MusicDetail from "@/components/music/MusicDetail.vue";
@@ -19,16 +20,18 @@ import { useVideoPlayerStore } from '@/store/videoPlayer'
 
 const route = useRoute()
 const showMobilePlayerBar = computed(() => route.path !== '/ktv')
+const showIcp = computed(() => route.path !== '/ktv')
 const videoPlayer = useVideoPlayerStore()
+const { navToolsVisible } = useOnijNavToggle()
 </script>
 
 <template>
   <div class="app-shell min-h-screen w-full text-left">
-    <VoiceTranscriptBar v-if="!videoPlayer.opened" />
+    <VoiceTranscriptBar v-if="navToolsVisible && !videoPlayer.opened" />
     <!-- 顶部导航栏 -->
   <PageHeader />
 
-  <n-message-provider>
+  <n-message-provider class="app-body">
     <NeteaseAudioHost />
     <VideoPlayerHost />
     <LyricsFullScreen />
@@ -45,7 +48,7 @@ const videoPlayer = useVideoPlayerStore()
         <RouterView />
       </div>
 
-      <footer class="app-icp">
+      <footer v-if="showIcp" class="app-icp">
         <a
           href="https://beian.miit.gov.cn/"
           target="_blank"
@@ -63,7 +66,23 @@ const videoPlayer = useVideoPlayerStore()
 
 <style scoped>
 .app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
   text-align: left;
+}
+
+.app-main {
+  flex: 1 0 auto;
+}
+
+:deep(.app-body) {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
 }
 
 .app-icp {

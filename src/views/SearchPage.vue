@@ -1,6 +1,6 @@
 <template>
   <PageContent>
-    <div class="min-w-0 py-4 md:py-8">
+    <div v-if="hasQuery" class="min-w-0 py-4 md:py-8">
       <!-- 歌手 & 专辑 并排 -->
       <div class="mb-8 min-w-0">
         <div class="flex flex-col gap-8 md:flex-row md:gap-8">
@@ -141,6 +141,7 @@ import { ListCollections, type CollectionDTO } from '@/api/collection'
 
 const route = useRoute()
 const { searchValue, handleSearch } = useSearch()
+const hasQuery = computed(() => Boolean(String(route.query.q ?? '').trim()))
 
 // 默认图片
 const defaultAvatar = 'https://p1.music.126.net/VnZiScyynLG7atLIZ2YPkw==/18686200114669622.jpg'

@@ -4,28 +4,61 @@ export interface LrcLine {
 }
 
 const TAG_RE = /^\[(ar|ti|al|by|offset|length|id|hash|sign|qq|total):/i
+const TIME_RE = /\[(\d{2}):(\d{2})(?:\.(\d{1,3}))?\]/g
 
-/** 解析 LRC 文本为带时间戳的行（多时间轴一行会拆成多行） */
+function extractTimes(line: string): number[] {
+  const times: number[] = []
+  TIME_RE.lastIndex = 0
+  let m: RegExpExecArray | null
+  while ((m = TIME_RE.exec(line)) !== null) {
+    const min = parseInt(m[1], 10)
+    const sec = parseInt(m[2], 10)
+    const ms = m[3] ? parseInt(m[3].padEnd(3, '0').slice(0, 3), 10) / 1000 : 0
+    times.push(min * 60 + sec + ms)
+  }
+  return times
+}
+
+/** 时间轴后的正文：真实换行或字面 \\n 都拼成一行 */
+function flattenLyricText(text: string): string {
+  return text
+    .replace(/\\n+/g, '')
+    .replace(/[\r\n]+/g, '')
+    .trim()
+}
+
+/** 解析 LRC 文本为带时间戳的行（多时间轴一行会拆成多行；无时间轴的续行并入上一句） */
 export function parseLrc(raw: string | null | undefined): LrcLine[] {
   if (!raw || !raw.trim()) return []
+  const body = raw.replace(/\r\n/g, '\n').replace(/\\n/g, '\n')
   const out: LrcLine[] = []
-  for (const line of raw.split(/\r?\n/)) {
+  let pendingTimes: number[] | null = null
+  let pendingParts: string[] = []
+
+  function flush() {
+    if (!pendingTimes) return
+    const text = flattenLyricText(pendingParts.join(''))
+    if (text) {
+      for (const time of pendingTimes) out.push({ time, text })
+    }
+    pendingTimes = null
+    pendingParts = []
+  }
+
+  for (const line of body.split('\n')) {
     const t = line.trim()
     if (!t || TAG_RE.test(t)) continue
-    const timeRe = /\[(\d{2}):(\d{2})(?:\.(\d{1,3}))?\]/g
-    const times: number[] = []
-    let m: RegExpExecArray | null
-    while ((m = timeRe.exec(t)) !== null) {
-      const min = parseInt(m[1], 10)
-      const sec = parseInt(m[2], 10)
-      const ms = m[3] ? parseInt(m[3].padEnd(3, '0').slice(0, 3), 10) / 1000 : 0
-      times.push(min * 60 + sec + ms)
+    const times = extractTimes(t)
+    if (times.length) {
+      flush()
+      const last = t.lastIndexOf(']')
+      pendingTimes = times
+      pendingParts = [last >= 0 ? t.slice(last + 1) : t]
+      continue
     }
-    if (!times.length) continue
-    const last = t.lastIndexOf(']')
-    const text = last >= 0 ? t.slice(last + 1).trim() : t
-    for (const time of times) out.push({ time, text })
+    if (pendingTimes) pendingParts.push(t)
   }
+  flush()
   out.sort((a, b) => a.time - b.time || a.text.localeCompare(b.text))
   return out
 }
