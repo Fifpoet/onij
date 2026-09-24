@@ -13,7 +13,7 @@
     <div
       v-if="index"
       class="w-10 text-center text-gray-500 mr-2 shrink-0"
-      :class="isLargeRow ? 'text-base' : 'text-sm'"
+      :class="isLargeRow ? 'text-xs md:text-base' : 'text-sm'"
     >
       {{ index }}
     </div>
@@ -30,12 +30,12 @@
       <!-- 专辑页：歌名 + 非专辑歌手（超链接）同一行 -->
       <div
         v-if="variant === 'album'"
-        class="flex flex-wrap items-baseline gap-x-1.5 gap-y-1 min-w-0"
+        class="flex items-baseline gap-x-1.5 min-w-0"
       >
-        <span class="font-bold text-lg md:text-xl text-gray-900 dark:text-gray-100 shrink min-w-0">{{ song.name }}</span>
+        <span class="font-bold text-sm md:text-xl text-gray-900 dark:text-gray-100 truncate min-w-0 flex-1">{{ song.name }}</span>
         <template v-if="song.artists && song.artists.length > 0">
-          <span class="text-gray-400 dark:text-gray-500 shrink-0 text-base md:text-lg">·</span>
-          <span class="inline-flex flex-wrap items-baseline gap-x-0 min-w-0 text-base md:text-lg">
+          <span class="text-gray-400 dark:text-gray-500 shrink-0 text-xs md:text-lg">·</span>
+          <span class="inline-flex items-baseline gap-x-0 min-w-0 max-w-[42%] truncate text-xs md:text-lg">
             <template v-for="(artist, i) in song.artists" :key="artist.artist_id">
               <RouterLink
                 :to="{ path: '/artist', query: { ids: String(artist.artist_id) } }"
@@ -124,7 +124,7 @@
       </div>
       <div
         v-if="showQueueAdd"
-        class="w-8 h-8 flex items-center justify-center"
+        class="hidden w-8 h-8 items-center justify-center md:flex"
       >
         <n-button
           quaternary
@@ -142,7 +142,7 @@
       <!-- 时长 -->
       <div
         class="text-gray-500 tabular-nums min-w-[2.5rem] text-right"
-        :class="isLargeRow ? 'text-base' : 'text-sm'"
+        :class="isLargeRow ? 'text-xs md:text-base' : 'text-sm'"
       >
         {{ formatDuration(song.time_long) }}
       </div>
@@ -218,14 +218,13 @@ const coverSizeClass = computed(() => {
   return 'w-12 h-12 mr-4'
 })
 
-const largeTitleClass =
-  'font-bold truncate text-lg leading-snug md:text-xl text-gray-900 dark:text-gray-100'
-
-const largeSubtitleClass =
-  'text-base text-gray-500 dark:text-gray-400 truncate mt-0.5 md:mt-1'
-
 const titleClass = computed(() => {
-  if (props.variant === 'queuePage' || props.variant === 'browse') return largeTitleClass
+  if (props.variant === 'browse') {
+    return 'font-bold truncate text-sm leading-snug md:text-xl text-gray-900 dark:text-gray-100'
+  }
+  if (props.variant === 'queuePage') {
+    return 'font-bold truncate text-lg leading-snug md:text-xl text-gray-900 dark:text-gray-100'
+  }
   return 'font-bold truncate text-gray-900 dark:text-gray-100'
 })
 
@@ -233,7 +232,9 @@ const subtitleClass = computed(() => {
   if (props.variant === 'queuePage') {
     return 'text-base text-gray-500 dark:text-gray-400 truncate mt-1'
   }
-  if (props.variant === 'browse') return largeSubtitleClass
+  if (props.variant === 'browse') {
+    return 'text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5 md:text-base md:mt-1'
+  }
   return 'text-sm text-gray-500 dark:text-gray-400 truncate'
 })
 
