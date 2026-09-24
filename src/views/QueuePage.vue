@@ -109,12 +109,17 @@ const remainingLabel = computed(() => {
   .queue-page__section-head {
     margin-bottom: 1.25rem;
   }
+
+  .queue-page__remaining {
+    font-size: 1rem;
+    line-height: 1.5rem;
+  }
 }
 
 .queue-page__remaining {
   flex-shrink: 0;
-  font-size: 1rem;
-  line-height: 1.5rem;
+  font-size: 0.75rem;
+  line-height: 1.25rem;
   color: rgb(107 114 128);
 }
 
@@ -127,7 +132,7 @@ const remainingLabel = computed(() => {
   padding-left: 0.75rem;
   border-left-width: 4px;
   border-left-style: solid;
-  font-size: 1.75rem;
+  font-size: 1.375rem;
   font-weight: 700;
   line-height: 1.25;
   letter-spacing: -0.02em;
@@ -139,6 +144,12 @@ const remainingLabel = computed(() => {
 }
 
 @media (min-width: 768px) {
+  .queue-page__title {
+    font-size: 1.75rem;
+  }
+}
+
+@media (min-width: 1024px) {
   .queue-page__title {
     font-size: 2.125rem;
   }
