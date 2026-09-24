@@ -5,7 +5,7 @@
         <div class="text-center py-8" />
       </div>
       <div v-else-if="collection" class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden min-w-0">
-        <div class="flex flex-col gap-4 p-4 sm:flex-row sm:items-start sm:gap-6 sm:p-6">
+        <div class="flex flex-col gap-4 px-2 py-4 sm:flex-row sm:items-start sm:gap-6 sm:p-6">
           <div class="flex shrink-0 justify-center sm:justify-start relative">
             <img
               :src="displayCover"
@@ -106,7 +106,7 @@
           </div>
         </div>
 
-        <div class="border-t border-gray-200 px-4 py-4 dark:border-gray-700 sm:px-6">
+        <div class="border-t border-gray-200 px-1 py-3 dark:border-gray-700 sm:px-6 sm:py-4">
           <div v-if="songs.length === 0" class="py-4 text-base text-gray-500 md:text-lg">
             暂无歌曲，进入编辑后可从播放列表添加
           </div>

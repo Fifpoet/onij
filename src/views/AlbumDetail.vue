@@ -6,7 +6,7 @@
       </div>
       <div v-else-if="album" class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden min-w-0">
         <!-- 专辑信息：手机竖排，避免封面与文字重叠 -->
-        <div class="flex flex-col gap-4 p-4 sm:flex-row sm:items-start sm:gap-6 sm:p-6">
+        <div class="flex flex-col gap-4 px-2 py-4 sm:flex-row sm:items-start sm:gap-6 sm:p-6">
           <div class="flex shrink-0 justify-center sm:justify-start">
             <img
                 :src="album.picUrl || album.blurPicUrl"
@@ -56,7 +56,7 @@
         </div>
 
         <!-- 歌曲列表 -->
-        <div class="border-t border-gray-200 px-4 py-4 dark:border-gray-700 sm:px-6">
+        <div class="border-t border-gray-200 px-1 py-3 dark:border-gray-700 sm:px-6 sm:py-4">
           <div v-if="songDetails.length === 0" class="text-base text-gray-500 py-4 md:text-lg">
             暂无歌曲
           </div>

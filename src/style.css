@@ -170,19 +170,25 @@ button:hover {
   }
 }
 
-/* 各路由页内容区：居中列（约 80% 宽，上限 80rem），块内文字仍左对齐 */
+/* 各路由页内容区：手机铺满主栏，PC 居中列（约 80% 宽，上限 80rem） */
 #app .page-content {
   box-sizing: border-box;
-  width: 80%;
+  width: 100%;
   max-width: 80rem;
   margin-left: auto;
   margin-right: auto;
   text-align: left;
 }
 
+@media (min-width: 1024px) {
+  #app .page-content {
+    width: 80%;
+  }
+}
+
 /* 搜索 / 歌手 / 专辑等浏览页区块标题（与队列页标题字号一致） */
 #app .browse-section-title {
-  font-size: 1.75rem;
+  font-size: 1.375rem;
   font-weight: 700;
   line-height: 1.25;
   letter-spacing: -0.02em;
@@ -235,6 +241,12 @@ button:hover {
 }
 
 @media (min-width: 768px) {
+  #app .browse-section-title {
+    font-size: 1.75rem;
+  }
+}
+
+@media (min-width: 1024px) {
   #app .browse-section-title {
     font-size: 2.125rem;
   }

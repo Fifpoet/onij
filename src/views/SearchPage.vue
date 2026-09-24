@@ -25,7 +25,7 @@
                     class="w-full max-w-[7.5rem] aspect-square rounded-full object-cover"
                   >
                   <div class="mt-2 w-full min-w-0 text-center">
-                    <div class="font-bold text-base md:text-lg truncate">{{ artist.name }}</div>
+                    <div class="font-bold text-sm md:text-lg truncate">{{ artist.name }}</div>
                   </div>
                 </div>
               </div>
@@ -53,9 +53,9 @@
                     class="w-full aspect-square object-cover rounded"
                   >
                   <div class="mt-2 min-w-0 text-center">
-                    <div class="font-bold text-base md:text-lg truncate">{{ album.name }}</div>
+                    <div class="font-bold text-sm md:text-lg truncate">{{ album.name }}</div>
                     <div
-                      class="block truncate text-base text-gray-500 hover:text-blue-500 hover:underline"
+                      class="block truncate text-xs text-gray-500 hover:text-blue-500 hover:underline md:text-base"
                       @click.stop="goToArtist(album.artist.id)"
                     >
                       {{ album.artist.name }}
@@ -92,8 +92,8 @@
                 class="w-full aspect-square object-cover rounded"
               >
               <div class="mt-2 min-w-0 text-center">
-                <div class="font-bold text-base md:text-lg truncate">{{ col.name }}</div>
-                <div class="text-base text-gray-500">{{ col.song_count }} 首</div>
+                <div class="font-bold text-sm md:text-lg truncate">{{ col.name }}</div>
+                <div class="text-xs text-gray-500 md:text-base">{{ col.song_count }} 首</div>
               </div>
             </div>
           </div>

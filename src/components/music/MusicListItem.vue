@@ -55,8 +55,8 @@
 
       <!-- 播放队列抽屉：大号字 + 双行（参考专辑列表体量） -->
       <template v-else-if="variant === 'queue'">
-        <div class="font-bold text-lg text-gray-900 dark:text-gray-100 truncate">{{ song.name }}</div>
-        <div v-if="showSubtitleRow" class="text-base text-gray-500 dark:text-gray-400 truncate mt-0.5">
+        <div class="font-bold truncate text-sm leading-snug md:text-xl text-gray-900 dark:text-gray-100">{{ song.name }}</div>
+        <div v-if="showSubtitleRow" class="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5 md:text-base">
           <span
               v-for="(artist, i) in lineArtists"
               :key="artist.artist_id"
@@ -202,9 +202,9 @@ const isLargeRow = computed(
 )
 
 const rowPaddingClass = computed(() => {
-  if (props.variant === 'queuePage') return 'py-4 md:py-[1.125rem]'
-  if (props.variant === 'browse') return 'py-3.5 md:py-4'
-  if (isLargeRow.value) return 'py-3.5'
+  if (props.variant === 'queuePage') return 'py-3 md:py-[1.125rem]'
+  if (props.variant === 'browse') return 'py-3 md:py-4'
+  if (isLargeRow.value) return 'py-3 md:py-3.5'
   return 'py-3'
 })
 
@@ -213,26 +213,20 @@ const rowPxClass = computed(() =>
 )
 
 const coverSizeClass = computed(() => {
-  if (props.variant === 'queuePage') return 'w-14 h-14 md:w-16 md:h-16 mr-4 md:mr-5'
-  if (props.variant === 'browse') return 'w-14 h-14 mr-4'
-  return 'w-12 h-12 mr-4'
+  if (props.variant === 'queuePage') return 'w-12 h-12 mr-3 md:w-16 md:h-16 md:mr-5'
+  if (props.variant === 'browse') return 'w-12 h-12 mr-3 md:w-14 md:h-14 md:mr-4'
+  return 'w-12 h-12 mr-3 md:mr-4'
 })
 
 const titleClass = computed(() => {
-  if (props.variant === 'browse') {
+  if (props.variant === 'browse' || props.variant === 'queuePage') {
     return 'font-bold truncate text-sm leading-snug md:text-xl text-gray-900 dark:text-gray-100'
-  }
-  if (props.variant === 'queuePage') {
-    return 'font-bold truncate text-lg leading-snug md:text-xl text-gray-900 dark:text-gray-100'
   }
   return 'font-bold truncate text-gray-900 dark:text-gray-100'
 })
 
 const subtitleClass = computed(() => {
-  if (props.variant === 'queuePage') {
-    return 'text-base text-gray-500 dark:text-gray-400 truncate mt-1'
-  }
-  if (props.variant === 'browse') {
+  if (props.variant === 'queuePage' || props.variant === 'browse') {
     return 'text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5 md:text-base md:mt-1'
   }
   return 'text-sm text-gray-500 dark:text-gray-400 truncate'
