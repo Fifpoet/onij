@@ -15,6 +15,8 @@
             AI
           </RouterLink>
           <SiteNavTools v-if="navToolsVisible" />
+          <PresenceNickname />
+          <PresenceDesktopPanel />
           <HeaderSearch />
         </div>
       </div>
@@ -28,6 +30,8 @@ import { RouterLink, useRoute } from 'vue-router'
 import PlayerHeaderControls from '@/components/layout/PlayerHeaderControls.vue'
 import SiteNavTools from '@/components/layout/SiteNavTools.vue'
 import HeaderSearch from '@/components/layout/HeaderSearch.vue'
+import PresenceNickname from '@/components/presence/PresenceNickname.vue'
+import PresenceDesktopPanel from '@/components/presence/PresenceDesktopPanel.vue'
 import { useNavToolsVisible } from '@/composables/useNavToolsUnlock'
 
 const route = useRoute()

@@ -124,13 +124,13 @@
       </div>
       <div
         v-if="showQueueAdd"
-        class="hidden w-8 h-8 items-center justify-center md:flex"
+        class="flex w-8 h-8 items-center justify-center"
       >
         <n-button
           quaternary
           circle
           size="small"
-          class="!opacity-0 group-hover:!opacity-100 transition-opacity duration-150"
+          class="md:!opacity-0 md:group-hover:!opacity-100 transition-opacity duration-150"
           :focusable="false"
           @click.stop="onAddToQueue"
         >

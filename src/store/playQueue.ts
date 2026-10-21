@@ -19,6 +19,8 @@ export const usePlayQueueStore = defineStore(
     const playbackDurationSec = ref(0)
     /** 正在拖动进度条时暂停用 timeupdate 覆盖 UI */
     const playbackSeeking = ref(false)
+    /** 从他人同步后，等播放 URL / loadedmetadata 再 seek；不持久化 */
+    const pendingSeekSec = ref<number | null>(null)
 
     const queueLength = computed(() => queue.value.length)
     const hasCurrent = computed(() => nowPlaying.value !== null)
@@ -71,6 +73,7 @@ export const usePlayQueueStore = defineStore(
 
     /** 当前曲自然播放结束：已在播的算「播完」，再取下一段 */
     function advanceAfterEnded() {
+      pendingSeekSec.value = null
       nowPlaying.value = null
       isPlaying.value = false
       const next = takeNextFromQueue()
@@ -81,6 +84,7 @@ export const usePlayQueueStore = defineStore(
 
     /** 手动下一曲：从队列取下一首并切歌；队列为空则停止在播 */
     function skipToNext() {
+      pendingSeekSec.value = null
       const next = takeNextFromQueue()
       if (next) {
         nowPlaying.value = next
@@ -117,6 +121,40 @@ export const usePlayQueueStore = defineStore(
     function resetPlaybackProgress() {
       playbackCurrentSec.value = 0
       playbackDurationSec.value = 0
+    }
+
+    function clearPendingSeek() {
+      pendingSeekSec.value = null
+    }
+
+    function consumePendingSeek(): number | null {
+      const v = pendingSeekSec.value
+      pendingSeekSec.value = null
+      return v
+    }
+
+    /**
+     * 用对方的在播 + 队列整表覆盖自己（含清空己方原队列），记下待 seek 秒数。
+     * 不要走 playNow（会把当前曲插回队首并把进度清零）。
+     */
+    function replaceFromPresence(payload: {
+      nowPlaying: ViewMusicListItem | null
+      queue: ViewMusicListItem[]
+      progressSec: number
+    }) {
+      queue.value = (payload.queue ?? []).slice(0, 80).map(cloneSong)
+      if (!payload.nowPlaying) {
+        nowPlaying.value = null
+        isPlaying.value = false
+        pendingSeekSec.value = null
+        resetPlaybackProgress()
+        return
+      }
+      const sec =
+        Number.isFinite(payload.progressSec) && payload.progressSec > 0 ? payload.progressSec : 0
+      pendingSeekSec.value = sec
+      playbackCurrentSec.value = sec
+      nowPlaying.value = cloneSong(payload.nowPlaying)
     }
 
     function setVolume(v: number) {
@@ -166,6 +204,7 @@ export const usePlayQueueStore = defineStore(
      * requeuePrevious 为 true 时，当前在播（若有且不同曲）插回队首。
      */
     function playNow(song: ViewMusicListItem, options?: { requeuePrevious?: boolean }) {
+      pendingSeekSec.value = null
       const requeuePrevious = options?.requeuePrevious !== false
       const incoming = cloneSong(song)
       const prev = nowPlaying.value
@@ -189,6 +228,7 @@ export const usePlayQueueStore = defineStore(
       playbackCurrentSec,
       playbackDurationSec,
       playbackSeeking,
+      pendingSeekSec,
       queueLength,
       hasCurrent,
       isInQueueOrPlaying,
@@ -210,6 +250,9 @@ export const usePlayQueueStore = defineStore(
       playNow,
       skipToNext,
       patchMvUrl,
+      clearPendingSeek,
+      consumePendingSeek,
+      replaceFromPresence,
     }
   },
   {
