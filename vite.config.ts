@@ -35,15 +35,15 @@ export default defineConfig((configEnv) => {
           target: env.VITE_SERVER_URL || 'http://127.0.0.1:8889',
           changeOrigin: true,
         },
-        // 取链走公开 API；不直连 music.gdstudio.org（Cloudflare 校验）
+        // 取链走播放器同源 api.php（music.gdstudio.org），带 crc32 签名
         '/gdstudio-music': {
-          target: 'https://music-api.gdstudio.xyz',
+          target: 'https://music.gdstudio.org',
           changeOrigin: true,
           rewrite: (p) => p.replace(/^\/gdstudio-music/, ''),
           configure: (proxy) => {
             proxy.on('proxyReq', (proxyReq) => {
-              proxyReq.setHeader('Origin', 'https://music-api.gdstudio.xyz')
-              proxyReq.setHeader('Referer', 'https://music-api.gdstudio.xyz/')
+              proxyReq.setHeader('Origin', 'https://music.gdstudio.org')
+              proxyReq.setHeader('Referer', 'https://music.gdstudio.org/')
             })
           },
         },
