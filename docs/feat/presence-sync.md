@@ -21,7 +21,7 @@ status: in_progress
 
 ## 大体方案
 
-- **身份**：`localStorage` 存 `client_id`（uuid）+ `nickname`。首次进入用词库「形容词 + 的 + 名词」生成一次（如「安静的磁带」），改过后记住；允许重名。
+- **身份**：`sessionStorage` 存 `client_id`（每个标签页独立，刷新仍在）；`localStorage` 只记 `nickname`。首次进入用词库「形容词 + 的 + 名词」生成一次（如「安静的磁带」），改过后记住；允许重名。同一浏览器两个窗口必须是两个人，否则列表会把自己剔掉变成空的。
 - **广播**：只要页面开着就心跳上报（id、昵称、在播、队列、进度秒、是否在播）。所有访客互相可见，无隐身。没在听也出现在列表，文案「未在播放」，封面点击无操作或 toast 即可。
 - **通道**：Go 内存 map + TTL。`customizedRegister` 增加 `POST /presence/heartbeat`（上报并返回他人列表）。不改表。心跳约 10s，超时约 35s 视为离线。单次队列条数设上限（如 80），避免 payload 过大。
 - **同步一次**：点对方**封面**→ 用对方 `nowPlaying` + `queue` **整表覆盖**自己的 `playQueue`（含清空己方原队列），按对方进度 seek 后播放。不要 `playNow` 默认的「当前曲插回队首」。点**歌手**→ `/artist`；点**歌名**→ `/album`。不能点进用户。
@@ -84,4 +84,5 @@ status: in_progress
 - 2026-10-21：无痕页看不到原窗口，是原标签页进后台后 `setInterval` 被节流，35s TTL 把人清掉。心跳改到 Worker，打开列表立刻拉一次，TTL 90s；词库加大；头像由 client_id 哈希，不用另存。
 - 2026-10-21：昵称不再截断；改名时头像留着；好友图标有人在线出红点人数；心跳 3s，切歌立刻上报。Playwright 双页已能看到对方昵称和红点。
 - 2026-10-21：本地心跳改为 Vite 同源反代本机 Go（不再直连 8889）；Worker 改为模块脚本；播放中 `timeupdate` 也会续命，避免后台无痕被节流后从列表消失。
+- 2026-10-21：线上接口本身是通的。同一浏览器两个窗口共用 localStorage `client_id`，服务端按 id 剔自己，两边都看到空列表。改为 `sessionStorage` 存 id（昵称仍 localStorage）；Worker 按经典脚本加载（构建产物是 IIFE，不能当 module）。
 

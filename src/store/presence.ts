@@ -10,6 +10,7 @@ const HEARTBEAT_MS = 3_000
 const HEARTBEAT_TIMEOUT_MS = 4_000
 const QUEUE_LIMIT = 80
 const PINIA_PRESENCE_KEY = 'presence'
+const SESSION_CLIENT_ID_KEY = 'presence_client_id'
 
 export type PresencePeer = {
   clientId: string
@@ -63,17 +64,31 @@ function slimTrack(song: ViewMusicListItem | null | undefined): PresenceTrack | 
   return track
 }
 
-function readPersistedIdentity(): { clientId?: string; nickname?: string } {
+function readPersistedNickname(): string {
   try {
     const raw = localStorage.getItem(PINIA_PRESENCE_KEY)
-    if (!raw) return {}
-    const parsed = JSON.parse(raw) as { clientId?: string; nickname?: string }
-    return {
-      clientId: typeof parsed.clientId === 'string' ? parsed.clientId : undefined,
-      nickname: typeof parsed.nickname === 'string' ? parsed.nickname : undefined,
-    }
+    if (!raw) return ''
+    const parsed = JSON.parse(raw) as { nickname?: string }
+    return typeof parsed.nickname === 'string' ? parsed.nickname : ''
   } catch {
-    return {}
+    return ''
+  }
+}
+
+function readSessionClientId(): string {
+  try {
+    const v = sessionStorage.getItem(SESSION_CLIENT_ID_KEY)
+    return typeof v === 'string' && v.trim() ? v : ''
+  } catch {
+    return ''
+  }
+}
+
+function writeSessionClientId(id: string) {
+  try {
+    sessionStorage.setItem(SESSION_CLIENT_ID_KEY, id)
+  } catch {
+    /* 隐私模式受限时仍用内存里的 id */
   }
 }
 
@@ -84,9 +99,7 @@ function startTickWorker(onTick: () => void): () => void {
   }
   if (typeof Worker === 'undefined') return fallback()
   try {
-    const worker = new Worker(new URL('./presenceTick.worker.ts', import.meta.url), {
-      type: 'module',
-    })
+    const worker = new Worker(new URL('./presenceTick.worker.ts', import.meta.url))
     let fallbackStop: (() => void) | null = null
     worker.onmessage = () => onTick()
     worker.onerror = () => {
@@ -117,11 +130,15 @@ export const usePresenceStore = defineStore(
 
     function ensureIdentity() {
       if (!clientId.value) {
-        const saved = readPersistedIdentity()
-        if (saved.clientId) clientId.value = saved.clientId
-        if (!nickname.value.trim() && saved.nickname) nickname.value = saved.nickname
+        const sid = readSessionClientId()
+        if (sid) clientId.value = sid
+      }
+      if (!nickname.value.trim()) {
+        const saved = readPersistedNickname()
+        if (saved.trim()) nickname.value = saved
       }
       if (!clientId.value) clientId.value = randomUUID()
+      writeSessionClientId(clientId.value)
       if (!nickname.value.trim()) nickname.value = generatePresenceName()
     }
 
@@ -221,7 +238,7 @@ export const usePresenceStore = defineStore(
   },
   {
     persist: {
-      paths: ['clientId', 'nickname'],
+      paths: ['nickname'],
     },
   },
 )
