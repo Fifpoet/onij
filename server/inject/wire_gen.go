@@ -98,6 +98,7 @@ func InitLogicForTest() *logic.AllLogic {
 	aiLogic := logic.NewAiLogic(allInfra)
 	collectionLogic := logic.NewCollectionLogic(allInfra)
 	fileVideoLogic := logic.NewFileVideoLogic(allInfra)
+	presenceLogic := logic.NewPresenceLogic()
 	allLogic := &logic.AllLogic{
 		MusicLogic:      musicLogic,
 		FileLogic:       fileLogic,
@@ -110,6 +111,7 @@ func InitLogicForTest() *logic.AllLogic {
 		AiLogic:         aiLogic,
 		CollectionLogic: collectionLogic,
 		FileVideoLogic:  fileVideoLogic,
+		PresenceLogic:   presenceLogic,
 	}
 	return allLogic
 }
@@ -159,6 +161,7 @@ func InitializeApp() *App {
 	aiLogic := logic.NewAiLogic(allInfra)
 	collectionLogic := logic.NewCollectionLogic(allInfra)
 	fileVideoLogic := logic.NewFileVideoLogic(allInfra)
+	presenceLogic := logic.NewPresenceLogic()
 	allLogic := &logic.AllLogic{
 		MusicLogic:      musicLogic,
 		FileLogic:       fileLogic,
@@ -171,6 +174,7 @@ func InitializeApp() *App {
 		AiLogic:         aiLogic,
 		CollectionLogic: collectionLogic,
 		FileVideoLogic:  fileVideoLogic,
+		PresenceLogic:   presenceLogic,
 	}
 	app := &App{
 		AllInfra: allInfra,
@@ -183,7 +187,7 @@ func InitializeApp() *App {
 
 var infraSet = wire.NewSet(dal.NewMysqlCli, cdb.NewDefaultProxy, dal.NewTagDal, dal.NewFileDal, dal.NewMusicDal, dal.NewAlbumDal, dal.NewAlbumMusicDal, dal.NewArtistDal, dal.NewPracticeDal, dal.NewTranItemDal, dal.NewAiSessionDal, dal.NewAiMessageDal, dal.NewAiConfirmPendingDal, dal.NewMusicCollectionDal, dal.NewMusicCollectionItemDal, dal.NewFileVideoMarkerDal, wire.Struct(new(infra.AllInfra), "*"))
 
-var logicSet = wire.NewSet(uvr.NewClient, logic.NewMusicLogic, logic.NewFileLogic, logic.NewAlbumLogic, logic.NewArtistLogic, logic.NewTagLogic, logic.NewPracticeLogic, logic.NewUvrLogic, logic.NewTranLogic, logic.NewAiLogic, logic.NewCollectionLogic, logic.NewFileVideoLogic, wire.Struct(new(logic.AllLogic), "*"))
+var logicSet = wire.NewSet(uvr.NewClient, logic.NewMusicLogic, logic.NewFileLogic, logic.NewAlbumLogic, logic.NewArtistLogic, logic.NewTagLogic, logic.NewPracticeLogic, logic.NewUvrLogic, logic.NewTranLogic, logic.NewAiLogic, logic.NewCollectionLogic, logic.NewFileVideoLogic, logic.NewPresenceLogic, wire.Struct(new(logic.AllLogic), "*"))
 
 var allSet = wire.NewSet(
 	infraSet,

@@ -27,13 +27,11 @@ export default defineConfig((configEnv) => {
       port: 18968,
       open: false,
       proxy: {
-        '/file': {
-          target: env.VITE_SERVER_URL || 'http://127.0.0.1:8889',
+        // 避免 HSTS 把 http://onij.fun:3000 升成 https://onij.fun:3000（无证书）
+        '/netease': {
+          target: 'http://onij.fun:3000',
           changeOrigin: true,
-        },
-        '/api': {
-          target: env.VITE_SERVER_URL || 'http://127.0.0.1:8889',
-          changeOrigin: true,
+          rewrite: (p) => p.replace(/^\/netease/, ''),
         },
         // 取链走播放器同源 api.php（music.gdstudio.org），带 crc32 签名
         '/gdstudio-music': {
@@ -46,6 +44,11 @@ export default defineConfig((configEnv) => {
               proxyReq.setHeader('Referer', 'https://music.gdstudio.org/')
             })
           },
+        },
+        // 主站 Go：页面同源 /presence 等，避免浏览器直连 127.0.0.1:8889
+        '^/(ping|album|artist|file|music|practice|tag|uvr|voice|ai|collection|tran|presence|api)(/|$)': {
+          target: 'http://127.0.0.1:8889',
+          changeOrigin: true,
         },
       },
     },

@@ -17,12 +17,14 @@ import MobileLyricsSheet from '@/components/player/MobileLyricsSheet.vue'
 import MemoList from './components/memo/MemoList.vue';
 import VoiceTranscriptBar from '@/components/voice/VoiceTranscriptBar.vue'
 import { useVideoPlayerStore } from '@/store/videoPlayer'
+import { usePresenceStore } from '@/store/presence'
 
 const route = useRoute()
 const showMobilePlayerBar = computed(() => route.path !== '/ktv')
 const showIcp = computed(() => route.path !== '/ktv')
 const videoPlayer = useVideoPlayerStore()
 const { navToolsVisible } = useOnijNavToggle()
+usePresenceStore().startHeartbeat()
 </script>
 
 <template>

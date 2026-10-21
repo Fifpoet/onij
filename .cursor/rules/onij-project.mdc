@@ -15,8 +15,8 @@ alwaysApply: true
   - 主站 Go：`GET http://127.0.0.1:8889/ping`；未启动则 `server/` 下 `go run .`。
   - UVR：`GET http://127.0.0.1:5555/health`；未启动则 `uvr/run.bat`（本机 GPU；Go 默认 `UVR_API_BASE=http://172.26.250.1:5555`）。
 - **线上**：`117.72.33.136`（`onij.fun`），仓库 `~/workbench/go/onij`，分支 `feat/onij`。
-- **主站 API**：本地必须走 `VITE_SERVER_URL=http://127.0.0.1:8889`（`.env.development`）。
-- **网易云代理**：本地也固定 `VITE_NETEASE_URL=http://onij.fun:3000/`，不要改成本地代理。
+- **主站 API**：Go 仍监听 `127.0.0.1:8889`。本地页面走 Vite 同源反代（不要让浏览器直连 `:8889`，Edge/Chrome 会当局域网请求拦掉）。
+- **网易云代理**：本地 `VITE_NETEASE_URL=/netease/`（Vite 反代 `http://onij.fun:3000`）。不要直连 `http://onij.fun:3000`（站点 HSTS 会升成 `https://onij.fun:3000`，3000 无证书）。生产走 `https://onij.fun/netease/`。
 - **播放直链**：音频由浏览器直连返回的网易 CDN；取链走同源 `/gdstudio`（反代 `music.gdstudio.org/api.php`，按播放器 crc32 签名）。不要走网易 `/song/url`（无 VIP 只有试听）。`http://*.126.net` 改成 https。
 - **生产构建**：`VITE_SERVER_URL` 填 `https://onij.fun/go`（nginx 反代到本机 `:8889`）；**禁止**公网前端包写 `127.0.0.1`。站点 `https://onij.fun`，网易代理 `https://onij.fun/netease/`。
 

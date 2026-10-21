@@ -1,14 +1,16 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 
 const PROD_API = 'https://onij.fun/go'
-const DEV_API = 'http://127.0.0.1:8889'
 
 function resolveServerUrl(): string {
   const fromEnv = (import.meta.env.VITE_SERVER_URL as string | undefined)?.replace(/\/$/, '') || ''
-  if (fromEnv && !import.meta.env.PROD) return fromEnv
-  if (fromEnv && import.meta.env.PROD && !/127\.0\.0\.1|localhost/i.test(fromEnv)) return fromEnv
-  if (import.meta.env.PROD) return PROD_API
-  return fromEnv || DEV_API
+  if (!import.meta.env.PROD) {
+    // 本机 Go 走 Vite 同源反代，避免浏览器把 127.0.0.1:8889 当局域网请求拦掉
+    if (!fromEnv || /127\.0\.0\.1|localhost/i.test(fromEnv)) return ''
+    return fromEnv
+  }
+  if (fromEnv && !/127\.0\.0\.1|localhost/i.test(fromEnv)) return fromEnv
+  return PROD_API
 }
 
 const SERVER_URL = resolveServerUrl()

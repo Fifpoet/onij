@@ -12,4 +12,5 @@ type AllLogic struct {
 	AiLogic
 	CollectionLogic
 	FileVideoLogic
+	PresenceLogic
 }

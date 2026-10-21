@@ -1,11 +1,29 @@
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 const SEQ = ['o', 'n', 'i', 'j'] as const
 const RESET_MS = 1500
+const NAV_TOOLS_STORAGE_KEY = 'onij_nav_tools_visible'
 
-/** 初始隐藏；首页非输入框连续输入 onij 切换 */
-export const navToolsVisible = ref(false)
+function readNavToolsVisible(): boolean {
+  if (typeof localStorage === 'undefined') return false
+  try {
+    return localStorage.getItem(NAV_TOOLS_STORAGE_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+/** 初始隐藏；首页非输入框连续输入 onij 切换；状态持久到 localStorage */
+export const navToolsVisible = ref(readNavToolsVisible())
+
+watch(navToolsVisible, (visible) => {
+  try {
+    localStorage.setItem(NAV_TOOLS_STORAGE_KEY, visible ? '1' : '0')
+  } catch {
+    /* ignore */
+  }
+})
 
 function isHomePath(path: string): boolean {
   return path === '/search' || path === '/'

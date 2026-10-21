@@ -67,4 +67,7 @@ func customizedRegister(r *server.Hertz) {
 	file.POST("/video/marker/list", handler.ListFileVideoMarker)
 	file.POST("/video/marker/save", handler.SaveFileVideoMarker)
 	file.POST("/video/marker/delete", handler.DeleteFileVideoMarker)
+
+	presence := root.Group("/presence")
+	presence.POST("/heartbeat", handler.PresenceHeartbeat)
 }

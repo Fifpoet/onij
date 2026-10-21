@@ -8,6 +8,8 @@
           <PlayerHeaderControls />
         </div>
         <div class="flex shrink-0 items-center gap-1">
+          <PresenceNickname />
+          <PresenceFriendsBtn @click="openPresenceOverlay" />
           <button type="button" class="mobile-header-icon-btn" aria-label="搜索" @click="openSearchOverlay">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="11" cy="11" r="7" /><path d="M20 20L17 17" />
@@ -58,6 +60,8 @@
       </Transition>
     </Teleport>
 
+    <PresenceMobileOverlay :open="isPresenceOverlayOpen" @close="closePresenceOverlay" />
+
     <Transition name="slide-down">
       <nav
         v-if="isMenuOpen"
@@ -79,6 +83,9 @@
 import { ref, watch, onUnmounted } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import PlayerHeaderControls from '@/components/layout/PlayerHeaderControls.vue'
+import PresenceNickname from '@/components/presence/PresenceNickname.vue'
+import PresenceMobileOverlay from '@/components/presence/PresenceMobileOverlay.vue'
+import PresenceFriendsBtn from '@/components/presence/PresenceFriendsBtn.vue'
 import { useSearch } from '@/composables/searchMusic'
 import { useNavToolsVisible } from '@/composables/useNavToolsUnlock'
 
@@ -87,15 +94,25 @@ const { searchValue } = useSearch()
 const { navToolsVisible } = useNavToolsVisible()
 const isMenuOpen = ref(false)
 const isSearchOverlayOpen = ref(false)
+const isPresenceOverlayOpen = ref(false)
 const searchInputRef = ref<HTMLInputElement | null>(null)
 const menuTop = 'calc(56px + env(safe-area-inset-top, 0px))'
 
 function openSearchOverlay() {
   isMenuOpen.value = false
+  isPresenceOverlayOpen.value = false
   isSearchOverlayOpen.value = true
 }
 function closeSearchOverlay() {
   isSearchOverlayOpen.value = false
+}
+function openPresenceOverlay() {
+  isMenuOpen.value = false
+  isSearchOverlayOpen.value = false
+  isPresenceOverlayOpen.value = true
+}
+function closePresenceOverlay() {
+  isPresenceOverlayOpen.value = false
 }
 async function submitSearch() {
   const q = searchValue.value?.trim()
@@ -104,16 +121,18 @@ async function submitSearch() {
   await router.push({ name: 'Search', query: { q } })
 }
 function toggleMenu() {
-  if (!isSearchOverlayOpen.value) isMenuOpen.value = !isMenuOpen.value
+  if (!isSearchOverlayOpen.value && !isPresenceOverlayOpen.value) {
+    isMenuOpen.value = !isMenuOpen.value
+  }
 }
 
 watch(navToolsVisible, (visible) => {
   if (!visible) isMenuOpen.value = false
 })
 
-watch(isSearchOverlayOpen, (open) => {
-  document.body.style.overflow = open ? 'hidden' : ''
-  if (open) setTimeout(() => searchInputRef.value?.focus(), 50)
+watch([isSearchOverlayOpen, isPresenceOverlayOpen], ([searchOpen, presenceOpen]) => {
+  document.body.style.overflow = searchOpen || presenceOpen ? 'hidden' : ''
+  if (searchOpen) setTimeout(() => searchInputRef.value?.focus(), 50)
 })
 onUnmounted(() => {
   document.body.style.overflow = ''

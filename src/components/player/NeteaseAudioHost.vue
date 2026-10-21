@@ -203,6 +203,11 @@ async function loadAndPlay(songId: number) {
   if (!orig) return
   if (!originalUrl) {
     message.error('无法获取播放链接')
+    if (playQueue.pendingSeekSec != null) {
+      playQueue.clearPendingSeek()
+      playQueue.setPlaying(false)
+      return
+    }
     playQueue.advanceAfterEnded()
     return
   }
@@ -219,17 +224,54 @@ async function loadAndPlay(songId: number) {
 
   if (startWithInst && instRef.value?.src) {
     usingInstrumental = true
-    const inst = instRef.value
-    playQueue.resetPlaybackProgress()
-    applyVolume()
-    resumePlay(inst)
+    finishLoadAndPlay(instRef.value, token)
     return
   }
 
   usingInstrumental = false
-  playQueue.resetPlaybackProgress()
-  applyVolume()
-  resumePlay(orig)
+  finishLoadAndPlay(orig, token)
+}
+
+/** URL 已挂上：无待 seek 则立刻播；有 pendingSeekSec 则等 loadedmetadata 再 seek 后播放 */
+function finishLoadAndPlay(el: HTMLAudioElement, token: number) {
+  const pending = playQueue.pendingSeekSec
+  if (pending == null) {
+    playQueue.resetPlaybackProgress()
+    applyVolume()
+    resumePlay(el)
+    return
+  }
+
+  const applySeekAndPlay = () => {
+    if (token !== loadToken) return
+    const seek = playQueue.consumePendingSeek() ?? pending
+    if (seek != null && Number.isFinite(seek) && seek > 0) {
+      const d = el.duration
+      const t =
+        Number.isFinite(d) && d > 0
+          ? Math.min(Math.max(0, seek), Math.max(0, d - 0.05))
+          : Math.max(0, seek)
+      try {
+        el.currentTime = t
+      } catch {
+        /* ignore */
+      }
+      playQueue.setPlaybackProgress(
+        el.currentTime,
+        Number.isFinite(el.duration) && el.duration > 0 ? el.duration : 0,
+      )
+    } else {
+      playQueue.resetPlaybackProgress()
+    }
+    applyVolume()
+    resumePlay(el)
+  }
+
+  if (el.readyState >= 1 && Number.isFinite(el.duration) && el.duration > 0) {
+    applySeekAndPlay()
+    return
+  }
+  el.addEventListener('loadedmetadata', applySeekAndPlay, { once: true })
 }
 
 function onActivePlay() {
