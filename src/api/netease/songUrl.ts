@@ -1,14 +1,13 @@
 /**
- * 取链：优先 GD Studio（同源 /gdstudio → music-api.gdstudio.xyz）。
- * 该站现被 Cloudflare 人机校验挡住 nginx/curl，失败则改走已有网易代理 /song/url/v1。
- * 音频文件仍由浏览器直连返回的网易 CDN，不经主站。
+ * 取链：同源 /gdstudio → music.gdstudio.org/api.php（播放器自己的接口，带 crc32 签名）。
+ * 不要走网易 /song/url（无 VIP 只有 45s 试听）。音频文件仍由浏览器直连返回的网易 CDN。
  */
 
-import { getNetease } from '@/util/http'
+import { fetchGdstudioServerTime, gdstudioSignPayload, gdstudioUrlEncode } from './gdstudioSign'
 
 const API_ORIGIN = (
   (import.meta.env.VITE_GDSTUDIO_MUSIC_URL as string | undefined)?.replace(/\/$/, '') ||
-  'https://music-api.gdstudio.xyz'
+  'https://music.gdstudio.org'
 )
 
 /** 浏览器直连网易 FLAC 常 206 断连，播放用 320k MP3 */
@@ -19,10 +18,6 @@ interface GdStudioUrlBody {
   br?: number
   size?: number
   from?: string
-}
-
-interface NeteaseSongUrlBody {
-  data?: Array<{ url?: string | null }>
 }
 
 function isFragilePlayUrl(url: string): boolean {
@@ -45,11 +40,15 @@ function usableUrl(raw: unknown): string | null {
 const FETCH_TIMEOUT_MS = 12_000
 
 async function requestGdStudioPlayUrl(id: number, br: number): Promise<string | null> {
+  const idStr = gdstudioUrlEncode(String(id))
+  const serverTime = await fetchGdstudioServerTime(API_ORIGIN)
+  const sign = gdstudioSignPayload(idStr, serverTime)
   const qs = new URLSearchParams({
     types: 'url',
     source: 'netease',
-    id: String(id),
+    id: idStr,
     br: String(br),
+    s: sign,
   })
   const ac = new AbortController()
   const timer = setTimeout(() => ac.abort(), FETCH_TIMEOUT_MS)
@@ -73,33 +72,10 @@ async function requestGdStudioPlayUrl(id: number, br: number): Promise<string | 
   return usableUrl(data?.url)
 }
 
-async function requestNeteasePlayUrl(id: number): Promise<string | null> {
-  const tryOnce = async (path: string, params: Record<string, string | number>) => {
-    const data = await getNetease<NeteaseSongUrlBody>(path, params)
-    return usableUrl(data?.data?.[0]?.url)
-  }
-  try {
-    const hi = await tryOnce('/song/url/v1', { id, level: 'exhigh' })
-    if (hi) return hi
-  } catch {
-    /* 继续试旧接口 */
-  }
-  try {
-    return await tryOnce('/song/url', { id })
-  } catch {
-    return null
-  }
-}
-
 export async function fetchSongPlayUrl(id: number, br: number = DEFAULT_PLAY_BR): Promise<string | null> {
-  try {
-    const url = await requestGdStudioPlayUrl(id, br)
-    if (url && isFragilePlayUrl(url)) {
-      return (await requestGdStudioPlayUrl(id, 192)) ?? url
-    }
-    if (url) return url
-  } catch {
-    /* GD Studio 被 Cloudflare 拦时改走网易代理 */
+  const url = await requestGdStudioPlayUrl(id, br)
+  if (url && isFragilePlayUrl(url)) {
+    return (await requestGdStudioPlayUrl(id, 192)) ?? url
   }
-  return requestNeteasePlayUrl(id)
+  return url
 }
