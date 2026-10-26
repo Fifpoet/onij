@@ -39,6 +39,11 @@
           </RouterLink>
           <span v-else>{{ song.name }}</span>
         </p>
+        <p class="presence-peer__progress" data-testid="presence-peer-progress">
+          {{ peer.isPlaying ? '播放中' : '已暂停' }}
+          ·
+          {{ progressLabel }}
+        </p>
       </template>
       <p v-else class="presence-peer__idle">未在播放</p>
     </div>
@@ -50,6 +55,7 @@ import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { usePresenceStore, type PresencePeer } from '@/store/presence'
 import PresenceAvatar from '@/components/presence/PresenceAvatar.vue'
+import { formatTime } from '@/util/time'
 
 const props = defineProps<{
   peer: PresencePeer
@@ -72,6 +78,12 @@ const artists = computed(() => {
   return s.artists ?? []
 })
 const coverUrl = computed(() => song.value?.cover_file_url || defaultAlbumCover)
+const progressLabel = computed(() => {
+  const current = formatTime(Math.max(0, Number(props.peer.playbackCurrentSec) || 0))
+  const durSec = Number(song.value?.time_long) || 0
+  if (durSec > 0) return `${current} / ${formatTime(durSec)}`
+  return current
+})
 
 function onCover() {
   if (!song.value) return
@@ -132,6 +144,7 @@ function onCover() {
 }
 .presence-peer__artists,
 .presence-peer__title,
+.presence-peer__progress,
 .presence-peer__idle {
   margin: 0;
   font-size: 0.8125rem;
@@ -143,6 +156,10 @@ function onCover() {
 .presence-peer__title {
   font-weight: 600;
   color: rgb(17 24 39);
+}
+.presence-peer__progress {
+  font-size: 0.6875rem;
+  color: rgb(107 114 128);
 }
 .presence-peer__idle {
   color: rgb(107 114 128);
@@ -159,6 +176,7 @@ function onCover() {
   color: rgb(156 163 175);
 }
 .dark .presence-peer__artists,
+.dark .presence-peer__progress,
 .dark .presence-peer__idle {
   color: rgb(156 163 175);
 }

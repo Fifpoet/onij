@@ -160,6 +160,46 @@ func TestPresenceHeartbeatTTLSweep(t *testing.T) {
 	}
 }
 
+func TestPresenceHeartbeatReportsPausedProgress(t *testing.T) {
+	l := NewPresenceLogic()
+	ctx := context.Background()
+
+	if _, err := l.Heartbeat(ctx, &prm.HeartbeatParam{
+		ClientId: "player",
+		Nickname: "暂停的听众",
+		NowPlaying: &prm.PresenceTrackDTO{
+			Id:       186016,
+			Name:     "晴天",
+			TimeLong: 269.848,
+		},
+		PlaybackCurrentSec: 83.2,
+		IsPlaying:          false,
+	}); err != nil {
+		t.Fatalf("Heartbeat(player): %v", err)
+	}
+
+	viewer, err := l.Heartbeat(ctx, &prm.HeartbeatParam{
+		ClientId: "viewer",
+		Nickname: "围观的晚风",
+	})
+	if err != nil {
+		t.Fatalf("Heartbeat(viewer): %v", err)
+	}
+	if len(viewer.Peers) != 1 {
+		t.Fatalf("want 1 peer, got %+v", peerIDs(viewer))
+	}
+	p := viewer.Peers[0]
+	if p.NowPlaying == nil || p.NowPlaying.Id != 186016 {
+		t.Fatalf("now playing = %+v", p.NowPlaying)
+	}
+	if p.IsPlaying {
+		t.Fatalf("paused peer IsPlaying = true")
+	}
+	if p.PlaybackCurrentSec < 83 || p.PlaybackCurrentSec > 84 {
+		t.Fatalf("progress = %v, want ~83.2", p.PlaybackCurrentSec)
+	}
+}
+
 func TestPresenceHeartbeatRejectsEmptyIdOrNickname(t *testing.T) {
 	l := NewPresenceLogic()
 	ctx := context.Background()

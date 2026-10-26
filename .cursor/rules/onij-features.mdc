@@ -12,7 +12,7 @@ alwaysApply: false
 
 - 状态：`playQueue`；音频宿主：`NeteaseAudioHost`。页面只调 store。
 - **搜索 / 歌词 / 详情**：生产走同源 `https://onij.fun/netease/`（nginx 反代 `:3000`）；本地开发仍可直连 `onij.fun:3000`。
-- **可播 URL**：GD Studio 播放器同源 `music.gdstudio.org/api.php`（生产 `https://onij.fun/gdstudio`，本地 Vite `/gdstudio-music`），参数 `s` 为播放器 crc32（自定义 MD5，不是标准 CRC32/MD5）。**不要**回落网易 `/song/url`（无 VIP 只有 45s）。音频仍由浏览器直连网易 CDN；`http://*.126.net` 必须改成 `https://`。默认 320k MP3；若返回 `.flac` 再降码率。缓存：`src/player/songPlayUrlCache.ts`（约 8 分钟 TTL）。
+- **可播 URL**：先走开源 Meting（`api.qijieya.cn/meting`，按网易 ID）；空链再走 GD Studio 播放器同源 `music.gdstudio.org/api.php`（生产 `https://onij.fun/gdstudio`，本地 Vite `/gdstudio-music`），`types=url` 后 `types=autosource`（换酷我等）。参数 `s` 为播放器 crc32（自定义 MD5，vendor 需与 `js/crc32.min.js` 同步）。**不要**回落网易 `/song/url`（无 VIP 只有 45s）。音频由浏览器直连返回的 CDN；`http://` 必须改成 `https://`。默认 320k MP3；若返回 `.flac` 再降码率。缓存：`src/player/songPlayUrlCache.ts`（约 8 分钟 TTL）。
 - 专辑页「全部播放」按序入队。队列页有置顶。
 - **双击播放其他歌时，当前正在播放的歌不要加回队列**。
 

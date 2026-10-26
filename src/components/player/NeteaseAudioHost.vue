@@ -10,6 +10,8 @@ import { useMessage } from 'naive-ui'
 import { usePlayQueueStore } from '@/store/playQueue'
 import { useKtvStore } from '@/store/ktv'
 import { forgetPlayUrl, getOrFetchPlayUrl, prefetchPlayUrl } from '@/player/songPlayUrlCache'
+import type { PlayUrlHint } from '@/api/netease/songUrl'
+import type { ViewMusicListItem } from '@/api/view/music'
 import {
   ensureMusicMvLoaded,
   prefetchMusicMvForQueue,
@@ -53,13 +55,23 @@ function isBenignPlayRejection(err: unknown): boolean {
   return false
 }
 
+function playUrlHint(song?: ViewMusicListItem | null): PlayUrlHint | undefined {
+  if (!song?.name) return undefined
+  return {
+    name: song.name,
+    artist: song.display_artists?.[0]?.artist_name || song.artists?.[0]?.artist_name || '',
+    album: song.album_name || '',
+    duration: song.time_long || 0,
+  }
+}
+
 function prefetchUpcomingFromQueue() {
   const q = playQueue.queue
   const n = Math.min(3, q.length)
   const ids: number[] = []
   for (let i = 0; i < n; i++) {
     if (ktvActive.value) prefetchInstrumental(q[i].id)
-    else prefetchPlayUrl(q[i].id)
+    else prefetchPlayUrl(q[i].id, playUrlHint(q[i]))
     ids.push(q[i].id)
   }
   prefetchMusicMvForQueue(ids)
@@ -192,7 +204,11 @@ async function loadAndPlay(songId: number) {
   }
   playQueue.setPlaying(false)
 
-  const originalUrl = await getOrFetchPlayUrl(songId)
+  const current = playQueue.nowPlaying
+  const originalUrl = await getOrFetchPlayUrl(
+    songId,
+    current?.id === songId ? playUrlHint(current) : undefined,
+  )
   if (token !== loadToken) return
 
   let orig = origRef.value

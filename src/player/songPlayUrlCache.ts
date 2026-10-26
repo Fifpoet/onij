@@ -1,4 +1,4 @@
-import { fetchSongPlayUrl } from '@/api/netease/songUrl'
+import { fetchSongPlayUrl, type PlayUrlHint } from '@/api/netease/songUrl'
 
 const MAX_CACHE = 48
 /** 网易 CDN 直链时效短；后台挂久了必须重新取链 */
@@ -39,12 +39,12 @@ function rememberUrl(id: number, url: string) {
   trimCacheIfNeeded()
 }
 
-function startFetch(id: number): Promise<string | null> {
+function startFetch(id: number, hint?: PlayUrlHint): Promise<string | null> {
   const existing = usefulInflight(id)
   if (existing) return existing
   const p = (async () => {
-    let url = await fetchSongPlayUrl(id)
-    if (!url) url = await fetchSongPlayUrl(id)
+    let url = await fetchSongPlayUrl(id, undefined, hint)
+    if (!url) url = await fetchSongPlayUrl(id, undefined, hint)
     if (url) rememberUrl(id, url)
     return url
   })().finally(() => {
@@ -63,22 +63,22 @@ export function forgetPlayUrl(id: number): void {
 /**
  * 后台预取播放地址；新鲜缓存或进行中的请求则跳过。
  */
-export function prefetchPlayUrl(id: number): void {
+export function prefetchPlayUrl(id: number, hint?: PlayUrlHint): void {
   if (!id) return
   const hit = urlById.get(id)
   if (hit && isFresh(hit)) return
   if (usefulInflight(id)) return
-  void startFetch(id)
+  void startFetch(id, hint)
 }
 
 /**
  * 获取可播放 URL：优先未过期缓存，其次与进行中的预取合并，否则发起请求。
  */
-export async function getOrFetchPlayUrl(id: number): Promise<string | null> {
+export async function getOrFetchPlayUrl(id: number, hint?: PlayUrlHint): Promise<string | null> {
   const hit = urlById.get(id)
   if (hit && isFresh(hit)) return hit.url
   if (hit) urlById.delete(id)
-  return startFetch(id)
+  return startFetch(id, hint)
 }
 
 if (typeof document !== 'undefined') {

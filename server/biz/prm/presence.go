@@ -14,7 +14,7 @@ type PresenceTrackDTO struct {
 	Name           string              `json:"name"`
 	Artists        []PresenceArtistDTO `json:"artists"`
 	DisplayArtists []PresenceArtistDTO `json:"display_artists,omitempty"`
-	TimeLong       int64               `json:"time_long"`
+	TimeLong       float64             `json:"time_long"`
 	ComposerId     int64               `json:"composer_id,omitempty"`
 	ComposerName   string              `json:"composer_name,omitempty"`
 	WriterId       int64               `json:"writer_id,omitempty"`
