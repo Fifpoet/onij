@@ -32,33 +32,38 @@ function fromDTO(dto: PresencePeerDTO): PresencePeer {
   }
 }
 
+function slimInt(v: unknown): number {
+  const n = Math.round(Number(v))
+  return Number.isFinite(n) ? n : 0
+}
+
 function slimArtists(list: ViewMusicListItem['artists'] | undefined): PresenceTrack['artists'] {
   if (!list?.length) return []
   return list.map((a) => ({
-    artist_id: Number(a.artist_id) || 0,
+    artist_id: slimInt(a.artist_id),
     artist_name: String(a.artist_name || ''),
   }))
 }
 
 function slimTrack(song: ViewMusicListItem | null | undefined): PresenceTrack | null {
   if (!song) return null
-  const id = Number(song.id)
-  if (!Number.isFinite(id) || id <= 0) return null
+  const id = slimInt(song.id)
+  if (id <= 0) return null
   const track: PresenceTrack = {
     id,
     name: String(song.name || ''),
     artists: slimArtists(song.artists),
-    time_long: Number(song.time_long) || 0,
-    album_id: Number(song.album_id) || 0,
+    time_long: slimInt(song.time_long),
+    album_id: slimInt(song.album_id),
     album_name: String(song.album_name || ''),
   }
   if (song.display_artists?.length) track.display_artists = slimArtists(song.display_artists)
   if (song.cover_file_url) track.cover_file_url = song.cover_file_url
-  if (song.composer_id) track.composer_id = song.composer_id
+  if (song.composer_id) track.composer_id = slimInt(song.composer_id)
   if (song.composer_name) track.composer_name = song.composer_name
-  if (song.writer_id) track.writer_id = song.writer_id
+  if (song.writer_id) track.writer_id = slimInt(song.writer_id)
   if (song.writer_name) track.writer_name = song.writer_name
-  if (song.issue_time) track.issue_time = song.issue_time
+  if (song.issue_time) track.issue_time = slimInt(song.issue_time)
   if (song.mv_url) track.mv_url = song.mv_url
   if (song.tags?.length) track.tags = song.tags.map(String)
   return track
