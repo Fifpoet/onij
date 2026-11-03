@@ -16,6 +16,8 @@ if (Get-Command pnpm -ErrorAction SilentlyContinue) {
 Get-ChildItem "$Root\release\web" -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force
 Copy-Item -Path "$Root\dist\*" -Destination "$Root\release\web" -Recurse -Force
 
+python "$Root\scripts\qiniu_web_cdn.py"
+
 Push-Location "$Root\server"
 $env:CGO_ENABLED = "0"
 $env:GOOS = "linux"
