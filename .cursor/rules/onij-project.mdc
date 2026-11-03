@@ -18,7 +18,7 @@ alwaysApply: true
 - **主站 API**：Go 仍监听 `127.0.0.1:8889`。本地页面走 Vite 同源反代（不要让浏览器直连 `:8889`，Edge/Chrome 会当局域网请求拦掉）。
 - **网易云代理**：本地 `VITE_NETEASE_URL=/netease/`（Vite 反代 `http://onij.fun:3000`）。不要直连 `http://onij.fun:3000`（站点 HSTS 会升成 `https://onij.fun:3000`，3000 无证书）。生产走 `https://onij.fun/netease/`。
 - **播放直链**：音频由浏览器直连返回的网易 CDN；取链走同源 `/gdstudio`（反代 `music.gdstudio.org/api.php`，按播放器 crc32 签名）。不要走网易 `/song/url`（无 VIP 只有试听）。`http://*.126.net` 改成 https。
-- **生产构建**：`VITE_SERVER_URL` 填 `https://onij.fun/go`（nginx 反代到本机 `:8889`）；**禁止**公网前端包写 `127.0.0.1`。站点 `https://onij.fun`，网易代理 `https://onij.fun/netease/`。前端 hashed 资源上传公开空间 `onijweb`，CDN 域 `static.onij.fun`（`scripts/qiniu_web_cdn.py`）。生产 HTML 仍走站点同源 `/assets/`：114 / 内网 DNS 常解析不到该子域（`ERR_NAME_NOT_RESOLVED`），全网能解析后再设 `VITE_PUBLIC_PATH=https://static.onij.fun/`。
+- **生产构建**：`VITE_SERVER_URL` 填 `https://onij.fun/go`（nginx 反代到本机 `:8889`）；**禁止**公网前端包写 `127.0.0.1`。站点 `https://onij.fun`，网易代理 `https://onij.fun/netease/`。前端 hashed 资源上传公开空间 `onijweb`，CDN 域 `static.onij.fun`（`scripts/qiniu_web_cdn.py`）；生产 `VITE_PUBLIC_PATH=https://static.onij.fun/`。内网 / 114 解析不到该子域时会 `ERR_NAME_NOT_RESOLVED`，属预期。
 
 ### SSH（仅部署模式）
 
