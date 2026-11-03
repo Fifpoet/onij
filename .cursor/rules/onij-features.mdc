@@ -34,7 +34,7 @@ alwaysApply: false
 - 上传/删/建文件夹走现有 file 接口 + 七牛；列表要有 `size`、`extra`、`url`。
 - 图片 EXIF 拍摄时间写入 `file.extra.origin_at`，展示优先 EXIF 否则 `created_at`。
 - **裂图关键**：签名域名必须是桶绑定域 `https://cloud.onij.fun`。禁止签成主站 `onij.fun`（会走 SPA 404）。
-- 生产浏览器直连 `https://cloud.onij.fun`（七牛 CDN + HTTPS）。旧链 `https://onij.fun/cdn/...` 由 `normalizeFileCdnUrl` 改回直连；nginx `/cdn` 仅作兜底。
+- 生产浏览器走同源 `https://onij.fun/cdn/...`（nginx HTTPS 反代到七牛，`proxy_ssl_verify off`）。部分 CDN 节点证书尚未覆盖 `cloud.onij.fun`，直连会 Hostname mismatch 裂图。
 - 本地：`<img>` / 下载走 `GET /file/preview?file_id=`（302 或 `proxy=1`），**不要**默认 body 代理大文件。
 - `<img>` 不要 `loading="lazy"`。初始化 `cloud` 文件夹：`go run ./cmd/ensure_cloud_folder`，**写库前先问用户**。
 
