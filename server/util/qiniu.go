@@ -23,10 +23,10 @@ import (
 const (
 	ak = "lKrcOB9iUaKvKhspGh1hgo4-Dy0yFlH0mgRSgPRY"
 	bk = "onij"
-	dm = "http://cloud.onij.fun"
+	dm = "https://cloud.onij.fun"
 )
 
-// PublicDomain 七牛桶绑定的 CDN 域名（须为 cloud.onij.fun 等对象域，勿填主站 onij.fun）
+// PublicDomain 七牛桶绑定的 CDN 域名（须为 https://cloud.onij.fun 等对象域，勿填主站 onij.fun）
 func PublicDomain() string {
 	if v := strings.TrimSpace(os.Getenv("QINIU_PUBLIC_DOMAIN")); v != "" {
 		return strings.TrimRight(v, "/")
@@ -622,7 +622,7 @@ func PrefopOK(code int) bool {
 	return code == 0
 }
 
-// SignKeyURL 用桶绑定域签发私有链（浏览器经 /cdn 反代）
+// SignKeyURL 用桶绑定 HTTPS CDN 域签发私有链（浏览器直连 cloud.onij.fun）
 func SignKeyURL(key string) string {
 	return BrowserFileURL(key, "")
 }

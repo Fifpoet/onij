@@ -33,8 +33,8 @@ alwaysApply: false
 - 默认进名为 `cloud` 的文件夹（`parent_id=0` 列表里找）；面包屑「根目录」可看全部历史（含 `tran`、`practice`）。
 - 上传/删/建文件夹走现有 file 接口 + 七牛；列表要有 `size`、`extra`、`url`。
 - 图片 EXIF 拍摄时间写入 `file.extra.origin_at`，展示优先 EXIF 否则 `created_at`。
-- **裂图关键**：签名域名必须是桶绑定域 `http://cloud.onij.fun`。禁止签成主站 `onij.fun`（会走 SPA 404）。
-- 生产浏览器走同源 `https://onij.fun/cdn/...`（nginx HTTP 反代到七牛）；不要直连 `https://cloud.onij.fun`（自定义域证书目前是 `*.qbox.me`，会 `ERR_CERT_COMMON_NAME_INVALID`）。
+- **裂图关键**：签名域名必须是桶绑定域 `https://cloud.onij.fun`。禁止签成主站 `onij.fun`（会走 SPA 404）。
+- 生产浏览器直连 `https://cloud.onij.fun`（七牛 CDN + HTTPS）。旧链 `https://onij.fun/cdn/...` 由 `normalizeFileCdnUrl` 改回直连；nginx `/cdn` 仅作兜底。
 - 本地：`<img>` / 下载走 `GET /file/preview?file_id=`（302 或 `proxy=1`），**不要**默认 body 代理大文件。
 - `<img>` 不要 `loading="lazy"`。初始化 `cloud` 文件夹：`go run ./cmd/ensure_cloud_folder`，**写库前先问用户**。
 

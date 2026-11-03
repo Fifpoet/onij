@@ -31,7 +31,7 @@ Hertz 服务。新接口按现有层走，不要在 handler 里堆业务：
 
 - 删除文件/对象：DB 或七牛不存在则跳过，返回成功（七牛 612 忽略）。
 - `QINIU_SK`（或 `sk`）必须在**进程环境**里（部署脚本写入 env 再启动；ssh 里 `export` 对已有进程无效）。
-- `QINIU_PUBLIC_DOMAIN`：仅桶绑定域（默认 `http://cloud.onij.fun`），**勿填主站 `onij.fun`**。
+- `QINIU_PUBLIC_DOMAIN`：仅桶绑定域（默认 `https://cloud.onij.fun`），**勿填主站 `onij.fun`**。
 - `QINIU_FETCH_DOMAIN`：服务端拉对象（默认 `http://onij.bkt.clouddn.com`），与浏览器访问域分离。
 
 ## 本地与发布
