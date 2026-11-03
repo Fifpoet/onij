@@ -4,7 +4,7 @@ import { normalizeFileCdnUrl } from '@/util/qiniuCdn'
 
 export { normalizeFileCdnUrl }
 
-const DEFAULT_DOMAIN = 'http://cloud.onij.fun'
+const DEFAULT_DOMAIN = 'https://cloud.onij.fun'
 const DEFAULT_UPLOAD_URL = 'https://up-z0.qiniup.com'
 
 async function getUploadCredentials(): Promise<{ token: string; uploadUrl: string; publicBase: string }> {

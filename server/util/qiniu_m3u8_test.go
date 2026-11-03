@@ -8,7 +8,7 @@ import (
 
 func TestRewriteM3U8(t *testing.T) {
 	t.Setenv("QINIU_SK", "unit-test-sk-not-real")
-	t.Setenv("QINIU_PUBLIC_DOMAIN", "http://cloud.onij.fun")
+	t.Setenv("QINIU_PUBLIC_DOMAIN", "https://cloud.onij.fun")
 
 	playlist := strings.Join([]string{
 		"#EXTM3U",
@@ -16,7 +16,7 @@ func TestRewriteM3U8(t *testing.T) {
 		"#EXTINF:10.0,",
 		"seg0.ts",
 		"#EXTINF:10.0,",
-		"http://cloud.onij.fun/videos/concert/seg1.ts",
+		"https://cloud.onij.fun/videos/concert/seg1.ts",
 		"#EXT-X-ENDLIST",
 		"",
 	}, "\n")
@@ -37,7 +37,7 @@ func TestRewriteM3U8(t *testing.T) {
 
 func TestRewriteM3U8TrimsLeadingSlashes(t *testing.T) {
 	t.Setenv("QINIU_SK", "unit-test-sk-not-real")
-	t.Setenv("QINIU_PUBLIC_DOMAIN", "http://cloud.onij.fun")
+	t.Setenv("QINIU_PUBLIC_DOMAIN", "https://cloud.onij.fun")
 
 	got := RewriteM3U8("http://iovip.qbox.me//abc/000000.ts\n", "cloud/live/a.mp4.m3u8")
 	assertSignedCloudURL(t, "iodomain ts", strings.TrimSpace(got), "abc/000000.ts")
@@ -66,7 +66,7 @@ func TestIsM3U8Playlist(t *testing.T) {
 
 func TestRewriteM3U8IgnoresErrorJSON(t *testing.T) {
 	t.Setenv("QINIU_SK", "unit-test-sk-not-real")
-	t.Setenv("QINIU_PUBLIC_DOMAIN", "http://cloud.onij.fun")
+	t.Setenv("QINIU_PUBLIC_DOMAIN", "https://cloud.onij.fun")
 
 	got := RewriteM3U8(`{"error":"no such domain"}`, "cloud/live/concert.mp4.m3u8")
 	if strings.Contains(got, "token=") || strings.Contains(got, "cloud/live/%7B") {
@@ -113,8 +113,8 @@ func assertSignedCloudURL(t *testing.T, name, raw, wantKey string) {
 	if err != nil {
 		t.Fatalf("%s: parse %q: %v", name, raw, err)
 	}
-	if u.Scheme != "http" || u.Host != "cloud.onij.fun" {
-		t.Fatalf("%s: want http://cloud.onij.fun host, got %s://%s", name, u.Scheme, u.Host)
+	if u.Scheme != "https" || u.Host != "cloud.onij.fun" {
+		t.Fatalf("%s: want https://cloud.onij.fun host, got %s://%s", name, u.Scheme, u.Host)
 	}
 	if u.Host == "onij.fun" {
 		t.Fatalf("%s: signed onto site host onij.fun: %q", name, raw)

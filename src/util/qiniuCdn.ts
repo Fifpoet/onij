@@ -1,17 +1,17 @@
-/** 签名仍用 http://cloud.onij.fun；生产浏览器改走同源反代，避开七牛 *.qbox.me 证书 */
-const QINIU_BIND_ORIGIN = 'http://cloud.onij.fun'
-const QINIU_HTTPS_PROXY = 'https://onij.fun/cdn'
+/** 签名与浏览器访问都用 HTTPS 自定义 CDN 域；旧 /cdn 反代链改回直连 */
+const QINIU_BIND_ORIGIN = 'https://cloud.onij.fun'
 
-/** 修正误签主站域名；生产把 cloud.onij.fun 换成 https://onij.fun/cdn */
+/** 修正误签主站域名；http / 旧反代一律改成 https://cloud.onij.fun */
 export function normalizeFileCdnUrl(url: string): string {
   if (!url) return url
-  if (/^https?:\/\/onij\.fun\/cdn(\/|$)/i.test(url)) return url
   let next = url.replace(
+    /^https?:\/\/onij\.fun\/cdn(?=\/|$)/i,
+    QINIU_BIND_ORIGIN,
+  )
+  next = next.replace(
     /^https?:\/\/onij\.fun(?=\/(?:tran|cloud|practice)\b)/i,
     QINIU_BIND_ORIGIN,
   )
-  if (import.meta.env.PROD) {
-    next = next.replace(/^https?:\/\/cloud\.onij\.fun(?=\/|$)/i, QINIU_HTTPS_PROXY)
-  }
+  next = next.replace(/^https?:\/\/cloud\.onij\.fun(?=\/|$)/i, QINIU_BIND_ORIGIN)
   return next
 }
