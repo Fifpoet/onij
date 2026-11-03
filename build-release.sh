@@ -18,6 +18,7 @@ fi
 # 清空旧静态资源后写入本次构建
 rm -rf release/web/*
 cp -R dist/. release/web/
+python3 "$ROOT/scripts/qiniu_web_cdn.py" || python "$ROOT/scripts/qiniu_web_cdn.py"
 
 cd server
 CGO_ENABLED=0 GOOS=linux GOARCH="$GOARCH" go build -trimpath -ldflags="-s -w" -o "$ROOT/release/bin/onij-server" .
