@@ -1,6 +1,6 @@
 /**
  * 取链：网易 /song/url 无 VIP 只有试听，不用。
- * 按监控页「音乐源」顺序：Meting → GD types=url → GD types=autosource。
+ * 按监控页「音乐源」顺序：Meting → GD types=url → autosource → kuwo/tencent/kugou 搜后 types=url。
  * 音频仍由浏览器直连返回的 CDN。
  */
 
@@ -56,11 +56,11 @@ async function fetchJson(url: string): Promise<{ ok: boolean; status: number; te
   }
 }
 
-async function signedGdQuery(
+async function signedGdJson(
   origin: string,
   params: Record<string, string>,
   signPayload: string,
-): Promise<GdStudioUrlBody | null> {
+): Promise<unknown> {
   const serverTime = await fetchGdstudioServerTime(origin)
   const all = { ...params, s: gdstudioSignPayload(signPayload, serverTime) }
   // 值已 urlEncode，不能再走 URLSearchParams（autosource 的 JSON 会被二次编码，签名 401）
@@ -70,25 +70,35 @@ async function signedGdQuery(
   const { ok, text } = await fetchJson(`${origin}/api.php?${qs}`)
   if (!ok) return null
   try {
-    return JSON.parse(text) as GdStudioUrlBody
+    return JSON.parse(text) as unknown
   } catch {
     return null
   }
 }
 
-async function requestGdStudioPlayUrl(origin: string, id: number, br: number): Promise<string | null> {
+function urlFromGdBody(data: unknown): string | null {
+  if (!data || typeof data !== 'object') return null
+  return usableUrl((data as GdStudioUrlBody).url)
+}
+
+export async function requestGdStudioPlayUrl(
+  origin: string,
+  id: number,
+  br: number,
+  source = 'netease',
+): Promise<string | null> {
   const idStr = gdstudioUrlEncode(String(id))
-  const data = await signedGdQuery(
+  const data = await signedGdJson(
     origin,
     {
       types: 'url',
-      source: 'netease',
+      source,
       id: idStr,
       br: String(br),
     },
     idStr,
   )
-  return usableUrl(data?.url)
+  return urlFromGdBody(data)
 }
 
 async function requestGdStudioAutosource(
@@ -107,7 +117,7 @@ async function requestGdStudioAutosource(
       duration: Math.round(hint.duration || 0),
     }),
   )
-  const data = await signedGdQuery(
+  const data = await signedGdJson(
     origin,
     {
       types: 'autosource',
@@ -117,7 +127,55 @@ async function requestGdStudioAutosource(
     },
     payload,
   )
-  return usableUrl(data?.url)
+  const direct = urlFromGdBody(data)
+  if (direct) return direct
+  if (Array.isArray(data)) {
+    for (const item of data) {
+      const url = urlFromGdBody(item)
+      if (url) return url
+    }
+  }
+  return null
+}
+
+const GD_ALT_SOURCES = ['kuwo', 'tencent', 'kugou'] as const
+
+export async function requestGdStudioAltSource(
+  origin: string,
+  hint: PlayUrlHint,
+  br: number,
+): Promise<string | null> {
+  const name = hint.name?.trim()
+  if (!name) return null
+  const artist = hint.artist?.trim().split(',')[0]?.trim() || ''
+  const wd = gdstudioUrlEncode([name, artist].filter(Boolean).join(' '))
+  for (const source of GD_ALT_SOURCES) {
+    const found = await signedGdJson(
+      origin,
+      {
+        types: 'search',
+        count: '5',
+        source,
+        pages: '1',
+        name: wd,
+      },
+      wd,
+    )
+    const first = Array.isArray(found)
+      ? found.find((row) => row && typeof row === 'object' && (row as { id?: unknown }).id)
+      : null
+    const altId = first && typeof first === 'object' ? String((first as { id?: unknown }).id ?? '') : ''
+    if (!altId) continue
+    const idStr = gdstudioUrlEncode(altId)
+    const data = await signedGdJson(
+      origin,
+      { types: 'url', source, id: idStr, br: String(br) },
+      idStr,
+    )
+    const got = urlFromGdBody(data)
+    if (got) return got
+  }
+  return null
 }
 
 async function requestMetingPlayUrl(origin: string, id: number, br: number): Promise<string | null> {
@@ -181,8 +239,11 @@ async function requestFromSource(
   const gdUrl = await requestGdStudioPlayUrl(origin, id, br)
   if (gdUrl) return gdUrl
   const meta = hint?.name ? hint : await hintFromNeteaseDetail(id)
-  if (meta) return requestGdStudioAutosource(origin, meta, br)
-  return null
+  if (!meta) return null
+  return (
+    (await requestGdStudioAutosource(origin, meta, br)) ||
+    (await requestGdStudioAltSource(origin, meta, br))
+  )
 }
 
 async function requestWithBr(

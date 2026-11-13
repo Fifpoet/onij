@@ -3,15 +3,16 @@ import {
   resolvePlaySourceOrigin,
   type PlaySource,
 } from '@/store/playSources'
+import { requestGdStudioAltSource, requestGdStudioPlayUrl } from './songUrl'
 
-const PROBE_TIMEOUT_MS = 8_000
-/** 只用来探测 Meting 是否还吐直链，不依赖曲库业务 */
-const METING_PROBE_ID = '185811'
+const PROBE_TIMEOUT_MS = 12_000
+/** 只用来探测是否还吐直链，不依赖曲库业务 */
+const PROBE_SONG_ID = '185811'
 
 export function playSourceProbeUrl(source: PlaySource): string {
   const origin = resolvePlaySourceOrigin(source)
-  if (source.kind === 'gdstudio') return `${origin}/time`
-  return `${origin}/?server=netease&type=url&id=${METING_PROBE_ID}`
+  if (source.kind === 'gdstudio') return `${origin}/api.php`
+  return `${origin}/?server=netease&type=url&id=${PROBE_SONG_ID}`
 }
 
 export function playSourceDisplayOrigin(source: PlaySource): string {
@@ -44,32 +45,41 @@ function interpretMeting(status: number, text: string): { ok: boolean; error?: s
   }
 }
 
-function interpretGdstudio(status: number, text: string): { ok: boolean; error?: string } {
-  if (status < 200 || status >= 400) return { ok: false, error: `HTTP ${status}` }
-  if (!/^\d+$/.test(text.trim())) return { ok: false, error: 'time 无效' }
-  return { ok: true }
+async function probeGdstudio(origin: string): Promise<{ ok: boolean; error?: string; body?: string }> {
+  const neteaseUrl = await requestGdStudioPlayUrl(origin, Number(PROBE_SONG_ID), 320)
+  if (neteaseUrl) return { ok: true, body: neteaseUrl.slice(0, 180) }
+  const altUrl = await requestGdStudioAltSource(origin, { name: '海阔天空', artist: 'Beyond' }, 320)
+  if (altUrl) return { ok: true, body: altUrl.slice(0, 180) }
+  return { ok: false, error: '无播放地址' }
 }
 
 export async function probePlaySource(source: PlaySource): Promise<PlaySourceProbeResult> {
-  const url = playSourceProbeUrl(source)
+  const origin = resolvePlaySourceOrigin(source)
   const started = performance.now()
   const ac = new AbortController()
   const timer = setTimeout(() => ac.abort(), PROBE_TIMEOUT_MS)
   try {
+    if (source.kind === 'gdstudio') {
+      const judged = await probeGdstudio(origin)
+      const latencyMs = Math.round(performance.now() - started)
+      return judged.ok
+        ? { ok: true, latencyMs, body: judged.body }
+        : { ok: false, latencyMs, error: judged.error, body: judged.body }
+    }
+    const url = playSourceProbeUrl(source)
     const resp = await fetch(url, {
       method: 'GET',
       cache: 'no-store',
-      redirect: source.kind === 'meting' ? 'manual' : 'follow',
+      redirect: 'manual',
       signal: ac.signal,
     })
     const latencyMs = Math.round(performance.now() - started)
     const loc = resp.headers.get('Location')
-    if (source.kind === 'meting' && loc && /^https?:\/\//i.test(loc)) {
+    if (loc && /^https?:\/\//i.test(loc)) {
       return { ok: true, latencyMs, body: loc.slice(0, 500) }
     }
     const text = (await resp.text()).slice(0, 500)
-    const judged =
-      source.kind === 'gdstudio' ? interpretGdstudio(resp.status, text) : interpretMeting(resp.status, text)
+    const judged = interpretMeting(resp.status, text)
     if (!judged.ok) {
       return { ok: false, latencyMs, error: judged.error, body: text || undefined }
     }
