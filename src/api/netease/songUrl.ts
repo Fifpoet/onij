@@ -1,23 +1,12 @@
 /**
  * 取链：网易 /song/url 无 VIP 只有试听，不用。
- * 1) 开源 Meting 实例（api.qijieya.cn）按网易 ID 拿 320k
- * 2) GD Studio 播放器 api.php：types=url（签名）
- * 3) GD types=autosource（网易源空链时换酷我等）
+ * 按监控页「音乐源」顺序：Meting → GD types=url → GD types=autosource。
  * 音频仍由浏览器直连返回的 CDN。
  */
 
 import { getSongDetail } from './search'
 import { fetchGdstudioServerTime, gdstudioSignPayload, gdstudioUrlEncode } from './gdstudioSign'
-
-const API_ORIGIN = (
-  (import.meta.env.VITE_GDSTUDIO_MUSIC_URL as string | undefined)?.replace(/\/$/, '') ||
-  'https://music.gdstudio.org'
-)
-
-const METING_ORIGIN = (
-  (import.meta.env.VITE_METING_URL as string | undefined)?.replace(/\/$/, '') ||
-  'https://api.qijieya.cn/meting'
-)
+import { resolvePlaySourceOrigin, usePlaySourcesStore, type PlaySource } from '@/store/playSources'
 
 /** 浏览器直连网易 FLAC 常 206 断连，播放用 320k MP3 */
 export const DEFAULT_PLAY_BR = 320
@@ -67,14 +56,18 @@ async function fetchJson(url: string): Promise<{ ok: boolean; status: number; te
   }
 }
 
-async function signedGdQuery(params: Record<string, string>, signPayload: string): Promise<GdStudioUrlBody | null> {
-  const serverTime = await fetchGdstudioServerTime(API_ORIGIN)
+async function signedGdQuery(
+  origin: string,
+  params: Record<string, string>,
+  signPayload: string,
+): Promise<GdStudioUrlBody | null> {
+  const serverTime = await fetchGdstudioServerTime(origin)
   const all = { ...params, s: gdstudioSignPayload(signPayload, serverTime) }
   // 值已 urlEncode，不能再走 URLSearchParams（autosource 的 JSON 会被二次编码，签名 401）
   const qs = Object.entries(all)
     .map(([key, value]) => `${key}=${value}`)
     .join('&')
-  const { ok, text } = await fetchJson(`${API_ORIGIN}/api.php?${qs}`)
+  const { ok, text } = await fetchJson(`${origin}/api.php?${qs}`)
   if (!ok) return null
   try {
     return JSON.parse(text) as GdStudioUrlBody
@@ -83,9 +76,10 @@ async function signedGdQuery(params: Record<string, string>, signPayload: string
   }
 }
 
-async function requestGdStudioPlayUrl(id: number, br: number): Promise<string | null> {
+async function requestGdStudioPlayUrl(origin: string, id: number, br: number): Promise<string | null> {
   const idStr = gdstudioUrlEncode(String(id))
   const data = await signedGdQuery(
+    origin,
     {
       types: 'url',
       source: 'netease',
@@ -97,7 +91,11 @@ async function requestGdStudioPlayUrl(id: number, br: number): Promise<string | 
   return usableUrl(data?.url)
 }
 
-async function requestGdStudioAutosource(hint: PlayUrlHint, br: number): Promise<string | null> {
+async function requestGdStudioAutosource(
+  origin: string,
+  hint: PlayUrlHint,
+  br: number,
+): Promise<string | null> {
   const name = hint.name?.trim()
   if (!name) return null
   const payload = gdstudioUrlEncode(
@@ -110,6 +108,7 @@ async function requestGdStudioAutosource(hint: PlayUrlHint, br: number): Promise
     }),
   )
   const data = await signedGdQuery(
+    origin,
     {
       types: 'autosource',
       source: 'netease',
@@ -121,7 +120,7 @@ async function requestGdStudioAutosource(hint: PlayUrlHint, br: number): Promise
   return usableUrl(data?.url)
 }
 
-async function requestMetingPlayUrl(id: number, br: number): Promise<string | null> {
+async function requestMetingPlayUrl(origin: string, id: number, br: number): Promise<string | null> {
   const qs = new URLSearchParams({
     server: 'netease',
     type: 'url',
@@ -132,7 +131,7 @@ async function requestMetingPlayUrl(id: number, br: number): Promise<string | nu
   const timer = setTimeout(() => ac.abort(), FETCH_TIMEOUT_MS)
   let res: Response
   try {
-    res = await fetch(`${METING_ORIGIN}/?${qs.toString()}`, {
+    res = await fetch(`${origin}/?${qs.toString()}`, {
       signal: ac.signal,
       cache: 'no-store',
       redirect: 'manual',
@@ -171,17 +170,31 @@ async function hintFromNeteaseDetail(id: number): Promise<PlayUrlHint | null> {
   }
 }
 
+async function requestFromSource(
+  source: PlaySource,
+  id: number,
+  br: number,
+  hint?: PlayUrlHint | null,
+): Promise<string | null> {
+  const origin = resolvePlaySourceOrigin(source)
+  if (source.kind === 'meting') return requestMetingPlayUrl(origin, id, br)
+  const gdUrl = await requestGdStudioPlayUrl(origin, id, br)
+  if (gdUrl) return gdUrl
+  const meta = hint?.name ? hint : await hintFromNeteaseDetail(id)
+  if (meta) return requestGdStudioAutosource(origin, meta, br)
+  return null
+}
+
 async function requestWithBr(
   id: number,
   br: number,
   hint?: PlayUrlHint | null,
 ): Promise<string | null> {
-  const meting = await requestMetingPlayUrl(id, br)
-  if (meting) return meting
-  const gdUrl = await requestGdStudioPlayUrl(id, br)
-  if (gdUrl) return gdUrl
-  const meta = hint?.name ? hint : await hintFromNeteaseDetail(id)
-  if (meta) return requestGdStudioAutosource(meta, br)
+  const sources = usePlaySourcesStore().enabledSources
+  for (const source of sources) {
+    const url = await requestFromSource(source, id, br, hint)
+    if (url) return url
+  }
   return null
 }
 

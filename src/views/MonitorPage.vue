@@ -57,6 +57,105 @@
             </article>
           </div>
         </n-tab-pane>
+
+        <n-tab-pane :name="PLAY_TAB" tab="音乐源">
+          <p class="monitor-hint">取链按卡片从上到下尝试。可改地址、开关、排序；内建源只能停用不能删。</p>
+          <div class="monitor-cards">
+            <article
+              v-for="(source, index) in playSources.sources"
+              :key="source.id"
+              class="monitor-card"
+              :class="[
+                `monitor-card--${statusOf(PLAY_TAB, source.id)}`,
+                { 'monitor-card--off': !source.enabled },
+              ]"
+            >
+              <div class="monitor-card__top">
+                <div>
+                  <h2 class="monitor-card__title">{{ source.title }}</h2>
+                  <p class="monitor-card__url">{{ kindLabel(source.kind) }} · {{ playSourceDisplayOrigin(source) }}</p>
+                </div>
+                <span class="monitor-card__badge">{{ statusLabel(statusOf(PLAY_TAB, source.id)) }}</span>
+              </div>
+
+              <label class="monitor-field">
+                <span>源地址</span>
+                <n-input
+                  :value="source.origin"
+                  :placeholder="playSourceDisplayOrigin(source)"
+                  size="small"
+                  @update:value="(v) => playSources.patchSource(source.id, { origin: v })"
+                />
+              </label>
+
+              <dl class="monitor-card__meta">
+                <div>
+                  <dt>延迟</dt>
+                  <dd>{{ latencyText(PLAY_TAB, source.id) }}</dd>
+                </div>
+                <div>
+                  <dt>最近检测</dt>
+                  <dd>{{ checkedAtText(PLAY_TAB, source.id) }}</dd>
+                </div>
+              </dl>
+
+              <p v-if="errorOf(PLAY_TAB, source.id)" class="monitor-card__error">
+                {{ errorOf(PLAY_TAB, source.id) }}
+              </p>
+              <pre v-else-if="bodyOf(PLAY_TAB, source.id)" class="monitor-card__body">{{ bodyOf(PLAY_TAB, source.id) }}</pre>
+
+              <div class="monitor-card__actions">
+                <button
+                  type="button"
+                  class="monitor-btn monitor-btn--ghost"
+                  :disabled="probing"
+                  @click="probePlayCard(source)"
+                >
+                  单独检测
+                </button>
+                <button
+                  type="button"
+                  class="monitor-btn monitor-btn--ghost"
+                  @click="playSources.patchSource(source.id, { enabled: !source.enabled })"
+                >
+                  {{ source.enabled ? '停用' : '启用' }}
+                </button>
+                <button
+                  type="button"
+                  class="monitor-btn monitor-btn--ghost"
+                  :disabled="index === 0"
+                  @click="playSources.moveSource(source.id, -1)"
+                >
+                  上移
+                </button>
+                <button
+                  type="button"
+                  class="monitor-btn monitor-btn--ghost"
+                  :disabled="index === playSources.sources.length - 1"
+                  @click="playSources.moveSource(source.id, 1)"
+                >
+                  下移
+                </button>
+                <button
+                  v-if="!source.builtin"
+                  type="button"
+                  class="monitor-btn monitor-btn--ghost"
+                  @click="playSources.removeSource(source.id)"
+                >
+                  删除
+                </button>
+              </div>
+            </article>
+          </div>
+
+          <form class="monitor-add" @submit.prevent="addCustomSource">
+            <h3 class="monitor-add__title">添加源</h3>
+            <n-input v-model:value="newTitle" size="small" placeholder="名称" />
+            <n-select v-model:value="newKind" size="small" :options="KIND_OPTIONS" />
+            <n-input v-model:value="newOrigin" size="small" placeholder="https://example.com/meting" />
+            <button type="submit" class="monitor-btn" :disabled="!newOrigin.trim()">添加</button>
+          </form>
+        </n-tab-pane>
       </n-tabs>
     </div>
   </PageContent>
@@ -64,8 +163,10 @@
 
 <script setup lang="ts">
 import { onMounted, reactive, ref, watch } from 'vue'
-import { NTabPane, NTabs } from 'naive-ui'
+import { NInput, NSelect, NTabPane, NTabs } from 'naive-ui'
 import PageContent from '@/components/layout/PageContent.vue'
+import { playSourceDisplayOrigin, probePlaySource } from '@/api/netease/playSourceHealth'
+import { usePlaySourcesStore, type PlaySource, type PlaySourceKind } from '@/store/playSources'
 
 type ProbeStatus = 'idle' | 'loading' | 'ok' | 'fail'
 
@@ -120,9 +221,19 @@ const MONITOR_TABS: MonitorTab[] = [
   },
 ]
 
+const PLAY_TAB = 'play-sources'
+const KIND_OPTIONS = [
+  { label: 'Meting', value: 'meting' },
+  { label: 'GD Studio', value: 'gdstudio' },
+]
+
+const playSources = usePlaySourcesStore()
 const activeTab = ref(MONITOR_TABS[0]!.id)
 const probing = ref(false)
 const results = reactive<Record<string, ProbeResult>>({})
+const newTitle = ref('')
+const newKind = ref<PlaySourceKind>('meting')
+const newOrigin = ref('')
 
 function resultKey(tabId: string, cardId: string) {
   return `${tabId}::${cardId}`
@@ -207,11 +318,44 @@ async function probeCard(tabId: string, card: MonitorCard) {
   }
 }
 
+async function probePlayCard(source: PlaySource) {
+  const key = resultKey(PLAY_TAB, source.id)
+  results[key] = { status: 'loading' }
+  const probed = await probePlaySource(source)
+  results[key] = {
+    status: probed.ok ? 'ok' : 'fail',
+    latencyMs: probed.latencyMs,
+    checkedAt: Date.now(),
+    error: probed.error,
+    body: probed.body,
+  }
+}
+
+function kindLabel(kind: PlaySourceKind) {
+  return kind === 'gdstudio' ? 'GD Studio' : 'Meting'
+}
+
+function addCustomSource() {
+  const origin = newOrigin.value.trim()
+  if (!origin) return
+  playSources.addSource({
+    title: newTitle.value,
+    kind: newKind.value,
+    origin,
+  })
+  newTitle.value = ''
+  newOrigin.value = ''
+}
+
 async function probeActiveTab() {
-  const tab = MONITOR_TABS.find((t) => t.id === activeTab.value)
-  if (!tab) return
   probing.value = true
   try {
+    if (activeTab.value === PLAY_TAB) {
+      await Promise.all(playSources.sources.map((source) => probePlayCard(source)))
+      return
+    }
+    const tab = MONITOR_TABS.find((t) => t.id === activeTab.value)
+    if (!tab) return
     await Promise.all(tab.cards.map((card) => probeCard(tab.id, card)))
   } finally {
     probing.value = false
@@ -359,5 +503,46 @@ onMounted(() => {
   background: transparent;
   color: rgb(37 99 235);
   border: 1px solid rgb(191 219 254);
+}
+.monitor-card--off {
+  opacity: 0.62;
+}
+.monitor-hint {
+  margin: 0.75rem 0 0;
+  font-size: 0.8rem;
+  color: rgb(107 114 128);
+}
+.monitor-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: rgb(107 114 128);
+}
+.monitor-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.monitor-add {
+  display: grid;
+  grid-template-columns: 1fr 8rem 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0 0 1.5rem;
+  padding: 0.85rem;
+  border: 1px dashed rgb(209 213 219);
+  border-radius: 0.75rem;
+}
+.monitor-add__title {
+  grid-column: 1 / -1;
+  margin: 0 0 0.15rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+@media (max-width: 720px) {
+  .monitor-add {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
