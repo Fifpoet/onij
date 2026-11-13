@@ -5,8 +5,8 @@
  */
 import vendorCode from '@/vendor/gdstudio-crc32.min.js?raw'
 
-/** 与 js/player.js 的 mkPlayer.version 对齐；签名里会去点变成 20260925 */
-export const GDSTUDIO_PLAYER_VERSION = '2026.09.25'
+/** 与 js/player.js 的 mkPlayer.version 对齐；签名里会去点变成 20261111 */
+export const GDSTUDIO_PLAYER_VERSION = '2026.11.11'
 
 /** nginx / Vite 反代时 Host 也是这个，签名必须用同一 hostname */
 export const GDSTUDIO_SIGN_HOST = 'music.gdstudio.org'
