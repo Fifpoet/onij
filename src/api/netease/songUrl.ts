@@ -138,7 +138,7 @@ async function requestGdStudioAutosource(
   return null
 }
 
-const GD_ALT_SOURCES = ['kuwo', 'tencent', 'kugou'] as const
+const GD_ALT_SOURCES = ['kuwo', 'tencent'] as const
 
 export async function requestGdStudioAltSource(
   origin: string,
