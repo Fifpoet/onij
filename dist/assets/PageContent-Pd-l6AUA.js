@@ -1,1 +1,0 @@
-import{_ as t,g as n,l as o,bY as s}from"./index-DmwaRmJO.js";const c={},r={class:"page-content"};function a(e,_){return o(),n("div",r,[s(e.$slots,"default")])}const d=t(c,[["render",a]]);export{d as P};
