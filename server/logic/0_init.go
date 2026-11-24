@@ -13,4 +13,5 @@ type AllLogic struct {
 	CollectionLogic
 	FileVideoLogic
 	PresenceLogic
+	PlaySourceLogic
 }

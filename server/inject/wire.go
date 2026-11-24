@@ -47,6 +47,7 @@ var logicSet = wire.NewSet(
 	logic.NewCollectionLogic,
 	logic.NewFileVideoLogic,
 	logic.NewPresenceLogic,
+	logic.NewPlaySourceLogic,
 	wire.Struct(new(logic.AllLogic), "*"),
 )
 

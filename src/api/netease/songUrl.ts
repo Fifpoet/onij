@@ -1,11 +1,19 @@
 /**
  * 取链：网易 /song/url 无 VIP 只有试听，不用。
- * 按监控页「音乐源」顺序：Meting → GD types=url → autosource → kuwo/tencent/kugou 搜后 types=url。
+ * 按监控页「音乐源」顺序：GD 公开 API（无签名 types=url）→ GD 播放器
+ *（types=url → autosource → kuwo/tencent 搜后 types=url）。
  * 音频仍由浏览器直连返回的 CDN。
  */
 
 import { getSongDetail } from './search'
-import { fetchGdstudioServerTime, gdstudioSignPayload, gdstudioUrlEncode } from './gdstudioSign'
+import {
+  GdstudioSignError,
+  clearGdstudioSign,
+  ensureGdstudioSign,
+  fetchGdstudioServerTime,
+  gdstudioSignPayload,
+  gdstudioUrlEncode,
+} from './gdstudioSign'
 import { resolvePlaySourceOrigin, usePlaySourcesStore, type PlaySource } from '@/store/playSources'
 
 /** 浏览器直连网易 FLAC 常 206 断连，播放用 320k MP3 */
@@ -56,18 +64,36 @@ async function fetchJson(url: string): Promise<{ ok: boolean; status: number; te
   }
 }
 
+function isInvalidSignResponse(status: number, text: string): boolean {
+  return status === 401 || /invalid request/i.test(text)
+}
+
 async function signedGdJson(
   origin: string,
   params: Record<string, string>,
   signPayload: string,
+  retried = false,
 ): Promise<unknown> {
+  await ensureGdstudioSign(origin)
   const serverTime = await fetchGdstudioServerTime(origin)
-  const all = { ...params, s: gdstudioSignPayload(signPayload, serverTime) }
+  const all = { ...params, s: gdstudioSignPayload(origin, signPayload, serverTime) }
   // 值已 urlEncode，不能再走 URLSearchParams（autosource 的 JSON 会被二次编码，签名 401）
   const qs = Object.entries(all)
     .map(([key, value]) => `${key}=${value}`)
     .join('&')
-  const { ok, text } = await fetchJson(`${origin}/api.php?${qs}`)
+  const { ok, status, text } = await fetchJson(`${origin}/api.php?${qs}`)
+  if (isInvalidSignResponse(status, text) && !retried) {
+    clearGdstudioSign(origin)
+    try {
+      await ensureGdstudioSign(origin, { force: true, remoteOnly: true })
+    } catch {
+      throw new GdstudioSignError()
+    }
+    return signedGdJson(origin, params, signPayload, true)
+  }
+  if (isInvalidSignResponse(status, text)) {
+    throw new GdstudioSignError()
+  }
   if (!ok) return null
   try {
     return JSON.parse(text) as unknown
@@ -99,6 +125,28 @@ export async function requestGdStudioPlayUrl(
     idStr,
   )
   return urlFromGdBody(data)
+}
+
+/** GD 公开 API：无 crc32、不走 /time */
+export async function requestGdApiPlayUrl(
+  origin: string,
+  id: number,
+  br: number,
+  source = 'netease',
+): Promise<string | null> {
+  const qs = new URLSearchParams({
+    types: 'url',
+    source,
+    id: String(id),
+    br: String(br),
+  })
+  const { ok, text } = await fetchJson(`${origin}/api.php?${qs.toString()}`)
+  if (!ok) return null
+  try {
+    return urlFromGdBody(JSON.parse(text) as unknown)
+  } catch {
+    return null
+  }
 }
 
 async function requestGdStudioAutosource(
@@ -178,40 +226,6 @@ export async function requestGdStudioAltSource(
   return null
 }
 
-async function requestMetingPlayUrl(origin: string, id: number, br: number): Promise<string | null> {
-  const qs = new URLSearchParams({
-    server: 'netease',
-    type: 'url',
-    id: String(id),
-    br: String(br),
-  })
-  const ac = new AbortController()
-  const timer = setTimeout(() => ac.abort(), FETCH_TIMEOUT_MS)
-  let res: Response
-  try {
-    res = await fetch(`${origin}/?${qs.toString()}`, {
-      signal: ac.signal,
-      cache: 'no-store',
-      redirect: 'manual',
-    })
-  } catch {
-    return null
-  } finally {
-    clearTimeout(timer)
-  }
-  const loc = res.headers.get('Location')
-  if (loc) return usableUrl(loc)
-  if (!res.ok) return null
-  const text = (await res.text()).trim()
-  if (!text) return null
-  try {
-    const data = JSON.parse(text) as { url?: string }
-    return usableUrl(data?.url)
-  } catch {
-    return usableUrl(text)
-  }
-}
-
 async function hintFromNeteaseDetail(id: number): Promise<PlayUrlHint | null> {
   try {
     const detail = await getSongDetail([id])
@@ -235,15 +249,20 @@ async function requestFromSource(
   hint?: PlayUrlHint | null,
 ): Promise<string | null> {
   const origin = resolvePlaySourceOrigin(source)
-  if (source.kind === 'meting') return requestMetingPlayUrl(origin, id, br)
-  const gdUrl = await requestGdStudioPlayUrl(origin, id, br)
-  if (gdUrl) return gdUrl
-  const meta = hint?.name ? hint : await hintFromNeteaseDetail(id)
-  if (!meta) return null
-  return (
-    (await requestGdStudioAutosource(origin, meta, br)) ||
-    (await requestGdStudioAltSource(origin, meta, br))
-  )
+  try {
+    if (source.kind === 'gdapi') return requestGdApiPlayUrl(origin, id, br)
+    const gdUrl = await requestGdStudioPlayUrl(origin, id, br)
+    if (gdUrl) return gdUrl
+    const meta = hint?.name ? hint : await hintFromNeteaseDetail(id)
+    if (!meta) return null
+    return (
+      (await requestGdStudioAutosource(origin, meta, br)) ||
+      (await requestGdStudioAltSource(origin, meta, br))
+    )
+  } catch (err) {
+    if (err instanceof GdstudioSignError) return null
+    throw err
+  }
 }
 
 async function requestWithBr(

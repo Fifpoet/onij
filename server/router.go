@@ -70,4 +70,10 @@ func customizedRegister(r *server.Hertz) {
 
 	presence := root.Group("/presence")
 	presence.POST("/heartbeat", handler.PresenceHeartbeat)
+
+	playSource := root.Group("/play-source")
+	playSource.POST("/list", handler.ListPlaySource)
+	playSource.POST("/save", handler.SavePlaySource)
+	playSource.POST("/gdstudio-sign", handler.GetGdstudioSign)
+	playSource.POST("/gdstudio-sign/save", handler.SaveGdstudioSign)
 }

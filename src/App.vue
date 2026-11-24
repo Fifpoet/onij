@@ -3,21 +3,16 @@ import { computed } from 'vue';
 import { RouterView, useRoute } from 'vue-router';
 import PageHeader from './components/layout/PageHeader.vue'
 import { useOnijNavToggle } from '@/composables/useNavToolsUnlock'
-// import lbAudio from './components/audio/index.vue';
-import AudioContainer from "@/components/music/AudioContainer.vue";
-import MusicDetail from "@/components/music/MusicDetail.vue";
-import MusicDetailMobile from "@/components/music/MusicDetailMobile.vue";
-import MusicLike from "@/components/music/MusicLike.vue";
 import {NMessageProvider} from "naive-ui"
 import NeteaseAudioHost from '@/components/player/NeteaseAudioHost.vue'
 import VideoPlayerHost from '@/components/player/VideoPlayerHost.vue'
 import LyricsFullScreen from '@/components/player/LyricsFullScreen.vue'
 import MobileBottomPlayerBar from '@/components/player/MobileBottomPlayerBar.vue'
 import MobileLyricsSheet from '@/components/player/MobileLyricsSheet.vue'
-import MemoList from './components/memo/MemoList.vue';
 import VoiceTranscriptBar from '@/components/voice/VoiceTranscriptBar.vue'
 import { useVideoPlayerStore } from '@/store/videoPlayer'
 import { usePresenceStore } from '@/store/presence'
+import { usePlaySourcesStore } from '@/store/playSources'
 
 const route = useRoute()
 const showMobilePlayerBar = computed(() => route.path !== '/ktv')
@@ -25,12 +20,12 @@ const showIcp = computed(() => route.path !== '/ktv')
 const videoPlayer = useVideoPlayerStore()
 const { navToolsVisible } = useOnijNavToggle()
 usePresenceStore().startHeartbeat()
+usePlaySourcesStore().loadFromServer()
 </script>
 
 <template>
   <div class="app-shell min-h-screen w-full text-left">
     <VoiceTranscriptBar v-if="navToolsVisible && !videoPlayer.opened" />
-    <!-- 顶部导航栏 -->
   <PageHeader />
 
   <n-message-provider class="app-body">
@@ -39,13 +34,6 @@ usePresenceStore().startHeartbeat()
     <LyricsFullScreen />
     <MobileBottomPlayerBar v-if="showMobilePlayerBar" />
     <MobileLyricsSheet />
-<!--    <MusicDetail />-->
-<!--      <MusicDetailMobile />-->
-<!--    <MusicLike />-->
-<!--    <MemoList />-->
-<!--    <ChatWindow />-->
-      
-      <!-- 路由视图：为固定顶栏留出空间（移动端含安全区） -->
       <div class="app-main">
         <RouterView />
       </div>
@@ -60,8 +48,6 @@ usePresenceStore().startHeartbeat()
           鄂ICP备2024057031号
         </a>
       </footer>
-      
-<!--  <AudioContainer></AudioContainer>-->
   </n-message-provider>
   </div>
 </template>
@@ -109,18 +95,5 @@ usePresenceStore().startHeartbeat()
 .app-icp__link:hover {
   color: rgb(107 114 128);
   text-decoration: underline;
-}
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
 }
 </style>

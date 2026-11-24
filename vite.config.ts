@@ -46,7 +46,7 @@ export default defineConfig((configEnv) => {
           },
         },
         // 主站 Go：页面同源 /presence 等，避免浏览器直连 127.0.0.1:8889
-        '^/(ping|album|artist|file|music|practice|tag|uvr|voice|ai|collection|tran|presence|api)(/|$)': {
+        '^/(ping|album|artist|file|music|practice|tag|uvr|voice|ai|collection|tran|presence|play-source|api)(/|$)': {
           target: 'http://127.0.0.1:8889',
           changeOrigin: true,
         },

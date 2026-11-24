@@ -99,6 +99,7 @@ func InitLogicForTest() *logic.AllLogic {
 	collectionLogic := logic.NewCollectionLogic(allInfra)
 	fileVideoLogic := logic.NewFileVideoLogic(allInfra)
 	presenceLogic := logic.NewPresenceLogic()
+	playSourceLogic := logic.NewPlaySourceLogic()
 	allLogic := &logic.AllLogic{
 		MusicLogic:      musicLogic,
 		FileLogic:       fileLogic,
@@ -112,6 +113,7 @@ func InitLogicForTest() *logic.AllLogic {
 		CollectionLogic: collectionLogic,
 		FileVideoLogic:  fileVideoLogic,
 		PresenceLogic:   presenceLogic,
+		PlaySourceLogic: playSourceLogic,
 	}
 	return allLogic
 }
@@ -162,6 +164,7 @@ func InitializeApp() *App {
 	collectionLogic := logic.NewCollectionLogic(allInfra)
 	fileVideoLogic := logic.NewFileVideoLogic(allInfra)
 	presenceLogic := logic.NewPresenceLogic()
+	playSourceLogic := logic.NewPlaySourceLogic()
 	allLogic := &logic.AllLogic{
 		MusicLogic:      musicLogic,
 		FileLogic:       fileLogic,
@@ -175,6 +178,7 @@ func InitializeApp() *App {
 		CollectionLogic: collectionLogic,
 		FileVideoLogic:  fileVideoLogic,
 		PresenceLogic:   presenceLogic,
+		PlaySourceLogic: playSourceLogic,
 	}
 	app := &App{
 		AllInfra: allInfra,
@@ -187,7 +191,7 @@ func InitializeApp() *App {
 
 var infraSet = wire.NewSet(dal.NewMysqlCli, cdb.NewDefaultProxy, dal.NewTagDal, dal.NewFileDal, dal.NewMusicDal, dal.NewAlbumDal, dal.NewAlbumMusicDal, dal.NewArtistDal, dal.NewPracticeDal, dal.NewTranItemDal, dal.NewAiSessionDal, dal.NewAiMessageDal, dal.NewAiConfirmPendingDal, dal.NewMusicCollectionDal, dal.NewMusicCollectionItemDal, dal.NewFileVideoMarkerDal, wire.Struct(new(infra.AllInfra), "*"))
 
-var logicSet = wire.NewSet(uvr.NewClient, logic.NewMusicLogic, logic.NewFileLogic, logic.NewAlbumLogic, logic.NewArtistLogic, logic.NewTagLogic, logic.NewPracticeLogic, logic.NewUvrLogic, logic.NewTranLogic, logic.NewAiLogic, logic.NewCollectionLogic, logic.NewFileVideoLogic, logic.NewPresenceLogic, wire.Struct(new(logic.AllLogic), "*"))
+var logicSet = wire.NewSet(uvr.NewClient, logic.NewMusicLogic, logic.NewFileLogic, logic.NewAlbumLogic, logic.NewArtistLogic, logic.NewTagLogic, logic.NewPracticeLogic, logic.NewUvrLogic, logic.NewTranLogic, logic.NewAiLogic, logic.NewCollectionLogic, logic.NewFileVideoLogic, logic.NewPresenceLogic, logic.NewPlaySourceLogic, wire.Struct(new(logic.AllLogic), "*"))
 
 var allSet = wire.NewSet(
 	infraSet,

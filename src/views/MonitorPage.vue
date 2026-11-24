@@ -59,7 +59,10 @@
         </n-tab-pane>
 
         <n-tab-pane :name="PLAY_TAB" tab="音乐源">
-          <p class="monitor-hint">取链按卡片从上到下尝试。可改地址、开关、排序；内建源只能停用不能删。</p>
+          <p class="monitor-hint">
+            取链按卡片从上到下尝试。GD 播放器解码会轮换：先「单独检测」，失败再点「同步签名」，会从源站拉最新
+            player.js / crc32 写到服务器，全站立刻用新解码，不用改代码发版。
+          </p>
           <div class="monitor-cards">
             <article
               v-for="(source, index) in playSources.sources"
@@ -85,6 +88,7 @@
                   :placeholder="playSourceDisplayOrigin(source)"
                   size="small"
                   @update:value="(v) => playSources.patchSource(source.id, { origin: v })"
+                  @blur="playSources.flushSave()"
                 />
               </label>
 
@@ -96,6 +100,10 @@
                 <div>
                   <dt>最近检测</dt>
                   <dd>{{ checkedAtText(PLAY_TAB, source.id) }}</dd>
+                </div>
+                <div v-if="source.kind === 'gdstudio'">
+                  <dt>签名版本</dt>
+                  <dd>{{ playSources.signVersion || '未同步' }}</dd>
                 </div>
               </dl>
 
@@ -112,6 +120,15 @@
                   @click="probePlayCard(source)"
                 >
                   单独检测
+                </button>
+                <button
+                  v-if="source.kind === 'gdstudio'"
+                  type="button"
+                  class="monitor-btn monitor-btn--ghost"
+                  :disabled="probing || syncingId === source.id"
+                  @click="resyncSign(source)"
+                >
+                  {{ syncingId === source.id ? '同步中…' : '同步签名' }}
                 </button>
                 <button
                   type="button"
@@ -152,7 +169,7 @@
             <h3 class="monitor-add__title">添加源</h3>
             <n-input v-model:value="newTitle" size="small" placeholder="名称" />
             <n-select v-model:value="newKind" size="small" :options="KIND_OPTIONS" />
-            <n-input v-model:value="newOrigin" size="small" placeholder="https://example.com/meting" />
+            <n-input v-model:value="newOrigin" size="small" placeholder="https://music-api.gdstudio.xyz" />
             <button type="submit" class="monitor-btn" :disabled="!newOrigin.trim()">添加</button>
           </form>
         </n-tab-pane>
@@ -166,7 +183,7 @@ import { onMounted, reactive, ref, watch } from 'vue'
 import { NInput, NSelect, NTabPane, NTabs } from 'naive-ui'
 import PageContent from '@/components/layout/PageContent.vue'
 import { playSourceDisplayOrigin, probePlaySource } from '@/api/netease/playSourceHealth'
-import { usePlaySourcesStore, type PlaySource, type PlaySourceKind } from '@/store/playSources'
+import { resolvePlaySourceOrigin, usePlaySourcesStore, type PlaySource, type PlaySourceKind } from '@/store/playSources'
 
 type ProbeStatus = 'idle' | 'loading' | 'ok' | 'fail'
 
@@ -223,16 +240,17 @@ const MONITOR_TABS: MonitorTab[] = [
 
 const PLAY_TAB = 'play-sources'
 const KIND_OPTIONS = [
-  { label: 'Meting', value: 'meting' },
-  { label: 'GD Studio', value: 'gdstudio' },
+  { label: 'GD 公开 API', value: 'gdapi' },
+  { label: 'GD 播放器', value: 'gdstudio' },
 ]
 
 const playSources = usePlaySourcesStore()
 const activeTab = ref(MONITOR_TABS[0]!.id)
 const probing = ref(false)
+const syncingId = ref('')
 const results = reactive<Record<string, ProbeResult>>({})
 const newTitle = ref('')
-const newKind = ref<PlaySourceKind>('meting')
+const newKind = ref<PlaySourceKind>('gdapi')
 const newOrigin = ref('')
 
 function resultKey(tabId: string, cardId: string) {
@@ -332,7 +350,35 @@ async function probePlayCard(source: PlaySource) {
 }
 
 function kindLabel(kind: PlaySourceKind) {
-  return kind === 'gdstudio' ? 'GD Studio' : 'Meting'
+  return kind === 'gdstudio' ? 'GD 播放器' : 'GD 公开 API'
+}
+
+async function resyncSign(source: PlaySource) {
+  if (source.kind !== 'gdstudio') return
+  const key = resultKey(PLAY_TAB, source.id)
+  syncingId.value = source.id
+  results[key] = { status: 'loading' }
+  const started = performance.now()
+  try {
+    const version = await playSources.syncGdstudioSign(resolvePlaySourceOrigin(source))
+    results[key] = {
+      status: 'ok',
+      latencyMs: Math.round(performance.now() - started),
+      checkedAt: Date.now(),
+      body: `已同步签名 ${version}，正在检测取链…`,
+    }
+    await probePlayCard(source)
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    results[key] = {
+      status: 'fail',
+      latencyMs: Math.round(performance.now() - started),
+      checkedAt: Date.now(),
+      error: msg || '同步签名失败',
+    }
+  } finally {
+    syncingId.value = ''
+  }
 }
 
 function addCustomSource() {
@@ -366,7 +412,8 @@ watch(activeTab, () => {
   void probeActiveTab()
 })
 
-onMounted(() => {
+onMounted(async () => {
+  await playSources.loadFromServer()
   void probeActiveTab()
 })
 </script>
