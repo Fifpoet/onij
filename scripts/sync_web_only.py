@@ -34,7 +34,8 @@ def main() -> int:
     sh = """
 cd ~/workbench/go/onij
 git pull origin feat/onij
-sudo rsync -av --delete release/web/ /var/www/onij/web/
+sudo rsync -av --delete --exclude 'assets/' release/web/ /var/www/onij/web/
+sudo rsync -av release/web/assets/ /var/www/onij/web/assets/
 sudo chown -R www-data:www-data /var/www/onij/web
 sudo find /var/www/onij/web -type d -exec chmod 755 {} \\;
 sudo find /var/www/onij/web -type f -exec chmod 644 {} \\;

@@ -33,7 +33,8 @@ def main() -> int:
         return 1
 
     sh = """
-sudo rsync -av --delete ~/workbench/go/onij/release/web/ /var/www/onij/web/
+sudo rsync -av --delete --exclude 'assets/' ~/workbench/go/onij/release/web/ /var/www/onij/web/
+sudo rsync -av ~/workbench/go/onij/release/web/assets/ /var/www/onij/web/assets/
 sudo chown -R www-data:www-data /var/www/onij/web
 sudo find /var/www/onij/web -type d -exec chmod 755 {} \\;
 sudo find /var/www/onij/web -type f -exec chmod 644 {} \\;
@@ -70,7 +71,8 @@ echo SYNC_OK
         sftp.close()
 
         deploy = f"""
-sudo rsync -av --delete {remote_tmp}/ /var/www/onij/web/
+sudo rsync -av --delete --exclude 'assets/' {remote_tmp}/ /var/www/onij/web/
+sudo rsync -av {remote_tmp}/assets/ /var/www/onij/web/assets/
 rm -rf {remote_tmp}
 sudo chown -R www-data:www-data /var/www/onij/web
 sudo find /var/www/onij/web -type d -exec chmod 755 {{}} \\;

@@ -130,7 +130,9 @@ rm -f /tmp/onij-deploy.env /tmp/start-onij.sh
             r"""
 set -e
 cp ~/workbench/go/onij/deploy/nginx/web-vue.conf /etc/nginx/conf.d/web-vue.conf
-sudo rsync -av --delete ~/workbench/go/onij/release/web/ /var/www/onij/web/
+# hashed 文件名会变；不要 --delete assets，否则还缓存着上一版入口的浏览器会 404
+rsync -av --delete --exclude 'assets/' ~/workbench/go/onij/release/web/ /var/www/onij/web/
+rsync -av ~/workbench/go/onij/release/web/assets/ /var/www/onij/web/assets/
 sudo chown -R www-data:www-data /var/www/onij/web
 sudo find /var/www/onij/web -type d -exec chmod 755 {} \;
 sudo find /var/www/onij/web -type f -exec chmod 644 {} \;
