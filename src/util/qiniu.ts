@@ -9,15 +9,15 @@ const DEFAULT_UPLOAD_URL = 'https://up-z0.qiniup.com'
 
 async function getUploadCredentials(): Promise<{ token: string; uploadUrl: string; publicBase: string }> {
   const response = await GetUploadToken()
-  const token = response.upload_token ?? response.uploadToken
+  const token = response.upload_token
   if (!token) {
     throw new Error(response.message || '获取上传凭证失败')
   }
   const publicBase = (response.domain || DEFAULT_DOMAIN).replace(/\/$/, '')
-  const uploadUrl = (response.upload_url ?? response.uploadUrl ?? DEFAULT_UPLOAD_URL).replace(/\/$/, '')
   return {
     token,
-    uploadUrl,
+    // 后端只签 token / domain，上传入口固定用七牛默认域名
+    uploadUrl: DEFAULT_UPLOAD_URL,
     publicBase,
   }
 }

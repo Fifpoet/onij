@@ -1,4 +1,3 @@
-// src/api/file.ts
 import { post } from '../util/http'
 import { normalizeFileCdnUrl } from '@/util/qiniuCdn'
 import type {

@@ -6,7 +6,7 @@ import type {
   GetMonthlyPracticeResp,
   UploadPracticeReq,
   UploadPracticeResp,
-} from '@/api/types/practice'
+} from '@/api/types'
 
 export const UploadPractice = async (params: UploadPracticeReq): Promise<UploadPracticeResp> => {
   return post('/practice/upload', params) as Promise<UploadPracticeResp>

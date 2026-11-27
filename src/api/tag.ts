@@ -1,13 +1,10 @@
-// src/api/tag.ts
 import {post} from '@/util';
-import {DeleteTagReq, DeleteTagResp, UploadTagReq, UploadTagResp} from './types/tag';
+import {DeleteTagReq, DeleteTagResp, UploadTagReq, UploadTagResp} from '@/api/types';
 
-// 上传标签
 export const UploadTag = async (params: UploadTagReq): Promise<UploadTagResp> => {
-    return (await post<UploadTagResp>('/tag/upload', params)).data;
+    return post<UploadTagResp>('/tag/upload', params);
 };
 
-// 删除标签
 export const DeleteTag = async (params: DeleteTagReq): Promise<DeleteTagResp> => {
-    return (await post<DeleteTagResp>('/tag/delete', params)).data;
+    return post<DeleteTagResp>('/tag/delete', params);
 };

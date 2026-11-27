@@ -5,7 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc && vite build",
+    "gen:types": "python scripts/gen_ts_types.py || python3 scripts/gen_ts_types.py",
+    "check:types": "python scripts/gen_ts_types.py --check || python3 scripts/gen_ts_types.py --check",
+    "typecheck": "vue-tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "build": "npm run check:types && vue-tsc && vite build",
     "build:vite": "vite build",
     "build:release": "sh build-release.sh",
     "build:release:win": "powershell -NoProfile -ExecutionPolicy Bypass -File ./build-release.ps1",
@@ -29,17 +34,23 @@
     "vue-router": "^4.0.13"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
     "@iconify/vue": "^4.1.2",
     "@types/node": "^20.14.2",
     "@types/qiniu-js": "^3.0.0",
     "@unocss/preset-uno": "^0.60.4",
     "@vitejs/plugin-vue": "^5.0.4",
     "@vue/runtime-core": "^3.5.13",
+    "eslint": "^9.39.5",
+    "eslint-plugin-vue": "^9.33.0",
+    "globals": "^15.15.0",
     "naive-ui": "^2.38.2",
     "sass": "^1.77.6",
     "typescript": "^5.4.5",
+    "typescript-eslint": "^8.74.0",
     "unocss": "^0.60.4",
     "vite": "^5.2.0",
+    "vue-eslint-parser": "^9.4.3",
     "vue-tsc": "^2.0.6"
   }
 }

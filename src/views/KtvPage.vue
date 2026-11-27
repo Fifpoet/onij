@@ -212,14 +212,14 @@ const volumeIcon = computed(() => {
 })
 
 const accompanimentLoading = computed(() => {
-  instrumentalEpoch.value
+  void instrumentalEpoch.value
   const id = song.value?.id
   if (!id) return false
   return getInstrumentalStatus(id) === 'loading'
 })
 
 const instPending = computed(() => {
-  instrumentalEpoch.value
+  void instrumentalEpoch.value
   const id = song.value?.id
   if (!id) return false
   const st = getInstrumentalStatus(id)
@@ -236,20 +236,20 @@ const accompanimentTitle = computed(() => {
 })
 
 const pitchData = computed(() => {
-  pitchTick.value
+  void pitchTick.value
   const id = song.value?.id
   return id ? getCachedPitch(id) : null
 })
 
 const pitchLoading = computed(() => {
-  pitchTick.value
+  void pitchTick.value
   const id = song.value?.id
   if (!id || !pitchView.value) return false
   return getPitchStatus(id) === 'loading'
 })
 
 const pitchError = computed(() => {
-  pitchTick.value
+  void pitchTick.value
   const id = song.value?.id
   if (!id || !pitchView.value) return ''
   return getPitchStatus(id) === 'error' ? '音高提取失败，点封面重试' : ''

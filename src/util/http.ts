@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
+import axios, { AxiosRequestConfig } from 'axios'
 
 const PROD_API = 'https://onij.fun/go'
 
@@ -22,9 +22,9 @@ const NETEASE_URL = import.meta.env.VITE_NETEASE_URL;
 
 export const apiClient = axios.create({
     baseURL: SERVER_URL,
-    timeout: 10000, // 请求超时时间
+    timeout: 10000,
     headers: {
-        'Content-Type': 'application/json', // 默认的请求头
+        'Content-Type': 'application/json',
         'Accept': 'application/json',
     },
 });
@@ -32,13 +32,6 @@ export const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
     (config) => {
-        // 打印请求的 URL 和 body
-        if (config.baseURL && config.url) {
-        }
-        if (config.method === 'post' || config.method === 'put') {
-        }
-
-        // 在发送请求之前做点什么，比如添加 token
         const token = localStorage.getItem('token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
@@ -47,35 +40,31 @@ apiClient.interceptors.request.use(
         return config;
     },
     (error) => {
-        // 处理请求错误
         return Promise.reject(error);
     }
 );
 
-
-// 添加响应拦截器（可选）
 apiClient.interceptors.response.use(
     (response) => {
-        // 处理响应数据
         return response;
     },
     (error) => {
-        // 处理响应错误
         return Promise.reject(error);
     }
 );
 
-// GET 请求
 export const get = async <T>(url: string, params?: any, config?: AxiosRequestConfig): Promise<T> => {
     return apiClient.get(url, { params, ...config }).then(response => response.data);
 };
 
-// POST 请求
-export const post =  async<T = any, R = AxiosResponse<T>, _D = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<R> => {
-    return apiClient.post(url, data, config).then(response => response.data);
+/**
+ * POST 并直接返回响应体（已解包 response.data）。
+ * 调用方不要再取一次 `.data`，否则拿到的是 undefined。
+ */
+export const post = async <T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
+    return apiClient.post<T>(url, data, config).then(response => response.data);
 };
 
-// 上传文件专用 POST 请求
 export const uploadFile =  async<T>(url: string, formData: FormData, config?: AxiosRequestConfig): Promise<T> => {
     const uploadConfig = {
         headers: {
@@ -88,13 +77,11 @@ export const uploadFile =  async<T>(url: string, formData: FormData, config?: Ax
 
 
 
-// third api
-
 const neteaseApiClient = axios.create({
     baseURL: NETEASE_URL,
-    timeout: 10000, // 请求超时时间
+    timeout: 10000,
     headers: {
-        'Content-Type': 'application/json', // 默认的请求头
+        'Content-Type': 'application/json',
         'Accept': 'application/json',
     },
 });
@@ -103,6 +90,6 @@ export const getNetease =  async <T>(url: string, params?: any, config?: AxiosRe
     return neteaseApiClient.get(url, { params, ...config }).then(response => response.data);
 };
 
-export const postNetease = async <T = any, R = AxiosResponse<T>, _D = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<R> => {
-    return neteaseApiClient.post(url, data, config).then(response => response.data);
+export const postNetease = async <T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
+    return neteaseApiClient.post<T>(url, data, config).then(response => response.data);
 };

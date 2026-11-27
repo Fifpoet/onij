@@ -14,7 +14,7 @@ const getOffset = (DOM: HTMLElement): { X: number, Y: number } => {
 			Y: NaN
 		}
 	}
-	let offset = {
+	const offset = {
 		X: DOM.offsetLeft,
 		Y: DOM.offsetTop
 	};

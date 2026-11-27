@@ -75,7 +75,7 @@ export const router = createRouter({
 
 NProgress.configure({ showSpinner: false })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((_to, _from, next) => {
   NProgress.start()
   for (let i = 0; i < 5; i++) NProgress.inc()
   setTimeout(() => NProgress.done(), 300)

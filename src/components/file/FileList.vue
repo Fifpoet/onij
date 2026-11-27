@@ -288,7 +288,7 @@ import {
   NInput,
 } from 'naive-ui'
 import { GetFileList, DeleteFileById } from '@/api'
-import { type FileDetail, type GetFileListReq, type DeleteFileReq } from '@/api/types/file'
+import { type FileDetail, type GetFileListReq, type DeleteFileReq } from '@/api/types'
 import {
   getFileIcon,
   formatFileSize,

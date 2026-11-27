@@ -98,7 +98,7 @@ export function ktvDualLineState(lines: LrcLine[], currentSec: number): KtvDualL
   const start1 = lines[baseIdx].time
   const end1 = lineEndTime(lines, baseIdx, t)
 
-  let line1Progress = end1 <= start1 ? 1 : Math.min(1, Math.max(0, (t - start1) / (end1 - start1)))
+  const line1Progress = end1 <= start1 ? 1 : Math.min(1, Math.max(0, (t - start1) / (end1 - start1)))
 
   if (!line2) {
     return { baseIdx, line1, line2: '', line1Progress, line2Progress: 0 }

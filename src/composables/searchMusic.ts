@@ -11,7 +11,8 @@ export function useSearch() {
         if (!searchValue.value.trim()) return
 
         const promises = tps.map((typ) => {
-            let li = limit, of = offset
+            let li = limit
+            const of = offset
             if (tps.length > 1) {
                 switch (typ) {
                     case 1:

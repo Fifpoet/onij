@@ -1,4 +1,3 @@
-// src/api/album.ts
 import { post } from '@/util';
 import {
   UploadAlbumReq,
@@ -10,13 +9,13 @@ import {
 } from '@/api/types';
 
 export const UploadAlbum = async (params: UploadAlbumReq): Promise<UploadAlbumResp> => {
-  return (await post<UploadAlbumResp>('/album/upload', params)).data;
+  return post<UploadAlbumResp>('/album/upload', params);
 };
 
 export const GetAlbumDetail = async (params: GetAlbumDetailReq): Promise<GetAlbumDetailResp> => {
-  return (await post<GetAlbumDetailResp>('/album/detail', params)).data;
+  return post<GetAlbumDetailResp>('/album/detail', params);
 };
 
 export const SearchAlbum = async (params: GetAlbumListReq): Promise<GetAlbumListResp> => {
-  return (await post<GetAlbumListResp>('/album/search', params)).data;
+  return post<GetAlbumListResp>('/album/search', params);
 };

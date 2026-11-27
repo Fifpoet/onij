@@ -1,0 +1,57 @@
+name: check
+
+on:
+  push:
+    branches: [feat/onij, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  frontend:
+    name: 前端（类型 / 生成物 / 构建）
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: 安装依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: 类型定义与 proto 一致
+        run: pnpm run check:types
+
+      - name: TypeScript 类型检查
+        run: pnpm run typecheck
+
+      - name: ESLint
+        run: pnpm run lint
+
+      - name: 构建
+        run: pnpm run build:vite
+
+  backend:
+    name: 后端（构建 / 单测）
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: server/go.mod
+          cache-dependency-path: server/go.sum
+
+      - name: 编译
+        working-directory: server
+        run: go build ./...
+
+      - name: 单测
+        working-directory: server
+        run: go test ./util/... ./logic/... ./biz/...

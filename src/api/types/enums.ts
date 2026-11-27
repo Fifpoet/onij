@@ -1,8 +1,7 @@
-/**
- * 与 server/_proto/onij/all_enum.proto 保持一致
- */
+// 此文件由 scripts/gen_ts_types.py 自动生成，请勿手工修改。
+// 源：server/_proto/onij/all_enum.proto
+// 重新生成：pnpm gen:types
 
-/** 文件类型 */
 export enum FileType {
   FT_Unknown = 0,
   FT_Pdf = 1,
@@ -18,23 +17,6 @@ export enum FileType {
   FT_CSV = 11,
   FT_Executable = 12,
   FT_Folder = 99,
-}
-
-export const FILE_TYPE_LABELS: Record<FileType, string> = {
-  [FileType.FT_Unknown]: '未知',
-  [FileType.FT_Pdf]: 'PDF',
-  [FileType.FT_Word]: 'Word',
-  [FileType.FT_Excel]: 'Excel',
-  [FileType.FT_PowerPoint]: 'PPT',
-  [FileType.FT_Image]: '图片',
-  [FileType.FT_Video]: '视频',
-  [FileType.FT_Audio]: '音频',
-  [FileType.FT_Text]: '文本',
-  [FileType.FT_Archive]: '压缩包',
-  [FileType.FT_Code]: '代码',
-  [FileType.FT_CSV]: 'CSV',
-  [FileType.FT_Executable]: '可执行文件',
-  [FileType.FT_Folder]: '文件夹',
 }
 
 export enum ArtistType {
@@ -59,7 +41,7 @@ export enum AudioQuality {
 }
 
 export enum PerformType {
-  PT_Unknown = 0,
+  PFT_Unknown = 0,
 }
 
 export enum TagBiz {
@@ -90,7 +72,6 @@ export enum ResourceType {
   RT_Album = 3,
 }
 
-/** 练习类型，与 all_enum.proto PracticeType 一致 */
 export enum PracticeType {
   PCT_Unknown = 0,
   PCT_AnaerobicExercise = 1,
@@ -102,17 +83,4 @@ export enum PracticeType {
   PCT_Flute = 7,
   PCT_Singing = 8,
   PCT_Other = 99,
-}
-
-export const PRACTICE_TYPE_LABELS: Record<PracticeType, string> = {
-  [PracticeType.PCT_Unknown]: '未分类',
-  [PracticeType.PCT_AnaerobicExercise]: '无氧',
-  [PracticeType.PCT_AerobicExercise]: '有氧',
-  [PracticeType.PCT_Reading]: '阅读',
-  [PracticeType.PCT_Language]: '语言',
-  [PracticeType.PCT_Game]: '游戏',
-  [PracticeType.PCT_Piano]: '钢琴',
-  [PracticeType.PCT_Flute]: '长笛',
-  [PracticeType.PCT_Singing]: '歌唱',
-  [PracticeType.PCT_Other]: '其他',
 }

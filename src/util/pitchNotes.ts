@@ -23,54 +23,6 @@ export function isNaturalC(midi: number): boolean {
   return pitchClass(midi) === 0
 }
 
-/** Live：丢掉观众尖叫（短、离主体音域远）和讲话（密、跳、时值短） */
-function cleanLiveNotes(notes: PitchNote[]): PitchNote[] {
-  const list = notes
-    .filter((n) => n.t1 > n.t0)
-    .map((n) => ({ t0: n.t0, t1: n.t1, midi: Math.round(n.midi) }))
-    .sort((a, b) => a.t0 - b.t0)
-  if (list.length < 4) return list
-
-  const long = list.filter((n) => n.t1 - n.t0 >= 0.16)
-  const coreSrc = long.length >= 3 ? long : list
-  const items = coreSrc.map((n) => ({ midi: n.midi, w: n.t1 - n.t0 }))
-  const lo = weightedPercentile(items, 0.08)
-  const hi = weightedPercentile(items, 0.92)
-
-  const kept: PitchNote[] = []
-  for (const n of list) {
-    const dur = n.t1 - n.t0
-    if ((n.midi < lo - 4 || n.midi > hi + 4) && dur < 0.22) continue
-    if (n.midi < lo - 7 || n.midi > hi + 7) continue
-    kept.push(n)
-  }
-
-  const drop = new Set<number>()
-  for (let i = 0; i < kept.length; i++) {
-    const win0 = kept[i]!.t0 - 0.12
-    const win1 = kept[i]!.t1 + 0.12
-    const local: number[] = []
-    for (let j = 0; j < kept.length; j++) {
-      const n = kept[j]!
-      if (n.t1 < win0 || n.t0 > win1) continue
-      local.push(j)
-    }
-    if (local.length < 4) continue
-    const durs = local.map((j) => kept[j]!.t1 - kept[j]!.t0)
-    const meanDur = durs.reduce((a, b) => a + b, 0) / durs.length
-    let jumps = 0
-    for (let k = 1; k < local.length; k++) {
-      if (Math.abs(kept[local[k]!]!.midi - kept[local[k - 1]!]!.midi) >= 3) jumps += 1
-    }
-    if (meanDur < 0.14 && jumps >= 3) {
-      for (const j of local) {
-        if (kept[j]!.t1 - kept[j]!.t0 < 0.2) drop.add(j)
-      }
-    }
-  }
-  return kept.filter((_, i) => !drop.has(i))
-}
-
 /** 后端 v5 已切段并滤 Live；前端只 round，避免再滤掉轻开口。 */
 export function mergePitchNotes(notes: PitchNote[]): PitchNote[] {
   if (!notes.length) return notes
@@ -132,19 +84,6 @@ export function pitchNoteKey(n: PitchNote): string {
 
 const RANGE_PAD = 0.7
 const MIN_NOTE_DUR = 0.08
-
-function weightedPercentile(items: { midi: number; w: number }[], p: number): number {
-  const sorted = [...items].sort((a, b) => a.midi - b.midi)
-  const total = sorted.reduce((s, i) => s + i.w, 0)
-  if (total <= 0) return sorted[0]?.midi ?? 60
-  const target = total * p
-  let acc = 0
-  for (const i of sorted) {
-    acc += i.w
-    if (acc >= target) return i.midi
-  }
-  return sorted[sorted.length - 1]!.midi
-}
 
 /** 一屏铺满本曲实际最高/最低横条，只留一点边 */
 export function songPitchExtent(notes: PitchNote[]): { lo: number; hi: number } {

@@ -188,9 +188,6 @@ func (l *collectionLogic) refreshAndReturn(ctx context.Context, id int64) (*prm.
 	}
 	row.SearchText = prm.BuildCollectionSearchText(row.Name, items)
 	row.UpdatedAt = time.Now()
-	if row.CoverUrl == "" {
-		// leave empty; frontend may set first song cover later
-	}
 	if _, err = l.MusicCollectionDal.Save(ctx, row); err != nil {
 		return nil, err
 	}

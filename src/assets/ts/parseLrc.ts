@@ -21,13 +21,13 @@ export default function parseLrc(lrc: string = ''): Lrc {
 	const arr: Lrc = [];
 	lrc.split('\n').forEach((item) => {
 		// 匹配时间
-		let time = lrcTimeReg.exec(item);
+		const time = lrcTimeReg.exec(item);
 
 		// 若不存在时间，则跳过
 		if (!time) return;
 
 		// 匹配歌词
-		let txt: string = item.replace(lrcTimeReg, '');
+		const txt: string = item.replace(lrcTimeReg, '');
 
 		// 过滤空白歌词
 		if (txt === '') return;

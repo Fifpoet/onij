@@ -1,4 +1,3 @@
-// src/util/file.ts
 import { FileType } from '@/api/types/enums'
 import { normalizeFileCdnUrl, resolveQiniuCdnUrl } from '@/util/qiniu'
 import {

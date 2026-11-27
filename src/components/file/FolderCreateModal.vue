@@ -31,7 +31,7 @@
 import { ref } from 'vue';
 import { NModal, NInput, NButton, NSpin, NSpace, NForm, NFormItem, useMessage } from 'naive-ui';
 import { UploadFile } from '@/api';
-import { FileType } from '@/api/types/file';
+import { FileType } from '@/api/types';
 
 const props = defineProps<{
   show: boolean;

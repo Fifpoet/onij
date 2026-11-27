@@ -41,3 +41,17 @@ __pycache__/
 /server/play_sources.json
 /server/gdstudio_sign.json
 /server/*.json.tmp
+
+# 构建产物
+# dist 是 vite 中间产物，只用于拷贝到 release/web，不入库
+/dist
+# rollup 可视化报告
+/stats.html
+/dist-verify
+
+# release/ 说明：
+#   服务器没有 Go / pnpm（只有 node18），无法自行编译，
+#   所以 release/bin/onij-server 和 release/web 必须入库供 git pull 后直接运行。
+#   Windows 本地二进制不需要（服务器是 linux/x86_64）。
+/release/bin/onij-server.exe
+

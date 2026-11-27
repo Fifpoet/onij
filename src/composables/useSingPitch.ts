@@ -56,7 +56,6 @@ export function useSingPitch(opts: {
   let barIdx = -1
   let barSum = 0
   let barFrames = 0
-  let barVoiced = 0
   let barTouched = false
   let barLocked: number[] = []
   let finishedPhrases: number[] = []
@@ -113,7 +112,6 @@ export function useSingPitch(opts: {
     }
     barSum = 0
     barFrames = 0
-    barVoiced = 0
     barTouched = false
     const running = phraseFromBars()
     if (running != null) phraseScore.value = running
@@ -145,7 +143,6 @@ export function useSingPitch(opts: {
     barLocked = []
     barSum = 0
     barFrames = 0
-    barVoiced = 0
     barTouched = false
   }
 
@@ -157,7 +154,6 @@ export function useSingPitch(opts: {
     barLocked = []
     barSum = 0
     barFrames = 0
-    barVoiced = 0
     barTouched = false
   }
 
@@ -177,7 +173,6 @@ export function useSingPitch(opts: {
     barLocked = []
     barSum = 0
     barFrames = 0
-    barVoiced = 0
     barTouched = false
   }
 
@@ -187,7 +182,6 @@ export function useSingPitch(opts: {
     barLocked = []
     barSum = 0
     barFrames = 0
-    barVoiced = 0
     barTouched = false
     finishedPhrases = []
     phraseScore.value = null
@@ -249,7 +243,7 @@ export function useSingPitch(opts: {
     return stableMidi
   }
 
-  function scoreFrame(sec: number, midi: number, dt: number) {
+  function scoreFrame(sec: number, midi: number) {
     if (phraseIdx < 0) return
     const phrase = phrases[phraseIdx]
     if (!phrase) return
@@ -262,7 +256,6 @@ export function useSingPitch(opts: {
     const frame = scoreCents(octaveAwareCents(midi, note.midi))
     barSum += frame
     barFrames += 1
-    barVoiced += dt
     if (frame >= HIT_SCORE) {
       barTouched = true
       hits.add(pitchNoteKey(note))
@@ -325,7 +318,7 @@ export function useSingPitch(opts: {
       if (ref != null) {
         const cents = Math.abs(octaveAwareCents(shown, ref))
         inTune.value = cents <= IN_TUNE_CENTS
-        if (dt > 0) scoreFrame(now, shown, dt)
+        if (dt > 0) scoreFrame(now, shown)
       } else {
         inTune.value = false
       }
