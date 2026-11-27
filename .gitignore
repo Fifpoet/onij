@@ -49,9 +49,10 @@ __pycache__/
 /stats.html
 /dist-verify
 
-# release/ 说明：
-#   服务器没有 Go / pnpm（只有 node18），无法自行编译，
-#   所以 release/bin/onij-server 和 release/web 必须入库供 git pull 后直接运行。
-#   Windows 本地二进制不需要（服务器是 linux/x86_64）。
-/release/bin/onij-server.exe
+# 二进制与静态资源都不入库：
+#   服务器只跑编译好的包（机器低配，不装 Go / pnpm），
+#   由本机 build-release 编译后 scp/release 上传，见 scripts/remote_deploy.py。
+#   历史上这些文件曾入库，导致 .git 膨胀到 500MB+，已用 git-filter-repo 清理。
+/release/bin/
+/release/web/
 
